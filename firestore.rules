@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && getUserRole() == 'super_admin';
+    }
+
+    function isSupervisor() {
+      return isAuthenticated() && getUserRole() == 'supervisor';
+    }
+
+    function isTeacher() {
+      return isAuthenticated() && getUserRole() == 'teacher';
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isSuperAdmin() || isTeacher();
+      allow update: if isSuperAdmin() || request.auth.uid == userId;
+      allow delete: if isSuperAdmin();
+    }
+
+    // Institutes collection
+    match /institutes/{instituteId} {
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
+    }
+
+    // Students collection
+    match /students/{studentId} {
+      allow read: if isAuthenticated();
+      allow create: if isTeacher();
+      allow update: if isTeacher() || isSupervisor();
+      allow delete: if isSuperAdmin();
+    }
+
+    // Curriculum (read-only for all authenticated users)
+    match /levels/{levelId} {
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
+    }
+
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
+    }
+
+    // Session records
+    match /session_records/{recordId} {
+      allow read: if isAuthenticated();
+      allow create: if isTeacher();
+      allow update: if isTeacher();
+    }
+
+    // Sard records
+    match /sard_records/{sardId} {
+      allow read: if isAuthenticated();
+      allow create: if isTeacher();
+      allow update: if isTeacher();
+    }
+
+    // Exam records
+    match /exam_records/{examId} {
+      allow read: if isAuthenticated();
+      allow create: if isSupervisor();
+      allow update: if isSupervisor();
+    }
+
+    // Teacher-Institute mapping
+    match /teacher_institutes/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
+    }
+
+    // Supervisor-Institute mapping
+    match /supervisor_institutes/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "276199755113",
+    "project_id": "alrasikhoon-57151",
+    "storage_bucket": "alrasikhoon-57151.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:276199755113:android:4e857305eac385d32781f8",
+        "android_client_info": {
+          "package_name": "com.alrasikhoon.al_rasikhoon"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqdlxyrnYGdQNu2FYJn8MXQGGUZDGndqk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
