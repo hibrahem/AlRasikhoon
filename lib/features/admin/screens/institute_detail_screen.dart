@@ -196,9 +196,8 @@ class InstituteDetailScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
-              // TODO: Navigate to edit institute screen when implemented
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('تعديل المعهد - قريباً')),
+              context.push(
+                AppRoutes.editInstitute.replaceFirst(':id', instituteId),
               );
             },
           ),
