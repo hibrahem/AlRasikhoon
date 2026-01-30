@@ -106,10 +106,9 @@ class ActiveSessionState {
   int get totalErrors => part1Errors + part2Errors + part3Errors;
 }
 
-class ActiveSessionNotifier extends StateNotifier<ActiveSessionState?> {
-  final Ref _ref;
-
-  ActiveSessionNotifier(this._ref) : super(null);
+class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
+  @override
+  ActiveSessionState? build() => null;
 
   void startSession(String studentId) {
     state = ActiveSessionState(studentId: studentId);
@@ -151,15 +150,18 @@ class ActiveSessionNotifier extends StateNotifier<ActiveSessionState?> {
   Future<SessionRecordModel?> completeSession() async {
     if (state == null) return null;
 
-    final currentUser = _ref.read(currentUserProvider);
+    final currentUser = ref.read(currentUserProvider);
     if (currentUser == null) return null;
 
-    final studentAsync = await _ref.read(studentProvider(state!.studentId).future);
+    // Save studentId before modifying state to avoid accessing stale state
+    final studentId = state!.studentId;
+
+    final studentAsync = await ref.read(studentProvider(studentId).future);
     if (studentAsync == null) return null;
 
     final student = studentAsync.student;
-    final sessionRepo = _ref.read(sessionRepositoryProvider);
-    final studentRepo = _ref.read(studentRepositoryProvider);
+    final sessionRepo = ref.read(sessionRepositoryProvider);
+    final studentRepo = ref.read(studentRepositoryProvider);
 
     // Create session record
     final record = await sessionRepo.createSessionRecord(
@@ -186,8 +188,8 @@ class ActiveSessionNotifier extends StateNotifier<ActiveSessionState?> {
     state = state!.copyWith(isComplete: true);
 
     // Invalidate providers
-    _ref.invalidate(teacherStudentsProvider);
-    _ref.invalidate(studentProvider(state!.studentId));
+    ref.invalidate(teacherStudentsProvider);
+    ref.invalidate(studentProvider(studentId));
 
     return record;
   }
@@ -198,9 +200,9 @@ class ActiveSessionNotifier extends StateNotifier<ActiveSessionState?> {
 }
 
 final activeSessionProvider =
-    StateNotifierProvider<ActiveSessionNotifier, ActiveSessionState?>((ref) {
-  return ActiveSessionNotifier(ref);
-});
+    NotifierProvider<ActiveSessionNotifier, ActiveSessionState?>(
+  ActiveSessionNotifier.new,
+);
 
 /// Provider for student's session history
 final studentSessionHistoryProvider =

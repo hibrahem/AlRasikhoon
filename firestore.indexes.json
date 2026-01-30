@@ -1,6 +1,14 @@
 {
   "indexes": [
     {
+      "collectionGroup": "institutes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "is_active", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "sessions",
       "queryScope": "COLLECTION",
       "fields": [
@@ -31,8 +39,8 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "institute_id", "order": "ASCENDING" },
-        { "fieldPath": "current_session", "order": "ASCENDING" },
-        { "fieldPath": "is_active", "order": "ASCENDING" }
+        { "fieldPath": "is_active", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
       ]
     },
     {
@@ -89,6 +97,46 @@
       "fields": [
         { "fieldPath": "student_id", "order": "ASCENDING" },
         { "fieldPath": "hizb_number", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "teacher_institutes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "teacher_id", "order": "ASCENDING" },
+        { "fieldPath": "is_active", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "teacher_institutes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "institute_id", "order": "ASCENDING" },
+        { "fieldPath": "is_active", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "supervisor_institutes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "supervisor_id", "order": "ASCENDING" },
+        { "fieldPath": "is_active", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "supervisor_institutes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "institute_id", "order": "ASCENDING" },
+        { "fieldPath": "is_active", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "role", "order": "ASCENDING" },
+        { "fieldPath": "is_active", "order": "ASCENDING" }
       ]
     }
   ],

@@ -41,20 +41,18 @@ class AuthState {
   }
 }
 
-class AuthRepository extends StateNotifier<AuthState> {
-  final FirebaseService _firebaseService;
-  final UserRepository _userRepository;
-  final LocalStorageService _localStorage;
+class AuthRepository extends Notifier<AuthState> {
+  late final FirebaseService _firebaseService;
+  late final UserRepository _userRepository;
+  late final LocalStorageService _localStorage;
 
-  AuthRepository({
-    required FirebaseService firebaseService,
-    required UserRepository userRepository,
-    required LocalStorageService localStorage,
-  })  : _firebaseService = firebaseService,
-        _userRepository = userRepository,
-        _localStorage = localStorage,
-        super(const AuthState()) {
+  @override
+  AuthState build() {
+    _firebaseService = ref.watch(firebaseServiceProvider);
+    _userRepository = ref.watch(userRepositoryProvider);
+    _localStorage = ref.watch(localStorageServiceProvider);
     _init();
+    return const AuthState();
   }
 
   void _init() {
@@ -215,10 +213,6 @@ class AuthRepository extends StateNotifier<AuthState> {
   UserRole? get currentUserRole => state.appUser?.role;
 }
 
-final authRepositoryProvider = StateNotifierProvider<AuthRepository, AuthState>((ref) {
-  return AuthRepository(
-    firebaseService: ref.watch(firebaseServiceProvider),
-    userRepository: ref.watch(userRepositoryProvider),
-    localStorage: ref.watch(localStorageServiceProvider),
-  );
-});
+final authRepositoryProvider = NotifierProvider<AuthRepository, AuthState>(
+  AuthRepository.new,
+);

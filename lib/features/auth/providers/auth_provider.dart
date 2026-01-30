@@ -24,17 +24,16 @@ final authErrorProvider = Provider<String?>((ref) {
 });
 
 /// Phone verification notifier for managing OTP flow
-class PhoneVerificationNotifier extends StateNotifier<PhoneVerificationState> {
-  final Ref _ref;
-
-  PhoneVerificationNotifier(this._ref) : super(const PhoneVerificationState());
+class PhoneVerificationNotifier extends Notifier<PhoneVerificationState> {
+  @override
+  PhoneVerificationState build() => const PhoneVerificationState();
 
   Future<void> sendOtp(String phoneNumber) async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      await _ref.read(authRepositoryProvider.notifier).sendOtp(phoneNumber);
-      final authState = _ref.read(authRepositoryProvider);
+      await ref.read(authRepositoryProvider.notifier).sendOtp(phoneNumber);
+      final authState = ref.read(authRepositoryProvider);
 
       if (authState.error != null) {
         state = state.copyWith(isLoading: false, error: authState.error);
@@ -54,8 +53,8 @@ class PhoneVerificationNotifier extends StateNotifier<PhoneVerificationState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final user = await _ref.read(authRepositoryProvider.notifier).verifyOtp(otp);
-      final authState = _ref.read(authRepositoryProvider);
+      final user = await ref.read(authRepositoryProvider.notifier).verifyOtp(otp);
+      final authState = ref.read(authRepositoryProvider);
 
       if (authState.error != null) {
         state = state.copyWith(
@@ -116,6 +115,6 @@ class PhoneVerificationState {
 }
 
 final phoneVerificationProvider =
-    StateNotifierProvider<PhoneVerificationNotifier, PhoneVerificationState>(
-  (ref) => PhoneVerificationNotifier(ref),
+    NotifierProvider<PhoneVerificationNotifier, PhoneVerificationState>(
+  PhoneVerificationNotifier.new,
 );
