@@ -65,7 +65,7 @@ Last updated: 2026-01-30
 |----|------|--------|------------|-------|
 | #15 | Write test cases documentation | [x] | - | Created TEST_CASES.md with 150+ test cases |
 | #16 | Implement unit tests | [x] | #15 | Created tests for UserModel, StudentModel, Validators, GradeCalculator, UserRepository |
-| #17 | Implement E2E integration tests | [ ] | #16 | Complete user flow tests |
+| #17 | Implement E2E integration tests | [x] | #16 | Created E2E tests for Admin, Teacher, Student, Supervisor flows |
 
 ---
 
@@ -87,6 +87,7 @@ Last updated: 2026-01-30
 | BUG | Teachers can't login after admin creates them | 2026-01-30 | **Root cause**: Document ID mismatch (timestamp vs Firebase UID). **Fix**: Look up by phone if UID not found, then migrate document ID |
 | #15 | Write test cases documentation | 2026-01-30 | Created TEST_CASES.md with 150+ comprehensive test cases |
 | #16 | Implement unit tests | 2026-01-30 | Created unit tests for models (UserModel, StudentModel), utils (Validators, GradeCalculator), and repositories (UserRepository) |
+| #17 | Implement E2E integration tests | 2026-01-30 | Created E2E tests with test helpers/robots for Admin, Teacher, Student, and Supervisor flows |
 
 ---
 
