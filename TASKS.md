@@ -15,10 +15,10 @@ Last updated: 2026-01-30
 | ID | Task | Status | Notes |
 |----|------|--------|-------|
 | #1 | Verify level locking UI in student view | [x] | **IMPLEMENTED** - Added LevelProgressionWidget to dashboard |
-| #2 | Verify 3 retry attempts logic for sessions | [ ] | Check `currentAttempt` field usage, max 3 retries |
-| #3 | Verify Sard flow triggers after Session 34 | [ ] | Session 35 should auto-trigger after 34 |
-| #4 | Verify grading calculation matches spec | [ ] | راسخ(0), متقن(1-2), حافظ(3-4), مجتهد(5-6), محب(7+) |
-| #5 | Verify curriculum data imported for all 10 levels | [ ] | All sessions with proper verse/page definitions |
+| #2 | Verify 3 retry attempts logic for sessions | [x] | **VERIFIED + FIXED** - Tracking works. Added `hasReachedMaxAttempts` check and UI blocking |
+| #3 | Verify Sard flow triggers after Session 34 | [x] | **VERIFIED** - Fully implemented with SardSessionScreen, proper routing, 3 attempts max |
+| #4 | Verify grading calculation matches spec | [x] | **FIXED** - Corrected thresholds: راسخ(0), متقن(1-2), حافظ(3-4), مجتهد(5-6), محب(7+) |
+| #5 | Verify curriculum data imported for all 10 levels | [x] | **VERIFIED** - All 1,453 sessions across 10 levels with verse info |
 
 ---
 
@@ -26,7 +26,7 @@ Last updated: 2026-01-30
 
 | ID | Task | Status | Notes |
 |----|------|--------|-------|
-| #6 | Implement student home practice tracking (التكرار في المنزل) | [ ] | Self-reporting UI for home repetitions |
+| #6 | Implement student home practice tracking (التكرار في المنزل) | [x] | **IMPLEMENTED** - Added HomePracticeModel, repository, providers, and HomePracticeScreen |
 
 ---
 
@@ -34,9 +34,9 @@ Last updated: 2026-01-30
 
 | ID | Task | Status | Notes |
 |----|------|--------|-------|
-| #7 | Verify teacher institute selection for multi-institute | [ ] | UI for teachers with multiple assignments |
-| #8 | Verify guardian role access and features | [ ] | Read-only access to children's progress |
-| #9 | Verify account not found flow for unregistered users | [ ] | Proper error screen vs generic error |
+| #7 | Verify teacher institute selection for multi-institute | [x] | **PARTIAL** - AddStudentScreen has institute dropdown. No filter in TeacherStudentsScreen |
+| #8 | Verify guardian role access and features | [x] | **PARTIAL + SECURITY GAP** - Role exists but no filtering to own children. See notes |
+| #9 | Verify account not found flow for unregistered users | [x] | **VERIFIED** - Full implementation with dedicated screen and proper routing |
 
 ---
 
@@ -54,7 +54,7 @@ Last updated: 2026-01-30
 |----|------|--------|-------|
 | #11 | Test end-to-end admin flow | [ ] | Login → dashboard → institutes → curriculum |
 | #12 | Test end-to-end teacher flow | [ ] | Login → students → session → grading |
-| #13 | Test end-to-end student flow | [ ] | Login → dashboard → progress → history |
+| #13 | Test end-to-end student flow | [ ] | Login → dashboard → practice → history |
 | #14 | Test supervisor exam flow | [ ] | Login → queue → exam → results |
 
 ---
@@ -71,10 +71,10 @@ Last updated: 2026-01-30
 
 ## Execution Order
 
-1. **Phase 1**: High-priority verifications (#1, #2, #3, #4, #5)
-2. **Phase 2**: Missing MVP feature (#6 - Home practice tracking)
+1. ~~**Phase 1**: High-priority verifications (#1, #2, #3, #4, #5)~~ ✅ COMPLETE
+2. ~~**Phase 2**: Missing MVP feature (#6 - Home practice tracking)~~ ✅ COMPLETE
 3. **Phase 3**: End-to-end testing (#11, #12, #13, #14)
-4. **Phase 4**: Medium-priority verifications (#7, #8, #9)
+4. ~~**Phase 4**: Medium-priority verifications (#7, #8, #9)~~ ✅ COMPLETE
 5. **Phase 5**: Offline support (#10) - can be deferred if not launch-critical
 
 ---
@@ -87,7 +87,27 @@ Last updated: 2026-01-30
 | BUG | Teachers can't login after admin creates them | 2026-01-30 | **Root cause**: Document ID mismatch (timestamp vs Firebase UID). **Fix**: Look up by phone if UID not found, then migrate document ID |
 | #15 | Write test cases documentation | 2026-01-30 | Created TEST_CASES.md with 150+ comprehensive test cases |
 | #16 | Implement unit tests | 2026-01-30 | Created unit tests for models (UserModel, StudentModel), utils (Validators, GradeCalculator), and repositories (UserRepository) |
-| #17 | Implement E2E integration tests | 2026-01-30 | Created E2E tests with test helpers/robots for Admin, Teacher, Student, and Supervisor flows |
+| #17 | Implement E2E integration tests | 2026-01-30 | Created E2E tests with test helpers/robots for Admin, Teacher, Student, Supervisor flows |
+| #2 | Verify 3 retry attempts logic | 2026-01-30 | Tracking implemented but enforcement missing. Added `hasReachedMaxAttempts`, `canStartSession`, and UI blocking in SessionOverviewScreen |
+| #3 | Verify Sard flow triggers | 2026-01-30 | Fully implemented - Session 35 identified, SardSessionScreen exists, proper grading and advancement |
+| #4 | Verify grading calculation | 2026-01-30 | **FIXED** thresholds in app_constants.dart and grade_calculator.dart. Updated tests to match spec |
+| #5 | Verify curriculum data | 2026-01-30 | All 10 levels with 1,453 sessions verified. Proper verse ranges for all session types |
+| #6 | Implement home practice tracking | 2026-01-30 | Created HomePracticeModel, HomePracticeRepository, providers, HomePracticeScreen, updated student dashboard and nav |
+| #7 | Verify teacher multi-institute | 2026-01-30 | Partially implemented. AddStudentScreen has institute selection. TeacherStudentsScreen lacks filtering |
+| #8 | Verify guardian role | 2026-01-30 | Partially implemented with security gap. Guardians route to student dashboard but can see ALL student data, not just their children |
+| #9 | Verify account not found flow | 2026-01-30 | Fully implemented. AccountNotFoundScreen exists with proper routing and error handling |
+
+---
+
+## Known Issues / Future Improvements
+
+### Security Issues
+1. **Guardian Data Access**: Guardians can read all student records instead of just their children. Need to add Firestore rules filtering by guardianId.
+
+### Missing Features (Non-blocking for MVP)
+1. **Teacher Institute Filter**: TeacherStudentsScreen should have institute dropdown for teachers with multiple assignments
+2. **Guardian Multi-child Support**: No UI for guardians to select between multiple children
+3. **Offline Support**: Hive caching and sync queue not implemented
 
 ---
 
@@ -95,4 +115,6 @@ Last updated: 2026-01-30
 
 - Grading thresholds per spec: راسخ (0 errors), متقن (1-2), حافظ (3-4), مجتهد (5-6), محب (7+)
 - Session flow: Sessions 1-34 (regular) → Session 35 (Sard) → Session 36 (Exam)
-- Max retry attempts: 3 per session before level lock
+- Max retry attempts: 3 per session before blocking (enforcement added)
+- Home practice: Students can self-report repetitions, track streak and stats
+- Guardian role uses same dashboard as students (read-only view intended but not enforced)

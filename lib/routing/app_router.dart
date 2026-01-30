@@ -31,6 +31,7 @@ import '../features/teacher/screens/add_student_screen.dart';
 import '../features/student/screens/student_dashboard_screen.dart';
 import '../features/student/screens/session_history_screen.dart';
 import '../features/student/screens/session_detail_screen.dart';
+import '../features/student/screens/home_practice_screen.dart';
 
 // Route names
 class AppRoutes {
@@ -71,6 +72,7 @@ class AppRoutes {
   static const String studentDashboard = '/student';
   static const String sessionHistory = '/student/history';
   static const String sessionDetail = '/student/history/:recordId';
+  static const String homePractice = '/student/practice';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -269,6 +271,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final recordId = state.pathParameters['recordId']!;
           return SessionDetailScreen(recordId: recordId);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.homePractice,
+        builder: (context, state) => const HomePracticeScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

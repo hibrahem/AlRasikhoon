@@ -112,14 +112,14 @@ class AppBottomNavBar extends StatelessWidget {
             label: 'الرئيسية',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.repeat_outlined),
+            activeIcon: Icon(Icons.repeat),
+            label: 'التكرار',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.history_outlined),
             activeIcon: Icon(Icons.history),
             label: 'السجل',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_library_outlined),
-            activeIcon: Icon(Icons.local_library),
-            label: 'التدريب',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings_outlined),

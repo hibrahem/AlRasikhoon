@@ -43,7 +43,13 @@ service cloud.firestore {
     match /students/{studentId} {
       allow read: if isAuthenticated();
       allow create: if isTeacher();
-      allow update: if isTeacher() || isSupervisor();
+      // Allow update if: teacher, supervisor, OR student claiming their own record
+      // (setting user_id to their own UID during migration repair)
+      allow update: if isTeacher() || isSupervisor() ||
+        (isAuthenticated() &&
+         getUserRole() == 'student' &&
+         request.resource.data.user_id == request.auth.uid &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['user_id', 'updated_at']));
       allow delete: if isSuperAdmin();
     }
 

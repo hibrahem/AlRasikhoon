@@ -236,20 +236,60 @@ class SessionOverviewScreen extends ConsumerWidget {
 
           const SizedBox(height: 20),
 
-          // Start session button
-          AppButton(
-            text: 'بدء الحلقة',
-            onPressed: () {
-              // Start session and navigate to recitation
-              ref.read(activeSessionProvider.notifier).startSession(studentId);
-              context.push(
-                AppRoutes.recitation
-                    .replaceFirst(':studentId', studentId)
-                    .replaceFirst(':part', '1'),
-              );
-            },
-            isFullWidth: true,
-            icon: Icons.play_arrow,
+          // Check if max attempts reached
+          if (student.hasReachedMaxAttempts)
+            _buildMaxAttemptsReachedMessage(context)
+          else
+            // Start session button
+            AppButton(
+              text: 'بدء الحلقة',
+              onPressed: () {
+                // Start session and navigate to recitation
+                ref.read(activeSessionProvider.notifier).startSession(studentId);
+                context.push(
+                  AppRoutes.recitation
+                      .replaceFirst(':studentId', studentId)
+                      .replaceFirst(':part', '1'),
+                );
+              },
+              isFullWidth: true,
+              icon: Icons.play_arrow,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMaxAttemptsReachedMessage(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.error.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.error.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: AppColors.error,
+            size: 32,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'تم استنفاد جميع المحاولات',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: AppColors.error,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'الطالب استخدم ${AppConstants.maxSessionAttempts} محاولات.\nيرجى التواصل مع المشرف للمساعدة.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
           ),
         ],
       ),
@@ -296,17 +336,21 @@ class SessionOverviewScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
-          AppButton(
-            text: 'بدء السرد',
-            onPressed: () {
-              context.push(
-                AppRoutes.sardSession.replaceFirst(':studentId', studentId),
-              );
-            },
-            isFullWidth: true,
-            backgroundColor: AppColors.info,
-            icon: Icons.play_arrow,
-          ),
+          // Check if max Sard attempts reached
+          if (student.hasReachedMaxSardAttempts)
+            _buildMaxAttemptsReachedMessage(context)
+          else
+            AppButton(
+              text: 'بدء السرد',
+              onPressed: () {
+                context.push(
+                  AppRoutes.sardSession.replaceFirst(':studentId', studentId),
+                );
+              },
+              isFullWidth: true,
+              backgroundColor: AppColors.info,
+              icon: Icons.play_arrow,
+            ),
         ],
       ),
     );

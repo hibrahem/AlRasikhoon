@@ -21,13 +21,14 @@ class AppConstants {
   static const int sardSessionNumber = 35;
   static const int examSessionNumber = 36;
 
-  // Grading
-  static const int maxErrorsToPass = 3;
-  static const int errorsForRasikh = 0;   // 5 stars
-  static const int errorsForMutqin = 1;   // 4 stars
-  static const int errorsForHafiz = 2;    // 3 stars
-  static const int errorsForMujtahid = 3; // 2 stars
-  // 4+ errors = Muhib (1 star, fail)
+  // Grading thresholds (per spec)
+  // راسخ: 0 errors, متقن: 1-2, حافظ: 3-4, مجتهد: 5-6, محب: 7+
+  static const int maxErrorsToPass = 6;      // Up to mujtahid passes
+  static const int errorsForRasikh = 0;      // 5 stars - exactly 0 errors
+  static const int maxErrorsForMutqin = 2;   // 4 stars - 1-2 errors
+  static const int maxErrorsForHafiz = 4;    // 3 stars - 3-4 errors
+  static const int maxErrorsForMujtahid = 6; // 2 stars - 5-6 errors
+  // 7+ errors = Muhib (1 star, fail)
 
   // Attempt limits
   static const int maxSessionAttempts = 3;

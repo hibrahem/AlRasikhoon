@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 
 enum Grade {
   rasikh,   // 0 errors - 5 stars
-  mutqin,   // 1 error - 4 stars
-  hafiz,    // 2 errors - 3 stars
-  mujtahid, // 3 errors - 2 stars
-  muhib,    // 4+ errors - 1 star
+  mutqin,   // 1-2 errors - 4 stars
+  hafiz,    // 3-4 errors - 3 stars
+  mujtahid, // 5-6 errors - 2 stars
+  muhib,    // 7+ errors - 1 star (fail)
 }
 
 class GradeInfo {
@@ -32,7 +32,10 @@ class GradeCalculator {
   GradeCalculator._();
 
   static GradeInfo calculate(int errorCount) {
+    // Grading thresholds per spec:
+    // راسخ: 0 errors, متقن: 1-2, حافظ: 3-4, مجتهد: 5-6, محب: 7+
     if (errorCount <= AppConstants.errorsForRasikh) {
+      // 0 errors = راسخ
       return const GradeInfo(
         grade: Grade.rasikh,
         nameAr: 'راسخ',
@@ -41,7 +44,8 @@ class GradeCalculator {
         passed: true,
         color: AppColors.gradeRasikh,
       );
-    } else if (errorCount <= AppConstants.errorsForMutqin) {
+    } else if (errorCount <= AppConstants.maxErrorsForMutqin) {
+      // 1-2 errors = متقن
       return const GradeInfo(
         grade: Grade.mutqin,
         nameAr: 'متقن',
@@ -50,7 +54,8 @@ class GradeCalculator {
         passed: true,
         color: AppColors.gradeMutqin,
       );
-    } else if (errorCount <= AppConstants.errorsForHafiz) {
+    } else if (errorCount <= AppConstants.maxErrorsForHafiz) {
+      // 3-4 errors = حافظ
       return const GradeInfo(
         grade: Grade.hafiz,
         nameAr: 'حافظ',
@@ -59,7 +64,8 @@ class GradeCalculator {
         passed: true,
         color: AppColors.gradeHafiz,
       );
-    } else if (errorCount <= AppConstants.errorsForMujtahid) {
+    } else if (errorCount <= AppConstants.maxErrorsForMujtahid) {
+      // 5-6 errors = مجتهد
       return const GradeInfo(
         grade: Grade.mujtahid,
         nameAr: 'مجتهد',
@@ -69,6 +75,7 @@ class GradeCalculator {
         color: AppColors.gradeMujtahid,
       );
     } else {
+      // 7+ errors = محب (fail)
       return const GradeInfo(
         grade: Grade.muhib,
         nameAr: 'محب',

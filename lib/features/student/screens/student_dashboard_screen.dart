@@ -105,6 +105,11 @@ class _StudentDashboardScreenState
 
               const SizedBox(height: 24),
 
+              // Home practice card
+              _buildHomePracticeCard(),
+
+              const SizedBox(height: 24),
+
               // Quick stats
               Text(
                 'إحصائياتي',
@@ -126,12 +131,89 @@ class _StudentDashboardScreenState
           setState(() => _currentIndex = index);
           switch (index) {
             case 1:
+              context.go(AppRoutes.homePractice);
+              break;
+            case 2:
               context.go(AppRoutes.sessionHistory);
               break;
           }
         },
         role: UserRole.student,
       ),
+    );
+  }
+
+  Widget _buildHomePracticeCard() {
+    final practiceStatsAsync = ref.watch(homePracticeStatsProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'التكرار في المنزل',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            TextButton.icon(
+              onPressed: () => context.push(AppRoutes.homePractice),
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('تسجيل'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        practiceStatsAsync.when(
+          data: (stats) => AppCard(
+            onTap: () => context.push(AppRoutes.homePractice),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _PracticeStatItem(
+                    icon: Icons.today,
+                    label: 'اليوم',
+                    value: '${stats.todayRepetitions}',
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: AppColors.divider,
+                ),
+                Expanded(
+                  child: _PracticeStatItem(
+                    icon: Icons.local_fire_department,
+                    label: 'متتالية',
+                    value: '${stats.streakDays}',
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: AppColors.divider,
+                ),
+                Expanded(
+                  child: _PracticeStatItem(
+                    icon: Icons.repeat,
+                    label: 'الإجمالي',
+                    value: '${stats.totalRepetitions}',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          loading: () => const AppCard(
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          ),
+          error: (_, __) => const SizedBox(),
+        ),
+      ],
     );
   }
 
@@ -414,6 +496,40 @@ class _ContentRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PracticeStatItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _PracticeStatItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(icon, color: AppColors.primary, size: 20),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+        ),
+      ],
     );
   }
 }

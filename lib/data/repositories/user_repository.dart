@@ -126,6 +126,19 @@ class UserRepository {
     // Delete old document
     await _usersCollection.doc(oldId).delete();
 
+    // Update any student records that reference the old user ID
+    final studentsQuery = await _firestore
+        .collection(AppConstants.collectionStudents)
+        .where('user_id', isEqualTo: oldId)
+        .get();
+
+    for (final studentDoc in studentsQuery.docs) {
+      await studentDoc.reference.update({
+        'user_id': newFirebaseUid,
+        'updated_at': FieldValue.serverTimestamp(),
+      });
+    }
+
     // Return the user with new ID
     final newDoc = await _usersCollection.doc(newFirebaseUid).get();
     if (newDoc.exists) {

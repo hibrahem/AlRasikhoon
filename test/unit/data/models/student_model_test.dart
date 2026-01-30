@@ -372,6 +372,188 @@ void main() {
       });
     });
 
+    group('hasReachedMaxAttempts', () {
+      test('returns false at attempt 1', () {
+        final student = StudentModel(
+          id: 'student123',
+          userId: 'user123',
+          instituteId: 'institute123',
+          currentAttempt: 1,
+          createdAt: DateTime.now(),
+        );
+
+        expect(student.hasReachedMaxAttempts, false);
+      });
+
+      test('returns false at attempt 2', () {
+        final student = StudentModel(
+          id: 'student123',
+          userId: 'user123',
+          instituteId: 'institute123',
+          currentAttempt: 2,
+          createdAt: DateTime.now(),
+        );
+
+        expect(student.hasReachedMaxAttempts, false);
+      });
+
+      test('returns false at attempt 3', () {
+        final student = StudentModel(
+          id: 'student123',
+          userId: 'user123',
+          instituteId: 'institute123',
+          currentAttempt: 3,
+          createdAt: DateTime.now(),
+        );
+
+        expect(student.hasReachedMaxAttempts, false);
+      });
+
+      test('returns true at attempt 4 (exceeds max)', () {
+        final student = StudentModel(
+          id: 'student123',
+          userId: 'user123',
+          instituteId: 'institute123',
+          currentAttempt: 4,
+          createdAt: DateTime.now(),
+        );
+
+        expect(student.hasReachedMaxAttempts, true);
+      });
+
+      test('returns true at attempt 5', () {
+        final student = StudentModel(
+          id: 'student123',
+          userId: 'user123',
+          instituteId: 'institute123',
+          currentAttempt: 5,
+          createdAt: DateTime.now(),
+        );
+
+        expect(student.hasReachedMaxAttempts, true);
+      });
+    });
+
+    group('canStartSession', () {
+      test('returns true at attempt 1', () {
+        final student = StudentModel(
+          id: 'student123',
+          userId: 'user123',
+          instituteId: 'institute123',
+          currentAttempt: 1,
+          createdAt: DateTime.now(),
+        );
+
+        expect(student.canStartSession, true);
+      });
+
+      test('returns true at attempt 3', () {
+        final student = StudentModel(
+          id: 'student123',
+          userId: 'user123',
+          instituteId: 'institute123',
+          currentAttempt: 3,
+          createdAt: DateTime.now(),
+        );
+
+        expect(student.canStartSession, true);
+      });
+
+      test('returns false at attempt 4', () {
+        final student = StudentModel(
+          id: 'student123',
+          userId: 'user123',
+          instituteId: 'institute123',
+          currentAttempt: 4,
+          createdAt: DateTime.now(),
+        );
+
+        expect(student.canStartSession, false);
+      });
+    });
+
+    group('hasReachedMaxSardAttempts', () {
+      test('returns true when at session 35 with attempt > 3', () {
+        final student = StudentModel(
+          id: 'student123',
+          userId: 'user123',
+          instituteId: 'institute123',
+          currentSession: 35,
+          currentAttempt: 4,
+          createdAt: DateTime.now(),
+        );
+
+        expect(student.hasReachedMaxSardAttempts, true);
+      });
+
+      test('returns false when at session 35 with attempt <= 3', () {
+        final student = StudentModel(
+          id: 'student123',
+          userId: 'user123',
+          instituteId: 'institute123',
+          currentSession: 35,
+          currentAttempt: 3,
+          createdAt: DateTime.now(),
+        );
+
+        expect(student.hasReachedMaxSardAttempts, false);
+      });
+
+      test('returns false when not at session 35', () {
+        final student = StudentModel(
+          id: 'student123',
+          userId: 'user123',
+          instituteId: 'institute123',
+          currentSession: 10,
+          currentAttempt: 5,
+          createdAt: DateTime.now(),
+        );
+
+        expect(student.hasReachedMaxSardAttempts, false);
+      });
+    });
+
+    group('hasReachedMaxExamAttempts', () {
+      test('returns true when at session 36 with attempt > 3', () {
+        final student = StudentModel(
+          id: 'student123',
+          userId: 'user123',
+          instituteId: 'institute123',
+          currentSession: 36,
+          currentAttempt: 4,
+          createdAt: DateTime.now(),
+        );
+
+        expect(student.hasReachedMaxExamAttempts, true);
+      });
+
+      test('returns false when at session 36 with attempt <= 3', () {
+        final student = StudentModel(
+          id: 'student123',
+          userId: 'user123',
+          instituteId: 'institute123',
+          currentSession: 36,
+          currentAttempt: 3,
+          createdAt: DateTime.now(),
+        );
+
+        expect(student.hasReachedMaxExamAttempts, false);
+      });
+
+      test('returns false when not at session 36', () {
+        final student = StudentModel(
+          id: 'student123',
+          userId: 'user123',
+          instituteId: 'institute123',
+          currentSession: 35,
+          currentAttempt: 5,
+          createdAt: DateTime.now(),
+        );
+
+        expect(student.hasReachedMaxExamAttempts, false);
+      });
+    });
+
     group('equality', () {
       test('students with same id are equal', () {
         final student1 = StudentModel(

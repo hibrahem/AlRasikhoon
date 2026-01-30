@@ -2,18 +2,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/curriculum_repository.dart';
+import '../../../data/repositories/home_practice_repository.dart';
 import '../../../data/models/student_model.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
+import '../../../data/models/home_practice_model.dart';
 import '../../../shared/providers/user_provider.dart';
 
 /// Provider for current student profile
 final currentStudentProvider = FutureProvider<StudentModel?>((ref) async {
   final currentUser = ref.watch(currentUserProvider);
+  print('[StudentProvider] currentUser: ${currentUser?.id}, name: ${currentUser?.name}, role: ${currentUser?.role}');
   if (currentUser == null) return null;
 
   final repo = ref.watch(studentRepositoryProvider);
-  return repo.getStudentByUserId(currentUser.id);
+  final student = await repo.getStudentByUserId(currentUser.id);
+  print('[StudentProvider] getStudentByUserId result: ${student?.id}');
+  return student;
 });
 
 /// Provider for student's current session
@@ -43,12 +48,17 @@ final studentHistoryProvider =
 /// Provider for student statistics
 final studentStatsProvider = FutureProvider<StudentStats>((ref) async {
   final student = await ref.watch(currentStudentProvider.future);
-  if (student == null) return const StudentStats();
+  print('[StudentStatsProvider] student: ${student?.id}');
+  if (student == null) {
+    print('[StudentStatsProvider] No student found, returning default stats');
+    return const StudentStats();
+  }
 
   final sessionRepo = ref.watch(sessionRepositoryProvider);
   final stats = await sessionRepo.getStudentStatistics(student.id);
+  print('[StudentStatsProvider] Session stats: $stats');
 
-  return StudentStats(
+  final result = StudentStats(
     currentLevel: student.currentLevel,
     currentJuz: student.currentJuz,
     currentHizb: student.currentHizb,
@@ -58,6 +68,8 @@ final studentStatsProvider = FutureProvider<StudentStats>((ref) async {
     completedLevelsList: student.completedLevels,
     unlockedLevelsList: student.unlockedLevels,
   );
+  print('[StudentStatsProvider] Returning stats: level=${result.currentLevel}, session=${result.currentSession}, completedLevels=${result.completedLevelsList}, unlockedLevels=${result.unlockedLevelsList}');
+  return result;
 });
 
 class StudentStats {
@@ -91,4 +103,118 @@ class StudentStats {
   bool isLevelCompleted(int level) => completedLevelsList.contains(level);
 
   bool isLevelCurrent(int level) => level == currentLevel;
+}
+
+/// Provider for student's home practice history
+final studentHomePracticesProvider =
+    FutureProvider<List<HomePracticeModel>>((ref) async {
+  final student = await ref.watch(currentStudentProvider.future);
+  if (student == null) return [];
+
+  final repo = ref.watch(homePracticeRepositoryProvider);
+  return repo.getHomePracticesForStudent(student.id, limit: 50);
+});
+
+/// Provider for today's home practice
+final todaysPracticesProvider =
+    FutureProvider<List<HomePracticeModel>>((ref) async {
+  final student = await ref.watch(currentStudentProvider.future);
+  if (student == null) return [];
+
+  final repo = ref.watch(homePracticeRepositoryProvider);
+  return repo.getTodaysPractices(student.id);
+});
+
+/// Provider for this week's home practice
+final thisWeeksPracticesProvider =
+    FutureProvider<List<HomePracticeModel>>((ref) async {
+  final student = await ref.watch(currentStudentProvider.future);
+  if (student == null) return [];
+
+  final repo = ref.watch(homePracticeRepositoryProvider);
+  return repo.getThisWeeksPractices(student.id);
+});
+
+/// Provider for home practice statistics
+final homePracticeStatsProvider = FutureProvider<HomePracticeStats>((ref) async {
+  final student = await ref.watch(currentStudentProvider.future);
+  if (student == null) return const HomePracticeStats();
+
+  final repo = ref.watch(homePracticeRepositoryProvider);
+  final todaysPractices = await repo.getTodaysPractices(student.id);
+  final weekPractices = await repo.getThisWeeksPractices(student.id);
+  final totalReps = await repo.getTotalRepetitions(student.id);
+  final streak = await repo.getPracticeStreak(student.id);
+
+  return HomePracticeStats(
+    todayRepetitions: todaysPractices.fold<int>(0, (total, p) => total + p.repetitions),
+    weekRepetitions: weekPractices.fold<int>(0, (total, p) => total + p.repetitions),
+    totalRepetitions: totalReps,
+    streakDays: streak,
+    practiceCount: todaysPractices.length,
+  );
+});
+
+/// Notifier for creating home practice
+class HomePracticeNotifier extends Notifier<AsyncValue<void>> {
+  @override
+  AsyncValue<void> build() => const AsyncValue.data(null);
+
+  Future<bool> addPractice({
+    required int repetitions,
+    String? notes,
+  }) async {
+    state = const AsyncValue.loading();
+
+    try {
+      final student = await ref.read(currentStudentProvider.future);
+      if (student == null) {
+        state = AsyncValue.error('Student not found', StackTrace.current);
+        return false;
+      }
+
+      final repo = ref.read(homePracticeRepositoryProvider);
+      await repo.createHomePractice(
+        studentId: student.id,
+        levelId: student.currentLevel,
+        juzNumber: student.currentJuz,
+        hizbNumber: student.currentHizb,
+        sessionNumber: student.currentSession,
+        repetitions: repetitions,
+        notes: notes,
+      );
+
+      // Invalidate providers to refresh data
+      ref.invalidate(studentHomePracticesProvider);
+      ref.invalidate(todaysPracticesProvider);
+      ref.invalidate(thisWeeksPracticesProvider);
+      ref.invalidate(homePracticeStatsProvider);
+
+      state = const AsyncValue.data(null);
+      return true;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      return false;
+    }
+  }
+}
+
+final homePracticeNotifierProvider =
+    NotifierProvider<HomePracticeNotifier, AsyncValue<void>>(
+        HomePracticeNotifier.new);
+
+class HomePracticeStats {
+  final int todayRepetitions;
+  final int weekRepetitions;
+  final int totalRepetitions;
+  final int streakDays;
+  final int practiceCount;
+
+  const HomePracticeStats({
+    this.todayRepetitions = 0,
+    this.weekRepetitions = 0,
+    this.totalRepetitions = 0,
+    this.streakDays = 0,
+    this.practiceCount = 0,
+  });
 }

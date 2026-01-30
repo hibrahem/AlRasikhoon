@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:al_rasikhoon/core/constants/app_constants.dart';
 
 class StudentModel {
   final String id;
@@ -124,6 +125,21 @@ class StudentModel {
 
   /// Check if student can take Exam
   bool get canTakeExam => currentSession == 36;
+
+  /// Check if student has reached max attempts for current session
+  bool get hasReachedMaxAttempts => currentAttempt > AppConstants.maxSessionAttempts;
+
+  /// Check if student can start a new session attempt
+  /// Returns false if max attempts (3) have been exhausted
+  bool get canStartSession => currentAttempt <= AppConstants.maxSessionAttempts;
+
+  /// Check if student has reached max attempts for Sard
+  bool get hasReachedMaxSardAttempts =>
+      canTakeSard && currentAttempt > AppConstants.maxSardAttempts;
+
+  /// Check if student has reached max attempts for Exam
+  bool get hasReachedMaxExamAttempts =>
+      canTakeExam && currentAttempt > AppConstants.maxExamAttempts;
 
   @override
   String toString() {
