@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../data/models/user_model.dart';
+import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/bottom_nav_bar.dart';
 import '../providers/student_provider.dart';
 
 class HomePracticeScreen extends ConsumerStatefulWidget {
@@ -67,6 +71,23 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('التكرار في المنزل'),
+      ),
+      bottomNavigationBar: AppBottomNavBar(
+        currentIndex: 1, // "التكرار" tab
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              context.go(AppRoutes.studentDashboard);
+              break;
+            case 1:
+              // Already on home practice
+              break;
+            case 2:
+              context.go(AppRoutes.sessionHistory);
+              break;
+          }
+        },
+        role: UserRole.student,
       ),
       body: RefreshIndicator(
         onRefresh: () async {

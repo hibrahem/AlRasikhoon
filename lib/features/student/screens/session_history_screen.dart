@@ -74,10 +74,19 @@ class SessionHistoryScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              record.curriculumSessionId,
+                              'الحلقة ${record.sessionNumber}',
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                             const SizedBox(height: 4),
+                            Text(
+                              'المستوى ${record.levelId} - الحزب ${record.hizbNumber}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                            ),
                             Text(
                               dateFormat.format(record.date),
                               style: Theme.of(context)

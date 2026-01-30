@@ -169,6 +169,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
       teacherId: currentUser.id,
       curriculumSessionId:
           'L${student.currentLevel}_J${student.currentJuz}_H${student.currentHizb}_S${student.currentSession}',
+      levelId: student.currentLevel,
+      hizbNumber: student.currentHizb,
+      sessionNumber: student.currentSession,
       attemptNumber: student.currentAttempt,
       newMemorizationErrors: state!.part1Errors,
       recentReviewErrors: state!.part2Errors,

@@ -48,6 +48,9 @@ class SessionRecordModel {
   final String studentId;
   final String teacherId;
   final String curriculumSessionId;
+  final int levelId;
+  final int hizbNumber;
+  final int sessionNumber;
   final DateTime date;
   final int attemptNumber;
   final SessionGrades grades;
@@ -61,6 +64,9 @@ class SessionRecordModel {
     required this.studentId,
     required this.teacherId,
     required this.curriculumSessionId,
+    this.levelId = 1,
+    this.hizbNumber = 59,
+    this.sessionNumber = 1,
     required this.date,
     required this.attemptNumber,
     required this.grades,
@@ -77,6 +83,9 @@ class SessionRecordModel {
       studentId: data['student_id'] ?? '',
       teacherId: data['teacher_id'] ?? '',
       curriculumSessionId: data['curriculum_session_id'] ?? '',
+      levelId: data['level_id'] ?? 1,
+      hizbNumber: data['hizb_number'] ?? 59,
+      sessionNumber: data['session_number'] ?? 1,
       date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       attemptNumber: data['attempt_number'] ?? 1,
       grades: SessionGrades.fromJson(data['grades']),
@@ -92,6 +101,9 @@ class SessionRecordModel {
       'student_id': studentId,
       'teacher_id': teacherId,
       'curriculum_session_id': curriculumSessionId,
+      'level_id': levelId,
+      'hizb_number': hizbNumber,
+      'session_number': sessionNumber,
       'date': Timestamp.fromDate(date),
       'attempt_number': attemptNumber,
       'grades': grades.toJson(),
@@ -107,6 +119,9 @@ class SessionRecordModel {
     String? studentId,
     String? teacherId,
     String? curriculumSessionId,
+    int? levelId,
+    int? hizbNumber,
+    int? sessionNumber,
     DateTime? date,
     int? attemptNumber,
     SessionGrades? grades,
@@ -120,6 +135,9 @@ class SessionRecordModel {
       studentId: studentId ?? this.studentId,
       teacherId: teacherId ?? this.teacherId,
       curriculumSessionId: curriculumSessionId ?? this.curriculumSessionId,
+      levelId: levelId ?? this.levelId,
+      hizbNumber: hizbNumber ?? this.hizbNumber,
+      sessionNumber: sessionNumber ?? this.sessionNumber,
       date: date ?? this.date,
       attemptNumber: attemptNumber ?? this.attemptNumber,
       grades: grades ?? this.grades,

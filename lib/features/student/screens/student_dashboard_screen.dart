@@ -46,8 +46,18 @@ class _StudentDashboardScreenState
       ),
       body: RefreshIndicator(
         onRefresh: () async {
+          // Invalidate all providers
+          ref.invalidate(currentStudentProvider);
           ref.invalidate(studentStatsProvider);
           ref.invalidate(studentDashboardSessionProvider);
+          ref.invalidate(homePracticeStatsProvider);
+
+          // Wait for providers to reload
+          await Future.wait([
+            ref.read(studentStatsProvider.future),
+            ref.read(studentDashboardSessionProvider.future),
+            ref.read(homePracticeStatsProvider.future),
+          ]);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
