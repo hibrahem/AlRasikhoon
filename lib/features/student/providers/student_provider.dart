@@ -55,7 +55,8 @@ final studentStatsProvider = FutureProvider<StudentStats>((ref) async {
     currentSession: student.currentSession,
     totalSessions: stats['total_sessions'] ?? 0,
     passedSessions: stats['passed_sessions'] ?? 0,
-    completedLevels: student.completedLevels.length,
+    completedLevelsList: student.completedLevels,
+    unlockedLevelsList: student.unlockedLevels,
   );
 });
 
@@ -66,7 +67,8 @@ class StudentStats {
   final int currentSession;
   final int totalSessions;
   final int passedSessions;
-  final int completedLevels;
+  final List<int> completedLevelsList;
+  final List<int> unlockedLevelsList;
 
   const StudentStats({
     this.currentLevel = 1,
@@ -75,9 +77,18 @@ class StudentStats {
     this.currentSession = 1,
     this.totalSessions = 0,
     this.passedSessions = 0,
-    this.completedLevels = 0,
+    this.completedLevelsList = const [],
+    this.unlockedLevelsList = const [1],
   });
+
+  int get completedLevels => completedLevelsList.length;
 
   double get passRate =>
       totalSessions > 0 ? passedSessions / totalSessions : 0;
+
+  bool isLevelLocked(int level) => !unlockedLevelsList.contains(level);
+
+  bool isLevelCompleted(int level) => completedLevelsList.contains(level);
+
+  bool isLevelCurrent(int level) => level == currentLevel;
 }

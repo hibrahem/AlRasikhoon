@@ -101,6 +101,39 @@ class UserRepository {
     });
   }
 
+  /// Migrate user document from old ID to Firebase UID
+  /// This is needed when users are created by admin before they login
+  Future<UserModel?> migrateUserToFirebaseUid({
+    required String oldId,
+    required String newFirebaseUid,
+  }) async {
+    // Don't migrate if IDs are the same
+    if (oldId == newFirebaseUid) {
+      return getUserById(oldId);
+    }
+
+    final oldDoc = await _usersCollection.doc(oldId).get();
+    if (!oldDoc.exists) return null;
+
+    final userData = oldDoc.data()!;
+
+    // Create new document with Firebase UID
+    await _usersCollection.doc(newFirebaseUid).set({
+      ...userData,
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+
+    // Delete old document
+    await _usersCollection.doc(oldId).delete();
+
+    // Return the user with new ID
+    final newDoc = await _usersCollection.doc(newFirebaseUid).get();
+    if (newDoc.exists) {
+      return UserModel.fromFirestore(newDoc);
+    }
+    return null;
+  }
+
   /// Search users by name
   Future<List<UserModel>> searchUsers(String query, {UserRole? role}) async {
     Query<Map<String, dynamic>> baseQuery = _usersCollection

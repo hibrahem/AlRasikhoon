@@ -11,6 +11,7 @@ import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/stat_card.dart';
 import '../../../shared/widgets/bottom_nav_bar.dart';
 import '../../../shared/widgets/progress_bar.dart';
+import '../../../shared/widgets/level_progression_widget.dart';
 import '../providers/student_provider.dart';
 
 class StudentDashboardScreen extends ConsumerStatefulWidget {
@@ -73,6 +74,19 @@ class _StudentDashboardScreenState
                 data: (stats) => _buildProgressCard(stats),
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Text('Error: $e'),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Level progression
+              statsAsync.when(
+                data: (stats) => LevelProgressionWidget(
+                  currentLevel: stats.currentLevel,
+                  unlockedLevels: stats.unlockedLevelsList,
+                  completedLevels: stats.completedLevelsList,
+                ),
+                loading: () => const SizedBox(),
+                error: (_, __) => const SizedBox(),
               ),
 
               const SizedBox(height: 24),

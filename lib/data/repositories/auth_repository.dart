@@ -148,8 +148,22 @@ class AuthRepository extends Notifier<AuthState> {
       if (user != null) {
         state = state.copyWith(firebaseUser: user);
 
-        // Check if user exists in our database
-        final appUser = await _userRepository.getUserById(user.uid);
+        // First, try to find user by Firebase UID
+        var appUser = await _userRepository.getUserById(user.uid);
+
+        // If not found by UID, try to find by phone number
+        // This handles users created by admin before they logged in
+        if (appUser == null && user.phoneNumber != null) {
+          appUser = await _userRepository.getUserByPhone(user.phoneNumber!);
+
+          // If found by phone, migrate to use Firebase UID as document ID
+          if (appUser != null) {
+            appUser = await _userRepository.migrateUserToFirebaseUid(
+              oldId: appUser.id,
+              newFirebaseUid: user.uid,
+            );
+          }
+        }
 
         if (appUser != null) {
           state = state.copyWith(
