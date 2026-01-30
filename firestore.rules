@@ -96,5 +96,12 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow write: if isSuperAdmin();
     }
+
+    // Home practice records (students can manage their own)
+    match /home_practices/{practiceId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && getUserRole() == 'student';
+      allow update, delete: if isAuthenticated() && getUserRole() == 'student';
+    }
   }
 }

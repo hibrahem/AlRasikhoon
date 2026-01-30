@@ -138,6 +138,14 @@
         { "fieldPath": "role", "order": "ASCENDING" },
         { "fieldPath": "is_active", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "home_practices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "student_id", "order": "ASCENDING" },
+        { "fieldPath": "practice_date", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
