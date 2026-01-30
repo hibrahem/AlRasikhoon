@@ -18,10 +18,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -59,13 +56,26 @@ class DefaultFirebaseOptions {
   );
 
   // TODO: Replace with your actual Firebase configuration
-  // Run 'flutterfire configure' to generate this file
+
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_API_KEY',
-    appId: 'YOUR_APP_ID',
-    messagingSenderId: 'YOUR_SENDER_ID',
-    projectId: 'al-rasikhoon',
-    storageBucket: 'al-rasikhoon.appspot.com',
+    apiKey: 'AIzaSyCz5dI5RxyqbDeXTXtYmZwozXVe-KOOpLM',
+    appId: '1:276199755113:ios:7d12088a1d5663e22781f8',
+    messagingSenderId: '276199755113',
+    projectId: 'alrasikhoon-57151',
+    storageBucket: 'alrasikhoon-57151.firebasestorage.app',
     iosBundleId: 'com.alrasikhoon.alRasikhoon',
   );
+
+  // Run 'flutterfire configure' to generate this file
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCBxdvbmx1m7hESzE1MdqEatgJ1PZAZYlo',
+    appId: '1:276199755113:web:101e883fe6ba7d672781f8',
+    messagingSenderId: '276199755113',
+    projectId: 'alrasikhoon-57151',
+    authDomain: 'alrasikhoon-57151.firebaseapp.com',
+    storageBucket: 'alrasikhoon-57151.firebasestorage.app',
+    measurementId: 'G-MYHX5YHVYV',
+  );
+
 }
