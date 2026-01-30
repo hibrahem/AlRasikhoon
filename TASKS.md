@@ -96,17 +96,23 @@ Last updated: 2026-01-30
 | #7 | Verify teacher multi-institute | 2026-01-30 | Partially implemented. AddStudentScreen has institute selection. TeacherStudentsScreen lacks filtering |
 | #8 | Verify guardian role | 2026-01-30 | Partially implemented with security gap. Guardians route to student dashboard but can see ALL student data, not just their children |
 | #9 | Verify account not found flow | 2026-01-30 | Fully implemented. AccountNotFoundScreen exists with proper routing and error handling |
+| BUG | Student progress not showing from database | 2026-01-30 | **Root cause**: User migration didn't update student.user_id. **Fix**: Updated migration to also update student records, added fallback repair in getStudentByUserId |
+| BUG | Home practice permission denied | 2026-01-30 | **Fix**: Added Firestore rules and indexes for home_practices collection |
+| BUG | Pull to refresh not working | 2026-01-30 | **Fix**: Added Future.wait() to await provider reloads before hiding indicator |
+| BUG | Missing bottom nav on home practice screen | 2026-01-30 | **Fix**: Added AppBottomNavBar to HomePracticeScreen |
+| BUG | Session history showing raw ID | 2026-01-30 | **Fix**: Added levelId, hizbNumber, sessionNumber to SessionRecordModel, updated UI to show "الحلقة X" |
+| FIX | Guardian data access security | 2026-01-30 | Added getStudentsByGuardianId, updated currentStudentProvider to filter for guardians |
 
 ---
 
 ## Known Issues / Future Improvements
 
 ### Security Issues
-1. **Guardian Data Access**: Guardians can read all student records instead of just their children. Need to add Firestore rules filtering by guardianId.
+1. ~~**Guardian Data Access**: Guardians can read all student records instead of just their children.~~ **FIXED** - Added `getStudentsByGuardianId` and `getFirstStudentByGuardianId` methods. Updated `currentStudentProvider` to fetch guardian's children only.
 
 ### Missing Features (Non-blocking for MVP)
 1. **Teacher Institute Filter**: TeacherStudentsScreen should have institute dropdown for teachers with multiple assignments
-2. **Guardian Multi-child Support**: No UI for guardians to select between multiple children
+2. **Guardian Multi-child Support**: No UI for guardians to select between multiple children (provider `guardianChildrenProvider` added but UI not implemented)
 3. **Offline Support**: Hive caching and sync queue not implemented
 
 ---

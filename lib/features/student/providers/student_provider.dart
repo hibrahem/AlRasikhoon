@@ -7,18 +7,34 @@ import '../../../data/models/student_model.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
 import '../../../data/models/home_practice_model.dart';
+import '../../../data/models/user_model.dart';
 import '../../../shared/providers/user_provider.dart';
 
 /// Provider for current student profile
+/// For students: returns their own student record
+/// For guardians: returns their first child's student record
 final currentStudentProvider = FutureProvider<StudentModel?>((ref) async {
   final currentUser = ref.watch(currentUserProvider);
-  print('[StudentProvider] currentUser: ${currentUser?.id}, name: ${currentUser?.name}, role: ${currentUser?.role}');
   if (currentUser == null) return null;
 
   final repo = ref.watch(studentRepositoryProvider);
-  final student = await repo.getStudentByUserId(currentUser.id);
-  print('[StudentProvider] getStudentByUserId result: ${student?.id}');
-  return student;
+
+  // If user is a guardian, fetch their child's data
+  if (currentUser.role == UserRole.guardian) {
+    return repo.getFirstStudentByGuardianId(currentUser.id);
+  }
+
+  // Otherwise, fetch the student's own data
+  return repo.getStudentByUserId(currentUser.id);
+});
+
+/// Provider for guardian's children (for multi-child support)
+final guardianChildrenProvider = FutureProvider<List<StudentWithUser>>((ref) async {
+  final currentUser = ref.watch(currentUserProvider);
+  if (currentUser == null || currentUser.role != UserRole.guardian) return [];
+
+  final repo = ref.watch(studentRepositoryProvider);
+  return repo.getStudentsByGuardianId(currentUser.id);
 });
 
 /// Provider for student's current session
@@ -48,17 +64,12 @@ final studentHistoryProvider =
 /// Provider for student statistics
 final studentStatsProvider = FutureProvider<StudentStats>((ref) async {
   final student = await ref.watch(currentStudentProvider.future);
-  print('[StudentStatsProvider] student: ${student?.id}');
-  if (student == null) {
-    print('[StudentStatsProvider] No student found, returning default stats');
-    return const StudentStats();
-  }
+  if (student == null) return const StudentStats();
 
   final sessionRepo = ref.watch(sessionRepositoryProvider);
   final stats = await sessionRepo.getStudentStatistics(student.id);
-  print('[StudentStatsProvider] Session stats: $stats');
 
-  final result = StudentStats(
+  return StudentStats(
     currentLevel: student.currentLevel,
     currentJuz: student.currentJuz,
     currentHizb: student.currentHizb,
@@ -68,8 +79,6 @@ final studentStatsProvider = FutureProvider<StudentStats>((ref) async {
     completedLevelsList: student.completedLevels,
     unlockedLevelsList: student.unlockedLevels,
   );
-  print('[StudentStatsProvider] Returning stats: level=${result.currentLevel}, session=${result.currentSession}, completedLevels=${result.completedLevelsList}, unlockedLevels=${result.unlockedLevelsList}');
-  return result;
 });
 
 class StudentStats {

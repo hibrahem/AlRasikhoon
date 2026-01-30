@@ -99,21 +99,14 @@ class StudentRepository {
 
   /// Get student by user ID
   Future<StudentModel?> getStudentByUserId(String userId) async {
-    print('[StudentRepo] getStudentByUserId called with userId: $userId');
-
     // First try direct lookup by user_id
     final query = await _studentsCollection
         .where('user_id', isEqualTo: userId)
         .limit(1)
         .get();
 
-    print('[StudentRepo] Direct query found ${query.docs.length} documents');
-
     if (query.docs.isNotEmpty) {
-      final student = StudentModel.fromFirestore(query.docs.first);
-      print('[StudentRepo] Found student: ${student.id}');
-      print('[StudentRepo] Student data: level=${student.currentLevel}, session=${student.currentSession}, completedLevels=${student.completedLevels}, unlockedLevels=${student.unlockedLevels}');
-      return student;
+      return StudentModel.fromFirestore(query.docs.first);
     }
 
     // Fallback: If user was migrated but student record wasn't updated,
@@ -122,7 +115,6 @@ class StudentRepository {
     // then the student logs in (gets Firebase UID), and the old migration
     // didn't update the student record.
     final user = await _userRepository.getUserById(userId);
-    print('[StudentRepo] User lookup result: ${user?.name} (role: ${user?.role})');
 
     if (user != null && user.role == UserRole.student) {
       // Find all orphaned students (students whose user document no longer exists)
@@ -130,32 +122,25 @@ class StudentRepository {
           .where('is_active', isEqualTo: true)
           .get();
 
-      print('[StudentRepo] Found ${allStudents.docs.length} active students total');
-
       final orphanedStudents = <DocumentSnapshot>[];
 
       for (final studentDoc in allStudents.docs) {
         final student = StudentModel.fromFirestore(studentDoc);
-        print('[StudentRepo] Checking student ${student.id} with user_id: ${student.userId}');
 
         // Skip if already pointing to current user
         if (student.userId == userId) continue;
 
         // Check if the user document exists
         final studentUser = await _userRepository.getUserById(student.userId);
-        print('[StudentRepo] Student\'s user document exists: ${studentUser != null}');
         if (studentUser == null) {
           orphanedStudents.add(studentDoc);
         }
       }
 
-      print('[StudentRepo] Found ${orphanedStudents.length} orphaned students');
-
       // Only auto-repair if there's exactly ONE orphaned student
       // to avoid incorrectly assigning the wrong student
       if (orphanedStudents.length == 1) {
         final orphanDoc = orphanedStudents.first;
-        print('[StudentRepo] Attempting to repair orphaned student: ${orphanDoc.id}');
 
         // Repair: Update the student's user_id to the current Firebase UID
         await _studentsCollection.doc(orphanDoc.id).update({
@@ -165,14 +150,10 @@ class StudentRepository {
 
         // Return the repaired student
         final repairedDoc = await _studentsCollection.doc(orphanDoc.id).get();
-        final repairedStudent = StudentModel.fromFirestore(repairedDoc);
-        print('[StudentRepo] Repaired student: ${repairedStudent.id}');
-        print('[StudentRepo] Repaired student data: level=${repairedStudent.currentLevel}, session=${repairedStudent.currentSession}, completedLevels=${repairedStudent.completedLevels}, unlockedLevels=${repairedStudent.unlockedLevels}');
-        return repairedStudent;
+        return StudentModel.fromFirestore(repairedDoc);
       }
     }
 
-    print('[StudentRepo] No student found for userId: $userId');
     return null;
   }
 
@@ -330,6 +311,42 @@ class StudentRepository {
         .map((snapshot) => snapshot.docs
             .map((doc) => StudentModel.fromFirestore(doc))
             .toList());
+  }
+
+  /// Get students by guardian ID (for guardian role)
+  Future<List<StudentWithUser>> getStudentsByGuardianId(String guardianId) async {
+    final query = await _studentsCollection
+        .where('guardian_id', isEqualTo: guardianId)
+        .where('is_active', isEqualTo: true)
+        .get();
+
+    final students = query.docs
+        .map((doc) => StudentModel.fromFirestore(doc))
+        .toList();
+
+    final studentsWithUsers = <StudentWithUser>[];
+    for (final student in students) {
+      final user = await _userRepository.getUserById(student.userId);
+      if (user != null) {
+        studentsWithUsers.add(StudentWithUser(student: student, user: user));
+      }
+    }
+
+    return studentsWithUsers;
+  }
+
+  /// Get first student by guardian ID (for simple case with one child)
+  Future<StudentModel?> getFirstStudentByGuardianId(String guardianId) async {
+    final query = await _studentsCollection
+        .where('guardian_id', isEqualTo: guardianId)
+        .where('is_active', isEqualTo: true)
+        .limit(1)
+        .get();
+
+    if (query.docs.isNotEmpty) {
+      return StudentModel.fromFirestore(query.docs.first);
+    }
+    return null;
   }
 
   // Helper methods to map levels to hizbs/juz
