@@ -107,9 +107,10 @@ class TestEnvironment {
   }
 
   /// Create a test super admin user
-  UserModel createSuperAdmin({String? id, String? name}) {
+  UserModel createSuperAdmin({String? id, String? name, String? email}) {
     return UserModel(
       id: id ?? 'admin_test_id',
+      email: email ?? 'admin@test.com',
       phone: '+966512345678',
       name: name ?? 'مدير النظام',
       role: UserRole.superAdmin,
@@ -118,9 +119,10 @@ class TestEnvironment {
   }
 
   /// Create a test teacher user
-  UserModel createTeacher({String? id, String? name}) {
+  UserModel createTeacher({String? id, String? name, String? email}) {
     return UserModel(
       id: id ?? 'teacher_test_id',
+      email: email ?? 'teacher@test.com',
       phone: '+966512345679',
       name: name ?? 'معلم تجريبي',
       role: UserRole.teacher,
@@ -129,9 +131,10 @@ class TestEnvironment {
   }
 
   /// Create a test supervisor user
-  UserModel createSupervisor({String? id, String? name}) {
+  UserModel createSupervisor({String? id, String? name, String? email}) {
     return UserModel(
       id: id ?? 'supervisor_test_id',
+      email: email ?? 'supervisor@test.com',
       phone: '+966512345680',
       name: name ?? 'مشرف تجريبي',
       role: UserRole.supervisor,
@@ -140,9 +143,10 @@ class TestEnvironment {
   }
 
   /// Create a test student user
-  UserModel createStudent({String? id, String? name}) {
+  UserModel createStudent({String? id, String? name, String? email}) {
     return UserModel(
       id: id ?? 'student_test_id',
+      email: email ?? 'student@test.com',
       phone: '+966512345681',
       name: name ?? 'طالب تجريبي',
       role: UserRole.student,

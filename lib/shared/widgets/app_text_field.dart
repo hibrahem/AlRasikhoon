@@ -94,8 +94,147 @@ class AppTextField extends StatelessWidget {
   }
 }
 
+class AppEmailField extends StatelessWidget {
+  final TextEditingController? controller;
+  final String? errorText;
+  final void Function(String)? onChanged;
+  final String? Function(String?)? validator;
+  final bool enabled;
+  final bool autofocus;
+  final TextInputAction? textInputAction;
+  final void Function(String)? onSubmitted;
+
+  const AppEmailField({
+    super.key,
+    this.controller,
+    this.errorText,
+    this.onChanged,
+    this.validator,
+    this.enabled = true,
+    this.autofocus = false,
+    this.textInputAction,
+    this.onSubmitted,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'البريد الإلكتروني',
+          style: Theme.of(context).textTheme.labelLarge,
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          keyboardType: TextInputType.emailAddress,
+          enabled: enabled,
+          autofocus: autofocus,
+          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.left,
+          style: Theme.of(context).textTheme.bodyLarge,
+          textInputAction: textInputAction,
+          onChanged: onChanged,
+          onFieldSubmitted: onSubmitted,
+          validator: validator,
+          decoration: InputDecoration(
+            hintText: 'example@email.com',
+            errorText: errorText,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            prefixIcon: const Icon(Icons.email_outlined),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class AppPasswordField extends StatefulWidget {
+  final TextEditingController? controller;
+  final String? label;
+  final String? hint;
+  final String? errorText;
+  final void Function(String)? onChanged;
+  final String? Function(String?)? validator;
+  final bool enabled;
+  final bool autofocus;
+  final TextInputAction? textInputAction;
+  final void Function(String)? onSubmitted;
+
+  const AppPasswordField({
+    super.key,
+    this.controller,
+    this.label,
+    this.hint,
+    this.errorText,
+    this.onChanged,
+    this.validator,
+    this.enabled = true,
+    this.autofocus = false,
+    this.textInputAction,
+    this.onSubmitted,
+  });
+
+  @override
+  State<AppPasswordField> createState() => _AppPasswordFieldState();
+}
+
+class _AppPasswordFieldState extends State<AppPasswordField> {
+  bool _obscureText = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.label ?? 'كلمة المرور',
+          style: Theme.of(context).textTheme.labelLarge,
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: widget.controller,
+          obscureText: _obscureText,
+          enabled: widget.enabled,
+          autofocus: widget.autofocus,
+          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.left,
+          style: Theme.of(context).textTheme.bodyLarge,
+          textInputAction: widget.textInputAction,
+          onChanged: widget.onChanged,
+          onFieldSubmitted: widget.onSubmitted,
+          validator: widget.validator,
+          decoration: InputDecoration(
+            hintText: widget.hint ?? '••••••',
+            errorText: widget.errorText,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            prefixIcon: const Icon(Icons.lock_outline),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscureText ? Icons.visibility_off : Icons.visibility,
+                color: AppColors.textSecondary,
+              ),
+              onPressed: () {
+                setState(() => _obscureText = !_obscureText);
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class AppPhoneField extends StatefulWidget {
   final TextEditingController? controller;
+  final String? label;
   final String? errorText;
   final void Function(String)? onChanged;
   final void Function(Country)? onCountryChanged;
@@ -103,10 +242,12 @@ class AppPhoneField extends StatefulWidget {
   final bool enabled;
   final bool autofocus;
   final Country? initialCountry;
+  final bool isOptional;
 
   const AppPhoneField({
     super.key,
     this.controller,
+    this.label,
     this.errorText,
     this.onChanged,
     this.onCountryChanged,
@@ -114,6 +255,7 @@ class AppPhoneField extends StatefulWidget {
     this.enabled = true,
     this.autofocus = false,
     this.initialCountry,
+    this.isOptional = false,
   });
 
   @override
@@ -149,11 +291,14 @@ class _AppPhoneFieldState extends State<AppPhoneField> {
 
   @override
   Widget build(BuildContext context) {
+    final labelText = widget.label ?? 'رقم الجوال';
+    final displayLabel = widget.isOptional ? '$labelText (اختياري)' : labelText;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'رقم الجوال',
+          displayLabel,
           style: Theme.of(context).textTheme.labelLarge,
         ),
         const SizedBox(height: 8),

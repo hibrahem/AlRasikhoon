@@ -45,7 +45,7 @@ class AccountNotFoundScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               // Message
               Text(
-                'رقم الجوال غير مسجل في النظام.\nيرجى التواصل مع المشرف لإنشاء حساب.',
+                'البريد الإلكتروني غير مسجل في النظام.\nيرجى التواصل مع المشرف لإنشاء حساب.',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: AppColors.textSecondary,
                     ),

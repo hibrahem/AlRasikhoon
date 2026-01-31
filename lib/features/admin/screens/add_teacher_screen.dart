@@ -20,6 +20,7 @@ class AddTeacherScreen extends ConsumerStatefulWidget {
 class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   bool _isLoading = false;
   Country _selectedCountry = Countries.defaultCountry;
@@ -27,6 +28,7 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _emailController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
@@ -34,22 +36,31 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
   Future<void> _handleCreate() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // Validate email
+    final emailError = Validators.validateEmail(_emailController.text);
+    if (emailError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(emailError),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
       final repo = ref.read(userRepositoryProvider);
-      final phone = Validators.formatPhoneWithCountryCode(
-        _phoneController.text,
-        country: _selectedCountry,
-      );
+      final email = _emailController.text.trim().toLowerCase();
 
-      // Check if user with this phone already exists
-      final existingUser = await repo.getUserByPhone(phone);
+      // Check if user with this email already exists
+      final existingUser = await repo.getUserByEmail(email);
       if (existingUser != null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('رقم الجوال مسجل مسبقاً'),
+              content: Text('البريد الإلكتروني مسجل مسبقاً'),
               backgroundColor: AppColors.error,
             ),
           );
@@ -57,14 +68,24 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
         return;
       }
 
+      // Format phone if provided
+      String? phone;
+      if (_phoneController.text.isNotEmpty) {
+        phone = Validators.formatPhoneWithCountryCode(
+          _phoneController.text,
+          country: _selectedCountry,
+        );
+      }
+
       // Generate a unique ID for the teacher
       final id = DateTime.now().millisecondsSinceEpoch.toString();
 
       await repo.createUser(
         id: id,
-        phone: phone,
+        email: email,
         name: _nameController.text.trim(),
         role: UserRole.teacher,
+        phone: phone,
       );
 
       // Refresh teachers list
@@ -134,10 +155,18 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Phone field
+              // Email field
+              AppEmailField(
+                controller: _emailController,
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: 20),
+
+              // Phone field (optional)
               AppPhoneField(
                 controller: _phoneController,
                 initialCountry: _selectedCountry,
+                isOptional: true,
                 onCountryChanged: (country) {
                   setState(() => _selectedCountry = country);
                 },
@@ -161,7 +190,7 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'سيتمكن المعلم من تسجيل الدخول برقم الجوال',
+                        'سيتمكن المعلم من تسجيل الدخول بالبريد الإلكتروني أو حساب Google',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: AppColors.info,
                             ),

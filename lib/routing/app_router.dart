@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../data/models/user_model.dart';
 import '../shared/providers/user_provider.dart';
 import '../features/auth/screens/login_screen.dart';
-import '../features/auth/screens/otp_screen.dart';
+import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/account_not_found_screen.dart';
 import '../features/admin/screens/admin_dashboard_screen.dart';
 import '../features/admin/screens/institutes_screen.dart';
@@ -37,7 +37,7 @@ import '../features/student/screens/home_practice_screen.dart';
 class AppRoutes {
   // Auth
   static const String login = '/login';
-  static const String otp = '/otp';
+  static const String forgotPassword = '/forgot-password';
   static const String accountNotFound = '/account-not-found';
 
   // Admin
@@ -84,7 +84,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: true,
     redirect: (context, state) {
       final isLoggingIn = state.matchedLocation == AppRoutes.login ||
-          state.matchedLocation == AppRoutes.otp ||
+          state.matchedLocation == AppRoutes.forgotPassword ||
           state.matchedLocation == AppRoutes.accountNotFound;
 
       // Not authenticated - redirect to login
@@ -106,11 +106,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
-        path: AppRoutes.otp,
-        builder: (context, state) {
-          final phone = state.extra as String? ?? '';
-          return OtpScreen(phoneNumber: phone);
-        },
+        path: AppRoutes.forgotPassword,
+        builder: (context, state) => const ForgotPasswordScreen(),
       ),
       GoRoute(
         path: AppRoutes.accountNotFound,

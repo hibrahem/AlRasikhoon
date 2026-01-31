@@ -38,38 +38,52 @@ class FirebaseService {
     await _auth.signOut();
   }
 
-  // Phone auth
-  Future<void> verifyPhoneNumber({
-    required String phoneNumber,
-    required void Function(PhoneAuthCredential) verificationCompleted,
-    required void Function(FirebaseAuthException) verificationFailed,
-    required void Function(String, int?) codeSent,
-    required void Function(String) codeAutoRetrievalTimeout,
-    int? forceResendingToken,
+  // Email/Password auth
+  Future<UserCredential> signInWithEmailPassword({
+    required String email,
+    required String password,
   }) async {
-    await _auth.verifyPhoneNumber(
-      phoneNumber: phoneNumber,
-      verificationCompleted: verificationCompleted,
-      verificationFailed: verificationFailed,
-      codeSent: codeSent,
-      codeAutoRetrievalTimeout: codeAutoRetrievalTimeout,
-      forceResendingToken: forceResendingToken,
-      timeout: const Duration(seconds: 60),
+    return await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
     );
+  }
+
+  Future<UserCredential> createUserWithEmailPassword({
+    required String email,
+    required String password,
+  }) async {
+    return await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
+  }
+
+  // Google auth
+  Future<UserCredential> signInWithGoogleCredential({
+    required String idToken,
+    required String accessToken,
+  }) async {
+    final credential = GoogleAuthProvider.credential(
+      idToken: idToken,
+      accessToken: accessToken,
+    );
+    return await _auth.signInWithCredential(credential);
+  }
+
+  // Google Sign-In for Web using popup (recommended for web)
+  Future<UserCredential> signInWithGooglePopup() async {
+    final googleProvider = GoogleAuthProvider();
+    googleProvider.addScope('email');
+    return await _auth.signInWithPopup(googleProvider);
   }
 
   Future<UserCredential> signInWithCredential(AuthCredential credential) async {
     return await _auth.signInWithCredential(credential);
-  }
-
-  PhoneAuthCredential createPhoneAuthCredential({
-    required String verificationId,
-    required String smsCode,
-  }) {
-    return PhoneAuthProvider.credential(
-      verificationId: verificationId,
-      smsCode: smsCode,
-    );
   }
 
   // Firestore helpers

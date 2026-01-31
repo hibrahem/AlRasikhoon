@@ -22,7 +22,9 @@ class AddStudentScreen extends ConsumerStatefulWidget {
 class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _guardianEmailController = TextEditingController();
   final _guardianPhoneController = TextEditingController();
   InstituteModel? _selectedInstitute;
   bool _isLoading = false;
@@ -54,13 +56,28 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _emailController.dispose();
     _phoneController.dispose();
+    _guardianEmailController.dispose();
     _guardianPhoneController.dispose();
     super.dispose();
   }
 
   Future<void> _handleCreate() async {
     if (!_formKey.currentState!.validate()) return;
+
+    // Validate required email
+    final emailError = Validators.validateEmail(_emailController.text);
+    if (emailError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(emailError),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
     if (_selectedInstitute == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -78,22 +95,37 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
       if (currentUser == null) throw Exception('User not authenticated');
 
       final repo = ref.read(studentRepositoryProvider);
-      final phone = Validators.formatPhoneWithCountryCode(
-        _phoneController.text,
-        country: _studentCountry,
-      );
-      final guardianPhone = _guardianPhoneController.text.isNotEmpty
-          ? Validators.formatPhoneWithCountryCode(
-              _guardianPhoneController.text,
-              country: _guardianCountry,
-            )
-          : null;
+      final email = _emailController.text.trim().toLowerCase();
+
+      // Format optional phone numbers
+      String? phone;
+      if (_phoneController.text.isNotEmpty) {
+        phone = Validators.formatPhoneWithCountryCode(
+          _phoneController.text,
+          country: _studentCountry,
+        );
+      }
+
+      String? guardianEmail;
+      if (_guardianEmailController.text.isNotEmpty) {
+        guardianEmail = _guardianEmailController.text.trim().toLowerCase();
+      }
+
+      String? guardianPhone;
+      if (_guardianPhoneController.text.isNotEmpty) {
+        guardianPhone = Validators.formatPhoneWithCountryCode(
+          _guardianPhoneController.text,
+          country: _guardianCountry,
+        );
+      }
 
       await repo.createStudent(
         name: _nameController.text.trim(),
+        email: email,
         phone: phone,
         instituteId: _selectedInstitute!.id,
         teacherId: currentUser.id,
+        guardianEmail: guardianEmail,
         guardianPhone: guardianPhone,
       );
 
@@ -154,7 +186,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                 ),
               ),
 
-              // Name field
+              // Student name field
               AppTextField(
                 label: 'اسم الطالب',
                 hint: 'الاسم الكامل',
@@ -164,34 +196,73 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Phone field
+              // Student email field (required)
+              AppEmailField(
+                controller: _emailController,
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: 20),
+
+              // Student phone field (optional)
               AppPhoneField(
                 controller: _phoneController,
                 initialCountry: _studentCountry,
+                isOptional: true,
                 onCountryChanged: (country) {
                   setState(() => _studentCountry = country);
                 },
+              ),
+              const SizedBox(height: 24),
+
+              // Guardian section header
+              Text(
+                'بيانات ولي الأمر (اختياري)',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 16),
+
+              // Guardian email field (optional)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'البريد الإلكتروني لولي الأمر (اختياري)',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _guardianEmailController,
+                    keyboardType: TextInputType.emailAddress,
+                    textDirection: TextDirection.ltr,
+                    textAlign: TextAlign.left,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(
+                      hintText: 'example@email.com',
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      prefixIcon: Icon(Icons.email_outlined),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
 
               // Guardian phone field (optional)
               AppPhoneField(
+                label: 'رقم ولي الأمر',
                 controller: _guardianPhoneController,
                 initialCountry: _guardianCountry,
+                isOptional: true,
                 onCountryChanged: (country) {
                   setState(() => _guardianCountry = country);
                 },
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 4, right: 4),
-                child: Text(
-                  'رقم ولي الأمر (اختياري)',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                ),
-              ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               // Institute dropdown
               Column(

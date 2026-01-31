@@ -12,7 +12,20 @@
           "package_name": "com.alrasikhoon.al_rasikhoon"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "276199755113-p9nacald4nbqh82ltaee4bqpabq9p1iq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.alrasikhoon.al_rasikhoon",
+            "certificate_hash": "f9f82111051da9b8c04f42d4f8f3f35acfd8aaa8"
+          }
+        },
+        {
+          "client_id": "276199755113-fo1e79rl9va8d0bdvkvntmn4h15lia4b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDqdlxyrnYGdQNu2FYJn8MXQGGUZDGndqk"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "276199755113-fo1e79rl9va8d0bdvkvntmn4h15lia4b.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "276199755113-00b5apnouhai2s3pskskdrg1a6qj9cva.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.alrasikhoon.alRasikhoon"
+              }
+            }
+          ]
         }
       }
     }

@@ -72,20 +72,51 @@ extension UserRoleExtension on UserRole {
   }
 }
 
+enum AuthProvider {
+  google,
+  emailPassword,
+}
+
+extension AuthProviderExtension on AuthProvider {
+  String get value {
+    switch (this) {
+      case AuthProvider.google:
+        return 'google';
+      case AuthProvider.emailPassword:
+        return 'email_password';
+    }
+  }
+
+  static AuthProvider fromString(String? value) {
+    switch (value) {
+      case 'google':
+        return AuthProvider.google;
+      case 'email_password':
+        return AuthProvider.emailPassword;
+      default:
+        return AuthProvider.emailPassword;
+    }
+  }
+}
+
 class UserModel {
   final String id;
-  final String phone;
+  final String email;
+  final String? phone;
   final String name;
   final UserRole role;
+  final AuthProvider authProvider;
   final DateTime createdAt;
   final DateTime? updatedAt;
   final bool isActive;
 
   const UserModel({
     required this.id,
-    required this.phone,
+    required this.email,
+    this.phone,
     required this.name,
     required this.role,
+    this.authProvider = AuthProvider.emailPassword,
     required this.createdAt,
     this.updatedAt,
     this.isActive = true,
@@ -95,9 +126,11 @@ class UserModel {
     final data = doc.data() as Map<String, dynamic>;
     return UserModel(
       id: doc.id,
-      phone: data['phone'] ?? '',
+      email: data['email'] ?? '',
+      phone: data['phone'],
       name: data['name'] ?? '',
       role: UserRoleExtension.fromString(data['role'] ?? 'student'),
+      authProvider: AuthProviderExtension.fromString(data['auth_provider']),
       createdAt: (data['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updated_at'] as Timestamp?)?.toDate(),
       isActive: data['is_active'] ?? true,
@@ -106,9 +139,11 @@ class UserModel {
 
   Map<String, dynamic> toFirestore() {
     return {
+      'email': email,
       'phone': phone,
       'name': name,
       'role': role.value,
+      'auth_provider': authProvider.value,
       'created_at': Timestamp.fromDate(createdAt),
       'updated_at': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
       'is_active': isActive,
@@ -117,18 +152,22 @@ class UserModel {
 
   UserModel copyWith({
     String? id,
+    String? email,
     String? phone,
     String? name,
     UserRole? role,
+    AuthProvider? authProvider,
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isActive,
   }) {
     return UserModel(
       id: id ?? this.id,
+      email: email ?? this.email,
       phone: phone ?? this.phone,
       name: name ?? this.name,
       role: role ?? this.role,
+      authProvider: authProvider ?? this.authProvider,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isActive: isActive ?? this.isActive,
@@ -137,7 +176,7 @@ class UserModel {
 
   @override
   String toString() {
-    return 'UserModel(id: $id, name: $name, phone: $phone, role: ${role.value})';
+    return 'UserModel(id: $id, name: $name, email: $email, role: ${role.value})';
   }
 
   @override

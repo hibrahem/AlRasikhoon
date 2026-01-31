@@ -35,15 +35,18 @@ class StudentRepository {
   /// Create student with user
   Future<StudentWithUser> createStudent({
     required String name,
-    required String phone,
+    required String email,
+    String? phone,
     required String instituteId,
     required String teacherId,
+    String? guardianEmail,
     String? guardianPhone,
   }) async {
     // First, create the user
     final userDocRef = _usersCollection.doc();
     final user = UserModel(
       id: userDocRef.id,
+      email: email.toLowerCase(),
       phone: phone,
       name: name,
       role: UserRole.student,
@@ -53,9 +56,9 @@ class StudentRepository {
 
     // Create guardian if provided
     String? guardianId;
-    if (guardianPhone != null && guardianPhone.isNotEmpty) {
+    if (guardianEmail != null && guardianEmail.isNotEmpty) {
       // Check if guardian already exists
-      final existingGuardian = await _userRepository.getUserByPhone(guardianPhone);
+      final existingGuardian = await _userRepository.getUserByEmail(guardianEmail);
       if (existingGuardian != null) {
         guardianId = existingGuardian.id;
       } else {
@@ -63,6 +66,7 @@ class StudentRepository {
         final guardianDocRef = _usersCollection.doc();
         final guardian = UserModel(
           id: guardianDocRef.id,
+          email: guardianEmail.toLowerCase(),
           phone: guardianPhone,
           name: 'ولي أمر $name',
           role: UserRole.guardian,

@@ -4,6 +4,49 @@ import '../constants/countries.dart';
 class Validators {
   Validators._();
 
+  /// Validate email address
+  static String? validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'يرجى إدخال البريد الإلكتروني';
+    }
+
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+
+    if (!emailRegex.hasMatch(value)) {
+      return 'البريد الإلكتروني غير صحيح';
+    }
+
+    return null;
+  }
+
+  /// Validate password (min 6 characters)
+  static String? validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'يرجى إدخال كلمة المرور';
+    }
+
+    if (value.length < 6) {
+      return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+    }
+
+    return null;
+  }
+
+  /// Validate confirm password
+  static String? validateConfirmPassword(String? value, String password) {
+    if (value == null || value.isEmpty) {
+      return 'يرجى تأكيد كلمة المرور';
+    }
+
+    if (value != password) {
+      return 'كلمة المرور غير متطابقة';
+    }
+
+    return null;
+  }
+
   /// Validate phone number for a specific country
   static String? validatePhone(String? value, Country country) {
     if (value == null || value.isEmpty) {
@@ -27,6 +70,14 @@ class Validators {
     }
 
     return null;
+  }
+
+  /// Validate optional phone number
+  static String? validateOptionalPhone(String? value, Country country) {
+    if (value == null || value.isEmpty) {
+      return null; // Phone is optional
+    }
+    return validatePhone(value, country);
   }
 
   /// Validate Saudi phone number (without country code) - Legacy support

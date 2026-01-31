@@ -63,6 +63,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '276199755113',
     projectId: 'alrasikhoon-57151',
     storageBucket: 'alrasikhoon-57151.firebasestorage.app',
+    androidClientId: '276199755113-p9nacald4nbqh82ltaee4bqpabq9p1iq.apps.googleusercontent.com',
+    iosClientId: '276199755113-00b5apnouhai2s3pskskdrg1a6qj9cva.apps.googleusercontent.com',
     iosBundleId: 'com.alrasikhoon.alRasikhoon',
   );
 

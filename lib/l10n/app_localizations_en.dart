@@ -18,25 +18,55 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logout => 'Logout';
 
   @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get confirmPassword => 'Confirm Password';
+
+  @override
+  String get signInWithGoogle => 'Sign in with Google';
+
+  @override
+  String get forgotPassword => 'Forgot Password?';
+
+  @override
+  String get resetPassword => 'Reset Password';
+
+  @override
+  String get sendResetLink => 'Send Reset Link';
+
+  @override
+  String get resetLinkSent => 'Reset Link Sent';
+
+  @override
+  String get checkEmail => 'Please check your email';
+
+  @override
+  String get invalidEmail => 'Invalid email address';
+
+  @override
+  String get wrongPassword => 'Wrong password';
+
+  @override
+  String get setPassword => 'Set Password';
+
+  @override
+  String get or => 'or';
+
+  @override
   String get phoneNumber => 'Phone Number';
 
   @override
-  String get enterPhoneNumber => 'Enter phone number';
+  String get phoneOptional => 'Phone Number (Optional)';
 
   @override
-  String get sendOtp => 'Send OTP';
+  String get guardianEmail => 'Guardian Email';
 
   @override
-  String get verifyOtp => 'Verify OTP';
-
-  @override
-  String get enterOtp => 'Enter verification code';
-
-  @override
-  String get otpSent => 'OTP sent successfully';
-
-  @override
-  String get invalidOtp => 'Invalid OTP';
+  String get guardianPhone => 'Guardian Phone';
 
   @override
   String get accountNotFound => 'Account Not Found';
@@ -278,9 +308,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noConnection => 'No internet connection';
-
-  @override
-  String get guardianPhone => 'Guardian Phone';
 
   @override
   String get assignToInstitute => 'Assign to Institute';

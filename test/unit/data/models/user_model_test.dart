@@ -114,6 +114,7 @@ void main() {
         final now = DateTime.now();
         final user = UserModel(
           id: 'user123',
+          email: 'test@example.com',
           phone: '+966512345678',
           name: 'Test User',
           role: UserRole.teacher,
@@ -121,6 +122,7 @@ void main() {
         );
 
         expect(user.id, 'user123');
+        expect(user.email, 'test@example.com');
         expect(user.phone, '+966512345678');
         expect(user.name, 'Test User');
         expect(user.role, UserRole.teacher);
@@ -132,6 +134,7 @@ void main() {
       test('defaults isActive to true', () {
         final user = UserModel(
           id: 'user123',
+          email: 'test@example.com',
           phone: '+966512345678',
           name: 'Test User',
           role: UserRole.student,
@@ -204,8 +207,9 @@ void main() {
         final doc = await fakeFirestore.collection('users').doc('user123').get();
         final user = UserModel.fromFirestore(doc);
 
-        expect(user.phone, '');
+        expect(user.phone, isNull);
         expect(user.name, '');
+        expect(user.email, '');
       });
     });
 
@@ -216,6 +220,7 @@ void main() {
 
         final user = UserModel(
           id: 'user123',
+          email: 'test@example.com',
           phone: '+966512345678',
           name: 'محمد أحمد',
           role: UserRole.supervisor,
@@ -226,6 +231,7 @@ void main() {
 
         final map = user.toFirestore();
 
+        expect(map['email'], 'test@example.com');
         expect(map['phone'], '+966512345678');
         expect(map['name'], 'محمد أحمد');
         expect(map['role'], 'supervisor');
@@ -237,6 +243,7 @@ void main() {
       test('handles null updatedAt', () {
         final user = UserModel(
           id: 'user123',
+          email: 'test@example.com',
           phone: '+966512345678',
           name: 'Test',
           role: UserRole.student,
@@ -253,6 +260,7 @@ void main() {
       test('updates single field', () {
         final user = UserModel(
           id: 'user123',
+          email: 'test@example.com',
           phone: '+966512345678',
           name: 'Original Name',
           role: UserRole.student,
@@ -263,6 +271,7 @@ void main() {
 
         expect(updated.name, 'New Name');
         expect(updated.id, user.id);
+        expect(updated.email, user.email);
         expect(updated.phone, user.phone);
         expect(updated.role, user.role);
       });
@@ -271,6 +280,7 @@ void main() {
         final createdAt = DateTime(2024, 1, 15);
         final user = UserModel(
           id: 'user123',
+          email: 'test@example.com',
           phone: '+966512345678',
           name: 'Test',
           role: UserRole.teacher,
@@ -287,6 +297,7 @@ void main() {
       test('can update multiple fields', () {
         final user = UserModel(
           id: 'user123',
+          email: 'test@example.com',
           phone: '+966512345678',
           name: 'Test',
           role: UserRole.student,
@@ -309,6 +320,7 @@ void main() {
       test('users with same id are equal', () {
         final user1 = UserModel(
           id: 'user123',
+          email: 'user1@example.com',
           phone: '+966512345678',
           name: 'User 1',
           role: UserRole.student,
@@ -317,6 +329,7 @@ void main() {
 
         final user2 = UserModel(
           id: 'user123',
+          email: 'user2@example.com',
           phone: '+966599999999',
           name: 'Different Name',
           role: UserRole.teacher,
@@ -329,6 +342,7 @@ void main() {
       test('users with different ids are not equal', () {
         final user1 = UserModel(
           id: 'user123',
+          email: 'user@example.com',
           phone: '+966512345678',
           name: 'Same Name',
           role: UserRole.student,
@@ -337,6 +351,7 @@ void main() {
 
         final user2 = UserModel(
           id: 'user456',
+          email: 'user@example.com',
           phone: '+966512345678',
           name: 'Same Name',
           role: UserRole.student,
@@ -349,6 +364,7 @@ void main() {
       test('hashCode is consistent with equality', () {
         final user1 = UserModel(
           id: 'user123',
+          email: 'user1@example.com',
           phone: '+966512345678',
           name: 'User 1',
           role: UserRole.student,
@@ -357,6 +373,7 @@ void main() {
 
         final user2 = UserModel(
           id: 'user123',
+          email: 'user2@example.com',
           phone: '+966599999999',
           name: 'Different',
           role: UserRole.teacher,
@@ -371,6 +388,7 @@ void main() {
       test('returns formatted string', () {
         final user = UserModel(
           id: 'user123',
+          email: 'test@example.com',
           phone: '+966512345678',
           name: 'Test User',
           role: UserRole.teacher,
@@ -381,7 +399,7 @@ void main() {
 
         expect(str, contains('user123'));
         expect(str, contains('Test User'));
-        expect(str, contains('+966512345678'));
+        expect(str, contains('test@example.com'));
         expect(str, contains('teacher'));
       });
     });

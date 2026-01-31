@@ -22,7 +22,20 @@ class UserRepository {
     return null;
   }
 
-  /// Get user by phone number
+  /// Get user by email
+  Future<UserModel?> getUserByEmail(String email) async {
+    final query = await _usersCollection
+        .where('email', isEqualTo: email.toLowerCase())
+        .limit(1)
+        .get();
+
+    if (query.docs.isNotEmpty) {
+      return UserModel.fromFirestore(query.docs.first);
+    }
+    return null;
+  }
+
+  /// Get user by phone number (legacy support)
   Future<UserModel?> getUserByPhone(String phone) async {
     final query = await _usersCollection
         .where('phone', isEqualTo: phone)
@@ -38,15 +51,19 @@ class UserRepository {
   /// Create new user
   Future<UserModel> createUser({
     required String id,
-    required String phone,
+    required String email,
     required String name,
     required UserRole role,
+    String? phone,
+    AuthProvider authProvider = AuthProvider.emailPassword,
   }) async {
     final user = UserModel(
       id: id,
+      email: email.toLowerCase(),
       phone: phone,
       name: name,
       role: role,
+      authProvider: authProvider,
       createdAt: DateTime.now(),
     );
 
@@ -147,7 +164,7 @@ class UserRepository {
     return null;
   }
 
-  /// Search users by name
+  /// Search users by name or email
   Future<List<UserModel>> searchUsers(String query, {UserRole? role}) async {
     Query<Map<String, dynamic>> baseQuery = _usersCollection
         .where('is_active', isEqualTo: true);
@@ -163,7 +180,8 @@ class UserRepository {
         .map((doc) => UserModel.fromFirestore(doc))
         .where((user) =>
             user.name.toLowerCase().contains(query.toLowerCase()) ||
-            user.phone.contains(query))
+            user.email.toLowerCase().contains(query.toLowerCase()) ||
+            (user.phone?.contains(query) ?? false))
         .toList();
   }
 }

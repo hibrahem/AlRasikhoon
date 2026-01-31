@@ -349,7 +349,7 @@ class InstituteDetailScreen extends ConsumerWidget {
                                           .titleSmall,
                                     ),
                                     Text(
-                                      teacher.phone,
+                                      teacher.phone ?? teacher.email,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
@@ -415,7 +415,7 @@ class _TeacherSelectionTile extends StatelessWidget {
         ),
       ),
       title: Text(teacher.name),
-      subtitle: Text(teacher.phone),
+      subtitle: Text(teacher.phone ?? teacher.email),
       trailing: const Icon(Icons.add_circle_outline, color: AppColors.primary),
       onTap: onTap,
     );

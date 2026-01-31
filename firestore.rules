@@ -29,8 +29,8 @@ service cloud.firestore {
       // Allow create if: super_admin, teacher, OR user creating their own doc (for migration)
       allow create: if isSuperAdmin() || isTeacher() || (isAuthenticated() && request.auth.uid == userId);
       allow update: if isSuperAdmin() || request.auth.uid == userId;
-      // Allow delete if: super_admin OR user deleting their old migrated doc (phone must match)
-      allow delete: if isSuperAdmin() || (isAuthenticated() && resource.data.phone == request.auth.token.phone_number);
+      // Allow delete if: super_admin OR user deleting their old migrated doc (email must match)
+      allow delete: if isSuperAdmin() || (isAuthenticated() && resource.data.email == request.auth.token.email);
     }
 
     // Institutes collection

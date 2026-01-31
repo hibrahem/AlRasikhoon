@@ -18,12 +18,14 @@ void main() {
       test('creates user with all required fields', () async {
         final user = await repository.createUser(
           id: 'user123',
+          email: 'test@example.com',
           phone: '+966512345678',
           name: 'محمد أحمد',
           role: UserRole.teacher,
         );
 
         expect(user.id, 'user123');
+        expect(user.email, 'test@example.com');
         expect(user.phone, '+966512345678');
         expect(user.name, 'محمد أحمد');
         expect(user.role, UserRole.teacher);
@@ -33,6 +35,7 @@ void main() {
       test('persists user to Firestore', () async {
         await repository.createUser(
           id: 'user123',
+          email: 'test@example.com',
           phone: '+966512345678',
           name: 'Test User',
           role: UserRole.student,
@@ -40,6 +43,7 @@ void main() {
 
         final doc = await fakeFirestore.collection('users').doc('user123').get();
         expect(doc.exists, true);
+        expect(doc.data()?['email'], 'test@example.com');
         expect(doc.data()?['phone'], '+966512345678');
         expect(doc.data()?['name'], 'Test User');
         expect(doc.data()?['role'], 'student');
@@ -98,6 +102,7 @@ void main() {
     group('updateUser', () {
       test('updates user fields', () async {
         await fakeFirestore.collection('users').doc('user123').set({
+          'email': 'test@example.com',
           'phone': '+966512345678',
           'name': 'Original Name',
           'role': 'teacher',
@@ -107,6 +112,7 @@ void main() {
 
         final user = UserModel(
           id: 'user123',
+          email: 'test@example.com',
           phone: '+966512345678',
           name: 'Updated Name',
           role: UserRole.teacher,

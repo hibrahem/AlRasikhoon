@@ -116,47 +116,107 @@ abstract class AppLocalizations {
   /// **'تسجيل الخروج'**
   String get logout;
 
+  /// No description provided for @email.
+  ///
+  /// In ar, this message translates to:
+  /// **'البريد الإلكتروني'**
+  String get email;
+
+  /// No description provided for @password.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلمة المرور'**
+  String get password;
+
+  /// No description provided for @confirmPassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد كلمة المرور'**
+  String get confirmPassword;
+
+  /// No description provided for @signInWithGoogle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل الدخول بواسطة Google'**
+  String get signInWithGoogle;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسيت كلمة المرور؟'**
+  String get forgotPassword;
+
+  /// No description provided for @resetPassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة تعيين كلمة المرور'**
+  String get resetPassword;
+
+  /// No description provided for @sendResetLink.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال رابط الاستعادة'**
+  String get sendResetLink;
+
+  /// No description provided for @resetLinkSent.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم إرسال رابط الاستعادة'**
+  String get resetLinkSent;
+
+  /// No description provided for @checkEmail.
+  ///
+  /// In ar, this message translates to:
+  /// **'يرجى التحقق من بريدك الإلكتروني'**
+  String get checkEmail;
+
+  /// No description provided for @invalidEmail.
+  ///
+  /// In ar, this message translates to:
+  /// **'البريد الإلكتروني غير صحيح'**
+  String get invalidEmail;
+
+  /// No description provided for @wrongPassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلمة المرور غير صحيحة'**
+  String get wrongPassword;
+
+  /// No description provided for @setPassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعيين كلمة المرور'**
+  String get setPassword;
+
+  /// No description provided for @or.
+  ///
+  /// In ar, this message translates to:
+  /// **'أو'**
+  String get or;
+
   /// No description provided for @phoneNumber.
   ///
   /// In ar, this message translates to:
   /// **'رقم الجوال'**
   String get phoneNumber;
 
-  /// No description provided for @enterPhoneNumber.
+  /// No description provided for @phoneOptional.
   ///
   /// In ar, this message translates to:
-  /// **'أدخل رقم الجوال'**
-  String get enterPhoneNumber;
+  /// **'رقم الجوال (اختياري)'**
+  String get phoneOptional;
 
-  /// No description provided for @sendOtp.
+  /// No description provided for @guardianEmail.
   ///
   /// In ar, this message translates to:
-  /// **'إرسال رمز التحقق'**
-  String get sendOtp;
+  /// **'البريد الإلكتروني لولي الأمر'**
+  String get guardianEmail;
 
-  /// No description provided for @verifyOtp.
+  /// No description provided for @guardianPhone.
   ///
   /// In ar, this message translates to:
-  /// **'تحقق من الرمز'**
-  String get verifyOtp;
-
-  /// No description provided for @enterOtp.
-  ///
-  /// In ar, this message translates to:
-  /// **'أدخل رمز التحقق'**
-  String get enterOtp;
-
-  /// No description provided for @otpSent.
-  ///
-  /// In ar, this message translates to:
-  /// **'تم إرسال رمز التحقق'**
-  String get otpSent;
-
-  /// No description provided for @invalidOtp.
-  ///
-  /// In ar, this message translates to:
-  /// **'رمز التحقق غير صحيح'**
-  String get invalidOtp;
+  /// **'رقم ولي الأمر'**
+  String get guardianPhone;
 
   /// No description provided for @accountNotFound.
   ///
@@ -637,12 +697,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'لا يوجد اتصال بالإنترنت'**
   String get noConnection;
-
-  /// No description provided for @guardianPhone.
-  ///
-  /// In ar, this message translates to:
-  /// **'رقم ولي الأمر'**
-  String get guardianPhone;
 
   /// No description provided for @assignToInstitute.
   ///

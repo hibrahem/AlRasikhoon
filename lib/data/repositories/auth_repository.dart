@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/firebase_service.dart';
+import '../services/google_auth_service.dart';
 import '../services/local_storage_service.dart';
 import 'user_repository.dart';
 import '../models/user_model.dart';
@@ -8,47 +10,45 @@ import '../models/user_model.dart';
 class AuthState {
   final bool isLoading;
   final String? error;
-  final String? verificationId;
-  final int? resendToken;
   final User? firebaseUser;
   final UserModel? appUser;
+  final bool passwordResetSent;
 
   const AuthState({
     this.isLoading = false,
     this.error,
-    this.verificationId,
-    this.resendToken,
     this.firebaseUser,
     this.appUser,
+    this.passwordResetSent = false,
   });
 
   AuthState copyWith({
     bool? isLoading,
     String? error,
-    String? verificationId,
-    int? resendToken,
     User? firebaseUser,
     UserModel? appUser,
+    bool? passwordResetSent,
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
       error: error,
-      verificationId: verificationId ?? this.verificationId,
-      resendToken: resendToken ?? this.resendToken,
       firebaseUser: firebaseUser ?? this.firebaseUser,
       appUser: appUser ?? this.appUser,
+      passwordResetSent: passwordResetSent ?? this.passwordResetSent,
     );
   }
 }
 
 class AuthRepository extends Notifier<AuthState> {
   late final FirebaseService _firebaseService;
+  late final GoogleAuthService _googleAuthService;
   late final UserRepository _userRepository;
   late final LocalStorageService _localStorage;
 
   @override
   AuthState build() {
     _firebaseService = ref.watch(firebaseServiceProvider);
+    _googleAuthService = ref.watch(googleAuthServiceProvider);
     _userRepository = ref.watch(userRepositoryProvider);
     _localStorage = ref.watch(localStorageServiceProvider);
     _init();
@@ -59,16 +59,31 @@ class AuthRepository extends Notifier<AuthState> {
     _firebaseService.authStateChanges.listen((user) async {
       if (user != null) {
         state = state.copyWith(firebaseUser: user);
-        await _loadAppUser(user.uid);
+        await _loadAppUser(user.uid, user.email);
       } else {
         state = const AuthState();
       }
     });
   }
 
-  Future<void> _loadAppUser(String uid) async {
+  Future<void> _loadAppUser(String uid, String? email) async {
     try {
-      final appUser = await _userRepository.getUserById(uid);
+      // First try to find user by Firebase UID
+      var appUser = await _userRepository.getUserById(uid);
+
+      // If not found by UID and we have email, try to find by email
+      if (appUser == null && email != null) {
+        appUser = await _userRepository.getUserByEmail(email);
+
+        // If found by email, migrate to use Firebase UID as document ID
+        if (appUser != null) {
+          appUser = await _userRepository.migrateUserToFirebaseUid(
+            oldId: appUser.id,
+            newFirebaseUid: uid,
+          );
+        }
+      }
+
       if (appUser != null) {
         state = state.copyWith(appUser: appUser);
         await _localStorage.setUserId(appUser.id);
@@ -79,85 +94,51 @@ class AuthRepository extends Notifier<AuthState> {
     }
   }
 
-  Future<void> sendOtp(String phoneNumber) async {
+  Future<UserModel?> signInWithGoogle() async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      await _firebaseService.verifyPhoneNumber(
-        phoneNumber: phoneNumber,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          // Auto-verification on Android
-          await _signInWithCredential(credential);
-        },
-        verificationFailed: (FirebaseAuthException e) {
+      UserCredential userCredential;
+
+      if (kIsWeb) {
+        // For web: use Firebase Auth's signInWithPopup (more reliable)
+        userCredential = await _firebaseService.signInWithGooglePopup();
+      } else {
+        // For mobile: use google_sign_in package
+        final googleAccount = await _googleAuthService.signIn();
+        if (googleAccount == null) {
           state = state.copyWith(
             isLoading: false,
-            error: _getErrorMessage(e),
+            error: 'تم إلغاء تسجيل الدخول',
           );
-        },
-        codeSent: (String verificationId, int? resendToken) {
+          return null;
+        }
+
+        final authentication = await _googleAuthService.getAuthentication(googleAccount);
+        if (authentication == null) {
           state = state.copyWith(
             isLoading: false,
-            verificationId: verificationId,
-            resendToken: resendToken,
+            error: 'فشل الحصول على بيانات المصادقة',
           );
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          state = state.copyWith(verificationId: verificationId);
-        },
-        forceResendingToken: state.resendToken,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-    }
-  }
+          return null;
+        }
 
-  Future<UserModel?> verifyOtp(String smsCode) async {
-    if (state.verificationId == null) {
-      state = state.copyWith(error: 'لم يتم إرسال رمز التحقق');
-      return null;
-    }
+        userCredential = await _firebaseService.signInWithGoogleCredential(
+          idToken: authentication.idToken!,
+          accessToken: authentication.accessToken!,
+        );
+      }
 
-    state = state.copyWith(isLoading: true, error: null);
-
-    try {
-      final credential = _firebaseService.createPhoneAuthCredential(
-        verificationId: state.verificationId!,
-        smsCode: smsCode,
-      );
-
-      return await _signInWithCredential(credential);
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: _getErrorMessage(e),
-      );
-      return null;
-    }
-  }
-
-  Future<UserModel?> _signInWithCredential(PhoneAuthCredential credential) async {
-    try {
-      final userCredential =
-          await _firebaseService.signInWithCredential(credential);
       final user = userCredential.user;
-
       if (user != null) {
         state = state.copyWith(firebaseUser: user);
 
-        // First, try to find user by Firebase UID
+        // Try to find existing user by UID or email
         var appUser = await _userRepository.getUserById(user.uid);
-
-        // If not found by UID, try to find by phone number
-        // This handles users created by admin before they logged in
-        if (appUser == null && user.phoneNumber != null) {
-          appUser = await _userRepository.getUserByPhone(user.phoneNumber!);
-
-          // If found by phone, migrate to use Firebase UID as document ID
+        if (appUser == null && user.email != null) {
+          appUser = await _userRepository.getUserByEmail(user.email!);
           if (appUser != null) {
+            // Migrate existing user to Firebase UID
             appUser = await _userRepository.migrateUserToFirebaseUid(
               oldId: appUser.id,
               newFirebaseUid: user.uid,
@@ -174,7 +155,6 @@ class AuthRepository extends Notifier<AuthState> {
           await _localStorage.setUserRole(appUser.role.value);
           return appUser;
         } else {
-          // User not found in database
           state = state.copyWith(
             isLoading: false,
             error: 'account_not_found',
@@ -194,11 +174,106 @@ class AuthRepository extends Notifier<AuthState> {
         error: _getErrorMessage(e),
       );
       return null;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'فشل تسجيل الدخول بـ Google: $e',
+      );
+      return null;
+    }
+  }
+
+  Future<UserModel?> signInWithEmailPassword({
+    required String email,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final userCredential = await _firebaseService.signInWithEmailPassword(
+        email: email,
+        password: password,
+      );
+
+      final user = userCredential.user;
+      if (user != null) {
+        state = state.copyWith(firebaseUser: user);
+
+        // Try to find existing user by UID or email
+        var appUser = await _userRepository.getUserById(user.uid);
+        if (appUser == null) {
+          appUser = await _userRepository.getUserByEmail(email);
+          if (appUser != null) {
+            // Migrate existing user to Firebase UID
+            appUser = await _userRepository.migrateUserToFirebaseUid(
+              oldId: appUser.id,
+              newFirebaseUid: user.uid,
+            );
+          }
+        }
+
+        if (appUser != null) {
+          state = state.copyWith(
+            isLoading: false,
+            appUser: appUser,
+          );
+          await _localStorage.setUserId(appUser.id);
+          await _localStorage.setUserRole(appUser.role.value);
+          return appUser;
+        } else {
+          state = state.copyWith(
+            isLoading: false,
+            error: 'account_not_found',
+          );
+          return null;
+        }
+      }
+
+      state = state.copyWith(
+        isLoading: false,
+        error: 'فشل تسجيل الدخول',
+      );
+      return null;
+    } on FirebaseAuthException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _getErrorMessage(e),
+      );
+      return null;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+      return null;
+    }
+  }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    state = state.copyWith(isLoading: true, error: null, passwordResetSent: false);
+
+    try {
+      await _firebaseService.sendPasswordResetEmail(email);
+      state = state.copyWith(
+        isLoading: false,
+        passwordResetSent: true,
+      );
+    } on FirebaseAuthException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _getErrorMessage(e),
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
     }
   }
 
   Future<void> signOut() async {
     await _firebaseService.signOut();
+    await _googleAuthService.signOut();
     await _localStorage.clearUserData();
     state = const AuthState();
   }
@@ -206,14 +281,22 @@ class AuthRepository extends Notifier<AuthState> {
   String _getErrorMessage(dynamic error) {
     if (error is FirebaseAuthException) {
       switch (error.code) {
-        case 'invalid-phone-number':
-          return 'رقم الجوال غير صحيح';
-        case 'invalid-verification-code':
-          return 'رمز التحقق غير صحيح';
+        case 'invalid-email':
+          return 'البريد الإلكتروني غير صحيح';
+        case 'user-disabled':
+          return 'تم تعطيل هذا الحساب';
+        case 'user-not-found':
+          return 'لا يوجد حساب بهذا البريد الإلكتروني';
+        case 'wrong-password':
+          return 'كلمة المرور غير صحيحة';
+        case 'invalid-credential':
+          return 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
         case 'too-many-requests':
           return 'تم تجاوز عدد المحاولات، يرجى المحاولة لاحقاً';
-        case 'session-expired':
-          return 'انتهت صلاحية رمز التحقق';
+        case 'email-already-in-use':
+          return 'البريد الإلكتروني مستخدم مسبقاً';
+        case 'weak-password':
+          return 'كلمة المرور ضعيفة';
         default:
           return error.message ?? 'حدث خطأ غير متوقع';
       }

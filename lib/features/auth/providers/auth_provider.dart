@@ -23,37 +23,22 @@ final authErrorProvider = Provider<String?>((ref) {
   return authState.error;
 });
 
-/// Phone verification notifier for managing OTP flow
-class PhoneVerificationNotifier extends Notifier<PhoneVerificationState> {
+/// Password reset sent provider
+final passwordResetSentProvider = Provider<bool>((ref) {
+  final authState = ref.watch(authRepositoryProvider);
+  return authState.passwordResetSent;
+});
+
+/// Email authentication notifier for managing email/password and Google sign-in
+class EmailAuthNotifier extends Notifier<EmailAuthState> {
   @override
-  PhoneVerificationState build() => const PhoneVerificationState();
+  EmailAuthState build() => const EmailAuthState();
 
-  Future<void> sendOtp(String phoneNumber) async {
+  Future<UserModel?> signInWithGoogle() async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      await ref.read(authRepositoryProvider.notifier).sendOtp(phoneNumber);
-      final authState = ref.read(authRepositoryProvider);
-
-      if (authState.error != null) {
-        state = state.copyWith(isLoading: false, error: authState.error);
-      } else if (authState.verificationId != null) {
-        state = state.copyWith(
-          isLoading: false,
-          verificationId: authState.verificationId,
-          phoneNumber: phoneNumber,
-        );
-      }
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-    }
-  }
-
-  Future<UserModel?> verifyOtp(String otp) async {
-    state = state.copyWith(isLoading: true, error: null);
-
-    try {
-      final user = await ref.read(authRepositoryProvider.notifier).verifyOtp(otp);
+      final user = await ref.read(authRepositoryProvider.notifier).signInWithGoogle();
       final authState = ref.read(authRepositoryProvider);
 
       if (authState.error != null) {
@@ -73,48 +58,94 @@ class PhoneVerificationNotifier extends Notifier<PhoneVerificationState> {
     }
   }
 
+  Future<UserModel?> signInWithEmailPassword({
+    required String email,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final user = await ref.read(authRepositoryProvider.notifier).signInWithEmailPassword(
+        email: email,
+        password: password,
+      );
+      final authState = ref.read(authRepositoryProvider);
+
+      if (authState.error != null) {
+        state = state.copyWith(
+          isLoading: false,
+          error: authState.error,
+          isAccountNotFound: authState.error == 'account_not_found',
+        );
+        return null;
+      }
+
+      state = state.copyWith(isLoading: false, user: user);
+      return user;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return null;
+    }
+  }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    state = state.copyWith(isLoading: true, error: null, passwordResetSent: false);
+
+    try {
+      await ref.read(authRepositoryProvider.notifier).sendPasswordResetEmail(email);
+      final authState = ref.read(authRepositoryProvider);
+
+      if (authState.error != null) {
+        state = state.copyWith(isLoading: false, error: authState.error);
+      } else {
+        state = state.copyWith(isLoading: false, passwordResetSent: true);
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
   void reset() {
-    state = const PhoneVerificationState();
+    state = const EmailAuthState();
   }
 }
 
-class PhoneVerificationState {
+class EmailAuthState {
   final bool isLoading;
   final String? error;
-  final String? verificationId;
-  final String? phoneNumber;
+  final String? email;
   final UserModel? user;
   final bool isAccountNotFound;
+  final bool passwordResetSent;
 
-  const PhoneVerificationState({
+  const EmailAuthState({
     this.isLoading = false,
     this.error,
-    this.verificationId,
-    this.phoneNumber,
+    this.email,
     this.user,
     this.isAccountNotFound = false,
+    this.passwordResetSent = false,
   });
 
-  PhoneVerificationState copyWith({
+  EmailAuthState copyWith({
     bool? isLoading,
     String? error,
-    String? verificationId,
-    String? phoneNumber,
+    String? email,
     UserModel? user,
     bool? isAccountNotFound,
+    bool? passwordResetSent,
   }) {
-    return PhoneVerificationState(
+    return EmailAuthState(
       isLoading: isLoading ?? this.isLoading,
       error: error,
-      verificationId: verificationId ?? this.verificationId,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
+      email: email ?? this.email,
       user: user ?? this.user,
       isAccountNotFound: isAccountNotFound ?? this.isAccountNotFound,
+      passwordResetSent: passwordResetSent ?? this.passwordResetSent,
     );
   }
 }
 
-final phoneVerificationProvider =
-    NotifierProvider<PhoneVerificationNotifier, PhoneVerificationState>(
-  PhoneVerificationNotifier.new,
+final emailAuthProvider = NotifierProvider<EmailAuthNotifier, EmailAuthState>(
+  EmailAuthNotifier.new,
 );

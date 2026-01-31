@@ -60,14 +60,14 @@ class TeacherDetailScreen extends ConsumerWidget {
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(
-                                  Icons.phone,
+                                Icon(
+                                  teacher.phone != null ? Icons.phone : Icons.email,
                                   size: 16,
                                   color: AppColors.textSecondary,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  teacher.phone,
+                                  teacher.phone ?? teacher.email,
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodyMedium

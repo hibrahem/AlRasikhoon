@@ -18,25 +18,55 @@ class AppLocalizationsAr extends AppLocalizations {
   String get logout => 'تسجيل الخروج';
 
   @override
+  String get email => 'البريد الإلكتروني';
+
+  @override
+  String get password => 'كلمة المرور';
+
+  @override
+  String get confirmPassword => 'تأكيد كلمة المرور';
+
+  @override
+  String get signInWithGoogle => 'تسجيل الدخول بواسطة Google';
+
+  @override
+  String get forgotPassword => 'نسيت كلمة المرور؟';
+
+  @override
+  String get resetPassword => 'إعادة تعيين كلمة المرور';
+
+  @override
+  String get sendResetLink => 'إرسال رابط الاستعادة';
+
+  @override
+  String get resetLinkSent => 'تم إرسال رابط الاستعادة';
+
+  @override
+  String get checkEmail => 'يرجى التحقق من بريدك الإلكتروني';
+
+  @override
+  String get invalidEmail => 'البريد الإلكتروني غير صحيح';
+
+  @override
+  String get wrongPassword => 'كلمة المرور غير صحيحة';
+
+  @override
+  String get setPassword => 'تعيين كلمة المرور';
+
+  @override
+  String get or => 'أو';
+
+  @override
   String get phoneNumber => 'رقم الجوال';
 
   @override
-  String get enterPhoneNumber => 'أدخل رقم الجوال';
+  String get phoneOptional => 'رقم الجوال (اختياري)';
 
   @override
-  String get sendOtp => 'إرسال رمز التحقق';
+  String get guardianEmail => 'البريد الإلكتروني لولي الأمر';
 
   @override
-  String get verifyOtp => 'تحقق من الرمز';
-
-  @override
-  String get enterOtp => 'أدخل رمز التحقق';
-
-  @override
-  String get otpSent => 'تم إرسال رمز التحقق';
-
-  @override
-  String get invalidOtp => 'رمز التحقق غير صحيح';
+  String get guardianPhone => 'رقم ولي الأمر';
 
   @override
   String get accountNotFound => 'الحساب غير موجود';
@@ -277,9 +307,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get noConnection => 'لا يوجد اتصال بالإنترنت';
-
-  @override
-  String get guardianPhone => 'رقم ولي الأمر';
 
   @override
   String get assignToInstitute => 'تعيين للمعهد';
