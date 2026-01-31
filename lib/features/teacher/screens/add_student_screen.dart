@@ -6,6 +6,7 @@ import '../../../core/constants/countries.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/institute_repository.dart';
+import '../../../data/repositories/user_repository.dart';
 import '../../../data/models/institute_model.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -94,8 +95,23 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
       final currentUser = ref.read(currentUserProvider);
       if (currentUser == null) throw Exception('User not authenticated');
 
-      final repo = ref.read(studentRepositoryProvider);
+      final userRepo = ref.read(userRepositoryProvider);
+      final studentRepo = ref.read(studentRepositoryProvider);
       final email = _emailController.text.trim().toLowerCase();
+
+      // Check if user with this email already exists
+      final existingUser = await userRepo.getUserByEmail(email);
+      if (existingUser != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('البريد الإلكتروني مسجل مسبقاً'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+        return;
+      }
 
       // Format optional phone numbers
       String? phone;
@@ -119,7 +135,9 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
         );
       }
 
-      await repo.createStudent(
+      // Create student with auto-generated user document (no Firebase Auth)
+      // Firebase Auth account will be created on first login attempt
+      await studentRepo.createStudent(
         name: _nameController.text.trim(),
         email: email,
         phone: phone,
@@ -134,8 +152,8 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تم إضافة الطالب بنجاح'),
+          SnackBar(
+            content: Text('تم إضافة الطالب: ${_nameController.text.trim()}'),
             backgroundColor: AppColors.success,
           ),
         );
@@ -143,9 +161,10 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = 'حدث خطأ: $e';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('حدث خطأ: $e'),
+            content: Text(errorMessage),
             backgroundColor: AppColors.error,
           ),
         );
@@ -298,7 +317,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
               // Info box
               Container(
@@ -308,20 +327,43 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppColors.info.withOpacity(0.3)),
                 ),
-                child: Row(
+                child: Column(
                   children: [
-                    const Icon(
-                      Icons.info_outline,
-                      color: AppColors.info,
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.info_outline,
+                          color: AppColors.info,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'سيبدأ الطالب من المستوى الأول - الحلقة الأولى',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: AppColors.info,
+                                ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'سيبدأ الطالب من المستوى الأول - الحلقة الأولى',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.info,
-                            ),
-                      ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.login,
+                          color: AppColors.info,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'يمكن للطالب تسجيل الدخول بـ Google أو بالبريد الإلكتروني',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: AppColors.info,
+                                ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

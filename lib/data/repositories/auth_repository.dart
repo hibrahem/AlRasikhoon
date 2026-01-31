@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,6 +46,9 @@ class AuthRepository extends Notifier<AuthState> {
   late final UserRepository _userRepository;
   late final LocalStorageService _localStorage;
 
+  // Flag to skip auth state listener during first-time user setup
+  bool _isFirstTimeUserSetupInProgress = false;
+
   @override
   AuthState build() {
     _firebaseService = ref.watch(firebaseServiceProvider);
@@ -57,6 +61,9 @@ class AuthRepository extends Notifier<AuthState> {
 
   void _init() {
     _firebaseService.authStateChanges.listen((user) async {
+      // Skip processing during first-time user setup in forgot password flow
+      if (_isFirstTimeUserSetupInProgress) return;
+
       if (user != null) {
         state = state.copyWith(firebaseUser: user);
         await _loadAppUser(user.uid, user.email);
@@ -138,10 +145,11 @@ class AuthRepository extends Notifier<AuthState> {
         if (appUser == null && user.email != null) {
           appUser = await _userRepository.getUserByEmail(user.email!);
           if (appUser != null) {
-            // Migrate existing user to Firebase UID
+            // Migrate existing user to Firebase UID and update auth provider
             appUser = await _userRepository.migrateUserToFirebaseUid(
               oldId: appUser.id,
               newFirebaseUid: user.uid,
+              authProvider: UserAuthProvider.google,
             );
           }
         }
@@ -204,10 +212,11 @@ class AuthRepository extends Notifier<AuthState> {
         if (appUser == null) {
           appUser = await _userRepository.getUserByEmail(email);
           if (appUser != null) {
-            // Migrate existing user to Firebase UID
+            // Migrate existing user to Firebase UID and update auth provider
             appUser = await _userRepository.migrateUserToFirebaseUid(
               oldId: appUser.id,
               newFirebaseUid: user.uid,
+              authProvider: UserAuthProvider.emailPassword,
             );
           }
         }
@@ -247,6 +256,96 @@ class AuthRepository extends Notifier<AuthState> {
       );
       return null;
     }
+  }
+
+  /// Setup a pending user (created by admin/teacher) for first-time login
+  /// Creates Firebase Auth account and sends password reset email
+  /// Returns: 'pending_user_setup' if successful, 'normal_reset' for existing users,
+  /// 'not_found' if no user exists with this email
+  Future<String> setupPendingUserAndSendReset(String email) async {
+    state = state.copyWith(isLoading: true, error: null, passwordResetSent: false);
+
+    try {
+      // Check if user exists in Firestore (this query is allowed for unauthenticated users)
+      final firestoreUser = await _userRepository.getUserByEmail(email);
+
+      if (firestoreUser == null) {
+        // No user in Firestore - check if they have a Firebase Auth account
+        // If they do, just send password reset. If not, return not_found
+        try {
+          await _firebaseService.sendPasswordResetEmail(email);
+          state = state.copyWith(isLoading: false, passwordResetSent: true);
+          return 'normal_reset';
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'user-not-found') {
+            state = state.copyWith(
+              isLoading: false,
+              error: 'لا يوجد حساب بهذا البريد الإلكتروني',
+            );
+            return 'not_found';
+          }
+          rethrow;
+        }
+      }
+
+      // User exists in Firestore
+      if (firestoreUser.authProvider == UserAuthProvider.pending) {
+        // First-time user - create Firebase Auth account and send reset email
+        _isFirstTimeUserSetupInProgress = true;
+
+        try {
+          final tempPassword = _generateTempPassword();
+          await _firebaseService.createUserWithEmailPassword(
+            email: email,
+            password: tempPassword,
+          );
+
+          // Send password reset email so user can set their own password
+          await _firebaseService.sendPasswordResetEmail(email);
+
+          // Sign out immediately - we don't want to stay logged in
+          await _firebaseService.signOut();
+
+          state = state.copyWith(isLoading: false, passwordResetSent: true);
+          return 'pending_user_setup';
+        } finally {
+          _isFirstTimeUserSetupInProgress = false;
+        }
+      } else {
+        // Existing user with active account - send normal password reset
+        await _firebaseService.sendPasswordResetEmail(email);
+        state = state.copyWith(isLoading: false, passwordResetSent: true);
+        return 'normal_reset';
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        // Auth account already exists for pending user - just send reset email
+        try {
+          await _firebaseService.sendPasswordResetEmail(email);
+          state = state.copyWith(isLoading: false, passwordResetSent: true);
+          return 'normal_reset';
+        } catch (_) {
+          // Ignore and show the original error
+        }
+      }
+      state = state.copyWith(
+        isLoading: false,
+        error: _getErrorMessage(e),
+      );
+      return 'error';
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+      return 'error';
+    }
+  }
+
+  String _generateTempPassword() {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#\$%^&*';
+    final random = Random.secure();
+    return List.generate(16, (_) => chars[random.nextInt(chars.length)]).join();
   }
 
   Future<void> sendPasswordResetEmail(String email) async {

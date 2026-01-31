@@ -19,6 +19,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
   String? _emailError;
   bool _emailSent = false;
+  bool _isFirstTimeUser = false;
 
   @override
   void dispose() {
@@ -35,16 +36,28 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     }
     setState(() => _emailError = null);
 
-    // Send reset email
+    // Use the new method that handles both pending users and existing users
     final authRepo = ref.read(authRepositoryProvider.notifier);
-    await authRepo.sendPasswordResetEmail(_emailController.text.trim());
+    final result = await authRepo.setupPendingUserAndSendReset(
+      _emailController.text.trim(),
+    );
 
     if (!mounted) return;
 
     final authState = ref.read(authRepositoryProvider);
 
-    if (authState.passwordResetSent) {
-      setState(() => _emailSent = true);
+    if (result == 'pending_user_setup') {
+      // First-time user - account was just created
+      setState(() {
+        _emailSent = true;
+        _isFirstTimeUser = true;
+      });
+    } else if (result == 'normal_reset') {
+      // Existing user - normal password reset
+      setState(() {
+        _emailSent = true;
+        _isFirstTimeUser = false;
+      });
     } else if (authState.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -140,6 +153,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   }
 
   Widget _buildSuccessView() {
+    final title = _isFirstTimeUser ? 'تم تفعيل حسابك' : 'تم إرسال الرابط';
+    final message = _isFirstTimeUser
+        ? 'تم إنشاء حسابك وإرسال رابط تعيين كلمة المرور إلى\n${_emailController.text}'
+        : 'تم إرسال رابط استعادة كلمة المرور إلى\n${_emailController.text}';
+    final instructions = _isFirstTimeUser
+        ? 'يرجى التحقق من بريدك الإلكتروني وتعيين كلمة مرور جديدة للدخول'
+        : 'يرجى التحقق من بريدك الإلكتروني واتباع التعليمات';
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -152,8 +173,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             color: AppColors.success.withOpacity(0.1),
             shape: BoxShape.circle,
           ),
-          child: const Icon(
-            Icons.mark_email_read,
+          child: Icon(
+            _isFirstTimeUser ? Icons.verified_user : Icons.mark_email_read,
             size: 50,
             color: AppColors.success,
           ),
@@ -161,7 +182,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         const SizedBox(height: 32),
         // Title
         Text(
-          'تم إرسال الرابط',
+          title,
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -170,7 +191,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         const SizedBox(height: 16),
         // Message
         Text(
-          'تم إرسال رابط استعادة كلمة المرور إلى\n${_emailController.text}',
+          message,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -178,7 +199,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         ),
         const SizedBox(height: 16),
         Text(
-          'يرجى التحقق من بريدك الإلكتروني واتباع التعليمات',
+          instructions,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -196,7 +217,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         // Resend button
         TextButton(
           onPressed: () {
-            setState(() => _emailSent = false);
+            setState(() {
+              _emailSent = false;
+              _isFirstTimeUser = false;
+            });
           },
           child: const Text('إرسال رابط جديد'),
         ),

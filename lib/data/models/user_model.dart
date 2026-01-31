@@ -72,29 +72,34 @@ extension UserRoleExtension on UserRole {
   }
 }
 
-enum AuthProvider {
+enum UserAuthProvider {
   google,
   emailPassword,
+  pending,
 }
 
-extension AuthProviderExtension on AuthProvider {
+extension UserAuthProviderExtension on UserAuthProvider {
   String get value {
     switch (this) {
-      case AuthProvider.google:
+      case UserAuthProvider.google:
         return 'google';
-      case AuthProvider.emailPassword:
+      case UserAuthProvider.emailPassword:
         return 'email_password';
+      case UserAuthProvider.pending:
+        return 'pending';
     }
   }
 
-  static AuthProvider fromString(String? value) {
+  static UserAuthProvider fromString(String? value) {
     switch (value) {
       case 'google':
-        return AuthProvider.google;
+        return UserAuthProvider.google;
       case 'email_password':
-        return AuthProvider.emailPassword;
+        return UserAuthProvider.emailPassword;
+      case 'pending':
+        return UserAuthProvider.pending;
       default:
-        return AuthProvider.emailPassword;
+        return UserAuthProvider.pending;
     }
   }
 }
@@ -105,7 +110,7 @@ class UserModel {
   final String? phone;
   final String name;
   final UserRole role;
-  final AuthProvider authProvider;
+  final UserAuthProvider authProvider;
   final DateTime createdAt;
   final DateTime? updatedAt;
   final bool isActive;
@@ -116,7 +121,7 @@ class UserModel {
     this.phone,
     required this.name,
     required this.role,
-    this.authProvider = AuthProvider.emailPassword,
+    this.authProvider = UserAuthProvider.pending,
     required this.createdAt,
     this.updatedAt,
     this.isActive = true,
@@ -130,7 +135,7 @@ class UserModel {
       phone: data['phone'],
       name: data['name'] ?? '',
       role: UserRoleExtension.fromString(data['role'] ?? 'student'),
-      authProvider: AuthProviderExtension.fromString(data['auth_provider']),
+      authProvider: UserAuthProviderExtension.fromString(data['auth_provider']),
       createdAt: (data['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updated_at'] as Timestamp?)?.toDate(),
       isActive: data['is_active'] ?? true,
@@ -156,7 +161,7 @@ class UserModel {
     String? phone,
     String? name,
     UserRole? role,
-    AuthProvider? authProvider,
+    UserAuthProvider? authProvider,
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isActive,

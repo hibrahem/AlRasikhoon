@@ -1,11 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/countries.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/repositories/user_repository.dart';
-import '../../../data/models/user_model.dart';
+import '../../../data/services/firebase_service.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../providers/admin_provider.dart';
@@ -52,9 +54,10 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
 
     try {
       final repo = ref.read(userRepositoryProvider);
+      final firebaseService = ref.read(firebaseServiceProvider);
       final email = _emailController.text.trim().toLowerCase();
 
-      // Check if user with this email already exists
+      // Check if user with this email already exists in Firestore
       final existingUser = await repo.getUserByEmail(email);
       if (existingUser != null) {
         if (mounted) {
@@ -77,24 +80,27 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
         );
       }
 
-      // Generate a unique ID for the teacher
-      final id = DateTime.now().millisecondsSinceEpoch.toString();
-
-      await repo.createUser(
-        id: id,
-        email: email,
-        name: _nameController.text.trim(),
-        role: UserRole.teacher,
-        phone: phone,
-      );
+      // Only create Firestore user document (no Firebase Auth)
+      // Firebase Auth account will be created on first login attempt
+      final userId = const Uuid().v4();
+      await firebaseService.firestore.collection('users').doc(userId).set({
+        'id': userId,
+        'email': email,
+        'name': _nameController.text.trim(),
+        'role': 'teacher',
+        'phone': phone,
+        'auth_provider': 'pending',
+        'is_active': true,
+        'created_at': FieldValue.serverTimestamp(),
+      });
 
       // Refresh teachers list
       ref.invalidate(allTeachersProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تم إضافة المعلم بنجاح'),
+          SnackBar(
+            content: Text('تم إضافة المعلم: ${_nameController.text.trim()}'),
             backgroundColor: AppColors.success,
           ),
         );
@@ -102,9 +108,10 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = 'حدث خطأ: $e';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('حدث خطأ: $e'),
+            content: Text(errorMessage),
             backgroundColor: AppColors.error,
           ),
         );
@@ -190,7 +197,7 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'سيتمكن المعلم من تسجيل الدخول بالبريد الإلكتروني أو حساب Google',
+                        'سيتمكن المعلم من تسجيل الدخول بـ Google أو بالبريد الإلكتروني (سيتم إرسال رابط تعيين كلمة المرور عند أول محاولة)',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: AppColors.info,
                             ),

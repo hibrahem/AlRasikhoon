@@ -102,6 +102,54 @@ void main() {
     });
   });
 
+  group('UserAuthProvider', () {
+    group('value', () {
+      test('google returns google', () {
+        expect(UserAuthProvider.google.value, 'google');
+      });
+
+      test('emailPassword returns email_password', () {
+        expect(UserAuthProvider.emailPassword.value, 'email_password');
+      });
+
+      test('pending returns pending', () {
+        expect(UserAuthProvider.pending.value, 'pending');
+      });
+    });
+
+    group('fromString', () {
+      test('converts google to google', () {
+        expect(
+            UserAuthProviderExtension.fromString('google'), UserAuthProvider.google);
+      });
+
+      test('converts email_password to emailPassword', () {
+        expect(UserAuthProviderExtension.fromString('email_password'),
+            UserAuthProvider.emailPassword);
+      });
+
+      test('converts pending to pending', () {
+        expect(UserAuthProviderExtension.fromString('pending'),
+            UserAuthProvider.pending);
+      });
+
+      test('defaults to pending for invalid value', () {
+        expect(UserAuthProviderExtension.fromString('invalid'),
+            UserAuthProvider.pending);
+      });
+
+      test('defaults to pending for null', () {
+        expect(
+            UserAuthProviderExtension.fromString(null), UserAuthProvider.pending);
+      });
+
+      test('defaults to pending for empty string', () {
+        expect(
+            UserAuthProviderExtension.fromString(''), UserAuthProvider.pending);
+      });
+    });
+  });
+
   group('UserModel', () {
     late FakeFirebaseFirestore fakeFirestore;
 
@@ -142,6 +190,33 @@ void main() {
         );
 
         expect(user.isActive, true);
+      });
+
+      test('defaults authProvider to pending', () {
+        final user = UserModel(
+          id: 'user123',
+          email: 'test@example.com',
+          phone: '+966512345678',
+          name: 'Test User',
+          role: UserRole.student,
+          createdAt: DateTime.now(),
+        );
+
+        expect(user.authProvider, UserAuthProvider.pending);
+      });
+
+      test('allows setting authProvider', () {
+        final user = UserModel(
+          id: 'user123',
+          email: 'test@example.com',
+          phone: '+966512345678',
+          name: 'Test User',
+          role: UserRole.student,
+          authProvider: UserAuthProvider.google,
+          createdAt: DateTime.now(),
+        );
+
+        expect(user.authProvider, UserAuthProvider.google);
       });
     });
 
@@ -211,6 +286,35 @@ void main() {
         expect(user.name, '');
         expect(user.email, '');
       });
+
+      test('deserializes auth_provider correctly', () async {
+        await fakeFirestore.collection('users').doc('user123').set({
+          'email': 'test@example.com',
+          'name': 'Test User',
+          'role': 'teacher',
+          'auth_provider': 'google',
+          'is_active': true,
+        });
+
+        final doc = await fakeFirestore.collection('users').doc('user123').get();
+        final user = UserModel.fromFirestore(doc);
+
+        expect(user.authProvider, UserAuthProvider.google);
+      });
+
+      test('defaults auth_provider to pending when missing', () async {
+        await fakeFirestore.collection('users').doc('user123').set({
+          'email': 'test@example.com',
+          'name': 'Test User',
+          'role': 'teacher',
+          'is_active': true,
+        });
+
+        final doc = await fakeFirestore.collection('users').doc('user123').get();
+        final user = UserModel.fromFirestore(doc);
+
+        expect(user.authProvider, UserAuthProvider.pending);
+      });
     });
 
     group('toFirestore', () {
@@ -253,6 +357,37 @@ void main() {
         final map = user.toFirestore();
 
         expect(map['updated_at'], isNull);
+      });
+
+      test('serializes auth_provider correctly', () {
+        final user = UserModel(
+          id: 'user123',
+          email: 'test@example.com',
+          phone: '+966512345678',
+          name: 'Test',
+          role: UserRole.student,
+          authProvider: UserAuthProvider.emailPassword,
+          createdAt: DateTime.now(),
+        );
+
+        final map = user.toFirestore();
+
+        expect(map['auth_provider'], 'email_password');
+      });
+
+      test('serializes pending auth_provider correctly', () {
+        final user = UserModel(
+          id: 'user123',
+          email: 'test@example.com',
+          phone: '+966512345678',
+          name: 'Test',
+          role: UserRole.student,
+          createdAt: DateTime.now(),
+        );
+
+        final map = user.toFirestore();
+
+        expect(map['auth_provider'], 'pending');
       });
     });
 
@@ -313,6 +448,25 @@ void main() {
         expect(updated.name, 'New Name');
         expect(updated.role, UserRole.teacher);
         expect(updated.isActive, false);
+      });
+
+      test('can update authProvider', () {
+        final user = UserModel(
+          id: 'user123',
+          email: 'test@example.com',
+          phone: '+966512345678',
+          name: 'Test',
+          role: UserRole.student,
+          authProvider: UserAuthProvider.pending,
+          createdAt: DateTime.now(),
+        );
+
+        final updated = user.copyWith(
+          authProvider: UserAuthProvider.google,
+        );
+
+        expect(updated.authProvider, UserAuthProvider.google);
+        expect(updated.name, 'Test'); // Other fields preserved
       });
     });
 

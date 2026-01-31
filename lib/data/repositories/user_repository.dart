@@ -55,7 +55,7 @@ class UserRepository {
     required String name,
     required UserRole role,
     String? phone,
-    AuthProvider authProvider = AuthProvider.emailPassword,
+    UserAuthProvider authProvider = UserAuthProvider.emailPassword,
   }) async {
     final user = UserModel(
       id: id,
@@ -123,9 +123,17 @@ class UserRepository {
   Future<UserModel?> migrateUserToFirebaseUid({
     required String oldId,
     required String newFirebaseUid,
+    UserAuthProvider? authProvider,
   }) async {
     // Don't migrate if IDs are the same
     if (oldId == newFirebaseUid) {
+      // Still update auth_provider if specified
+      if (authProvider != null) {
+        await _usersCollection.doc(oldId).update({
+          'auth_provider': authProvider.value,
+          'updated_at': FieldValue.serverTimestamp(),
+        });
+      }
       return getUserById(oldId);
     }
 
@@ -137,6 +145,7 @@ class UserRepository {
     // Create new document with Firebase UID
     await _usersCollection.doc(newFirebaseUid).set({
       ...userData,
+      if (authProvider != null) 'auth_provider': authProvider.value,
       'updated_at': FieldValue.serverTimestamp(),
     });
 
