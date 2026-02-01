@@ -87,7 +87,8 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
       );
     }
 
-    final sessionGrade = GradeCalculator.calculateSessionGrade(
+    // Calculate session grade for potential future use
+    final _ = GradeCalculator.calculateSessionGrade(
       newMemorizationErrors: activeSession.part1Errors,
       recentReviewErrors: activeSession.part2Errors,
       distantReviewErrors: activeSession.part3Errors,

@@ -23,8 +23,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authRepositoryProvider);
-    final user = authState.appUser;
+    // Watch auth state for reactivity (user data available via authState.appUser if needed)
+    ref.watch(authRepositoryProvider);
 
     return Scaffold(
       appBar: AppBar(

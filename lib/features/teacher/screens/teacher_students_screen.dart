@@ -23,7 +23,8 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
   @override
   Widget build(BuildContext context) {
     final studentsAsync = ref.watch(teacherStudentsProvider);
-    final authState = ref.watch(authRepositoryProvider);
+    // Watch auth state for reactivity
+    ref.watch(authRepositoryProvider);
 
     return Scaffold(
       appBar: AppBar(

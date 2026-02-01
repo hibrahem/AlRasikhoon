@@ -52,8 +52,8 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<!-- Google Sign-In URL scheme - Replace with your actual client ID -->
-				<string>com.googleusercontent.apps.YOUR_IOS_CLIENT_ID</string>
+				<!-- Google Sign-In URL scheme (reversed iOS client ID) -->
+				<string>com.googleusercontent.apps.276199755113-00b5apnouhai2s3pskskdrg1a6qj9cva</string>
 			</array>
 		</dict>
 	</array>
