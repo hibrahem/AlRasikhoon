@@ -112,6 +112,10 @@ void main() {
         expect(UserAuthProvider.emailPassword.value, 'email_password');
       });
 
+      test('emailLink returns email_link', () {
+        expect(UserAuthProvider.emailLink.value, 'email_link');
+      });
+
       test('pending returns pending', () {
         expect(UserAuthProvider.pending.value, 'pending');
       });
@@ -126,6 +130,11 @@ void main() {
       test('converts email_password to emailPassword', () {
         expect(UserAuthProviderExtension.fromString('email_password'),
             UserAuthProvider.emailPassword);
+      });
+
+      test('converts email_link to emailLink', () {
+        expect(UserAuthProviderExtension.fromString('email_link'),
+            UserAuthProvider.emailLink);
       });
 
       test('converts pending to pending', () {
@@ -300,6 +309,21 @@ void main() {
         final user = UserModel.fromFirestore(doc);
 
         expect(user.authProvider, UserAuthProvider.google);
+      });
+
+      test('deserializes email_link auth_provider correctly', () async {
+        await fakeFirestore.collection('users').doc('user123').set({
+          'email': 'test@example.com',
+          'name': 'Test User',
+          'role': 'teacher',
+          'auth_provider': 'email_link',
+          'is_active': true,
+        });
+
+        final doc = await fakeFirestore.collection('users').doc('user123').get();
+        final user = UserModel.fromFirestore(doc);
+
+        expect(user.authProvider, UserAuthProvider.emailLink);
       });
 
       test('defaults auth_provider to pending when missing', () async {
