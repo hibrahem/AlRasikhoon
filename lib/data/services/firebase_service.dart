@@ -49,18 +49,29 @@ class FirebaseService {
     );
   }
 
-  Future<UserCredential> createUserWithEmailPassword({
+  // Email Link (passwordless) auth
+  Future<void> sendSignInLinkToEmail({
     required String email,
-    required String password,
+    required ActionCodeSettings actionCodeSettings,
   }) async {
-    return await _auth.createUserWithEmailAndPassword(
+    await _auth.sendSignInLinkToEmail(
       email: email,
-      password: password,
+      actionCodeSettings: actionCodeSettings,
     );
   }
 
-  Future<void> sendPasswordResetEmail(String email) async {
-    await _auth.sendPasswordResetEmail(email: email);
+  bool isSignInWithEmailLink(String link) {
+    return _auth.isSignInWithEmailLink(link);
+  }
+
+  Future<UserCredential> signInWithEmailLink({
+    required String email,
+    required String emailLink,
+  }) async {
+    return await _auth.signInWithEmailLink(
+      email: email,
+      emailLink: emailLink,
+    );
   }
 
   // Google auth

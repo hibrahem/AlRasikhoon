@@ -77,4 +77,5 @@ class AppConstants {
   static const String keyLanguage = 'language';
   static const String keyTheme = 'theme';
   static const String keyFirstLaunch = 'first_launch';
+  static const String keyPendingSignInEmail = 'pending_sign_in_email';
 }

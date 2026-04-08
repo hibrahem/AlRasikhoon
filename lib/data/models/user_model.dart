@@ -75,6 +75,7 @@ extension UserRoleExtension on UserRole {
 enum UserAuthProvider {
   google,
   emailPassword,
+  emailLink,
   pending,
 }
 
@@ -85,6 +86,8 @@ extension UserAuthProviderExtension on UserAuthProvider {
         return 'google';
       case UserAuthProvider.emailPassword:
         return 'email_password';
+      case UserAuthProvider.emailLink:
+        return 'email_link';
       case UserAuthProvider.pending:
         return 'pending';
     }
@@ -96,6 +99,8 @@ extension UserAuthProviderExtension on UserAuthProvider {
         return UserAuthProvider.google;
       case 'email_password':
         return UserAuthProvider.emailPassword;
+      case 'email_link':
+        return UserAuthProvider.emailLink;
       case 'pending':
         return UserAuthProvider.pending;
       default:
