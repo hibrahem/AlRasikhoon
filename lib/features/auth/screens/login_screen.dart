@@ -16,17 +16,14 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
   String? _emailError;
-  String? _passwordError;
   bool _isGoogleLoading = false;
+  bool _linkSent = false;
 
   @override
   void dispose() {
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
@@ -57,40 +54,85 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isGoogleLoading = false);
   }
 
-  Future<void> _handleEmailLogin() async {
-    // Validate
+  Future<void> _handleSendLink() async {
     final emailError = Validators.validateEmail(_emailController.text);
-    final passwordError = Validators.validatePassword(_passwordController.text);
-
-    if (emailError != null || passwordError != null) {
-      setState(() {
-        _emailError = emailError;
-        _passwordError = passwordError;
-      });
+    if (emailError != null) {
+      setState(() => _emailError = emailError);
       return;
     }
-    setState(() {
-      _emailError = null;
-      _passwordError = null;
-    });
+    setState(() => _emailError = null);
 
-    // Sign in
     final authRepo = ref.read(authRepositoryProvider.notifier);
-    await authRepo.signInWithEmailPassword(
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
-    );
+    await authRepo.sendSignInLink(_emailController.text.trim());
 
     if (!mounted) return;
 
     final authState = ref.read(authRepositoryProvider);
 
+    if (authState.emailLinkSent) {
+      setState(() => _linkSent = true);
+    } else if (authState.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authState.error!),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  void _handleEmailPromptNeeded() {
+    // Cross-device: user clicked email link but email not stored locally
+    final emailController = TextEditingController();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('أدخل بريدك الإلكتروني'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('يرجى إدخال البريد الإلكتروني لإكمال تسجيل الدخول'),
+            const SizedBox(height: 16),
+            AppEmailField(
+              controller: emailController,
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) {
+                Navigator.of(context).pop();
+                _completeSignInWithEmail(emailController.text.trim());
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('إلغاء'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _completeSignInWithEmail(emailController.text.trim());
+            },
+            child: const Text('تأكيد'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _completeSignInWithEmail(String email) async {
+    if (email.isEmpty) return;
+    final authRepo = ref.read(authRepositoryProvider.notifier);
+    await authRepo.signInWithPendingLink(email);
+
+    if (!mounted) return;
+
+    final authState = ref.read(authRepositoryProvider);
     if (authState.error == 'account_not_found') {
       context.go(AppRoutes.accountNotFound);
-      return;
-    }
-
-    if (authState.error != null) {
+    } else if (authState.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(authState.error!),
@@ -104,139 +146,194 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authRepositoryProvider);
 
+    // Handle cross-device email prompt
+    if (authState.error == 'email_prompt_needed') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _handleEmailPromptNeeded();
+      });
+    }
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 32),
-                // Logo and title
-                Column(
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.menu_book,
-                        size: 50,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'الراسخون',
-                      style:
-                          Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'تطبيق حفظ القرآن الكريم',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 48),
-
-                // Google Sign In Button
-                _GoogleSignInButton(
-                  onPressed: _handleGoogleSignIn,
-                  isLoading: _isGoogleLoading,
-                ),
-                const SizedBox(height: 24),
-
-                // Divider with "or"
-                Row(
-                  children: [
-                    const Expanded(child: Divider()),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'أو',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                      ),
-                    ),
-                    const Expanded(child: Divider()),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Email field
-                AppEmailField(
-                  controller: _emailController,
-                  errorText: _emailError,
-                  autofocus: false,
-                  textInputAction: TextInputAction.next,
-                  onChanged: (_) {
-                    if (_emailError != null) {
-                      setState(() => _emailError = null);
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Password field
-                AppPasswordField(
-                  controller: _passwordController,
-                  errorText: _passwordError,
-                  textInputAction: TextInputAction.done,
-                  onChanged: (_) {
-                    if (_passwordError != null) {
-                      setState(() => _passwordError = null);
-                    }
-                  },
-                  onSubmitted: (_) => _handleEmailLogin(),
-                ),
-                const SizedBox(height: 8),
-
-                // Forgot password link
-                Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: TextButton(
-                    onPressed: () => context.push(AppRoutes.forgotPassword),
-                    child: const Text('نسيت كلمة المرور؟'),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Login button
-                AppButton(
-                  text: 'تسجيل الدخول',
-                  onPressed: _handleEmailLogin,
-                  isLoading: authState.isLoading && !_isGoogleLoading,
-                  isFullWidth: true,
-                  size: AppButtonSize.large,
-                ),
-                const SizedBox(height: 32),
-
-                // Footer
-                Text(
-                  'يجب أن يكون لديك حساب مسجل مسبقاً',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-              ],
-            ),
-          ),
+          child: _linkSent ? _buildLinkSentView() : _buildFormView(authState),
         ),
       ),
+    );
+  }
+
+  Widget _buildFormView(AuthState authState) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 32),
+        // Logo and title
+        Column(
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.menu_book,
+                size: 50,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'الراسخون',
+              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'تطبيق حفظ القرآن الكريم',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 48),
+
+        // Google Sign In Button
+        _GoogleSignInButton(
+          onPressed: _handleGoogleSignIn,
+          isLoading: _isGoogleLoading,
+        ),
+        const SizedBox(height: 24),
+
+        // Divider with "or"
+        Row(
+          children: [
+            const Expanded(child: Divider()),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'أو',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+              ),
+            ),
+            const Expanded(child: Divider()),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        // Email field
+        AppEmailField(
+          controller: _emailController,
+          errorText: _emailError,
+          autofocus: false,
+          textInputAction: TextInputAction.done,
+          onChanged: (_) {
+            if (_emailError != null) {
+              setState(() => _emailError = null);
+            }
+          },
+          onSubmitted: (_) => _handleSendLink(),
+        ),
+        const SizedBox(height: 24),
+
+        // Send link button
+        AppButton(
+          text: 'إرسال رابط الدخول',
+          onPressed: _handleSendLink,
+          isLoading: authState.isLoading && !_isGoogleLoading,
+          isFullWidth: true,
+          size: AppButtonSize.large,
+        ),
+        const SizedBox(height: 32),
+
+        // Footer
+        Text(
+          'يجب أن يكون لديك حساب مسجل مسبقاً',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildLinkSentView() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 80),
+        // Success icon
+        Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            color: AppColors.success.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.mark_email_read,
+            size: 50,
+            color: AppColors.success,
+          ),
+        ),
+        const SizedBox(height: 32),
+        // Title
+        Text(
+          'تم إرسال رابط الدخول',
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+        // Message
+        Text(
+          'تم إرسال رابط تسجيل الدخول إلى\n${_emailController.text}',
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'يرجى فتح البريد الإلكتروني والضغط على الرابط لتسجيل الدخول',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 48),
+        // Resend button
+        AppButton(
+          text: 'إرسال رابط جديد',
+          onPressed: () {
+            setState(() => _linkSent = false);
+          },
+          isFullWidth: true,
+          size: AppButtonSize.large,
+        ),
+        const SizedBox(height: 16),
+        // Change email button
+        TextButton(
+          onPressed: () {
+            setState(() {
+              _linkSent = false;
+              _emailController.clear();
+            });
+          },
+          child: const Text('تغيير البريد الإلكتروني'),
+        ),
+      ],
     );
   }
 }

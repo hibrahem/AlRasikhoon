@@ -1,10 +1,10 @@
-import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/firebase_service.dart';
 import '../services/google_auth_service.dart';
 import '../services/local_storage_service.dart';
+import '../services/deep_link_service.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'user_repository.dart';
 import '../models/user_model.dart';
 
@@ -13,14 +13,14 @@ class AuthState {
   final String? error;
   final User? firebaseUser;
   final UserModel? appUser;
-  final bool passwordResetSent;
+  final bool emailLinkSent;
 
   const AuthState({
     this.isLoading = false,
     this.error,
     this.firebaseUser,
     this.appUser,
-    this.passwordResetSent = false,
+    this.emailLinkSent = false,
   });
 
   AuthState copyWith({
@@ -28,14 +28,14 @@ class AuthState {
     String? error,
     User? firebaseUser,
     UserModel? appUser,
-    bool? passwordResetSent,
+    bool? emailLinkSent,
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
       error: error,
       firebaseUser: firebaseUser ?? this.firebaseUser,
       appUser: appUser ?? this.appUser,
-      passwordResetSent: passwordResetSent ?? this.passwordResetSent,
+      emailLinkSent: emailLinkSent ?? this.emailLinkSent,
     );
   }
 }
@@ -46,8 +46,8 @@ class AuthRepository extends Notifier<AuthState> {
   late final UserRepository _userRepository;
   late final LocalStorageService _localStorage;
 
-  // Flag to skip auth state listener during first-time user setup
-  bool _isFirstTimeUserSetupInProgress = false;
+  // Stores the email link when user needs to provide email (cross-device)
+  String? _pendingEmailLink;
 
   @override
   AuthState build() {
@@ -61,14 +61,23 @@ class AuthRepository extends Notifier<AuthState> {
 
   void _init() {
     _firebaseService.authStateChanges.listen((user) async {
-      // Skip processing during first-time user setup in forgot password flow
-      if (_isFirstTimeUserSetupInProgress) return;
-
       if (user != null) {
         state = state.copyWith(firebaseUser: user);
         await _loadAppUser(user.uid, user.email);
       } else {
         state = const AuthState();
+      }
+    });
+
+    _initDeepLinkListener();
+  }
+
+  void _initDeepLinkListener() {
+    final deepLinkService = ref.read(deepLinkServiceProvider);
+    deepLinkService.linkStream.listen((uri) {
+      final link = uri.toString();
+      if (_firebaseService.isSignInWithEmailLink(link)) {
+        signInWithEmailLink(link);
       }
     });
   }
@@ -191,41 +200,94 @@ class AuthRepository extends Notifier<AuthState> {
     }
   }
 
-  Future<UserModel?> signInWithEmailPassword({
-    required String email,
-    required String password,
-  }) async {
-    state = state.copyWith(isLoading: true, error: null);
+  /// Send a sign-in link to the user's email.
+  /// Returns after the link is sent successfully.
+  /// Checks Firestore first to ensure the email belongs to a registered user.
+  Future<void> sendSignInLink(String email) async {
+    state = state.copyWith(isLoading: true, error: null, emailLinkSent: false);
 
     try {
-      final userCredential = await _firebaseService.signInWithEmailPassword(
+      // Check if user exists in Firestore first
+      final firestoreUser = await _userRepository.getUserByEmail(email);
+      if (firestoreUser == null) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'لا يوجد حساب بهذا البريد الإلكتروني',
+        );
+        return;
+      }
+
+      await _firebaseService.sendSignInLinkToEmail(
         email: email,
-        password: password,
+        actionCodeSettings: _getActionCodeSettings(),
+      );
+
+      await _localStorage.setPendingSignInEmail(email);
+      state = state.copyWith(isLoading: false, emailLinkSent: true);
+    } on FirebaseAuthException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _getErrorMessage(e),
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  /// Sign in using an email link received via deep link.
+  /// If no email is available (cross-device scenario), sets error to
+  /// 'email_prompt_needed' and stores the link for later use.
+  Future<UserModel?> signInWithEmailLink(String link, {String? email}) async {
+    if (!_firebaseService.isSignInWithEmailLink(link)) {
+      state = state.copyWith(error: 'الرابط غير صالح');
+      return null;
+    }
+
+    state = state.copyWith(isLoading: true, error: null);
+
+    // Use provided email or retrieve from storage
+    final signInEmail = email ?? _localStorage.getPendingSignInEmail();
+    if (signInEmail == null) {
+      // Cross-device: user clicked link on a different device
+      _pendingEmailLink = link;
+      state = state.copyWith(
+        isLoading: false,
+        error: 'email_prompt_needed',
+      );
+      return null;
+    }
+
+    try {
+      final userCredential = await _firebaseService.signInWithEmailLink(
+        email: signInEmail,
+        emailLink: link,
       );
 
       final user = userCredential.user;
       if (user != null) {
         state = state.copyWith(firebaseUser: user);
 
-        // Try to find existing user by UID or email
+        // Firestore lookup + migration (same as Google sign-in)
         var appUser = await _userRepository.getUserById(user.uid);
-        if (appUser == null) {
-          appUser = await _userRepository.getUserByEmail(email);
+        if (appUser == null && user.email != null) {
+          appUser = await _userRepository.getUserByEmail(user.email!);
           if (appUser != null) {
-            // Migrate existing user to Firebase UID and update auth provider
             appUser = await _userRepository.migrateUserToFirebaseUid(
               oldId: appUser.id,
               newFirebaseUid: user.uid,
-              authProvider: UserAuthProvider.emailPassword,
+              authProvider: UserAuthProvider.emailLink,
             );
           }
         }
 
+        await _localStorage.clearPendingSignInEmail();
+        _pendingEmailLink = null;
+
         if (appUser != null) {
-          state = state.copyWith(
-            isLoading: false,
-            appUser: appUser,
-          );
+          state = state.copyWith(isLoading: false, appUser: appUser);
           await _localStorage.setUserId(appUser.id);
           await _localStorage.setUserRole(appUser.role.value);
           return appUser;
@@ -238,10 +300,7 @@ class AuthRepository extends Notifier<AuthState> {
         }
       }
 
-      state = state.copyWith(
-        isLoading: false,
-        error: 'فشل تسجيل الدخول',
-      );
+      state = state.copyWith(isLoading: false, error: 'فشل تسجيل الدخول');
       return null;
     } on FirebaseAuthException catch (e) {
       state = state.copyWith(
@@ -258,122 +317,32 @@ class AuthRepository extends Notifier<AuthState> {
     }
   }
 
-  /// Setup a pending user (created by admin/teacher) for first-time login
-  /// Creates Firebase Auth account and sends password reset email
-  /// Returns: 'pending_user_setup' if successful, 'normal_reset' for existing users,
-  /// 'not_found' if no user exists with this email
-  Future<String> setupPendingUserAndSendReset(String email) async {
-    state = state.copyWith(isLoading: true, error: null, passwordResetSent: false);
-
-    try {
-      // Check if user exists in Firestore (this query is allowed for unauthenticated users)
-      final firestoreUser = await _userRepository.getUserByEmail(email);
-
-      if (firestoreUser == null) {
-        // No user in Firestore - check if they have a Firebase Auth account
-        // If they do, just send password reset. If not, return not_found
-        try {
-          await _firebaseService.sendPasswordResetEmail(email);
-          state = state.copyWith(isLoading: false, passwordResetSent: true);
-          return 'normal_reset';
-        } on FirebaseAuthException catch (e) {
-          if (e.code == 'user-not-found') {
-            state = state.copyWith(
-              isLoading: false,
-              error: 'لا يوجد حساب بهذا البريد الإلكتروني',
-            );
-            return 'not_found';
-          }
-          rethrow;
-        }
-      }
-
-      // User exists in Firestore
-      if (firestoreUser.authProvider == UserAuthProvider.pending) {
-        // First-time user - create Firebase Auth account and send reset email
-        _isFirstTimeUserSetupInProgress = true;
-
-        try {
-          final tempPassword = _generateTempPassword();
-          await _firebaseService.createUserWithEmailPassword(
-            email: email,
-            password: tempPassword,
-          );
-
-          // Send password reset email so user can set their own password
-          await _firebaseService.sendPasswordResetEmail(email);
-
-          // Sign out immediately - we don't want to stay logged in
-          await _firebaseService.signOut();
-
-          state = state.copyWith(isLoading: false, passwordResetSent: true);
-          return 'pending_user_setup';
-        } finally {
-          _isFirstTimeUserSetupInProgress = false;
-        }
-      } else {
-        // Existing user with active account - send normal password reset
-        await _firebaseService.sendPasswordResetEmail(email);
-        state = state.copyWith(isLoading: false, passwordResetSent: true);
-        return 'normal_reset';
-      }
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'email-already-in-use') {
-        // Auth account already exists for pending user - just send reset email
-        try {
-          await _firebaseService.sendPasswordResetEmail(email);
-          state = state.copyWith(isLoading: false, passwordResetSent: true);
-          return 'normal_reset';
-        } catch (_) {
-          // Ignore and show the original error
-        }
-      }
-      state = state.copyWith(
-        isLoading: false,
-        error: _getErrorMessage(e),
-      );
-      return 'error';
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-      return 'error';
+  /// Complete sign-in when user provides email for a pending email link
+  /// (cross-device scenario).
+  Future<UserModel?> signInWithPendingLink(String email) async {
+    if (_pendingEmailLink == null) {
+      state = state.copyWith(error: 'لا يوجد رابط معلق');
+      return null;
     }
+    return signInWithEmailLink(_pendingEmailLink!, email: email);
   }
 
-  String _generateTempPassword() {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#\$%^&*';
-    final random = Random.secure();
-    return List.generate(16, (_) => chars[random.nextInt(chars.length)]).join();
-  }
-
-  Future<void> sendPasswordResetEmail(String email) async {
-    state = state.copyWith(isLoading: true, error: null, passwordResetSent: false);
-
-    try {
-      await _firebaseService.sendPasswordResetEmail(email);
-      state = state.copyWith(
-        isLoading: false,
-        passwordResetSent: true,
-      );
-    } on FirebaseAuthException catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: _getErrorMessage(e),
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-    }
+  ActionCodeSettings _getActionCodeSettings() {
+    return ActionCodeSettings(
+      url: 'https://alrasikhoon-57151.web.app',
+      handleCodeInApp: true,
+      androidPackageName: 'com.alrasikhoon.al_rasikhoon',
+      androidInstallApp: true,
+      iOSBundleId: 'com.alrasikhoon.alRasikhoon',
+    );
   }
 
   Future<void> signOut() async {
     await _firebaseService.signOut();
     await _googleAuthService.signOut();
+    await _localStorage.clearPendingSignInEmail();
     await _localStorage.clearUserData();
+    _pendingEmailLink = null;
     state = const AuthState();
   }
 
@@ -386,16 +355,12 @@ class AuthRepository extends Notifier<AuthState> {
           return 'تم تعطيل هذا الحساب';
         case 'user-not-found':
           return 'لا يوجد حساب بهذا البريد الإلكتروني';
-        case 'wrong-password':
-          return 'كلمة المرور غير صحيحة';
-        case 'invalid-credential':
-          return 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
         case 'too-many-requests':
           return 'تم تجاوز عدد المحاولات، يرجى المحاولة لاحقاً';
-        case 'email-already-in-use':
-          return 'البريد الإلكتروني مستخدم مسبقاً';
-        case 'weak-password':
-          return 'كلمة المرور ضعيفة';
+        case 'expired-action-code':
+          return 'انتهت صلاحية الرابط. يرجى طلب رابط جديد';
+        case 'invalid-action-code':
+          return 'الرابط غير صالح. يرجى طلب رابط جديد';
         default:
           return error.message ?? 'حدث خطأ غير متوقع';
       }

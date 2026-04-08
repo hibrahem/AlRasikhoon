@@ -7,6 +7,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'firebase_options.dart';
 import 'app.dart';
 import 'data/services/local_storage_service.dart';
+import 'data/services/deep_link_service.dart';
+import 'core/config/firebase_emulator_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,16 +32,24 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  // Configure Firebase Emulators if enabled
+  await FirebaseEmulatorConfig.configureEmulators();
+
   // Initialize Hive for local caching
   await Hive.initFlutter();
 
   // Initialize SharedPreferences
   final sharedPreferences = await SharedPreferences.getInstance();
 
+  // Initialize deep link service (must be before runApp for cold start links)
+  final deepLinkService = DeepLinkService();
+  await deepLinkService.init();
+
   runApp(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+        deepLinkServiceProvider.overrideWithValue(deepLinkService),
       ],
       child: const AlRasikhoonApp(),
     ),
