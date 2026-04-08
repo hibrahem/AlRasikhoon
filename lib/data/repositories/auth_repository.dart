@@ -74,6 +74,17 @@ class AuthRepository extends Notifier<AuthState> {
 
   void _initDeepLinkListener() {
     final deepLinkService = ref.read(deepLinkServiceProvider);
+
+    // Check for initial link that arrived before this listener was set up
+    final initialLink = deepLinkService.consumeInitialLink();
+    if (initialLink != null) {
+      final link = initialLink.toString();
+      if (_firebaseService.isSignInWithEmailLink(link)) {
+        signInWithEmailLink(link);
+      }
+    }
+
+    // Listen for subsequent links (warm start, mobile)
     deepLinkService.linkStream.listen((uri) {
       final link = uri.toString();
       if (_firebaseService.isSignInWithEmailLink(link)) {
