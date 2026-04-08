@@ -6,8 +6,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:al_rasikhoon/l10n/app_localizations.dart';
 import 'package:al_rasikhoon/core/theme/app_theme.dart';
 import 'package:al_rasikhoon/routing/app_router.dart';
+import 'package:al_rasikhoon/data/repositories/auth_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/data/services/local_storage_service.dart';
+import 'package:al_rasikhoon/data/services/deep_link_service.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -80,14 +82,29 @@ class TestEnvironment {
     SharedPreferences.setMockInitialValues({});
     sharedPreferences = await SharedPreferences.getInstance();
 
+    final deepLinkService = DeepLinkService();
+
     overrides = [
       firestoreProvider.overrideWithValue(fakeFirestore),
       sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+      deepLinkServiceProvider.overrideWithValue(deepLinkService),
     ];
 
     if (authenticatedUser != null) {
       await _setupAuthenticatedUser(authenticatedUser);
+    } else {
+      _setupUnauthenticatedState();
     }
+  }
+
+  void _setupUnauthenticatedState() {
+    // Override all auth-dependent providers to avoid Firebase initialization
+    overrides.addAll([
+      authRepositoryProvider.overrideWith(() => _TestAuthRepository()),
+      currentUserProvider.overrideWith((ref) => null),
+      isAuthenticatedProvider.overrideWith((ref) => false),
+      currentUserRoleProvider.overrideWith((ref) => null),
+    ]);
   }
 
   Future<void> _setupAuthenticatedUser(UserModel user) async {
@@ -98,8 +115,9 @@ class TestEnvironment {
     await sharedPreferences.setString('user_id', user.id);
     await sharedPreferences.setString('user_role', user.role.value);
 
-    // Add provider overrides for authenticated state
+    // Override all auth-dependent providers with test values
     overrides.addAll([
+      authRepositoryProvider.overrideWith(() => _TestAuthRepository(appUser: user)),
       currentUserProvider.overrideWith((ref) => user),
       isAuthenticatedProvider.overrideWith((ref) => true),
       currentUserRoleProvider.overrideWith((ref) => user.role),
@@ -216,5 +234,22 @@ class TestEnvironment {
       'is_active': true,
       'assigned_at': Timestamp.now(),
     });
+  }
+}
+
+/// Fake AuthRepository that doesn't depend on Firebase Auth
+class _TestAuthRepository extends AuthRepository {
+  final UserModel? appUser;
+
+  _TestAuthRepository({this.appUser});
+
+  @override
+  AuthState build() {
+    return AuthState(appUser: appUser);
+  }
+
+  @override
+  Future<void> signOut() async {
+    state = const AuthState();
   }
 }
