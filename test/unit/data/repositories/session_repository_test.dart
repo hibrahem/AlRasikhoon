@@ -420,5 +420,208 @@ void main() {
         expect(stats['total_exams'], 0);
       });
     });
+
+    group('getSessionRecordsForTeacher', () {
+      setUp(() async {
+        for (int i = 1; i <= 3; i++) {
+          await fakeFirestore.collection('session_records').doc('tr$i').set({
+            'student_id': 'student$i',
+            'teacher_id': 'teacher1',
+            'curriculum_session_id': 'cs$i',
+            'date': Timestamp.fromDate(DateTime(2024, 1, i)),
+            'attempt_number': 1,
+            'grades': {
+              'new_memorization_errors': 0,
+              'recent_review_errors': 0,
+              'distant_review_errors': 0,
+            },
+            'passed': true,
+            'created_at': Timestamp.now(),
+          });
+        }
+        await fakeFirestore.collection('session_records').doc('tr-other').set({
+          'student_id': 'student1',
+          'teacher_id': 'teacher2',
+          'curriculum_session_id': 'cs1',
+          'date': Timestamp.now(),
+          'attempt_number': 1,
+          'grades': {
+            'new_memorization_errors': 0,
+            'recent_review_errors': 0,
+            'distant_review_errors': 0,
+          },
+          'passed': true,
+          'created_at': Timestamp.now(),
+        });
+      });
+
+      test('returns records for specified teacher only', () async {
+        final records =
+            await sessionRepository.getSessionRecordsForTeacher('teacher1');
+
+        expect(records.length, 3);
+        expect(records.every((r) => r.teacherId == 'teacher1'), true);
+      });
+
+      test('respects limit parameter', () async {
+        final records = await sessionRepository.getSessionRecordsForTeacher(
+          'teacher1',
+          limit: 2,
+        );
+
+        expect(records.length, 2);
+      });
+
+      test('returns empty for unknown teacher', () async {
+        final records =
+            await sessionRepository.getSessionRecordsForTeacher('nobody');
+
+        expect(records, isEmpty);
+      });
+    });
+
+    group('getAttemptCount', () {
+      test('returns correct count', () async {
+        for (int i = 1; i <= 3; i++) {
+          await fakeFirestore.collection('session_records').doc('att$i').set({
+            'student_id': 'student1',
+            'teacher_id': 'teacher1',
+            'curriculum_session_id': 'cs-target',
+            'date': Timestamp.now(),
+            'attempt_number': i,
+            'grades': {
+              'new_memorization_errors': 0,
+              'recent_review_errors': 0,
+              'distant_review_errors': 0,
+            },
+            'passed': true,
+            'created_at': Timestamp.now(),
+          });
+        }
+
+        final count = await sessionRepository.getAttemptCount(
+          studentId: 'student1',
+          curriculumSessionId: 'cs-target',
+        );
+
+        expect(count, 3);
+      });
+
+      test('returns zero for no attempts', () async {
+        final count = await sessionRepository.getAttemptCount(
+          studentId: 'student1',
+          curriculumSessionId: 'no-session',
+        );
+
+        expect(count, 0);
+      });
+    });
+
+    group('getSardAttemptCount', () {
+      test('returns correct sard attempt count', () async {
+        for (int i = 1; i <= 2; i++) {
+          await fakeFirestore.collection('sard_records').doc('sa$i').set({
+            'student_id': 'student1',
+            'teacher_id': 'teacher1',
+            'hizb_number': 59,
+            'juz_number': 30,
+            'level_id': 1,
+            'date': Timestamp.now(),
+            'error_count': i,
+            'grade': 'متقن',
+            'passed': true,
+            'attempt_number': i,
+            'created_at': Timestamp.now(),
+          });
+        }
+
+        final count = await sessionRepository.getSardAttemptCount(
+          studentId: 'student1',
+          hizbNumber: 59,
+        );
+
+        expect(count, 2);
+      });
+
+      test('returns zero when no sard attempts', () async {
+        final count = await sessionRepository.getSardAttemptCount(
+          studentId: 'student1',
+          hizbNumber: 99,
+        );
+
+        expect(count, 0);
+      });
+    });
+
+    group('getExamAttemptCount', () {
+      test('returns correct exam attempt count', () async {
+        await fakeFirestore.collection('exam_records').doc('ea1').set({
+          'student_id': 'student1',
+          'supervisor_id': 'supervisor1',
+          'hizb_number': 59,
+          'juz_number': 30,
+          'level_id': 1,
+          'date': Timestamp.now(),
+          'error_count': 0,
+          'grade': 'راسخ',
+          'passed': true,
+          'attempt_number': 1,
+          'created_at': Timestamp.now(),
+        });
+
+        final count = await sessionRepository.getExamAttemptCount(
+          studentId: 'student1',
+          hizbNumber: 59,
+        );
+
+        expect(count, 1);
+      });
+
+      test('returns zero when no exam attempts', () async {
+        final count = await sessionRepository.getExamAttemptCount(
+          studentId: 'nobody',
+          hizbNumber: 59,
+        );
+
+        expect(count, 0);
+      });
+    });
+
+    group('getExamRecordsForSupervisor', () {
+      test('returns records for specified supervisor', () async {
+        await fakeFirestore.collection('exam_records').doc('es1').set({
+          'student_id': 'student1',
+          'supervisor_id': 'supervisor1',
+          'hizb_number': 59,
+          'juz_number': 30,
+          'level_id': 1,
+          'date': Timestamp.now(),
+          'error_count': 0,
+          'grade': 'راسخ',
+          'passed': true,
+          'attempt_number': 1,
+          'created_at': Timestamp.now(),
+        });
+        await fakeFirestore.collection('exam_records').doc('es2').set({
+          'student_id': 'student2',
+          'supervisor_id': 'supervisor2',
+          'hizb_number': 59,
+          'juz_number': 30,
+          'level_id': 1,
+          'date': Timestamp.now(),
+          'error_count': 0,
+          'grade': 'راسخ',
+          'passed': true,
+          'attempt_number': 1,
+          'created_at': Timestamp.now(),
+        });
+
+        final records =
+            await sessionRepository.getExamRecordsForSupervisor('supervisor1');
+
+        expect(records.length, 1);
+        expect(records.first.supervisorId, 'supervisor1');
+      });
+    });
   });
 }

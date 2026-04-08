@@ -75,6 +75,43 @@ void main() {
       });
     });
 
+    group('getUserByEmail', () {
+      test('finds user by email', () async {
+        await fakeFirestore.collection('users').doc('user123').set({
+          'email': 'test@example.com',
+          'name': 'Test User',
+          'role': 'teacher',
+          'is_active': true,
+          'created_at': Timestamp.now(),
+        });
+
+        final user = await repository.getUserByEmail('test@example.com');
+
+        expect(user, isNotNull);
+        expect(user?.email, 'test@example.com');
+      });
+
+      test('returns null when email not found', () async {
+        final user = await repository.getUserByEmail('nonexistent@example.com');
+
+        expect(user, isNull);
+      });
+
+      test('matches lowercase email', () async {
+        await fakeFirestore.collection('users').doc('user123').set({
+          'email': 'test@example.com',
+          'name': 'Test User',
+          'role': 'teacher',
+          'is_active': true,
+          'created_at': Timestamp.now(),
+        });
+
+        final user = await repository.getUserByEmail('test@example.com');
+
+        expect(user, isNotNull);
+      });
+    });
+
     group('getUserByPhone', () {
       test('finds user by phone number', () async {
         await fakeFirestore.collection('users').doc('user123').set({

@@ -424,6 +424,163 @@ void main() {
 
         expect(students, isEmpty);
       });
+
+      test('returns multiple students for same guardian', () async {
+        await _createUser(id: 'user1', name: 'طالب 1');
+        await _createUser(id: 'user2', name: 'طالب 2', email: 'student2@example.com');
+
+        await fakeFirestore.collection('students').doc('s1').set({
+          'user_id': 'user1',
+          'institute_id': 'i1',
+          'guardian_id': 'guardian1',
+          'is_active': true,
+          'created_at': Timestamp.now(),
+        });
+        await fakeFirestore.collection('students').doc('s2').set({
+          'user_id': 'user2',
+          'institute_id': 'i1',
+          'guardian_id': 'guardian1',
+          'is_active': true,
+          'created_at': Timestamp.now(),
+        });
+
+        final students =
+            await studentRepository.getStudentsByGuardianId('guardian1');
+
+        expect(students.length, 2);
+      });
+    });
+
+    group('getFirstStudentByGuardianId', () {
+      test('returns first student for guardian', () async {
+        await fakeFirestore.collection('students').doc('s1').set({
+          'user_id': 'user1',
+          'institute_id': 'i1',
+          'guardian_id': 'guardian1',
+          'is_active': true,
+          'created_at': Timestamp.now(),
+        });
+
+        final student =
+            await studentRepository.getFirstStudentByGuardianId('guardian1');
+
+        expect(student, isNotNull);
+        expect(student?.guardianId, 'guardian1');
+      });
+
+      test('returns null when no student for guardian', () async {
+        final student =
+            await studentRepository.getFirstStudentByGuardianId('no-guardian');
+
+        expect(student, isNull);
+      });
+    });
+
+    group('getStudentsForInstitute', () {
+      test('returns active students for institute', () async {
+        await _createUser(id: 'user1', name: 'طالب');
+
+        await fakeFirestore.collection('students').doc('s1').set({
+          'user_id': 'user1',
+          'institute_id': 'institute1',
+          'teacher_id': 'teacher1',
+          'is_active': true,
+          'created_at': Timestamp.now(),
+        });
+        await fakeFirestore.collection('students').doc('s2').set({
+          'user_id': 'user1',
+          'institute_id': 'institute2',
+          'teacher_id': 'teacher1',
+          'is_active': true,
+          'created_at': Timestamp.now(),
+        });
+
+        final students =
+            await studentRepository.getStudentsForInstitute('institute1');
+
+        expect(students.length, 1);
+        expect(students.first.student.instituteId, 'institute1');
+      });
+
+      test('returns empty list for unknown institute', () async {
+        final students =
+            await studentRepository.getStudentsForInstitute('nonexistent');
+
+        expect(students, isEmpty);
+      });
+    });
+
+    group('getStudentsReadyForExam', () {
+      test('returns students at session 36', () async {
+        await _createUser(id: 'user1', name: 'طالب جاهز');
+        await _createUser(id: 'user2', name: 'طالب غير جاهز', email: 'u2@example.com');
+
+        await fakeFirestore.collection('students').doc('s1').set({
+          'user_id': 'user1',
+          'institute_id': 'institute1',
+          'current_session': 36,
+          'is_active': true,
+          'created_at': Timestamp.now(),
+        });
+        await fakeFirestore.collection('students').doc('s2').set({
+          'user_id': 'user2',
+          'institute_id': 'institute1',
+          'current_session': 10,
+          'is_active': true,
+          'created_at': Timestamp.now(),
+        });
+
+        final ready =
+            await studentRepository.getStudentsReadyForExam('institute1');
+
+        expect(ready.length, 1);
+        expect(ready.first.user.name, 'طالب جاهز');
+      });
+
+      test('excludes inactive students', () async {
+        await _createUser(id: 'user1', name: 'طالب غير فعال');
+
+        await fakeFirestore.collection('students').doc('s1').set({
+          'user_id': 'user1',
+          'institute_id': 'institute1',
+          'current_session': 36,
+          'is_active': false,
+          'created_at': Timestamp.now(),
+        });
+
+        final ready =
+            await studentRepository.getStudentsReadyForExam('institute1');
+
+        expect(ready, isEmpty);
+      });
+    });
+
+    group('updateStudent', () {
+      test('updates student fields', () async {
+        await fakeFirestore.collection('students').doc('s1').set({
+          'user_id': 'u1',
+          'institute_id': 'i1',
+          'current_session': 5,
+          'current_attempt': 1,
+          'is_active': true,
+          'created_at': Timestamp.now(),
+        });
+
+        final student = StudentModel(
+          id: 's1',
+          userId: 'u1',
+          instituteId: 'i1',
+          currentSession: 10,
+          currentAttempt: 2,
+          createdAt: DateTime.now(),
+        );
+
+        await studentRepository.updateStudent(student);
+
+        final doc = await fakeFirestore.collection('students').doc('s1').get();
+        expect(doc.data()?['current_session'], 10);
+        expect(doc.data()?['current_attempt'], 2);
+      });
     });
   });
 }

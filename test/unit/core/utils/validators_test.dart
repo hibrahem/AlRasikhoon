@@ -251,5 +251,85 @@ void main() {
         expect(Validators.validateNotes(longNotes), isNotNull);
       });
     });
+
+    group('validateEmail', () {
+      test('rejects empty email', () {
+        expect(Validators.validateEmail(''), isNotNull);
+        expect(Validators.validateEmail(null), isNotNull);
+      });
+
+      test('accepts valid emails', () {
+        expect(Validators.validateEmail('user@example.com'), isNull);
+        expect(Validators.validateEmail('test.name@domain.co'), isNull);
+        expect(Validators.validateEmail('user+tag@example.org'), isNull);
+      });
+
+      test('rejects emails without @', () {
+        expect(Validators.validateEmail('userexample.com'), isNotNull);
+      });
+
+      test('rejects emails without domain', () {
+        expect(Validators.validateEmail('user@'), isNotNull);
+      });
+
+      test('rejects emails without TLD', () {
+        expect(Validators.validateEmail('user@domain'), isNotNull);
+      });
+
+      test('rejects emails with spaces', () {
+        expect(Validators.validateEmail('user @example.com'), isNotNull);
+      });
+    });
+
+    group('validatePassword', () {
+      test('rejects empty password', () {
+        expect(Validators.validatePassword(''), isNotNull);
+        expect(Validators.validatePassword(null), isNotNull);
+      });
+
+      test('rejects password shorter than 6 characters', () {
+        expect(Validators.validatePassword('12345'), isNotNull);
+        expect(Validators.validatePassword('abc'), isNotNull);
+      });
+
+      test('accepts password of exactly 6 characters', () {
+        expect(Validators.validatePassword('123456'), isNull);
+      });
+
+      test('accepts long passwords', () {
+        expect(Validators.validatePassword('a' * 100), isNull);
+      });
+    });
+
+    group('validateConfirmPassword', () {
+      test('rejects empty confirmation', () {
+        expect(Validators.validateConfirmPassword('', 'password'), isNotNull);
+        expect(Validators.validateConfirmPassword(null, 'password'), isNotNull);
+      });
+
+      test('rejects non-matching passwords', () {
+        expect(
+            Validators.validateConfirmPassword('different', 'password'), isNotNull);
+      });
+
+      test('accepts matching passwords', () {
+        expect(
+            Validators.validateConfirmPassword('password', 'password'), isNull);
+      });
+    });
+
+    group('validateOptionalPhone', () {
+      test('accepts null or empty (optional)', () {
+        final country = Countries.saudiArabia;
+        expect(Validators.validateOptionalPhone(null, country), isNull);
+        expect(Validators.validateOptionalPhone('', country), isNull);
+      });
+
+      test('validates phone when provided', () {
+        final country = Countries.saudiArabia;
+        expect(Validators.validateOptionalPhone('512345678', country), isNull);
+        expect(Validators.validateOptionalPhone('123', country), isNotNull);
+      });
+    });
   });
 }

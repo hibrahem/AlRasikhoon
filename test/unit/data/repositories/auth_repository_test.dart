@@ -11,6 +11,7 @@ import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/data/services/google_auth_service.dart';
 import 'package:al_rasikhoon/data/services/local_storage_service.dart';
 import 'package:al_rasikhoon/data/services/deep_link_service.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 // Mocks
 class MockFirebaseService extends Mock implements FirebaseService {}
@@ -38,6 +39,11 @@ class FakeFirebaseAuthException extends Fake implements FirebaseAuthException {
 }
 
 class FakeActionCodeSettings extends Fake implements ActionCodeSettings {}
+
+class MockGoogleSignInAccount extends Mock implements GoogleSignInAccount {}
+
+class MockGoogleSignInAuthentication extends Mock
+    implements GoogleSignInAuthentication {}
 
 void main() {
   late MockFirebaseService mockFirebaseService;
@@ -529,6 +535,149 @@ void main() {
 
         final state = container.read(authRepositoryProvider);
         expect(state.error, 'لا يوجد رابط معلق');
+      });
+    });
+
+    group('signInWithGoogle', () {
+      test('returns user when Google sign-in succeeds and user found by UID',
+          () async {
+        const uid = 'google-uid';
+        const email = 'google@example.com';
+        final mockGoogleAccount = MockGoogleSignInAccount();
+        final mockGoogleAuth = MockGoogleSignInAuthentication();
+        final mockUserCredential = MockUserCredential();
+        final mockUser = MockUser();
+        final appUser = _createUser(
+          id: uid,
+          email: email,
+          authProvider: UserAuthProvider.google,
+        );
+
+        when(() => mockGoogleAuthService.signIn())
+            .thenAnswer((_) async => mockGoogleAccount);
+        when(() => mockGoogleAuthService.getAuthentication(mockGoogleAccount))
+            .thenAnswer((_) async => mockGoogleAuth);
+        when(() => mockGoogleAuth.idToken).thenReturn('id-token');
+        when(() => mockGoogleAuth.accessToken).thenReturn('access-token');
+        when(() => mockFirebaseService.signInWithGoogleCredential(
+              idToken: 'id-token',
+              accessToken: 'access-token',
+            )).thenAnswer((_) async => mockUserCredential);
+        when(() => mockUser.uid).thenReturn(uid);
+        when(() => mockUser.email).thenReturn(email);
+        when(() => mockUserCredential.user).thenReturn(mockUser);
+        when(() => mockUserRepository.getUserById(uid))
+            .thenAnswer((_) async => appUser);
+        when(() => mockLocalStorageService.setUserId(uid))
+            .thenAnswer((_) async {});
+        when(() => mockLocalStorageService.setUserRole(appUser.role.value))
+            .thenAnswer((_) async {});
+
+        final authRepo = container.read(authRepositoryProvider.notifier);
+        final result = await authRepo.signInWithGoogle();
+
+        expect(result, isNotNull);
+        expect(result?.id, uid);
+      });
+
+      test('returns null when user cancels Google sign-in', () async {
+        when(() => mockGoogleAuthService.signIn())
+            .thenAnswer((_) async => null);
+
+        final authRepo = container.read(authRepositoryProvider.notifier);
+        final result = await authRepo.signInWithGoogle();
+
+        expect(result, isNull);
+
+        final state = container.read(authRepositoryProvider);
+        expect(state.error, 'تم إلغاء تسجيل الدخول');
+      });
+
+      test('returns account_not_found when user not in Firestore', () async {
+        const uid = 'google-uid';
+        const email = 'unknown@example.com';
+        final mockGoogleAccount = MockGoogleSignInAccount();
+        final mockGoogleAuth = MockGoogleSignInAuthentication();
+        final mockUserCredential = MockUserCredential();
+        final mockUser = MockUser();
+
+        when(() => mockGoogleAuthService.signIn())
+            .thenAnswer((_) async => mockGoogleAccount);
+        when(() => mockGoogleAuthService.getAuthentication(mockGoogleAccount))
+            .thenAnswer((_) async => mockGoogleAuth);
+        when(() => mockGoogleAuth.idToken).thenReturn('id-token');
+        when(() => mockGoogleAuth.accessToken).thenReturn('access-token');
+        when(() => mockFirebaseService.signInWithGoogleCredential(
+              idToken: 'id-token',
+              accessToken: 'access-token',
+            )).thenAnswer((_) async => mockUserCredential);
+        when(() => mockUser.uid).thenReturn(uid);
+        when(() => mockUser.email).thenReturn(email);
+        when(() => mockUserCredential.user).thenReturn(mockUser);
+        when(() => mockUserRepository.getUserById(uid))
+            .thenAnswer((_) async => null);
+        when(() => mockUserRepository.getUserByEmail(email))
+            .thenAnswer((_) async => null);
+
+        final authRepo = container.read(authRepositoryProvider.notifier);
+        final result = await authRepo.signInWithGoogle();
+
+        expect(result, isNull);
+        expect(container.read(authRepositoryProvider).error, 'account_not_found');
+      });
+
+      test('migrates user found by email to Firebase UID', () async {
+        const uid = 'google-uid';
+        const email = 'migrate@example.com';
+        const oldId = 'old-uuid';
+        final mockGoogleAccount = MockGoogleSignInAccount();
+        final mockGoogleAuth = MockGoogleSignInAuthentication();
+        final mockUserCredential = MockUserCredential();
+        final mockUser = MockUser();
+        final oldUser = _createUser(id: oldId, email: email);
+        final migratedUser = oldUser.copyWith(
+          id: uid,
+          authProvider: UserAuthProvider.google,
+        );
+
+        when(() => mockGoogleAuthService.signIn())
+            .thenAnswer((_) async => mockGoogleAccount);
+        when(() => mockGoogleAuthService.getAuthentication(mockGoogleAccount))
+            .thenAnswer((_) async => mockGoogleAuth);
+        when(() => mockGoogleAuth.idToken).thenReturn('id-token');
+        when(() => mockGoogleAuth.accessToken).thenReturn('access-token');
+        when(() => mockFirebaseService.signInWithGoogleCredential(
+              idToken: 'id-token',
+              accessToken: 'access-token',
+            )).thenAnswer((_) async => mockUserCredential);
+        when(() => mockUser.uid).thenReturn(uid);
+        when(() => mockUser.email).thenReturn(email);
+        when(() => mockUserCredential.user).thenReturn(mockUser);
+        when(() => mockUserRepository.getUserById(uid))
+            .thenAnswer((_) async => null);
+        when(() => mockUserRepository.getUserByEmail(email))
+            .thenAnswer((_) async => oldUser);
+        when(() => mockUserRepository.migrateUserToFirebaseUid(
+              oldId: oldId,
+              newFirebaseUid: uid,
+              authProvider: UserAuthProvider.google,
+            )).thenAnswer((_) async => migratedUser);
+        when(() => mockLocalStorageService.setUserId(uid))
+            .thenAnswer((_) async {});
+        when(() => mockLocalStorageService.setUserRole(migratedUser.role.value))
+            .thenAnswer((_) async {});
+
+        final authRepo = container.read(authRepositoryProvider.notifier);
+        final result = await authRepo.signInWithGoogle();
+
+        expect(result, isNotNull);
+        expect(result?.id, uid);
+
+        verify(() => mockUserRepository.migrateUserToFirebaseUid(
+              oldId: oldId,
+              newFirebaseUid: uid,
+              authProvider: UserAuthProvider.google,
+            )).called(1);
       });
     });
 
