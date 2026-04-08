@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,6 +21,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   String? _emailError;
   bool _isGoogleLoading = false;
   bool _linkSent = false;
+  bool _linkChecked = false;
 
   @override
   void dispose() {
@@ -142,9 +144,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  /// Web fallback: check if the current URL is a sign-in link.
+  /// This handles the case where the deep link listener in AuthRepository
+  /// missed the link due to initialization timing.
+  void _checkForEmailLink() {
+    if (!kIsWeb) return;
+    final link = Uri.base.toString();
+    ref.read(authRepositoryProvider.notifier).signInWithEmailLink(link);
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authRepositoryProvider);
+
+    // Web fallback: check URL for sign-in link on first build
+    if (kIsWeb && !_linkChecked) {
+      _linkChecked = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkForEmailLink();
+      });
+    }
 
     // Handle cross-device email prompt
     if (authState.error == 'email_prompt_needed') {

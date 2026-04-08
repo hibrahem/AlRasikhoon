@@ -73,9 +73,18 @@ class AuthRepository extends Notifier<AuthState> {
   }
 
   void _initDeepLinkListener() {
-    final deepLinkService = ref.read(deepLinkServiceProvider);
+    // On web, check Uri.base directly — more reliable than DeepLinkService
+    // because all dependencies are guaranteed to be ready at this point
+    if (kIsWeb) {
+      final link = Uri.base.toString();
+      if (_firebaseService.isSignInWithEmailLink(link)) {
+        signInWithEmailLink(link);
+        return;
+      }
+    }
 
-    // Check for initial link that arrived before this listener was set up
+    // For mobile, use DeepLinkService
+    final deepLinkService = ref.read(deepLinkServiceProvider);
     final initialLink = deepLinkService.consumeInitialLink();
     if (initialLink != null) {
       final link = initialLink.toString();
@@ -83,8 +92,6 @@ class AuthRepository extends Notifier<AuthState> {
         signInWithEmailLink(link);
       }
     }
-
-    // Listen for subsequent links (warm start, mobile)
     deepLinkService.linkStream.listen((uri) {
       final link = uri.toString();
       if (_firebaseService.isSignInWithEmailLink(link)) {
