@@ -59,49 +59,60 @@ abstract class TestRobot {
   }
 }
 
-/// Robot for authentication flows
+/// Robot for authentication flows (email link + Google Sign-In)
 class AuthRobot extends TestRobot {
   AuthRobot(super.tester);
 
   /// Verify we're on the login screen
   Future<void> verifyLoginScreen() async {
     await pumpAndSettle();
-    expect(find.text('تسجيل الدخول'), findsOneWidget);
+    expect(find.text('الراسخون'), findsOneWidget);
+    expect(find.text('إرسال رابط الدخول'), findsOneWidget);
   }
 
-  /// Enter phone number
-  Future<void> enterPhoneNumber(String phone) async {
-    final phoneField = find.byType(TextField).first;
-    await tester.enterText(phoneField, phone);
+  /// Enter email address
+  Future<void> enterEmail(String email) async {
+    final emailField = find.byType(TextField).first;
+    await tester.enterText(emailField, email);
     await pumpAndSettle();
   }
 
-  /// Tap continue/send OTP button
-  Future<void> tapContinue() async {
-    await tapByText('متابعة');
+  /// Tap send login link button
+  Future<void> tapSendLink() async {
+    await tapByText('إرسال رابط الدخول');
   }
 
-  /// Verify OTP screen
-  Future<void> verifyOtpScreen() async {
+  /// Verify link sent success screen
+  Future<void> verifyLinkSentScreen() async {
     await pumpAndSettle();
-    expect(find.text('رمز التحقق'), findsOneWidget);
+    expect(find.text('تم إرسال رابط الدخول'), findsOneWidget);
   }
 
-  /// Enter OTP code
-  Future<void> enterOtp(String otp) async {
-    for (int i = 0; i < otp.length; i++) {
-      final otpField = find.byType(TextField).at(i);
-      if (otpField.evaluate().isNotEmpty) {
-        await tester.enterText(otpField, otp[i]);
-      }
-    }
-    await pumpAndSettle();
+  /// Tap Google Sign-In button
+  Future<void> tapGoogleSignIn() async {
+    await tapByText('تسجيل الدخول بواسطة Google');
+  }
+
+  /// Tap resend link button
+  Future<void> tapResendLink() async {
+    await tapByText('إرسال رابط جديد');
+  }
+
+  /// Tap change email button
+  Future<void> tapChangeEmail() async {
+    await tapByText('تغيير البريد الإلكتروني');
   }
 
   /// Verify account not found screen
   Future<void> verifyAccountNotFoundScreen() async {
     await pumpAndSettle();
     expect(find.textContaining('غير مسجل'), findsOneWidget);
+  }
+
+  /// Verify error message displayed
+  Future<void> verifyErrorMessage(String message) async {
+    await pumpAndSettle();
+    expect(find.text(message), findsOneWidget);
   }
 }
 
@@ -178,14 +189,18 @@ class AdminRobot extends TestRobot {
     await tapByIcon(Icons.add);
   }
 
-  /// Fill teacher form
+  /// Fill teacher form (name + email + optional phone)
   Future<void> fillTeacherForm({
     required String name,
-    required String phone,
+    required String email,
+    String? phone,
   }) async {
     final textFields = find.byType(TextField);
     await tester.enterText(textFields.at(0), name);
-    await tester.enterText(textFields.at(1), phone);
+    await tester.enterText(textFields.at(1), email);
+    if (phone != null && textFields.evaluate().length > 2) {
+      await tester.enterText(textFields.at(2), phone);
+    }
     await pumpAndSettle();
   }
 
@@ -211,17 +226,18 @@ class TeacherRobot extends TestRobot {
     await tapByIcon(Icons.add);
   }
 
-  /// Fill student form
+  /// Fill student form (name + email + optional phone/guardian)
   Future<void> fillStudentForm({
     required String name,
-    required String phone,
-    String? guardianPhone,
+    required String email,
+    String? phone,
+    String? guardianEmail,
   }) async {
     final textFields = find.byType(TextField);
     await tester.enterText(textFields.at(0), name);
-    await tester.enterText(textFields.at(1), phone);
-    if (guardianPhone != null && textFields.evaluate().length > 2) {
-      await tester.enterText(textFields.at(2), guardianPhone);
+    await tester.enterText(textFields.at(1), email);
+    if (phone != null && textFields.evaluate().length > 2) {
+      await tester.enterText(textFields.at(2), phone);
     }
     await pumpAndSettle();
   }

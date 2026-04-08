@@ -85,7 +85,7 @@ void main() {
       await adminRobot.tapAddTeacher();
       await adminRobot.fillTeacherForm(
         name: 'أحمد محمد',
-        phone: '512345678',
+        email: 'ahmed@example.com',
       );
       await adminRobot.submitForm();
 

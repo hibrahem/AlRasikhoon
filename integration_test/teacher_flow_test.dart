@@ -45,8 +45,7 @@ void main() {
       await teacherRobot.tapAddStudent();
       await teacherRobot.fillStudentForm(
         name: 'عبدالله أحمد',
-        phone: '512345682',
-        guardianPhone: '512345683',
+        email: 'abdullah@example.com',
       );
       await teacherRobot.submitStudentForm();
 
