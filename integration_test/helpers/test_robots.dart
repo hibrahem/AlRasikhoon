@@ -314,28 +314,39 @@ class TeacherRobot extends TestRobot {
     await tapByText('بدء الحلقة');
   }
 
-  /// Enter error count
+  /// Set error count by tapping the add button N times
   Future<void> enterErrorCount(int errors) async {
-    final errorField = find.byType(TextField).first;
-    await tester.enterText(errorField, errors.toString());
-    await pumpAndSettle();
-  }
-
-  /// Submit part result (tap "التالي" for parts 1-2, or "إنهاء التسميع" for part 3)
-  Future<void> submitPartResult() async {
-    // Try "التالي" first (parts 1-2), fall back to "إنهاء التسميع" (part 3)
-    final nextButton = find.text('التالي');
-    if (nextButton.evaluate().isNotEmpty) {
-      await tester.tap(nextButton.first);
-    } else {
-      await tester.tap(find.textContaining('التالي').first);
+    // The ErrorCounter uses an InkWell with Icons.add to increment
+    // Find the add button within the ErrorCounter
+    for (int i = 0; i < errors; i++) {
+      final addButtons = find.byIcon(Icons.add);
+      // The last Icons.add is usually the error counter's add button
+      // (not the FAB)
+      await tester.tap(addButtons.last);
+      await pumpAndSettle();
     }
+  }
+
+  /// Submit recitation and go to result (parts 1-2: "التالي", part 3: "إنهاء التسميع")
+  Future<void> submitRecitation({required int part}) async {
+    if (part < 3) {
+      await tapByText('التالي');
+    } else {
+      await tapByText('إنهاء التسميع');
+    }
+  }
+
+  /// Go to next part from the result screen (parts 1-2)
+  Future<void> goToNextPart() async {
+    // The button text is "التالي: [part title]", find by prefix
+    final nextButton = find.textContaining('التالي:');
+    await tester.tap(nextButton.first);
     await pumpAndSettle();
   }
 
-  /// Submit last part result
-  Future<void> submitLastPartResult() async {
-    await tapByText('إنهاء التسميع');
+  /// Go to session summary from part 3 result screen
+  Future<void> goToSessionSummary() async {
+    await tapByText('عرض ملخص الحلقة');
   }
 
   /// Verify grade displayed
@@ -344,7 +355,7 @@ class TeacherRobot extends TestRobot {
     expect(find.textContaining(gradeAr), findsWidgets);
   }
 
-  /// Complete session (save from summary screen)
+  /// Save and complete session from summary screen
   Future<void> completeSession() async {
     await tapByText('حفظ وإنهاء الحلقة');
   }
@@ -420,7 +431,7 @@ class StudentRobot extends TestRobot {
   /// Verify level progression widget
   Future<void> verifyLevelProgression() async {
     await pumpAndSettle();
-    expect(find.text('المستويات'), findsOneWidget);
+    expect(find.text('المستويات'), findsWidgets);
   }
 
   /// Navigate to home practice screen

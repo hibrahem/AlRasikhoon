@@ -107,15 +107,18 @@ void main() {
 
       // Part 1: New memorization - 0 errors
       await teacherRobot.enterErrorCount(0);
-      await teacherRobot.submitPartResult();
+      await teacherRobot.submitRecitation(part: 1);
+      await teacherRobot.goToNextPart();
 
       // Part 2: Recent review - 1 error
       await teacherRobot.enterErrorCount(1);
-      await teacherRobot.submitPartResult();
+      await teacherRobot.submitRecitation(part: 2);
+      await teacherRobot.goToNextPart();
 
       // Part 3: Distant review - 2 errors
       await teacherRobot.enterErrorCount(2);
-      await teacherRobot.submitPartResult();
+      await teacherRobot.submitRecitation(part: 3);
+      await teacherRobot.goToSessionSummary();
 
       // Assert - Session completed with passing grade
       await teacherRobot.completeSession();
@@ -148,15 +151,18 @@ void main() {
 
       // Part 1: New memorization - 5 errors (FAIL)
       await teacherRobot.enterErrorCount(5);
-      await teacherRobot.submitPartResult();
+      await teacherRobot.submitRecitation(part: 1);
+      await teacherRobot.goToNextPart();
 
       // Part 2: Recent review - 0 errors
       await teacherRobot.enterErrorCount(0);
-      await teacherRobot.submitPartResult();
+      await teacherRobot.submitRecitation(part: 2);
+      await teacherRobot.goToNextPart();
 
       // Part 3: Distant review - 0 errors
       await teacherRobot.enterErrorCount(0);
-      await teacherRobot.submitPartResult();
+      await teacherRobot.submitRecitation(part: 3);
+      await teacherRobot.goToSessionSummary();
 
       // Assert - Session failed due to Part 1
       await teacherRobot.completeSession();
@@ -193,20 +199,22 @@ void main() {
 
       // Part 1: 5 errors (FAIL)
       await teacherRobot.enterErrorCount(5);
-      await teacherRobot.submitPartResult();
+      await teacherRobot.submitRecitation(part: 1);
+      await teacherRobot.goToNextPart();
 
       // Part 2: 0 errors
       await teacherRobot.enterErrorCount(0);
-      await teacherRobot.submitPartResult();
+      await teacherRobot.submitRecitation(part: 2);
+      await teacherRobot.goToNextPart();
 
       // Part 3: 0 errors
       await teacherRobot.enterErrorCount(0);
-      await teacherRobot.submitPartResult();
+      await teacherRobot.submitRecitation(part: 3);
+      await teacherRobot.goToSessionSummary();
 
       await teacherRobot.completeSession();
 
       // Assert - Session failed, student should still be on same session
-      // (can retry by starting session again)
       await teacherRobot.pumpAndSettle();
       expect(find.textContaining('محب'), findsWidgets); // Failed grade
     });
