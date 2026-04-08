@@ -209,6 +209,28 @@ class AdminRobot extends TestRobot {
     await pumpAndSettle();
     expect(find.text(name), findsOneWidget);
   }
+
+  /// Tap edit institute button (icon in AppBar)
+  Future<void> tapEditInstitute() async {
+    await tapByIcon(Icons.edit);
+  }
+
+  /// Fill edit institute form
+  Future<void> fillEditInstituteForm({
+    required String name,
+    required String location,
+  }) async {
+    final textFields = find.byType(TextField);
+    // Clear and enter new values
+    await tester.enterText(textFields.at(0), name);
+    await tester.enterText(textFields.at(1), location);
+    await pumpAndSettle();
+  }
+
+  /// Save edit changes
+  Future<void> saveChanges() async {
+    await tapByText('حفظ التغييرات');
+  }
 }
 
 /// Robot for teacher flows
@@ -291,6 +313,33 @@ class TeacherRobot extends TestRobot {
   Future<void> completeSession() async {
     await tapByText('إنهاء الحلقة');
   }
+
+  /// Start sard session
+  Future<void> startSardSession() async {
+    await tapByText('بدء السرد');
+  }
+
+  /// Verify sard session screen
+  Future<void> verifySardScreen() async {
+    await pumpAndSettle();
+    expect(find.text('السرد'), findsOneWidget);
+  }
+
+  /// Tap end sard button
+  Future<void> tapEndSard() async {
+    await tapByText('إنهاء السرد');
+  }
+
+  /// Verify sard result screen
+  Future<void> verifySardResult() async {
+    await pumpAndSettle();
+    expect(find.text('نتيجة السرد'), findsOneWidget);
+  }
+
+  /// Save sard result
+  Future<void> saveSardResult() async {
+    await tapByText('حفظ النتيجة');
+  }
 }
 
 /// Robot for student flows
@@ -337,6 +386,35 @@ class StudentRobot extends TestRobot {
   Future<void> verifyLevelProgression() async {
     await pumpAndSettle();
     expect(find.text('المستويات'), findsOneWidget);
+  }
+
+  /// Navigate to home practice screen
+  Future<void> goToHomePractice() async {
+    await tapByText('التكرار');
+  }
+
+  /// Verify home practice screen
+  Future<void> verifyHomePracticeScreen() async {
+    await pumpAndSettle();
+    expect(find.text('التكرار في المنزل'), findsOneWidget);
+  }
+
+  /// Submit a practice record with given repetitions
+  Future<void> submitPractice({int repetitions = 1}) async {
+    // The repetitions field has a default value of 1
+    // If we need a different value, enter it
+    if (repetitions != 1) {
+      final repField = find.byType(TextField).first;
+      await tester.enterText(repField, repetitions.toString());
+      await pumpAndSettle();
+    }
+    await tapByText('تسجيل التكرار');
+  }
+
+  /// Verify practice submitted successfully
+  Future<void> verifyPracticeSuccess() async {
+    await pumpAndSettle();
+    expect(find.text('تم تسجيل التكرار بنجاح'), findsOneWidget);
   }
 }
 

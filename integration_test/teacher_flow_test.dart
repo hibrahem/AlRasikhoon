@@ -163,6 +163,92 @@ void main() {
       await teacherRobot.verifyGrade('محب'); // Failed = محب
     });
 
+    testWidgets('Failed session allows student to retry', (tester) async {
+      // Arrange
+      final teacher = env.createTeacher();
+      await env.setUp(authenticatedUser: teacher);
+      final instituteId = await env.addInstitute();
+      await env.assignTeacherToInstitute(teacher.id, instituteId);
+
+      final studentUser = env.createStudent(
+          id: 'student_retry', name: 'طالب الإعادة');
+      await env.fakeFirestore
+          .collection('users')
+          .doc(studentUser.id)
+          .set(studentUser.toFirestore());
+      await env.addStudent(
+        userId: studentUser.id,
+        instituteId: instituteId,
+        teacherId: teacher.id,
+        currentSession: 1,
+      );
+
+      // Act
+      await tester.pumpWidget(TestApp(overrides: env.overrides));
+      teacherRobot = TeacherRobot(tester);
+
+      await teacherRobot.verifyStudentsScreen();
+      await teacherRobot.tapStudent('طالب الإعادة');
+      await teacherRobot.startSession();
+
+      // Part 1: 5 errors (FAIL)
+      await teacherRobot.enterErrorCount(5);
+      await teacherRobot.submitPartResult();
+
+      // Part 2: 0 errors
+      await teacherRobot.enterErrorCount(0);
+      await teacherRobot.submitPartResult();
+
+      // Part 3: 0 errors
+      await teacherRobot.enterErrorCount(0);
+      await teacherRobot.submitPartResult();
+
+      await teacherRobot.completeSession();
+
+      // Assert - Session failed, student should still be on same session
+      // (can retry by starting session again)
+      await teacherRobot.pumpAndSettle();
+      expect(find.textContaining('محب'), findsWidgets); // Failed grade
+    });
+
+    testWidgets('Teacher can complete sard session with passing result',
+        (tester) async {
+      // Arrange
+      final teacher = env.createTeacher();
+      await env.setUp(authenticatedUser: teacher);
+      final instituteId = await env.addInstitute();
+      await env.assignTeacherToInstitute(teacher.id, instituteId);
+
+      final studentUser = env.createStudent(
+          id: 'student_sard_pass', name: 'طالب السرد');
+      await env.fakeFirestore
+          .collection('users')
+          .doc(studentUser.id)
+          .set(studentUser.toFirestore());
+      await env.addStudent(
+        userId: studentUser.id,
+        instituteId: instituteId,
+        teacherId: teacher.id,
+        currentSession: 35, // Sard session
+      );
+
+      // Act
+      await tester.pumpWidget(TestApp(overrides: env.overrides));
+      teacherRobot = TeacherRobot(tester);
+
+      await teacherRobot.verifyStudentsScreen();
+      await teacherRobot.tapStudent('طالب السرد');
+      await teacherRobot.startSardSession();
+      await teacherRobot.verifySardScreen();
+
+      // End sard with 0 errors
+      await teacherRobot.tapEndSard();
+
+      // Assert - Sard result screen
+      await teacherRobot.verifySardResult();
+      await teacherRobot.saveSardResult();
+    });
+
     testWidgets('Teacher can conduct Sard session at session 35', (tester) async {
       // Arrange
       final teacher = env.createTeacher();

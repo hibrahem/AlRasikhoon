@@ -114,6 +114,38 @@ void main() {
       expect(adminRobot.isTextDisplayed('محمد علي'), true);
     });
 
+    testWidgets('Admin can edit an existing institute', (tester) async {
+      // Arrange
+      final admin = env.createSuperAdmin();
+      await env.setUp(authenticatedUser: admin);
+      await env.addInstitute(
+        id: 'edit_institute',
+        name: 'معهد القديم',
+        location: 'الرياض',
+      );
+
+      // Act
+      await tester.pumpWidget(TestApp(overrides: env.overrides));
+      adminRobot = AdminRobot(tester);
+
+      await adminRobot.verifyDashboard();
+      await adminRobot.goToInstitutes();
+      await adminRobot.tapInstitute('معهد القديم');
+      await adminRobot.verifyInstituteDetail('معهد القديم');
+
+      // Tap edit button and modify
+      await adminRobot.tapEditInstitute();
+      await adminRobot.fillEditInstituteForm(
+        name: 'معهد الجديد',
+        location: 'جدة',
+      );
+      await adminRobot.saveChanges();
+
+      // Assert - should navigate back and show updated name
+      await adminRobot.pumpAndSettle();
+      expect(find.text('تم تحديث المعهد بنجاح'), findsOneWidget);
+    });
+
     testWidgets('Admin can view curriculum', (tester) async {
       // Arrange
       final admin = env.createSuperAdmin();

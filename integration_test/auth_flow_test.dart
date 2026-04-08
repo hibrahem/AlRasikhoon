@@ -1,0 +1,93 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+
+import 'helpers/test_app.dart';
+import 'helpers/test_robots.dart';
+
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  group('Auth E2E Flow', () {
+    late TestEnvironment env;
+    late AuthRobot authRobot;
+
+    setUp(() async {
+      env = TestEnvironment();
+    });
+
+    testWidgets('Login screen renders with email link UI', (tester) async {
+      // Arrange - no authenticated user
+      await env.setUp();
+
+      // Act
+      await tester.pumpWidget(TestApp(overrides: env.overrides));
+      authRobot = AuthRobot(tester);
+
+      // Assert
+      await authRobot.verifyLoginScreen();
+      expect(find.text('الراسخون'), findsOneWidget);
+      expect(find.text('تطبيق حفظ القرآن الكريم'), findsOneWidget);
+      expect(find.text('تسجيل الدخول بواسطة Google'), findsOneWidget);
+      expect(find.text('إرسال رابط الدخول'), findsOneWidget);
+      expect(find.text('يجب أن يكون لديك حساب مسجل مسبقاً'), findsOneWidget);
+    });
+
+    testWidgets('Authenticated admin redirects to admin dashboard',
+        (tester) async {
+      // Arrange
+      final admin = env.createSuperAdmin();
+      await env.setUp(authenticatedUser: admin);
+
+      // Act
+      await tester.pumpWidget(TestApp(overrides: env.overrides));
+
+      // Assert - should redirect to admin dashboard, not login
+      await tester.pumpAndSettle();
+      expect(find.text('لوحة التحكم'), findsOneWidget);
+    });
+
+    testWidgets('Authenticated teacher redirects to students screen',
+        (tester) async {
+      // Arrange
+      final teacher = env.createTeacher();
+      await env.setUp(authenticatedUser: teacher);
+
+      // Act
+      await tester.pumpWidget(TestApp(overrides: env.overrides));
+
+      // Assert
+      await tester.pumpAndSettle();
+      expect(find.text('طلابي'), findsOneWidget);
+    });
+
+    testWidgets('Authenticated student redirects to student dashboard',
+        (tester) async {
+      // Arrange
+      final student = env.createStudent(name: 'أحمد');
+      await env.setUp(authenticatedUser: student);
+      final instituteId = await env.addInstitute();
+      await env.addStudent(userId: student.id, instituteId: instituteId);
+
+      // Act
+      await tester.pumpWidget(TestApp(overrides: env.overrides));
+
+      // Assert
+      await tester.pumpAndSettle();
+      expect(find.textContaining('مرحباً'), findsOneWidget);
+    });
+
+    testWidgets('Authenticated supervisor redirects to supervisor dashboard',
+        (tester) async {
+      // Arrange
+      final supervisor = env.createSupervisor();
+      await env.setUp(authenticatedUser: supervisor);
+
+      // Act
+      await tester.pumpWidget(TestApp(overrides: env.overrides));
+
+      // Assert
+      await tester.pumpAndSettle();
+      expect(find.text('لوحة المشرف'), findsOneWidget);
+    });
+  });
+}

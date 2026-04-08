@@ -231,5 +231,51 @@ void main() {
       // Level progression should show level 1 completed and level 2 current
       await studentRobot.verifyLevelProgression();
     });
+
+    testWidgets('Student can view home practice screen', (tester) async {
+      // Arrange
+      final studentUser = env.createStudent(name: 'طالب التكرار');
+      await env.setUp(authenticatedUser: studentUser);
+      final instituteId = await env.addInstitute();
+      await env.addStudent(
+        userId: studentUser.id,
+        instituteId: instituteId,
+        currentSession: 5,
+      );
+
+      // Act
+      await tester.pumpWidget(TestApp(overrides: env.overrides));
+      studentRobot = StudentRobot(tester);
+
+      await studentRobot.verifyDashboard();
+      await studentRobot.goToHomePractice();
+
+      // Assert
+      await studentRobot.verifyHomePracticeScreen();
+    });
+
+    testWidgets('Student can submit home practice record', (tester) async {
+      // Arrange
+      final studentUser = env.createStudent(name: 'طالب التسجيل');
+      await env.setUp(authenticatedUser: studentUser);
+      final instituteId = await env.addInstitute();
+      await env.addStudent(
+        userId: studentUser.id,
+        instituteId: instituteId,
+        currentSession: 5,
+      );
+
+      // Act
+      await tester.pumpWidget(TestApp(overrides: env.overrides));
+      studentRobot = StudentRobot(tester);
+
+      await studentRobot.verifyDashboard();
+      await studentRobot.goToHomePractice();
+      await studentRobot.verifyHomePracticeScreen();
+      await studentRobot.submitPractice(repetitions: 3);
+
+      // Assert
+      await studentRobot.verifyPracticeSuccess();
+    });
   });
 }
