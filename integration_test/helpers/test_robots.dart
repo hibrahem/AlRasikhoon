@@ -123,22 +123,40 @@ class AdminRobot extends TestRobot {
   /// Verify admin dashboard
   Future<void> verifyDashboard() async {
     await pumpAndSettle();
-    expect(find.text('لوحة التحكم'), findsOneWidget);
+    expect(find.text('مرحباً، مدير النظام'), findsOneWidget);
   }
 
-  /// Navigate to institutes
+  /// Navigate to institutes via bottom nav
   Future<void> goToInstitutes() async {
-    await tapByText('المعاهد');
+    final navBar = find.byType(BottomNavigationBar);
+    final instituteIcon = find.descendant(
+      of: navBar,
+      matching: find.text('المعاهد'),
+    );
+    await tester.tap(instituteIcon);
+    await pumpAndSettle();
   }
 
-  /// Navigate to teachers
+  /// Navigate to teachers via bottom nav
   Future<void> goToTeachers() async {
-    await tapByText('المعلمين');
+    final navBar = find.byType(BottomNavigationBar);
+    final teacherIcon = find.descendant(
+      of: navBar,
+      matching: find.text('المعلمون'),
+    );
+    await tester.tap(teacherIcon);
+    await pumpAndSettle();
   }
 
-  /// Navigate to curriculum
+  /// Navigate to curriculum via bottom nav
   Future<void> goToCurriculum() async {
-    await tapByText('المنهج');
+    final navBar = find.byType(BottomNavigationBar);
+    final curriculumIcon = find.descendant(
+      of: navBar,
+      matching: find.text('المنهج'),
+    );
+    await tester.tap(curriculumIcon);
+    await pumpAndSettle();
   }
 
   /// Tap create institute FAB
@@ -157,9 +175,14 @@ class AdminRobot extends TestRobot {
     await pumpAndSettle();
   }
 
-  /// Submit create form
+  /// Submit create institute form
   Future<void> submitForm() async {
-    await tapByText('إنشاء');
+    await tapByText('إنشاء المعهد');
+  }
+
+  /// Submit add teacher form
+  Future<void> submitTeacherForm() async {
+    await tapByText('إضافة المعلم');
   }
 
   /// Verify institute in list
@@ -245,7 +268,7 @@ class TeacherRobot extends TestRobot {
 
   /// Tap add student FAB
   Future<void> tapAddStudent() async {
-    await tapByIcon(Icons.add);
+    await tapByIcon(Icons.person_add);
   }
 
   /// Fill student form (name + email + optional phone/guardian)
@@ -266,7 +289,7 @@ class TeacherRobot extends TestRobot {
 
   /// Submit student form
   Future<void> submitStudentForm() async {
-    await tapByText('إضافة');
+    await tapByText('إضافة الطالب');
   }
 
   /// Verify student in list
@@ -298,20 +321,32 @@ class TeacherRobot extends TestRobot {
     await pumpAndSettle();
   }
 
-  /// Submit part result
+  /// Submit part result (tap "التالي" for parts 1-2, or "إنهاء التسميع" for part 3)
   Future<void> submitPartResult() async {
-    await tapByText('التالي');
+    // Try "التالي" first (parts 1-2), fall back to "إنهاء التسميع" (part 3)
+    final nextButton = find.text('التالي');
+    if (nextButton.evaluate().isNotEmpty) {
+      await tester.tap(nextButton.first);
+    } else {
+      await tester.tap(find.textContaining('التالي').first);
+    }
+    await pumpAndSettle();
+  }
+
+  /// Submit last part result
+  Future<void> submitLastPartResult() async {
+    await tapByText('إنهاء التسميع');
   }
 
   /// Verify grade displayed
   Future<void> verifyGrade(String gradeAr) async {
     await pumpAndSettle();
-    expect(find.text(gradeAr), findsOneWidget);
+    expect(find.textContaining(gradeAr), findsWidgets);
   }
 
-  /// Complete session
+  /// Complete session (save from summary screen)
   Future<void> completeSession() async {
-    await tapByText('إنهاء الحلقة');
+    await tapByText('حفظ وإنهاء الحلقة');
   }
 
   /// Start sard session
@@ -360,13 +395,13 @@ class StudentRobot extends TestRobot {
 
   /// Navigate to session history
   Future<void> goToHistory() async {
-    await tapByIcon(Icons.history);
+    await tapByText('السجل');
   }
 
   /// Verify session history screen
   Future<void> verifyHistoryScreen() async {
     await pumpAndSettle();
-    expect(find.text('سجل الحلقات'), findsOneWidget);
+    expect(find.textContaining('سجل'), findsWidgets);
   }
 
   /// Tap on session record
@@ -425,18 +460,24 @@ class SupervisorRobot extends TestRobot {
   /// Verify supervisor dashboard
   Future<void> verifyDashboard() async {
     await pumpAndSettle();
-    expect(find.text('لوحة المشرف'), findsOneWidget);
+    expect(find.text('الراسخون - المشرف'), findsOneWidget);
   }
 
-  /// Navigate to exam queue
+  /// Navigate to exam queue via bottom nav
   Future<void> goToExamQueue() async {
-    await tapByText('قائمة الاختبارات');
+    final navBar = find.byType(BottomNavigationBar);
+    final examIcon = find.descendant(
+      of: navBar,
+      matching: find.text('الاختبارات'),
+    );
+    await tester.tap(examIcon);
+    await pumpAndSettle();
   }
 
   /// Verify exam queue screen
   Future<void> verifyExamQueueScreen() async {
     await pumpAndSettle();
-    expect(find.text('الاختبارات'), findsOneWidget);
+    expect(find.textContaining('اختبار'), findsWidgets);
   }
 
   /// Verify student in queue

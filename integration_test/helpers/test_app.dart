@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:al_rasikhoon/l10n/app_localizations.dart';
 import 'package:al_rasikhoon/core/theme/app_theme.dart';
 import 'package:al_rasikhoon/routing/app_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:al_rasikhoon/data/repositories/auth_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/data/services/local_storage_service.dart';
@@ -13,6 +15,8 @@ import 'package:al_rasikhoon/data/services/deep_link_service.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
 /// Test app wrapper that provides mocked dependencies
 class TestApp extends StatelessWidget {
@@ -88,6 +92,9 @@ class TestEnvironment {
       firestoreProvider.overrideWithValue(fakeFirestore),
       sharedPreferencesProvider.overrideWithValue(sharedPreferences),
       deepLinkServiceProvider.overrideWithValue(deepLinkService),
+      firebaseServiceProvider.overrideWithValue(
+        _TestFirebaseService(firestore: fakeFirestore),
+      ),
     ];
 
     if (authenticatedUser != null) {
@@ -95,6 +102,9 @@ class TestEnvironment {
     } else {
       _setupUnauthenticatedState();
     }
+
+    // Seed curriculum data needed for session/sard/exam screens
+    await seedCurriculumData();
   }
 
   void _setupUnauthenticatedState() {
@@ -226,6 +236,98 @@ class TestEnvironment {
     });
   }
 
+  /// Seed minimal curriculum data needed for session-related screens
+  Future<void> seedCurriculumData() async {
+    // Add a level
+    await fakeFirestore.collection('levels').doc('level_1').set({
+      'name': 'المستوى الأول',
+      'order': 1,
+      'hizbs': [59, 58, 57, 56, 55, 54],
+      'juzs': [30, 29, 28],
+    });
+
+    // Add a regular session
+    await fakeFirestore.collection('sessions').doc('L1_J30_H59_S1').set({
+      'session_number': 1,
+      'level_id': 1,
+      'juz_number': 30,
+      'hizb_number': 59,
+      'session_type': 'regular',
+      'current_level_content': {
+        'from_surah': 'الناس',
+        'from_verse': 1,
+        'to_surah': 'الفلق',
+        'to_verse': 5,
+      },
+      'recent_review_content': {
+        'from_surah': '',
+        'from_verse': 0,
+        'to_surah': '',
+        'to_verse': 0,
+      },
+      'distant_review_content': {
+        'from_surah': '',
+        'from_verse': 0,
+        'to_surah': '',
+        'to_verse': 0,
+      },
+    });
+
+    // Add a sard session (session 35)
+    await fakeFirestore.collection('sessions').doc('L1_J30_H59_S35').set({
+      'session_number': 35,
+      'level_id': 1,
+      'juz_number': 30,
+      'hizb_number': 59,
+      'session_type': 'sard',
+      'current_level_content': {
+        'from_surah': '',
+        'from_verse': 0,
+        'to_surah': '',
+        'to_verse': 0,
+      },
+      'recent_review_content': {
+        'from_surah': '',
+        'from_verse': 0,
+        'to_surah': '',
+        'to_verse': 0,
+      },
+      'distant_review_content': {
+        'from_surah': '',
+        'from_verse': 0,
+        'to_surah': '',
+        'to_verse': 0,
+      },
+    });
+
+    // Add an exam session (session 36)
+    await fakeFirestore.collection('sessions').doc('L1_J30_H59_S36').set({
+      'session_number': 36,
+      'level_id': 1,
+      'juz_number': 30,
+      'hizb_number': 59,
+      'session_type': 'exam',
+      'current_level_content': {
+        'from_surah': '',
+        'from_verse': 0,
+        'to_surah': '',
+        'to_verse': 0,
+      },
+      'recent_review_content': {
+        'from_surah': '',
+        'from_verse': 0,
+        'to_surah': '',
+        'to_verse': 0,
+      },
+      'distant_review_content': {
+        'from_surah': '',
+        'from_verse': 0,
+        'to_surah': '',
+        'to_verse': 0,
+      },
+    });
+  }
+
   /// Assign supervisor to institute
   Future<void> assignSupervisorToInstitute(String supervisorId, String instituteId) async {
     await fakeFirestore.collection('supervisor_institutes').add({
@@ -235,6 +337,13 @@ class TestEnvironment {
       'assigned_at': Timestamp.now(),
     });
   }
+}
+
+/// Fake FirebaseService that doesn't require FirebaseAuth initialization.
+/// Only provides Firestore access for screens that use firebaseService.firestore.
+class _TestFirebaseService extends FirebaseService {
+  _TestFirebaseService({required FirebaseFirestore firestore})
+      : super(auth: _MockFirebaseAuth(), firestore: firestore);
 }
 
 /// Fake AuthRepository that doesn't depend on Firebase Auth

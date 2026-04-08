@@ -87,7 +87,7 @@ void main() {
         name: 'أحمد محمد',
         email: 'ahmed@example.com',
       );
-      await adminRobot.submitForm();
+      await adminRobot.submitTeacherForm();
 
       // Assert
       await adminRobot.verifyTeacherInList('أحمد محمد');

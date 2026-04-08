@@ -43,7 +43,7 @@ void main() {
 
       // Assert - should redirect to admin dashboard, not login
       await tester.pumpAndSettle();
-      expect(find.text('لوحة التحكم'), findsOneWidget);
+      expect(find.text('مرحباً، مدير النظام'), findsOneWidget);
     });
 
     testWidgets('Authenticated teacher redirects to students screen',
@@ -87,7 +87,7 @@ void main() {
 
       // Assert
       await tester.pumpAndSettle();
-      expect(find.text('لوحة المشرف'), findsOneWidget);
+      expect(find.text('الراسخون - المشرف'), findsOneWidget);
     });
   });
 }
