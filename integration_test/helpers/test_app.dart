@@ -79,6 +79,15 @@ class TestEnvironment {
   late SharedPreferences sharedPreferences;
   late List<dynamic> overrides;
 
+  /// Monotonic counter used to mint unique ids when callers don't supply one.
+  /// DateTime.now().millisecondsSinceEpoch can collide across rapid calls in
+  /// a single test, which silently overwrites Firestore docs.
+  int _idSeq = 0;
+  String _nextId(String prefix) {
+    _idSeq += 1;
+    return '${prefix}_$_idSeq';
+  }
+
   Future<void> setUp({
     UserModel? authenticatedUser,
   }) async {
@@ -188,7 +197,7 @@ class TestEnvironment {
     String? name,
     String? location,
   }) async {
-    final instituteId = id ?? 'institute_${DateTime.now().millisecondsSinceEpoch}';
+    final instituteId = id ?? _nextId('institute');
     await fakeFirestore.collection('institutes').doc(instituteId).set({
       'name': name ?? 'معهد تجريبي',
       'location': location ?? 'الرياض',
@@ -208,7 +217,7 @@ class TestEnvironment {
     int currentSession = 1,
     int currentLevel = 1,
   }) async {
-    final studentId = id ?? 'student_${DateTime.now().millisecondsSinceEpoch}';
+    final studentId = id ?? _nextId('student');
     await fakeFirestore.collection('students').doc(studentId).set({
       'user_id': userId,
       'institute_id': instituteId,

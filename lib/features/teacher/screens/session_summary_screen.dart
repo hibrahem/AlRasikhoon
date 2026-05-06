@@ -12,10 +12,7 @@ import '../providers/teacher_provider.dart';
 class SessionSummaryScreen extends ConsumerStatefulWidget {
   final String studentId;
 
-  const SessionSummaryScreen({
-    super.key,
-    required this.studentId,
-  });
+  const SessionSummaryScreen({super.key, required this.studentId});
 
   @override
   ConsumerState<SessionSummaryScreen> createState() =>
@@ -42,8 +39,9 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
           .setNotes(_notesController.text.trim());
 
       // Complete session
-      final record =
-          await ref.read(activeSessionProvider.notifier).completeSession();
+      final record = await ref
+          .read(activeSessionProvider.notifier)
+          .completeSession();
 
       if (record != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -51,8 +49,9 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
             content: Text(
               record.passed ? 'تم حفظ الحلقة - ناجح' : 'تم حفظ الحلقة - راسب',
             ),
-            backgroundColor:
-                record.passed ? AppColors.success : AppColors.warning,
+            backgroundColor: record.passed
+                ? AppColors.success
+                : AppColors.warning,
           ),
         );
 
@@ -87,8 +86,7 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
       );
     }
 
-    // Calculate session grade for potential future use
-    final _ = GradeCalculator.calculateSessionGrade(
+    final sessionGrade = GradeCalculator.calculateSessionGrade(
       newMemorizationErrors: activeSession.part1Errors,
       recentReviewErrors: activeSession.part2Errors,
       distantReviewErrors: activeSession.part3Errors,
@@ -136,12 +134,8 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                             ),
                             Text(
                               'الحلقة ${studentWithUser.student.currentSession}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.textSecondary),
                             ),
                           ],
                         ),
@@ -157,7 +151,8 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
             // Overall grade
             Center(
               child: GradeDisplay(
-                errorCount: (activeSession.totalErrors / 3).ceil(),
+                errorCount: activeSession.totalErrors,
+                gradeInfo: sessionGrade,
                 showStars: true,
                 showPassStatus: true,
               ),
@@ -233,10 +228,7 @@ class _PartResultCard extends StatelessWidget {
   final String title;
   final int errors;
 
-  const _PartResultCard({
-    required this.title,
-    required this.errors,
-  });
+  const _PartResultCard({required this.title, required this.errors});
 
   @override
   Widget build(BuildContext context) {
@@ -253,10 +245,7 @@ class _PartResultCard extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              title,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            child: Text(title, style: Theme.of(context).textTheme.bodyMedium),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -270,9 +259,9 @@ class _PartResultCard extends StatelessWidget {
               ),
               Text(
                 gradeInfo.nameAr,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: gradeInfo.color,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: gradeInfo.color),
               ),
             ],
           ),

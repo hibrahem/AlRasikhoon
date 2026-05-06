@@ -158,9 +158,10 @@ void main() {
       await adminRobot.verifyDashboard();
       await adminRobot.goToCurriculum();
 
-      // Assert - Curriculum screen should show levels
+      // Assert - Curriculum screen should show its overview header.
+      // ('المنهج' is also the bottom-nav label, so use a screen-unique string.)
       await adminRobot.pumpAndSettle();
-      expect(find.text('المنهج'), findsOneWidget);
+      expect(find.text('منهج الراسخون'), findsOneWidget);
     });
   });
 }

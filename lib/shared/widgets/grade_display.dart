@@ -4,6 +4,7 @@ import '../../core/utils/grade_calculator.dart';
 
 class GradeDisplay extends StatelessWidget {
   final int errorCount;
+  final GradeInfo? gradeInfo;
   final bool showStars;
   final bool showPassStatus;
   final bool isCompact;
@@ -11,6 +12,7 @@ class GradeDisplay extends StatelessWidget {
   const GradeDisplay({
     super.key,
     required this.errorCount,
+    this.gradeInfo,
     this.showStars = true,
     this.showPassStatus = true,
     this.isCompact = false,
@@ -18,7 +20,7 @@ class GradeDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gradeInfo = GradeCalculator.calculate(errorCount);
+    final gradeInfo = this.gradeInfo ?? GradeCalculator.calculate(errorCount);
 
     if (isCompact) {
       return _buildCompact(context, gradeInfo);
@@ -68,10 +70,7 @@ class GradeDisplay extends StatelessWidget {
           // Pass status
           if (showPassStatus)
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               decoration: BoxDecoration(
                 color: gradeInfo.passed
                     ? AppColors.success.withOpacity(0.1)
@@ -82,9 +81,7 @@ class GradeDisplay extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    gradeInfo.passed
-                        ? Icons.check_circle
-                        : Icons.cancel,
+                    gradeInfo.passed ? Icons.check_circle : Icons.cancel,
                     color: gradeInfo.passed
                         ? AppColors.success
                         : AppColors.error,
@@ -110,9 +107,9 @@ class GradeDisplay extends StatelessWidget {
           // Error count
           Text(
             '$errorCount أخطاء',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -195,10 +192,7 @@ class StarsDisplay extends StatelessWidget {
 class GradeBadge extends StatelessWidget {
   final int errorCount;
 
-  const GradeBadge({
-    super.key,
-    required this.errorCount,
-  });
+  const GradeBadge({super.key, required this.errorCount});
 
   @override
   Widget build(BuildContext context) {

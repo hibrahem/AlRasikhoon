@@ -132,8 +132,8 @@ void main() {
       await supervisorRobot.tapStudentForExam('محمد الاختبار');
       await supervisorRobot.verifyExamSession();
 
-      // Enter failing grade (4+ errors)
-      await supervisorRobot.enterExamErrors(5);
+      // Enter failing grade — must exceed maxErrorsToPass (6) for محب/راسب
+      await supervisorRobot.enterExamErrors(7);
       await supervisorRobot.submitExamResult();
 
       // Assert
@@ -206,9 +206,9 @@ void main() {
 
       await supervisorRobot.verifyDashboard();
       await supervisorRobot.goToExamQueue();
+      await supervisorRobot.verifyExamQueueScreen();
 
       // Assert - Only assigned institute's student should appear
-      await supervisorRobot.pumpAndSettle();
       expect(find.text('طالب المعهد المخصص'), findsOneWidget);
       expect(find.text('طالب معهد آخر'), findsNothing);
     });

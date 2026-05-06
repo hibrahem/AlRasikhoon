@@ -120,9 +120,9 @@ void main() {
       await teacherRobot.submitRecitation(part: 3);
       await teacherRobot.goToSessionSummary();
 
-      // Assert - Session completed with passing grade
-      await teacherRobot.completeSession();
+      // Assert - Summary screen shows passing grade, then session completes
       await teacherRobot.verifyGrade('متقن'); // 1 error average = متقن
+      await teacherRobot.completeSession();
     });
 
     testWidgets('Teacher can conduct a session with failing grade', (tester) async {
@@ -149,8 +149,8 @@ void main() {
       await teacherRobot.tapStudent('سعد عبدالله');
       await teacherRobot.startSession();
 
-      // Part 1: New memorization - 5 errors (FAIL)
-      await teacherRobot.enterErrorCount(5);
+      // Part 1: 7 errors — exceeds maxErrorsToPass (6), so session fails.
+      await teacherRobot.enterErrorCount(7);
       await teacherRobot.submitRecitation(part: 1);
       await teacherRobot.goToNextPart();
 
@@ -164,9 +164,9 @@ void main() {
       await teacherRobot.submitRecitation(part: 3);
       await teacherRobot.goToSessionSummary();
 
-      // Assert - Session failed due to Part 1
+      // Assert - Summary screen shows fail grade for over-threshold part 1
+      await teacherRobot.verifyGrade('محب'); // Any part >6 errors = محب (fail)
       await teacherRobot.completeSession();
-      await teacherRobot.verifyGrade('محب'); // Failed = محب
     });
 
     testWidgets('Failed session allows student to retry', (tester) async {
@@ -197,8 +197,8 @@ void main() {
       await teacherRobot.tapStudent('طالب الإعادة');
       await teacherRobot.startSession();
 
-      // Part 1: 5 errors (FAIL)
-      await teacherRobot.enterErrorCount(5);
+      // Part 1: 7 errors — exceeds maxErrorsToPass (6), so session fails.
+      await teacherRobot.enterErrorCount(7);
       await teacherRobot.submitRecitation(part: 1);
       await teacherRobot.goToNextPart();
 
@@ -212,11 +212,9 @@ void main() {
       await teacherRobot.submitRecitation(part: 3);
       await teacherRobot.goToSessionSummary();
 
-      await teacherRobot.completeSession();
-
-      // Assert - Session failed, student should still be on same session
-      await teacherRobot.pumpAndSettle();
+      // Assert - Failed grade is shown on the summary screen before saving
       expect(find.textContaining('محب'), findsWidgets); // Failed grade
+      await teacherRobot.completeSession();
     });
 
     testWidgets('Teacher can complete sard session with passing result',

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:al_rasikhoon/shared/widgets/app_card.dart';
+
 /// Base robot class for E2E testing
 abstract class TestRobot {
   final WidgetTester tester;
@@ -21,6 +23,16 @@ abstract class TestRobot {
   /// Tap a widget by text
   Future<void> tapByText(String text) async {
     await tester.tap(find.text(text));
+    await pumpAndSettle();
+  }
+
+  /// Scroll the nearest Scrollable until [text] is visible, then tap it.
+  Future<void> scrollAndTapByText(String text) async {
+    final finder = find.text(text);
+    final scrollable = find.byType(Scrollable).first;
+    await tester.scrollUntilVisible(finder, 200, scrollable: scrollable);
+    await pumpAndSettle();
+    await tester.tap(finder);
     await pumpAndSettle();
   }
 
@@ -355,9 +367,10 @@ class TeacherRobot extends TestRobot {
     expect(find.textContaining(gradeAr), findsWidgets);
   }
 
-  /// Save and complete session from summary screen
+  /// Save and complete session from summary screen.
+  /// The button can be below the fold; scroll into view first.
   Future<void> completeSession() async {
-    await tapByText('حفظ وإنهاء الحلقة');
+    await scrollAndTapByText('حفظ وإنهاء الحلقة');
   }
 
   /// Start sard session
@@ -415,9 +428,10 @@ class StudentRobot extends TestRobot {
     expect(find.textContaining('سجل'), findsWidgets);
   }
 
-  /// Tap on session record
+  /// Tap on session record. The history screen uses AppCard with onTap,
+  /// not Material's Card.
   Future<void> tapSessionRecord(int index) async {
-    final cards = find.byType(Card);
+    final cards = find.byType(AppCard);
     await tester.tap(cards.at(index));
     await pumpAndSettle();
   }
@@ -445,16 +459,28 @@ class StudentRobot extends TestRobot {
     expect(find.text('التكرار في المنزل'), findsOneWidget);
   }
 
-  /// Submit a practice record with given repetitions
+  /// Submit a practice record with given repetitions.
+  /// Stops at one pump so the success snackbar is still visible to the assertion.
   Future<void> submitPractice({int repetitions = 1}) async {
-    // The repetitions field has a default value of 1
-    // If we need a different value, enter it
     if (repetitions != 1) {
       final repField = find.byType(TextField).first;
       await tester.enterText(repField, repetitions.toString());
       await pumpAndSettle();
     }
-    await tapByText('تسجيل التكرار');
+    // Submit button can be below the fold on smaller emulator screens.
+    final finder = find.text('تسجيل التكرار');
+    await tester.scrollUntilVisible(
+      finder,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await pumpAndSettle();
+    await tester.tap(finder);
+    // Pump enough for the async write to complete and the snackbar to appear,
+    // but don't pumpAndSettle (which would wait the snackbar's full duration
+    // and risk it being gone by the time the assertion runs).
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
   }
 
   /// Verify practice submitted successfully
@@ -468,8 +494,18 @@ class StudentRobot extends TestRobot {
 class SupervisorRobot extends TestRobot {
   SupervisorRobot(super.tester);
 
-  /// Verify supervisor dashboard
+  /// Verify supervisor dashboard.
+  /// Stats are loaded via a chain of FutureProviders, so allow extra pumps
+  /// for the supervisorStatsProvider future to resolve.
   Future<void> verifyDashboard() async {
+    await pumpAndSettle();
+    for (int i = 0; i < 5; i++) {
+      await tester.runAsync(
+        () async =>
+            await Future<void>.delayed(const Duration(milliseconds: 200)),
+      );
+      await pumpAndSettle();
+    }
     await pumpAndSettle();
     expect(find.text('الراسخون - المشرف'), findsOneWidget);
   }
@@ -485,8 +521,18 @@ class SupervisorRobot extends TestRobot {
     await pumpAndSettle();
   }
 
-  /// Verify exam queue screen
+  /// Verify exam queue screen.
+  /// The queue is populated via a FutureProvider chain that needs an extra
+  /// async tick beyond what pumpAndSettle pumps through.
   Future<void> verifyExamQueueScreen() async {
+    await pumpAndSettle();
+    for (int i = 0; i < 5; i++) {
+      await tester.runAsync(
+        () async =>
+            await Future<void>.delayed(const Duration(milliseconds: 200)),
+      );
+      await pumpAndSettle();
+    }
     await pumpAndSettle();
     expect(find.textContaining('اختبار'), findsWidgets);
   }
@@ -508,11 +554,14 @@ class SupervisorRobot extends TestRobot {
     expect(find.textContaining('اختبار'), findsWidgets);
   }
 
-  /// Enter exam errors
+  /// Enter exam errors by tapping the ErrorCounter add button N times.
+  /// The exam session screen uses an ErrorCounter widget, not a TextField.
   Future<void> enterExamErrors(int errors) async {
-    final errorField = find.byType(TextField).first;
-    await tester.enterText(errorField, errors.toString());
-    await pumpAndSettle();
+    for (int i = 0; i < errors; i++) {
+      final addButtons = find.byIcon(Icons.add);
+      await tester.tap(addButtons.last);
+      await pumpAndSettle();
+    }
   }
 
   /// Submit exam result
