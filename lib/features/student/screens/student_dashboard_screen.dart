@@ -65,6 +65,10 @@ class _StudentDashboardScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Guardian child switcher — only shown for guardians with 2+ children
+              if (currentUser?.role == UserRole.guardian)
+                const _GuardianChildSwitcher(),
+
               // Welcome
               Text(
                 'مرحباً، ${currentUser?.name ?? 'الطالب'}',
@@ -74,8 +78,8 @@ class _StudentDashboardScreenState
               Text(
                 'تقدمك في حفظ القرآن الكريم',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 24),
 
@@ -121,10 +125,7 @@ class _StudentDashboardScreenState
               const SizedBox(height: 24),
 
               // Quick stats
-              Text(
-                'إحصائياتي',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              Text('إحصائياتي', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 12),
               statsAsync.when(
                 data: (stats) => _buildQuickStats(stats),
@@ -186,11 +187,7 @@ class _StudentDashboardScreenState
                     value: '${stats.todayRepetitions}',
                   ),
                 ),
-                Container(
-                  width: 1,
-                  height: 40,
-                  color: AppColors.divider,
-                ),
+                Container(width: 1, height: 40, color: AppColors.divider),
                 Expanded(
                   child: _PracticeStatItem(
                     icon: Icons.local_fire_department,
@@ -198,11 +195,7 @@ class _StudentDashboardScreenState
                     value: '${stats.streakDays}',
                   ),
                 ),
-                Container(
-                  width: 1,
-                  height: 40,
-                  color: AppColors.divider,
-                ),
+                Container(width: 1, height: 40, color: AppColors.divider),
                 Expanded(
                   child: _PracticeStatItem(
                     icon: Icons.repeat,
@@ -258,8 +251,8 @@ class _StudentDashboardScreenState
                     Text(
                       'الجزء ${stats.currentJuz} - الحزب ${stats.currentHizb}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -300,10 +293,8 @@ class _StudentDashboardScreenState
       data: (student) {
         if (student == null) return const SizedBox();
 
-        final isSard =
-            student.currentSession == AppConstants.sardSessionNumber;
-        final isExam =
-            student.currentSession == AppConstants.examSessionNumber;
+        final isSard = student.currentSession == AppConstants.sardSessionNumber;
+        final isExam = student.currentSession == AppConstants.examSessionNumber;
 
         if (isExam) {
           return AppCard(
@@ -316,10 +307,7 @@ class _StudentDashboardScreenState
                     color: AppColors.secondary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
-                    Icons.quiz,
-                    color: AppColors.secondary,
-                  ),
+                  child: const Icon(Icons.quiz, color: AppColors.secondary),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -333,8 +321,8 @@ class _StudentDashboardScreenState
                       Text(
                         'توجه للمشرف لإجراء الاختبار',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -372,8 +360,8 @@ class _StudentDashboardScreenState
                       Text(
                         'راجع الحزب كاملاً استعداداً للسرد',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -411,10 +399,8 @@ class _StudentDashboardScreenState
                         ),
                         Text(
                           'الحزب ${student.currentHizb}',
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: AppColors.textSecondary),
                         ),
                       ],
                     ),
@@ -475,10 +461,7 @@ class _ContentRow extends StatelessWidget {
   final String title;
   final String content;
 
-  const _ContentRow({
-    required this.title,
-    required this.content,
-  });
+  const _ContentRow({required this.title, required this.content});
 
   @override
   Widget build(BuildContext context) {
@@ -492,9 +475,9 @@ class _ContentRow extends StatelessWidget {
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.labelMedium?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -529,17 +512,64 @@ class _PracticeStatItem extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
         ),
       ],
+    );
+  }
+}
+
+/// Lets a guardian with multiple children pick which child the dashboard
+/// is currently focused on. Hidden when the guardian has only one child.
+class _GuardianChildSwitcher extends ConsumerWidget {
+  const _GuardianChildSwitcher();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final childrenAsync = ref.watch(guardianChildrenProvider);
+
+    return childrenAsync.maybeWhen(
+      data: (children) {
+        if (children.length < 2) return const SizedBox.shrink();
+
+        final selected =
+            ref.watch(selectedChildIdProvider) ?? children.first.student.id;
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: DropdownButtonFormField<String>(
+            initialValue: selected,
+            decoration: InputDecoration(
+              labelText: 'الطالب',
+              prefixIcon: const Icon(Icons.person),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              isDense: true,
+            ),
+            items: children
+                .map(
+                  (child) => DropdownMenuItem<String>(
+                    value: child.student.id,
+                    child: Text(child.user.name),
+                  ),
+                )
+                .toList(),
+            onChanged: (studentId) {
+              ref.read(selectedChildIdProvider.notifier).set(studentId);
+            },
+          ),
+        );
+      },
+      orElse: () => const SizedBox.shrink(),
     );
   }
 }

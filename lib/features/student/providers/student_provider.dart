@@ -10,9 +10,22 @@ import '../../../data/models/home_practice_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../shared/providers/user_provider.dart';
 
+/// Selected child id for guardians who have multiple children.
+/// `null` means "show the first child" (default for single-child guardians).
+class SelectedChildId extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void set(String? studentId) => state = studentId;
+}
+
+final selectedChildIdProvider = NotifierProvider<SelectedChildId, String?>(
+  SelectedChildId.new,
+);
+
 /// Provider for current student profile
 /// For students: returns their own student record
-/// For guardians: returns their first child's student record
+/// For guardians: returns the selected child (or first child if none selected)
 final currentStudentProvider = FutureProvider<StudentModel?>((ref) async {
   final currentUser = ref.watch(currentUserProvider);
   if (currentUser == null) return null;
@@ -21,6 +34,10 @@ final currentStudentProvider = FutureProvider<StudentModel?>((ref) async {
 
   // If user is a guardian, fetch their child's data
   if (currentUser.role == UserRole.guardian) {
+    final selectedId = ref.watch(selectedChildIdProvider);
+    if (selectedId != null) {
+      return repo.getStudentById(selectedId);
+    }
     return repo.getFirstStudentByGuardianId(currentUser.id);
   }
 
@@ -29,7 +46,9 @@ final currentStudentProvider = FutureProvider<StudentModel?>((ref) async {
 });
 
 /// Provider for guardian's children (for multi-child support)
-final guardianChildrenProvider = FutureProvider<List<StudentWithUser>>((ref) async {
+final guardianChildrenProvider = FutureProvider<List<StudentWithUser>>((
+  ref,
+) async {
   final currentUser = ref.watch(currentUserProvider);
   if (currentUser == null || currentUser.role != UserRole.guardian) return [];
 
@@ -38,7 +57,9 @@ final guardianChildrenProvider = FutureProvider<List<StudentWithUser>>((ref) asy
 });
 
 /// Provider for student's current session
-final studentDashboardSessionProvider = FutureProvider<SessionModel?>((ref) async {
+final studentDashboardSessionProvider = FutureProvider<SessionModel?>((
+  ref,
+) async {
   final student = await ref.watch(currentStudentProvider.future);
   if (student == null) return null;
 
@@ -52,8 +73,9 @@ final studentDashboardSessionProvider = FutureProvider<SessionModel?>((ref) asyn
 });
 
 /// Provider for student's session history
-final studentHistoryProvider =
-    FutureProvider<List<SessionRecordModel>>((ref) async {
+final studentHistoryProvider = FutureProvider<List<SessionRecordModel>>((
+  ref,
+) async {
   final student = await ref.watch(currentStudentProvider.future);
   if (student == null) return [];
 
@@ -104,8 +126,7 @@ class StudentStats {
 
   int get completedLevels => completedLevelsList.length;
 
-  double get passRate =>
-      totalSessions > 0 ? passedSessions / totalSessions : 0;
+  double get passRate => totalSessions > 0 ? passedSessions / totalSessions : 0;
 
   bool isLevelLocked(int level) => !unlockedLevelsList.contains(level);
 
@@ -115,8 +136,9 @@ class StudentStats {
 }
 
 /// Provider for student's home practice history
-final studentHomePracticesProvider =
-    FutureProvider<List<HomePracticeModel>>((ref) async {
+final studentHomePracticesProvider = FutureProvider<List<HomePracticeModel>>((
+  ref,
+) async {
   final student = await ref.watch(currentStudentProvider.future);
   if (student == null) return [];
 
@@ -125,8 +147,9 @@ final studentHomePracticesProvider =
 });
 
 /// Provider for today's home practice
-final todaysPracticesProvider =
-    FutureProvider<List<HomePracticeModel>>((ref) async {
+final todaysPracticesProvider = FutureProvider<List<HomePracticeModel>>((
+  ref,
+) async {
   final student = await ref.watch(currentStudentProvider.future);
   if (student == null) return [];
 
@@ -135,8 +158,9 @@ final todaysPracticesProvider =
 });
 
 /// Provider for this week's home practice
-final thisWeeksPracticesProvider =
-    FutureProvider<List<HomePracticeModel>>((ref) async {
+final thisWeeksPracticesProvider = FutureProvider<List<HomePracticeModel>>((
+  ref,
+) async {
   final student = await ref.watch(currentStudentProvider.future);
   if (student == null) return [];
 
@@ -145,7 +169,9 @@ final thisWeeksPracticesProvider =
 });
 
 /// Provider for home practice statistics
-final homePracticeStatsProvider = FutureProvider<HomePracticeStats>((ref) async {
+final homePracticeStatsProvider = FutureProvider<HomePracticeStats>((
+  ref,
+) async {
   final student = await ref.watch(currentStudentProvider.future);
   if (student == null) return const HomePracticeStats();
 
@@ -156,8 +182,14 @@ final homePracticeStatsProvider = FutureProvider<HomePracticeStats>((ref) async 
   final streak = await repo.getPracticeStreak(student.id);
 
   return HomePracticeStats(
-    todayRepetitions: todaysPractices.fold<int>(0, (total, p) => total + p.repetitions),
-    weekRepetitions: weekPractices.fold<int>(0, (total, p) => total + p.repetitions),
+    todayRepetitions: todaysPractices.fold<int>(
+      0,
+      (total, p) => total + p.repetitions,
+    ),
+    weekRepetitions: weekPractices.fold<int>(
+      0,
+      (total, p) => total + p.repetitions,
+    ),
     totalRepetitions: totalReps,
     streakDays: streak,
     practiceCount: todaysPractices.length,
@@ -169,10 +201,7 @@ class HomePracticeNotifier extends Notifier<AsyncValue<void>> {
   @override
   AsyncValue<void> build() => const AsyncValue.data(null);
 
-  Future<bool> addPractice({
-    required int repetitions,
-    String? notes,
-  }) async {
+  Future<bool> addPractice({required int repetitions, String? notes}) async {
     state = const AsyncValue.loading();
 
     try {
@@ -210,7 +239,8 @@ class HomePracticeNotifier extends Notifier<AsyncValue<void>> {
 
 final homePracticeNotifierProvider =
     NotifierProvider<HomePracticeNotifier, AsyncValue<void>>(
-        HomePracticeNotifier.new);
+      HomePracticeNotifier.new,
+    );
 
 class HomePracticeStats {
   final int todayRepetitions;
