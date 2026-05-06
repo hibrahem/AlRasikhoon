@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "al_rasikhoon",
+  "project_id": "76381d73-42e2-44c4-9760-7a6f878785ec"
+}

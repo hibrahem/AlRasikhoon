@@ -48,3 +48,8 @@ app.*.map.json
 /android/app/release
 /.firebase/hosting.YnVpbGQvd2Vi.cache
 /firepit-log.txt
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
