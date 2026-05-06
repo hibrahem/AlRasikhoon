@@ -1,14 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../data/repositories/institute_repository.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/session_repository.dart';
+import '../../../data/models/institute_model.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
 import '../../../shared/providers/user_provider.dart';
 
 /// Provider for teacher's students
-final teacherStudentsProvider =
-    FutureProvider<List<StudentWithUser>>((ref) async {
+final teacherStudentsProvider = FutureProvider<List<StudentWithUser>>((
+  ref,
+) async {
   final currentUser = ref.watch(currentUserProvider);
   if (currentUser == null) return [];
 
@@ -16,9 +19,48 @@ final teacherStudentsProvider =
   return repo.getStudentsForTeacher(currentUser.id);
 });
 
+/// Institutes the current teacher is assigned to.
+final teacherInstitutesProvider = FutureProvider<List<InstituteModel>>((
+  ref,
+) async {
+  final currentUser = ref.watch(currentUserProvider);
+  if (currentUser == null) return [];
+
+  final repo = ref.watch(instituteRepositoryProvider);
+  return repo.getInstitutesForTeacher(currentUser.id);
+});
+
+/// Selected institute id to filter the teacher's students view.
+/// `null` means "all institutes".
+class SelectedTeacherInstituteFilter extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void set(String? instituteId) => state = instituteId;
+}
+
+final selectedTeacherInstituteFilterProvider =
+    NotifierProvider<SelectedTeacherInstituteFilter, String?>(
+      SelectedTeacherInstituteFilter.new,
+    );
+
+/// Teacher's students filtered by the selected institute filter.
+final filteredTeacherStudentsProvider = FutureProvider<List<StudentWithUser>>((
+  ref,
+) async {
+  final all = await ref.watch(teacherStudentsProvider.future);
+  final filter = ref.watch(selectedTeacherInstituteFilterProvider);
+  if (filter == null) return all;
+  return all
+      .where((s) => s.student.instituteId == filter)
+      .toList(growable: false);
+});
+
 /// Provider for a specific student
-final studentProvider =
-    FutureProvider.family<StudentWithUser?, String>((ref, studentId) async {
+final studentProvider = FutureProvider.family<StudentWithUser?, String>((
+  ref,
+  studentId,
+) async {
   final students = await ref.watch(teacherStudentsProvider.future);
   return students.firstWhere(
     (s) => s.student.id == studentId,
@@ -29,19 +71,19 @@ final studentProvider =
 /// Provider for student's current session data
 final studentCurrentSessionProvider =
     FutureProvider.family<SessionModel?, String>((ref, studentId) async {
-  final studentAsync = await ref.watch(studentProvider(studentId).future);
-  if (studentAsync == null) return null;
+      final studentAsync = await ref.watch(studentProvider(studentId).future);
+      if (studentAsync == null) return null;
 
-  final student = studentAsync.student;
-  final curriculumRepo = ref.watch(curriculumRepositoryProvider);
+      final student = studentAsync.student;
+      final curriculumRepo = ref.watch(curriculumRepositoryProvider);
 
-  return curriculumRepo.getCurrentSessionForStudent(
-    levelId: student.currentLevel,
-    juzNumber: student.currentJuz,
-    hizbNumber: student.currentHizb,
-    sessionNumber: student.currentSession,
-  );
-});
+      return curriculumRepo.getCurrentSessionForStudent(
+        levelId: student.currentLevel,
+        juzNumber: student.currentJuz,
+        hizbNumber: student.currentHizb,
+        sessionNumber: student.currentSession,
+      );
+    });
 
 /// Session state for recording a session
 class ActiveSessionState {
@@ -204,13 +246,15 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
 
 final activeSessionProvider =
     NotifierProvider<ActiveSessionNotifier, ActiveSessionState?>(
-  ActiveSessionNotifier.new,
-);
+      ActiveSessionNotifier.new,
+    );
 
 /// Provider for student's session history
 final studentSessionHistoryProvider =
-    FutureProvider.family<List<SessionRecordModel>, String>(
-        (ref, studentId) async {
-  final repo = ref.watch(sessionRepositoryProvider);
-  return repo.getSessionRecordsForStudent(studentId, limit: 20);
-});
+    FutureProvider.family<List<SessionRecordModel>, String>((
+      ref,
+      studentId,
+    ) async {
+      final repo = ref.watch(sessionRepositoryProvider);
+      return repo.getSessionRecordsForStudent(studentId, limit: 20);
+    });
