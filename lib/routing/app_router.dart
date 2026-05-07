@@ -5,6 +5,7 @@ import '../data/models/user_model.dart';
 import '../shared/providers/user_provider.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/account_not_found_screen.dart';
+import '../features/auth/screens/email_link_callback_screen.dart';
 import '../features/admin/screens/admin_dashboard_screen.dart';
 import '../features/admin/screens/institutes_screen.dart';
 import '../features/admin/screens/create_institute_screen.dart';
@@ -36,7 +37,8 @@ import '../features/student/screens/home_practice_screen.dart';
 class AppRoutes {
   // Auth
   static const String login = '/login';
-static const String accountNotFound = '/account-not-found';
+  static const String accountNotFound = '/account-not-found';
+  static const String emailLinkCallback = '/auth/email-link';
 
   // Admin
   static const String adminDashboard = '/admin';
@@ -59,8 +61,10 @@ static const String accountNotFound = '/account-not-found';
   static const String teacherStudents = '/teacher';
   static const String addStudent = '/teacher/students/add';
   static const String sessionOverview = '/teacher/session/:studentId';
-  static const String recitation = '/teacher/session/:studentId/recitation/:part';
-  static const String recitationResult = '/teacher/session/:studentId/recitation/:part/result';
+  static const String recitation =
+      '/teacher/session/:studentId/recitation/:part';
+  static const String recitationResult =
+      '/teacher/session/:studentId/recitation/:part/result';
   static const String newMemorization = '/teacher/session/:studentId/new';
   static const String sessionSummary = '/teacher/session/:studentId/summary';
   static const String sardSession = '/teacher/sard/:studentId';
@@ -81,8 +85,18 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: AppRoutes.login,
     debugLogDiagnostics: true,
     redirect: (context, state) {
-      final isLoggingIn = state.matchedLocation == AppRoutes.login ||
+      final isLoggingIn =
+          state.matchedLocation == AppRoutes.login ||
           state.matchedLocation == AppRoutes.accountNotFound;
+      final isEmailLinkCallback =
+          state.matchedLocation == AppRoutes.emailLinkCallback;
+
+      // Email-link callback runs for unauthenticated users (it's the
+      // mechanism that authenticates them). Once it succeeds and the user is
+      // authenticated, hand off to the role-based dashboard.
+      if (isEmailLinkCallback) {
+        return isAuthenticated ? _getDashboardRoute(userRole) : null;
+      }
 
       // Not authenticated - redirect to login
       if (!isAuthenticated && !isLoggingIn) {
@@ -102,9 +116,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.login,
         builder: (context, state) => const LoginScreen(),
       ),
-GoRoute(
+      GoRoute(
         path: AppRoutes.accountNotFound,
         builder: (context, state) => const AccountNotFoundScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.emailLinkCallback,
+        builder: (context, state) => EmailLinkCallbackScreen(link: state.uri),
       ),
 
       // Admin routes
@@ -268,9 +286,7 @@ GoRoute(
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
-      body: Center(
-        child: Text('Page not found: ${state.matchedLocation}'),
-      ),
+      body: Center(child: Text('Page not found: ${state.matchedLocation}')),
     ),
   );
 });

@@ -73,17 +73,12 @@ class AuthRepository extends Notifier<AuthState> {
   }
 
   void _initDeepLinkListener() {
-    // On web, check Uri.base directly — more reliable than DeepLinkService
-    // because all dependencies are guaranteed to be ready at this point
-    if (kIsWeb) {
-      final link = Uri.base.toString();
-      if (_firebaseService.isSignInWithEmailLink(link)) {
-        signInWithEmailLink(link);
-        return;
-      }
-    }
+    // Web handles email-link sign-in via the dedicated /auth/email-link route
+    // (see EmailLinkCallbackScreen). Mobile receives the link via app_links
+    // and processes it here so the user lands on /login briefly while the
+    // sign-in completes (the router redirect then routes to the dashboard).
+    if (kIsWeb) return;
 
-    // For mobile, use DeepLinkService
     final deepLinkService = ref.read(deepLinkServiceProvider);
     final initialLink = deepLinkService.consumeInitialLink();
     if (initialLink != null) {
@@ -148,7 +143,9 @@ class AuthRepository extends Notifier<AuthState> {
           return null;
         }
 
-        final authentication = await _googleAuthService.getAuthentication(googleAccount);
+        final authentication = await _googleAuthService.getAuthentication(
+          googleAccount,
+        );
         if (authentication == null) {
           state = state.copyWith(
             isLoading: false,
@@ -182,32 +179,20 @@ class AuthRepository extends Notifier<AuthState> {
         }
 
         if (appUser != null) {
-          state = state.copyWith(
-            isLoading: false,
-            appUser: appUser,
-          );
+          state = state.copyWith(isLoading: false, appUser: appUser);
           await _localStorage.setUserId(appUser.id);
           await _localStorage.setUserRole(appUser.role.value);
           return appUser;
         } else {
-          state = state.copyWith(
-            isLoading: false,
-            error: 'account_not_found',
-          );
+          state = state.copyWith(isLoading: false, error: 'account_not_found');
           return null;
         }
       }
 
-      state = state.copyWith(
-        isLoading: false,
-        error: 'فشل تسجيل الدخول',
-      );
+      state = state.copyWith(isLoading: false, error: 'فشل تسجيل الدخول');
       return null;
     } on FirebaseAuthException catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: _getErrorMessage(e),
-      );
+      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
       return null;
     } catch (e) {
       state = state.copyWith(
@@ -243,15 +228,9 @@ class AuthRepository extends Notifier<AuthState> {
       await _localStorage.setPendingSignInEmail(email);
       state = state.copyWith(isLoading: false, emailLinkSent: true);
     } on FirebaseAuthException catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: _getErrorMessage(e),
-      );
+      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -271,10 +250,7 @@ class AuthRepository extends Notifier<AuthState> {
     if (signInEmail == null) {
       // Cross-device: user clicked link on a different device
       _pendingEmailLink = link;
-      state = state.copyWith(
-        isLoading: false,
-        error: 'email_prompt_needed',
-      );
+      state = state.copyWith(isLoading: false, error: 'email_prompt_needed');
       return null;
     }
 
@@ -310,10 +286,7 @@ class AuthRepository extends Notifier<AuthState> {
           await _localStorage.setUserRole(appUser.role.value);
           return appUser;
         } else {
-          state = state.copyWith(
-            isLoading: false,
-            error: 'account_not_found',
-          );
+          state = state.copyWith(isLoading: false, error: 'account_not_found');
           return null;
         }
       }
@@ -321,16 +294,10 @@ class AuthRepository extends Notifier<AuthState> {
       state = state.copyWith(isLoading: false, error: 'فشل تسجيل الدخول');
       return null;
     } on FirebaseAuthException catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: _getErrorMessage(e),
-      );
+      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
       return null;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
       return null;
     }
   }
@@ -347,7 +314,7 @@ class AuthRepository extends Notifier<AuthState> {
 
   ActionCodeSettings _getActionCodeSettings() {
     return ActionCodeSettings(
-      url: 'https://alrasikhoon-57151.web.app',
+      url: 'https://alrasikhoon-57151.web.app/auth/email-link',
       handleCodeInApp: true,
       androidPackageName: 'com.alrasikhoon.al_rasikhoon',
       androidInstallApp: true,
@@ -386,7 +353,8 @@ class AuthRepository extends Notifier<AuthState> {
     return error.toString();
   }
 
-  bool get isAuthenticated => state.firebaseUser != null && state.appUser != null;
+  bool get isAuthenticated =>
+      state.firebaseUser != null && state.appUser != null;
   bool get isAccountNotFound => state.error == 'account_not_found';
   UserModel? get currentUser => state.appUser;
   UserRole? get currentUserRole => state.appUser?.role;

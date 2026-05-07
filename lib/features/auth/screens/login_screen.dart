@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -21,7 +20,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   String? _emailError;
   bool _isGoogleLoading = false;
   bool _linkSent = false;
-  bool _linkChecked = false;
 
   @override
   void dispose() {
@@ -83,94 +81,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  void _handleEmailPromptNeeded() {
-    // Cross-device: user clicked email link but email not stored locally
-    final emailController = TextEditingController();
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('أدخل بريدك الإلكتروني'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('يرجى إدخال البريد الإلكتروني لإكمال تسجيل الدخول'),
-            const SizedBox(height: 16),
-            AppEmailField(
-              controller: emailController,
-              autofocus: true,
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) {
-                Navigator.of(context).pop();
-                _completeSignInWithEmail(emailController.text.trim());
-              },
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('إلغاء'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _completeSignInWithEmail(emailController.text.trim());
-            },
-            child: const Text('تأكيد'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _completeSignInWithEmail(String email) async {
-    if (email.isEmpty) return;
-    final authRepo = ref.read(authRepositoryProvider.notifier);
-    await authRepo.signInWithPendingLink(email);
-
-    if (!mounted) return;
-
-    final authState = ref.read(authRepositoryProvider);
-    if (authState.error == 'account_not_found') {
-      context.go(AppRoutes.accountNotFound);
-    } else if (authState.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authState.error!),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    }
-  }
-
-  /// Web fallback: check if the current URL is a sign-in link.
-  /// This handles the case where the deep link listener in AuthRepository
-  /// missed the link due to initialization timing.
-  void _checkForEmailLink() {
-    if (!kIsWeb) return;
-    final link = Uri.base.toString();
-    ref.read(authRepositoryProvider.notifier).signInWithEmailLink(link);
-  }
-
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authRepositoryProvider);
-
-    // Web fallback: check URL for sign-in link on first build
-    if (kIsWeb && !_linkChecked) {
-      _linkChecked = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _checkForEmailLink();
-      });
-    }
-
-    // Handle cross-device email prompt
-    if (authState.error == 'email_prompt_needed') {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _handleEmailPromptNeeded();
-      });
-    }
 
     return Scaffold(
       body: SafeArea(
@@ -207,16 +120,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             Text(
               'الراسخون',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'تطبيق حفظ القرآن الكريم',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -238,8 +151,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Text(
                 'أو',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
             const Expanded(child: Divider()),
@@ -275,9 +188,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         // Footer
         Text(
           'يجب أن يكون لديك حساب مسجل مسبقاً',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),
@@ -309,26 +222,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         // Title
         Text(
           'تم إرسال رابط الدخول',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),
         // Message
         Text(
           'تم إرسال رابط تسجيل الدخول إلى\n${_emailController.text}',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),
         Text(
           'يرجى فتح البريد الإلكتروني والضغط على الرابط لتسجيل الدخول',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 48),
@@ -361,10 +274,7 @@ class _GoogleSignInButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isLoading;
 
-  const _GoogleSignInButton({
-    required this.onPressed,
-    required this.isLoading,
-  });
+  const _GoogleSignInButton({required this.onPressed, required this.isLoading});
 
   @override
   Widget build(BuildContext context) {
@@ -372,9 +282,7 @@ class _GoogleSignInButton extends StatelessWidget {
       onPressed: isLoading ? null : onPressed,
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 14),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         side: const BorderSide(color: AppColors.border),
       ),
       child: isLoading
@@ -399,9 +307,9 @@ class _GoogleSignInButton extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   'تسجيل الدخول بواسطة Google',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
                 ),
               ],
             ),
