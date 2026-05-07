@@ -24,13 +24,16 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- Firebase Email Link deep link handler -->
-            <intent-filter>
+            <!-- Email-link callback deep link (App Link auto-verified). The
+                 link domain is the Firebase Hosting site we control so we can
+                 serve /.well-known/assetlinks.json from it. -->
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="https"
-                      android:host="alrasikhoon-57151.firebaseapp.com"/>
+                      android:host="alrasikhoon-57151.web.app"
+                      android:pathPrefix="/auth/"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
