@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.alrasikhoon.al_rasikhoon",
+      "sha256_cert_fingerprints": [
+        "A5:63:53:2A:59:F9:AA:90:19:3D:E2:91:65:5F:C1:D0:5E:B3:3A:81:93:5D:EC:F4:A1:BB:B1:35:E1:86:4E:33",
+        "RELEASE_KEYSTORE_SHA256_FINGERPRINT_PLACEHOLDER"
+      ]
+    }
+  }
+]
