@@ -23,10 +23,10 @@ class AppConstants {
 
   // Grading thresholds (per spec)
   // راسخ: 0 errors, متقن: 1-2, حافظ: 3-4, مجتهد: 5-6, محب: 7+
-  static const int maxErrorsToPass = 6;      // Up to mujtahid passes
-  static const int errorsForRasikh = 0;      // 5 stars - exactly 0 errors
-  static const int maxErrorsForMutqin = 2;   // 4 stars - 1-2 errors
-  static const int maxErrorsForHafiz = 4;    // 3 stars - 3-4 errors
+  static const int maxErrorsToPass = 6; // Up to mujtahid passes
+  static const int errorsForRasikh = 0; // 5 stars - exactly 0 errors
+  static const int maxErrorsForMutqin = 2; // 4 stars - 1-2 errors
+  static const int maxErrorsForHafiz = 4; // 3 stars - 3-4 errors
   static const int maxErrorsForMujtahid = 6; // 2 stars - 5-6 errors
   // 7+ errors = Muhib (1 star, fail)
 
@@ -78,4 +78,9 @@ class AppConstants {
   static const String keyTheme = 'theme';
   static const String keyFirstLaunch = 'first_launch';
   static const String keyPendingSignInEmail = 'pending_sign_in_email';
+
+  /// Domain used to synthesize a Firebase Auth email from a username.
+  /// Format: '<username>@alrasikhoon.local'. RFC-6762 reserves '.local',
+  /// so this can never collide with a real deliverable domain.
+  static const String synthesizedEmailDomain = 'alrasikhoon.local';
 }

@@ -5,6 +5,7 @@ import '../services/google_auth_service.dart';
 import '../services/local_storage_service.dart';
 import '../services/deep_link_service.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../core/constants/app_constants.dart';
 import 'user_repository.dart';
 import '../models/user_model.dart';
 
@@ -203,6 +204,68 @@ class AuthRepository extends Notifier<AuthState> {
     }
   }
 
+  /// Sign in with username + password. The username is the user-visible
+  /// identifier; under the hood we feed Firebase Auth the synthesized email
+  /// '<username>@alrasikhoon.local'. Returns the loaded UserModel on success
+  /// or null on failure (state.error is set).
+  Future<UserModel?> signInWithUsernameAndPassword({
+    required String username,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    final normalizedUsername = username.trim().toLowerCase();
+    final synthesizedEmail =
+        '$normalizedUsername@${AppConstants.synthesizedEmailDomain}';
+
+    try {
+      final userCredential = await _firebaseService.signInWithEmailPassword(
+        email: synthesizedEmail,
+        password: password,
+      );
+
+      final user = userCredential.user;
+      if (user == null) {
+        state = state.copyWith(isLoading: false, error: 'فشل تسجيل الدخول');
+        return null;
+      }
+
+      state = state.copyWith(firebaseUser: user);
+
+      // Look up the user doc by username first; fall back to UID.
+      var appUser = await _userRepository.getUserByUsername(normalizedUsername);
+      appUser ??= await _userRepository.getUserById(user.uid);
+
+      if (appUser == null) {
+        state = state.copyWith(isLoading: false, error: 'account_not_found');
+        return null;
+      }
+
+      state = state.copyWith(isLoading: false, appUser: appUser);
+      await _localStorage.setUserId(appUser.id);
+      await _localStorage.setUserRole(appUser.role.value);
+      return appUser;
+    } on FirebaseAuthException catch (e) {
+      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      return null;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return null;
+    }
+  }
+
+  /// Reset another user's password. Admin-only path. The actual implementation
+  /// (calling a Firebase Cloud Function backed by the Admin SDK) lands in
+  /// phase 7 of the username+password migration.
+  Future<void> setPasswordForUser({
+    required String userId,
+    required String newPassword,
+  }) async {
+    throw UnimplementedError(
+      'Password reset is wired in phase 7 (Cloud Function setUserPassword)',
+    );
+  }
+
   /// Send a sign-in link to the user's email.
   /// Returns after the link is sent successfully.
   /// Checks Firestore first to ensure the email belongs to a registered user.
@@ -335,11 +398,14 @@ class AuthRepository extends Notifier<AuthState> {
     if (error is FirebaseAuthException) {
       switch (error.code) {
         case 'invalid-email':
-          return 'البريد الإلكتروني غير صحيح';
+          return 'اسم المستخدم غير صحيح';
         case 'user-disabled':
           return 'تم تعطيل هذا الحساب';
         case 'user-not-found':
-          return 'لا يوجد حساب بهذا البريد الإلكتروني';
+          return 'لا يوجد حساب بهذا الاسم';
+        case 'wrong-password':
+        case 'invalid-credential':
+          return 'اسم المستخدم أو كلمة المرور غير صحيحة';
         case 'too-many-requests':
           return 'تم تجاوز عدد المحاولات، يرجى المحاولة لاحقاً';
         case 'expired-action-code':
