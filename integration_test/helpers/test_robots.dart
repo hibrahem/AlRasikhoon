@@ -71,7 +71,7 @@ abstract class TestRobot {
   }
 }
 
-/// Robot for authentication flows (email link + Google Sign-In)
+/// Robot for authentication flows (username + password)
 class AuthRobot extends TestRobot {
   AuthRobot(super.tester);
 
@@ -79,40 +79,26 @@ class AuthRobot extends TestRobot {
   Future<void> verifyLoginScreen() async {
     await pumpAndSettle();
     expect(find.text('الراسخون'), findsOneWidget);
-    expect(find.text('إرسال رابط الدخول'), findsOneWidget);
+    expect(find.text('تسجيل الدخول'), findsOneWidget);
   }
 
-  /// Enter email address
-  Future<void> enterEmail(String email) async {
-    final emailField = find.byType(TextField).first;
-    await tester.enterText(emailField, email);
+  /// Enter username (first text field)
+  Future<void> enterUsername(String username) async {
+    final usernameField = find.byType(TextFormField).first;
+    await tester.enterText(usernameField, username);
     await pumpAndSettle();
   }
 
-  /// Tap send login link button
-  Future<void> tapSendLink() async {
-    await tapByText('إرسال رابط الدخول');
-  }
-
-  /// Verify link sent success screen
-  Future<void> verifyLinkSentScreen() async {
+  /// Enter password (second text field)
+  Future<void> enterPassword(String password) async {
+    final passwordField = find.byType(TextFormField).at(1);
+    await tester.enterText(passwordField, password);
     await pumpAndSettle();
-    expect(find.text('تم إرسال رابط الدخول'), findsOneWidget);
   }
 
-  /// Tap Google Sign-In button
-  Future<void> tapGoogleSignIn() async {
-    await tapByText('تسجيل الدخول بواسطة Google');
-  }
-
-  /// Tap resend link button
-  Future<void> tapResendLink() async {
-    await tapByText('إرسال رابط جديد');
-  }
-
-  /// Tap change email button
-  Future<void> tapChangeEmail() async {
-    await tapByText('تغيير البريد الإلكتروني');
+  /// Tap login button
+  Future<void> tapLogin() async {
+    await tapByText('تسجيل الدخول');
   }
 
   /// Verify account not found screen

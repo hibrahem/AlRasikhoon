@@ -8,21 +8,13 @@ import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/auth_repository.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
-import 'package:al_rasikhoon/data/services/google_auth_service.dart';
 import 'package:al_rasikhoon/data/services/local_storage_service.dart';
-import 'package:al_rasikhoon/data/services/deep_link_service.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
-// Mocks
 class MockFirebaseService extends Mock implements FirebaseService {}
-
-class MockGoogleAuthService extends Mock implements GoogleAuthService {}
 
 class MockUserRepository extends Mock implements UserRepository {}
 
 class MockLocalStorageService extends Mock implements LocalStorageService {}
-
-class MockDeepLinkService extends Mock implements DeepLinkService {}
 
 class MockUserCredential extends Mock implements UserCredential {}
 
@@ -38,47 +30,26 @@ class FakeFirebaseAuthException extends Fake implements FirebaseAuthException {
   FakeFirebaseAuthException({required this.code, this.message});
 }
 
-class FakeActionCodeSettings extends Fake implements ActionCodeSettings {}
-
-class MockGoogleSignInAccount extends Mock implements GoogleSignInAccount {}
-
-class MockGoogleSignInAuthentication extends Mock
-    implements GoogleSignInAuthentication {}
-
 void main() {
   late MockFirebaseService mockFirebaseService;
-  late MockGoogleAuthService mockGoogleAuthService;
   late MockUserRepository mockUserRepository;
   late MockLocalStorageService mockLocalStorageService;
-  late MockDeepLinkService mockDeepLinkService;
   late ProviderContainer container;
-
-  setUpAll(() {
-    registerFallbackValue(FakeActionCodeSettings());
-  });
 
   setUp(() {
     mockFirebaseService = MockFirebaseService();
-    mockGoogleAuthService = MockGoogleAuthService();
     mockUserRepository = MockUserRepository();
     mockLocalStorageService = MockLocalStorageService();
-    mockDeepLinkService = MockDeepLinkService();
 
-    // Setup default streams
     when(
       () => mockFirebaseService.authStateChanges,
-    ).thenAnswer((_) => Stream.empty());
-    when(
-      () => mockDeepLinkService.linkStream,
     ).thenAnswer((_) => Stream.empty());
 
     container = ProviderContainer(
       overrides: [
         firebaseServiceProvider.overrideWithValue(mockFirebaseService),
-        googleAuthServiceProvider.overrideWithValue(mockGoogleAuthService),
         userRepositoryProvider.overrideWithValue(mockUserRepository),
         localStorageServiceProvider.overrideWithValue(mockLocalStorageService),
-        deepLinkServiceProvider.overrideWithValue(mockDeepLinkService),
       ],
     );
   });
@@ -87,15 +58,17 @@ void main() {
     container.dispose();
   });
 
-  UserModel _createUser({
+  UserModel buildUser({
     String id = 'user-id',
+    String username = 'test_user',
     String email = 'test@example.com',
     String name = 'Test User',
     UserRole role = UserRole.teacher,
-    UserAuthProvider authProvider = UserAuthProvider.pending,
+    UserAuthProvider authProvider = UserAuthProvider.emailPassword,
   }) {
     return UserModel(
       id: id,
+      username: username,
       email: email,
       name: name,
       role: role,
@@ -105,814 +78,6 @@ void main() {
   }
 
   group('AuthRepository', () {
-    group('sendSignInLink', () {
-      test('sends link when user exists in Firestore', () async {
-        const email = 'teacher@example.com';
-        final user = _createUser(email: email);
-
-        when(
-          () => mockUserRepository.getUserByEmail(email),
-        ).thenAnswer((_) async => user);
-        when(
-          () => mockFirebaseService.sendSignInLinkToEmail(
-            email: email,
-            actionCodeSettings: any(named: 'actionCodeSettings'),
-          ),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.setPendingSignInEmail(email),
-        ).thenAnswer((_) async {});
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        await authRepo.sendSignInLink(email);
-
-        final state = container.read(authRepositoryProvider);
-        expect(state.emailLinkSent, true);
-        expect(state.error, isNull);
-        expect(state.isLoading, false);
-
-        verify(
-          () => mockFirebaseService.sendSignInLinkToEmail(
-            email: email,
-            actionCodeSettings: any(named: 'actionCodeSettings'),
-          ),
-        ).called(1);
-        verify(
-          () => mockLocalStorageService.setPendingSignInEmail(email),
-        ).called(1);
-      });
-
-      test('sets error when user not found in Firestore', () async {
-        const email = 'nonexistent@example.com';
-
-        when(
-          () => mockUserRepository.getUserByEmail(email),
-        ).thenAnswer((_) async => null);
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        await authRepo.sendSignInLink(email);
-
-        final state = container.read(authRepositoryProvider);
-        expect(state.emailLinkSent, false);
-        expect(state.error, 'لا يوجد حساب بهذا البريد الإلكتروني');
-
-        verifyNever(
-          () => mockFirebaseService.sendSignInLinkToEmail(
-            email: any(named: 'email'),
-            actionCodeSettings: any(named: 'actionCodeSettings'),
-          ),
-        );
-      });
-
-      test('sets error on Firebase exception', () async {
-        const email = 'test@example.com';
-        final user = _createUser(email: email);
-
-        when(
-          () => mockUserRepository.getUserByEmail(email),
-        ).thenAnswer((_) async => user);
-        when(
-          () => mockFirebaseService.sendSignInLinkToEmail(
-            email: email,
-            actionCodeSettings: any(named: 'actionCodeSettings'),
-          ),
-        ).thenThrow(FakeFirebaseAuthException(code: 'too-many-requests'));
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        await authRepo.sendSignInLink(email);
-
-        final state = container.read(authRepositoryProvider);
-        expect(state.emailLinkSent, false);
-        expect(state.error, 'تم تجاوز عدد المحاولات، يرجى المحاولة لاحقاً');
-      });
-
-      test('sets loading state during operation', () async {
-        const email = 'test@example.com';
-        final completer = Completer<UserModel?>();
-
-        when(
-          () => mockUserRepository.getUserByEmail(email),
-        ).thenAnswer((_) => completer.future);
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        final future = authRepo.sendSignInLink(email);
-
-        await Future.delayed(Duration.zero);
-        expect(container.read(authRepositoryProvider).isLoading, true);
-
-        completer.complete(null);
-        await future;
-
-        expect(container.read(authRepositoryProvider).isLoading, false);
-      });
-
-      test('stores email in localStorage', () async {
-        const email = 'store@example.com';
-        final user = _createUser(email: email);
-
-        when(
-          () => mockUserRepository.getUserByEmail(email),
-        ).thenAnswer((_) async => user);
-        when(
-          () => mockFirebaseService.sendSignInLinkToEmail(
-            email: email,
-            actionCodeSettings: any(named: 'actionCodeSettings'),
-          ),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.setPendingSignInEmail(email),
-        ).thenAnswer((_) async {});
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        await authRepo.sendSignInLink(email);
-
-        verify(
-          () => mockLocalStorageService.setPendingSignInEmail(email),
-        ).called(1);
-      });
-    });
-
-    group('signInWithEmailLink', () {
-      const validLink =
-          'https://alrasikhoon-57151.firebaseapp.com/__/auth/action?oobCode=abc123';
-
-      test('signs in when stored email exists and user found by UID', () async {
-        const email = 'teacher@example.com';
-        const uid = 'firebase-uid';
-        final mockUserCredential = MockUserCredential();
-        final mockUser = MockUser();
-        final appUser = _createUser(
-          id: uid,
-          email: email,
-          authProvider: UserAuthProvider.emailLink,
-        );
-
-        when(() => mockUser.uid).thenReturn(uid);
-        when(() => mockUser.email).thenReturn(email);
-        when(() => mockUserCredential.user).thenReturn(mockUser);
-        when(
-          () => mockFirebaseService.isSignInWithEmailLink(validLink),
-        ).thenReturn(true);
-        when(
-          () => mockLocalStorageService.getPendingSignInEmail(),
-        ).thenReturn(email);
-        when(
-          () => mockFirebaseService.signInWithEmailLink(
-            email: email,
-            emailLink: validLink,
-          ),
-        ).thenAnswer((_) async => mockUserCredential);
-        when(
-          () => mockUserRepository.getUserById(uid),
-        ).thenAnswer((_) async => appUser);
-        when(
-          () => mockLocalStorageService.clearPendingSignInEmail(),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.setUserId(uid),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.setUserRole(appUser.role.value),
-        ).thenAnswer((_) async {});
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        final result = await authRepo.signInWithEmailLink(validLink);
-
-        expect(result, isNotNull);
-        expect(result?.id, uid);
-
-        verify(
-          () => mockLocalStorageService.clearPendingSignInEmail(),
-        ).called(1);
-      });
-
-      test('migrates user when found by email but not by UID', () async {
-        const email = 'migrate@example.com';
-        const oldId = 'old-uuid';
-        const newUid = 'firebase-uid';
-        final mockUserCredential = MockUserCredential();
-        final mockUser = MockUser();
-        final oldUser = _createUser(id: oldId, email: email);
-        final migratedUser = oldUser.copyWith(
-          id: newUid,
-          authProvider: UserAuthProvider.emailLink,
-        );
-
-        when(() => mockUser.uid).thenReturn(newUid);
-        when(() => mockUser.email).thenReturn(email);
-        when(() => mockUserCredential.user).thenReturn(mockUser);
-        when(
-          () => mockFirebaseService.isSignInWithEmailLink(validLink),
-        ).thenReturn(true);
-        when(
-          () => mockLocalStorageService.getPendingSignInEmail(),
-        ).thenReturn(email);
-        when(
-          () => mockFirebaseService.signInWithEmailLink(
-            email: email,
-            emailLink: validLink,
-          ),
-        ).thenAnswer((_) async => mockUserCredential);
-        when(
-          () => mockUserRepository.getUserById(newUid),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockUserRepository.getUserByEmail(email),
-        ).thenAnswer((_) async => oldUser);
-        when(
-          () => mockUserRepository.migrateUserToFirebaseUid(
-            oldId: oldId,
-            newFirebaseUid: newUid,
-            authProvider: UserAuthProvider.emailLink,
-          ),
-        ).thenAnswer((_) async => migratedUser);
-        when(
-          () => mockLocalStorageService.clearPendingSignInEmail(),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.setUserId(newUid),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.setUserRole(migratedUser.role.value),
-        ).thenAnswer((_) async {});
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        final result = await authRepo.signInWithEmailLink(validLink);
-
-        expect(result, isNotNull);
-        expect(result?.id, newUid);
-
-        verify(
-          () => mockUserRepository.migrateUserToFirebaseUid(
-            oldId: oldId,
-            newFirebaseUid: newUid,
-            authProvider: UserAuthProvider.emailLink,
-          ),
-        ).called(1);
-      });
-
-      test(
-        'does not migrate twice when auth listener fires during sign-in',
-        () async {
-          const email = 'migrate@example.com';
-          const oldId = 'old-uuid';
-          const newUid = 'firebase-uid';
-          final authStateController = StreamController<User?>.broadcast();
-          addTearDown(authStateController.close);
-          final mockUserCredential = MockUserCredential();
-          final mockUser = MockUser();
-          final oldUser = _createUser(id: oldId, email: email);
-          final migratedUser = oldUser.copyWith(
-            id: newUid,
-            authProvider: UserAuthProvider.emailLink,
-          );
-
-          // Replace the default Stream.empty() with a controllable stream so
-          // we can simulate Firebase emitting the auth-state change during the
-          // sign-in call (which is exactly what happens in production).
-          when(
-            () => mockFirebaseService.authStateChanges,
-          ).thenAnswer((_) => authStateController.stream);
-
-          when(() => mockUser.uid).thenReturn(newUid);
-          when(() => mockUser.email).thenReturn(email);
-          when(() => mockUserCredential.user).thenReturn(mockUser);
-          when(
-            () => mockFirebaseService.isSignInWithEmailLink(validLink),
-          ).thenReturn(true);
-          when(
-            () => mockLocalStorageService.getPendingSignInEmail(),
-          ).thenReturn(email);
-          when(
-            () => mockFirebaseService.signInWithEmailLink(
-              email: email,
-              emailLink: validLink,
-            ),
-          ).thenAnswer((_) async {
-            // Real Firebase notifies authStateChanges as part of sign-in.
-            authStateController.add(mockUser);
-            return mockUserCredential;
-          });
-          when(
-            () => mockUserRepository.getUserById(newUid),
-          ).thenAnswer((_) async => null);
-          when(
-            () => mockUserRepository.getUserByEmail(email),
-          ).thenAnswer((_) async => oldUser);
-          when(
-            () => mockUserRepository.migrateUserToFirebaseUid(
-              oldId: oldId,
-              newFirebaseUid: newUid,
-              authProvider: any(named: 'authProvider'),
-            ),
-          ).thenAnswer((_) async => migratedUser);
-          when(
-            () => mockLocalStorageService.clearPendingSignInEmail(),
-          ).thenAnswer((_) async {});
-          when(
-            () => mockLocalStorageService.setUserId(newUid),
-          ).thenAnswer((_) async {});
-          when(
-            () => mockLocalStorageService.setUserRole(any()),
-          ).thenAnswer((_) async {});
-
-          final authRepo = container.read(authRepositoryProvider.notifier);
-          await authRepo.signInWithEmailLink(validLink);
-          // Drain microtasks so the auth-state listener finishes its work.
-          await Future<void>.delayed(Duration.zero);
-          await Future<void>.delayed(Duration.zero);
-
-          verify(
-            () => mockUserRepository.migrateUserToFirebaseUid(
-              oldId: oldId,
-              newFirebaseUid: newUid,
-              authProvider: any(named: 'authProvider'),
-            ),
-          ).called(1);
-        },
-      );
-
-      test(
-        'sets email_prompt_needed when no stored email (cross-device)',
-        () async {
-          when(
-            () => mockFirebaseService.isSignInWithEmailLink(validLink),
-          ).thenReturn(true);
-          when(
-            () => mockLocalStorageService.getPendingSignInEmail(),
-          ).thenReturn(null);
-
-          final authRepo = container.read(authRepositoryProvider.notifier);
-          final result = await authRepo.signInWithEmailLink(validLink);
-
-          expect(result, isNull);
-
-          final state = container.read(authRepositoryProvider);
-          expect(state.error, 'email_prompt_needed');
-          expect(state.isLoading, false);
-        },
-      );
-
-      test('returns null with error for invalid link', () async {
-        const invalidLink = 'https://example.com/not-a-signin-link';
-
-        when(
-          () => mockFirebaseService.isSignInWithEmailLink(invalidLink),
-        ).thenReturn(false);
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        final result = await authRepo.signInWithEmailLink(invalidLink);
-
-        expect(result, isNull);
-
-        final state = container.read(authRepositoryProvider);
-        expect(state.error, 'الرابط غير صالح');
-      });
-
-      test('handles expired link error', () async {
-        const email = 'test@example.com';
-
-        when(
-          () => mockFirebaseService.isSignInWithEmailLink(validLink),
-        ).thenReturn(true);
-        when(
-          () => mockLocalStorageService.getPendingSignInEmail(),
-        ).thenReturn(email);
-        when(
-          () => mockFirebaseService.signInWithEmailLink(
-            email: email,
-            emailLink: validLink,
-          ),
-        ).thenThrow(FakeFirebaseAuthException(code: 'expired-action-code'));
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        final result = await authRepo.signInWithEmailLink(validLink);
-
-        expect(result, isNull);
-
-        final state = container.read(authRepositoryProvider);
-        expect(state.error, 'انتهت صلاحية الرابط. يرجى طلب رابط جديد');
-      });
-
-      test('handles invalid action code error', () async {
-        const email = 'test@example.com';
-
-        when(
-          () => mockFirebaseService.isSignInWithEmailLink(validLink),
-        ).thenReturn(true);
-        when(
-          () => mockLocalStorageService.getPendingSignInEmail(),
-        ).thenReturn(email);
-        when(
-          () => mockFirebaseService.signInWithEmailLink(
-            email: email,
-            emailLink: validLink,
-          ),
-        ).thenThrow(FakeFirebaseAuthException(code: 'invalid-action-code'));
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        final result = await authRepo.signInWithEmailLink(validLink);
-
-        expect(result, isNull);
-
-        final state = container.read(authRepositoryProvider);
-        expect(state.error, 'الرابط غير صالح. يرجى طلب رابط جديد');
-      });
-
-      test('returns account_not_found when user not in Firestore', () async {
-        const email = 'unknown@example.com';
-        const uid = 'firebase-uid';
-        final mockUserCredential = MockUserCredential();
-        final mockUser = MockUser();
-
-        when(() => mockUser.uid).thenReturn(uid);
-        when(() => mockUser.email).thenReturn(email);
-        when(() => mockUserCredential.user).thenReturn(mockUser);
-        when(
-          () => mockFirebaseService.isSignInWithEmailLink(validLink),
-        ).thenReturn(true);
-        when(
-          () => mockLocalStorageService.getPendingSignInEmail(),
-        ).thenReturn(email);
-        when(
-          () => mockFirebaseService.signInWithEmailLink(
-            email: email,
-            emailLink: validLink,
-          ),
-        ).thenAnswer((_) async => mockUserCredential);
-        when(
-          () => mockUserRepository.getUserById(uid),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockUserRepository.getUserByEmail(email),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockLocalStorageService.clearPendingSignInEmail(),
-        ).thenAnswer((_) async {});
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        final result = await authRepo.signInWithEmailLink(validLink);
-
-        expect(result, isNull);
-
-        final state = container.read(authRepositoryProvider);
-        expect(state.error, 'account_not_found');
-      });
-
-      test('clears pending email on success', () async {
-        const email = 'test@example.com';
-        const uid = 'firebase-uid';
-        final mockUserCredential = MockUserCredential();
-        final mockUser = MockUser();
-        final appUser = _createUser(id: uid, email: email);
-
-        when(() => mockUser.uid).thenReturn(uid);
-        when(() => mockUser.email).thenReturn(email);
-        when(() => mockUserCredential.user).thenReturn(mockUser);
-        when(
-          () => mockFirebaseService.isSignInWithEmailLink(validLink),
-        ).thenReturn(true);
-        when(
-          () => mockLocalStorageService.getPendingSignInEmail(),
-        ).thenReturn(email);
-        when(
-          () => mockFirebaseService.signInWithEmailLink(
-            email: email,
-            emailLink: validLink,
-          ),
-        ).thenAnswer((_) async => mockUserCredential);
-        when(
-          () => mockUserRepository.getUserById(uid),
-        ).thenAnswer((_) async => appUser);
-        when(
-          () => mockLocalStorageService.clearPendingSignInEmail(),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.setUserId(uid),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.setUserRole(appUser.role.value),
-        ).thenAnswer((_) async {});
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        await authRepo.signInWithEmailLink(validLink);
-
-        verify(
-          () => mockLocalStorageService.clearPendingSignInEmail(),
-        ).called(1);
-      });
-
-      test('sets user data in localStorage on success', () async {
-        const email = 'test@example.com';
-        const uid = 'firebase-uid';
-        final mockUserCredential = MockUserCredential();
-        final mockUser = MockUser();
-        final appUser = _createUser(id: uid, email: email);
-
-        when(() => mockUser.uid).thenReturn(uid);
-        when(() => mockUser.email).thenReturn(email);
-        when(() => mockUserCredential.user).thenReturn(mockUser);
-        when(
-          () => mockFirebaseService.isSignInWithEmailLink(validLink),
-        ).thenReturn(true);
-        when(
-          () => mockLocalStorageService.getPendingSignInEmail(),
-        ).thenReturn(email);
-        when(
-          () => mockFirebaseService.signInWithEmailLink(
-            email: email,
-            emailLink: validLink,
-          ),
-        ).thenAnswer((_) async => mockUserCredential);
-        when(
-          () => mockUserRepository.getUserById(uid),
-        ).thenAnswer((_) async => appUser);
-        when(
-          () => mockLocalStorageService.clearPendingSignInEmail(),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.setUserId(uid),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.setUserRole(appUser.role.value),
-        ).thenAnswer((_) async {});
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        await authRepo.signInWithEmailLink(validLink);
-
-        verify(() => mockLocalStorageService.setUserId(uid)).called(1);
-        verify(
-          () => mockLocalStorageService.setUserRole(appUser.role.value),
-        ).called(1);
-      });
-    });
-
-    group('signInWithPendingLink', () {
-      test('completes sign-in with provided email', () async {
-        const email = 'crossdevice@example.com';
-        const uid = 'firebase-uid';
-        const validLink =
-            'https://alrasikhoon-57151.firebaseapp.com/__/auth/action?oobCode=abc123';
-        final mockUserCredential = MockUserCredential();
-        final mockUser = MockUser();
-        final appUser = _createUser(id: uid, email: email);
-
-        // First, trigger the email_prompt_needed state
-        when(
-          () => mockFirebaseService.isSignInWithEmailLink(validLink),
-        ).thenReturn(true);
-        when(
-          () => mockLocalStorageService.getPendingSignInEmail(),
-        ).thenReturn(null);
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        await authRepo.signInWithEmailLink(validLink);
-        expect(
-          container.read(authRepositoryProvider).error,
-          'email_prompt_needed',
-        );
-
-        // Now complete with the email
-        when(() => mockUser.uid).thenReturn(uid);
-        when(() => mockUser.email).thenReturn(email);
-        when(() => mockUserCredential.user).thenReturn(mockUser);
-        when(
-          () => mockFirebaseService.signInWithEmailLink(
-            email: email,
-            emailLink: validLink,
-          ),
-        ).thenAnswer((_) async => mockUserCredential);
-        when(
-          () => mockUserRepository.getUserById(uid),
-        ).thenAnswer((_) async => appUser);
-        when(
-          () => mockLocalStorageService.clearPendingSignInEmail(),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.setUserId(uid),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.setUserRole(appUser.role.value),
-        ).thenAnswer((_) async {});
-
-        final result = await authRepo.signInWithPendingLink(email);
-
-        expect(result, isNotNull);
-        expect(result?.id, uid);
-      });
-
-      test('returns error when no pending link', () async {
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        final result = await authRepo.signInWithPendingLink('test@example.com');
-
-        expect(result, isNull);
-
-        final state = container.read(authRepositoryProvider);
-        expect(state.error, 'لا يوجد رابط معلق');
-      });
-    });
-
-    group('signInWithGoogle', () {
-      test(
-        'returns user when Google sign-in succeeds and user found by UID',
-        () async {
-          const uid = 'google-uid';
-          const email = 'google@example.com';
-          final mockGoogleAccount = MockGoogleSignInAccount();
-          final mockGoogleAuth = MockGoogleSignInAuthentication();
-          final mockUserCredential = MockUserCredential();
-          final mockUser = MockUser();
-          final appUser = _createUser(
-            id: uid,
-            email: email,
-            authProvider: UserAuthProvider.google,
-          );
-
-          when(
-            () => mockGoogleAuthService.signIn(),
-          ).thenAnswer((_) async => mockGoogleAccount);
-          when(
-            () => mockGoogleAuthService.getAuthentication(mockGoogleAccount),
-          ).thenAnswer((_) async => mockGoogleAuth);
-          when(() => mockGoogleAuth.idToken).thenReturn('id-token');
-          when(() => mockGoogleAuth.accessToken).thenReturn('access-token');
-          when(
-            () => mockFirebaseService.signInWithGoogleCredential(
-              idToken: 'id-token',
-              accessToken: 'access-token',
-            ),
-          ).thenAnswer((_) async => mockUserCredential);
-          when(() => mockUser.uid).thenReturn(uid);
-          when(() => mockUser.email).thenReturn(email);
-          when(() => mockUserCredential.user).thenReturn(mockUser);
-          when(
-            () => mockUserRepository.getUserById(uid),
-          ).thenAnswer((_) async => appUser);
-          when(
-            () => mockLocalStorageService.setUserId(uid),
-          ).thenAnswer((_) async {});
-          when(
-            () => mockLocalStorageService.setUserRole(appUser.role.value),
-          ).thenAnswer((_) async {});
-
-          final authRepo = container.read(authRepositoryProvider.notifier);
-          final result = await authRepo.signInWithGoogle();
-
-          expect(result, isNotNull);
-          expect(result?.id, uid);
-        },
-      );
-
-      test('returns null when user cancels Google sign-in', () async {
-        when(
-          () => mockGoogleAuthService.signIn(),
-        ).thenAnswer((_) async => null);
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        final result = await authRepo.signInWithGoogle();
-
-        expect(result, isNull);
-
-        final state = container.read(authRepositoryProvider);
-        expect(state.error, 'تم إلغاء تسجيل الدخول');
-      });
-
-      test('returns account_not_found when user not in Firestore', () async {
-        const uid = 'google-uid';
-        const email = 'unknown@example.com';
-        final mockGoogleAccount = MockGoogleSignInAccount();
-        final mockGoogleAuth = MockGoogleSignInAuthentication();
-        final mockUserCredential = MockUserCredential();
-        final mockUser = MockUser();
-
-        when(
-          () => mockGoogleAuthService.signIn(),
-        ).thenAnswer((_) async => mockGoogleAccount);
-        when(
-          () => mockGoogleAuthService.getAuthentication(mockGoogleAccount),
-        ).thenAnswer((_) async => mockGoogleAuth);
-        when(() => mockGoogleAuth.idToken).thenReturn('id-token');
-        when(() => mockGoogleAuth.accessToken).thenReturn('access-token');
-        when(
-          () => mockFirebaseService.signInWithGoogleCredential(
-            idToken: 'id-token',
-            accessToken: 'access-token',
-          ),
-        ).thenAnswer((_) async => mockUserCredential);
-        when(() => mockUser.uid).thenReturn(uid);
-        when(() => mockUser.email).thenReturn(email);
-        when(() => mockUserCredential.user).thenReturn(mockUser);
-        when(
-          () => mockUserRepository.getUserById(uid),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockUserRepository.getUserByEmail(email),
-        ).thenAnswer((_) async => null);
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        final result = await authRepo.signInWithGoogle();
-
-        expect(result, isNull);
-        expect(
-          container.read(authRepositoryProvider).error,
-          'account_not_found',
-        );
-      });
-
-      test('migrates user found by email to Firebase UID', () async {
-        const uid = 'google-uid';
-        const email = 'migrate@example.com';
-        const oldId = 'old-uuid';
-        final mockGoogleAccount = MockGoogleSignInAccount();
-        final mockGoogleAuth = MockGoogleSignInAuthentication();
-        final mockUserCredential = MockUserCredential();
-        final mockUser = MockUser();
-        final oldUser = _createUser(id: oldId, email: email);
-        final migratedUser = oldUser.copyWith(
-          id: uid,
-          authProvider: UserAuthProvider.google,
-        );
-
-        when(
-          () => mockGoogleAuthService.signIn(),
-        ).thenAnswer((_) async => mockGoogleAccount);
-        when(
-          () => mockGoogleAuthService.getAuthentication(mockGoogleAccount),
-        ).thenAnswer((_) async => mockGoogleAuth);
-        when(() => mockGoogleAuth.idToken).thenReturn('id-token');
-        when(() => mockGoogleAuth.accessToken).thenReturn('access-token');
-        when(
-          () => mockFirebaseService.signInWithGoogleCredential(
-            idToken: 'id-token',
-            accessToken: 'access-token',
-          ),
-        ).thenAnswer((_) async => mockUserCredential);
-        when(() => mockUser.uid).thenReturn(uid);
-        when(() => mockUser.email).thenReturn(email);
-        when(() => mockUserCredential.user).thenReturn(mockUser);
-        when(
-          () => mockUserRepository.getUserById(uid),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockUserRepository.getUserByEmail(email),
-        ).thenAnswer((_) async => oldUser);
-        when(
-          () => mockUserRepository.migrateUserToFirebaseUid(
-            oldId: oldId,
-            newFirebaseUid: uid,
-            authProvider: UserAuthProvider.google,
-          ),
-        ).thenAnswer((_) async => migratedUser);
-        when(
-          () => mockLocalStorageService.setUserId(uid),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.setUserRole(migratedUser.role.value),
-        ).thenAnswer((_) async {});
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        final result = await authRepo.signInWithGoogle();
-
-        expect(result, isNotNull);
-        expect(result?.id, uid);
-
-        verify(
-          () => mockUserRepository.migrateUserToFirebaseUid(
-            oldId: oldId,
-            newFirebaseUid: uid,
-            authProvider: UserAuthProvider.google,
-          ),
-        ).called(1);
-      });
-    });
-
-    group('signOut', () {
-      test('signs out from all services and clears local storage', () async {
-        when(() => mockFirebaseService.signOut()).thenAnswer((_) async {});
-        when(() => mockGoogleAuthService.signOut()).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.clearPendingSignInEmail(),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.clearUserData(),
-        ).thenAnswer((_) async {});
-
-        final authRepo = container.read(authRepositoryProvider.notifier);
-        await authRepo.signOut();
-
-        verify(() => mockFirebaseService.signOut()).called(1);
-        verify(() => mockGoogleAuthService.signOut()).called(1);
-        verify(
-          () => mockLocalStorageService.clearPendingSignInEmail(),
-        ).called(1);
-        verify(() => mockLocalStorageService.clearUserData()).called(1);
-
-        final state = container.read(authRepositoryProvider);
-        expect(state.firebaseUser, isNull);
-        expect(state.appUser, isNull);
-      });
-    });
-
     group('signInWithUsernameAndPassword', () {
       test('signs in successfully and loads app user by username', () async {
         const username = 'mohammed.a';
@@ -921,10 +86,7 @@ void main() {
         const uid = 'firebase-uid';
         final mockUserCredential = MockUserCredential();
         final mockUser = MockUser();
-        final appUser = _createUser(id: uid, name: 'محمد').copyWith(
-          username: username,
-          authProvider: UserAuthProvider.emailPassword,
-        );
+        final appUser = buildUser(id: uid, username: username);
 
         when(
           () => mockFirebaseService.signInWithEmailPassword(
@@ -964,7 +126,7 @@ void main() {
         const synthesized = 'mohammed.a@alrasikhoon.local';
         final mockUserCredential = MockUserCredential();
         final mockUser = MockUser();
-        final appUser = _createUser(id: 'uid').copyWith(username: 'mohammed.a');
+        final appUser = buildUser(id: 'uid', username: 'mohammed.a');
 
         when(
           () => mockFirebaseService.signInWithEmailPassword(
@@ -1002,7 +164,7 @@ void main() {
         const uid = 'firebase-uid';
         final mockUserCredential = MockUserCredential();
         final mockUser = MockUser();
-        final appUser = _createUser(id: uid);
+        final appUser = buildUser(id: uid);
 
         when(
           () => mockFirebaseService.signInWithEmailPassword(
@@ -1108,7 +270,7 @@ void main() {
         );
       });
 
-      test('clears loading state after success and after error', () async {
+      test('clears loading state after error', () async {
         when(
           () => mockFirebaseService.signInWithEmailPassword(
             email: any(named: 'email'),
@@ -1137,6 +299,25 @@ void main() {
           ),
           throwsA(isA<UnimplementedError>()),
         );
+      });
+    });
+
+    group('signOut', () {
+      test('signs out and clears local storage', () async {
+        when(() => mockFirebaseService.signOut()).thenAnswer((_) async {});
+        when(
+          () => mockLocalStorageService.clearUserData(),
+        ).thenAnswer((_) async {});
+
+        final authRepo = container.read(authRepositoryProvider.notifier);
+        await authRepo.signOut();
+
+        verify(() => mockFirebaseService.signOut()).called(1);
+        verify(() => mockLocalStorageService.clearUserData()).called(1);
+
+        final state = container.read(authRepositoryProvider);
+        expect(state.firebaseUser, isNull);
+        expect(state.appUser, isNull);
       });
     });
   });

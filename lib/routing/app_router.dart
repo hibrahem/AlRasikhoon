@@ -5,7 +5,6 @@ import '../data/models/user_model.dart';
 import '../shared/providers/user_provider.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/account_not_found_screen.dart';
-import '../features/auth/screens/email_link_callback_screen.dart';
 import '../features/admin/screens/admin_dashboard_screen.dart';
 import '../features/admin/screens/institutes_screen.dart';
 import '../features/admin/screens/create_institute_screen.dart';
@@ -38,7 +37,6 @@ class AppRoutes {
   // Auth
   static const String login = '/login';
   static const String accountNotFound = '/account-not-found';
-  static const String emailLinkCallback = '/auth/email-link';
 
   // Admin
   static const String adminDashboard = '/admin';
@@ -88,15 +86,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLoggingIn =
           state.matchedLocation == AppRoutes.login ||
           state.matchedLocation == AppRoutes.accountNotFound;
-      final isEmailLinkCallback =
-          state.matchedLocation == AppRoutes.emailLinkCallback;
-
-      // Email-link callback runs for unauthenticated users (it's the
-      // mechanism that authenticates them). Once it succeeds and the user is
-      // authenticated, hand off to the role-based dashboard.
-      if (isEmailLinkCallback) {
-        return isAuthenticated ? _getDashboardRoute(userRole) : null;
-      }
 
       // Not authenticated - redirect to login
       if (!isAuthenticated && !isLoggingIn) {
@@ -119,10 +108,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.accountNotFound,
         builder: (context, state) => const AccountNotFoundScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.emailLinkCallback,
-        builder: (context, state) => EmailLinkCallbackScreen(link: state.uri),
       ),
 
       // Admin routes

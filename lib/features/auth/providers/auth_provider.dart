@@ -22,9 +22,3 @@ final authErrorProvider = Provider<String?>((ref) {
   final authState = ref.watch(authRepositoryProvider);
   return authState.error;
 });
-
-/// Email link sent provider
-final emailLinkSentProvider = Provider<bool>((ref) {
-  final authState = ref.watch(authRepositoryProvider);
-  return authState.emailLinkSent;
-});

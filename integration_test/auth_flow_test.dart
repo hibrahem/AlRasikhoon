@@ -15,7 +15,8 @@ void main() {
       env = TestEnvironment();
     });
 
-    testWidgets('Login screen renders with email link UI', (tester) async {
+    testWidgets('Login screen renders with username + password fields',
+        (tester) async {
       // Arrange - no authenticated user
       await env.setUp();
 
@@ -27,8 +28,9 @@ void main() {
       await authRobot.verifyLoginScreen();
       expect(find.text('الراسخون'), findsOneWidget);
       expect(find.text('تطبيق حفظ القرآن الكريم'), findsOneWidget);
-      expect(find.text('تسجيل الدخول بواسطة Google'), findsOneWidget);
-      expect(find.text('إرسال رابط الدخول'), findsOneWidget);
+      expect(find.text('اسم المستخدم'), findsOneWidget);
+      expect(find.text('كلمة المرور'), findsOneWidget);
+      expect(find.text('تسجيل الدخول'), findsOneWidget);
       expect(find.text('يجب أن يكون لديك حساب مسجل مسبقاً'), findsOneWidget);
     });
 
