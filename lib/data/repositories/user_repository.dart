@@ -8,7 +8,7 @@ class UserRepository {
   final FirebaseFirestore _firestore;
 
   UserRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _usersCollection =>
       _firestore.collection(AppConstants.collectionUsers);
@@ -35,10 +35,10 @@ class UserRepository {
     return null;
   }
 
-  /// Get user by phone number (legacy support)
-  Future<UserModel?> getUserByPhone(String phone) async {
+  /// Get user by username — the user-visible login identifier.
+  Future<UserModel?> getUserByUsername(String username) async {
     final query = await _usersCollection
-        .where('phone', isEqualTo: phone)
+        .where('username', isEqualTo: username.toLowerCase())
         .limit(1)
         .get();
 
@@ -51,6 +51,7 @@ class UserRepository {
   /// Create new user
   Future<UserModel> createUser({
     required String id,
+    required String username,
     required String email,
     required String name,
     required UserRole role,
@@ -59,6 +60,7 @@ class UserRepository {
   }) async {
     final user = UserModel(
       id: id,
+      username: username.toLowerCase(),
       email: email.toLowerCase(),
       phone: phone,
       name: name,
@@ -149,8 +151,12 @@ class UserRepository {
       'updated_at': FieldValue.serverTimestamp(),
     });
 
-    // Delete old document
-    await _usersCollection.doc(oldId).delete();
+    // Delete old document. Best-effort: a legacy doc whose email no longer
+    // matches the auth token (or that was already deleted by a concurrent
+    // migration) must not fail sign-in — the new UID-keyed doc already exists.
+    try {
+      await _usersCollection.doc(oldId).delete();
+    } catch (_) {}
 
     // Update any student records that reference the old user ID
     final studentsQuery = await _firestore
@@ -175,8 +181,10 @@ class UserRepository {
 
   /// Search users by name or email
   Future<List<UserModel>> searchUsers(String query, {UserRole? role}) async {
-    Query<Map<String, dynamic>> baseQuery = _usersCollection
-        .where('is_active', isEqualTo: true);
+    Query<Map<String, dynamic>> baseQuery = _usersCollection.where(
+      'is_active',
+      isEqualTo: true,
+    );
 
     if (role != null) {
       baseQuery = baseQuery.where('role', isEqualTo: role.value);
@@ -187,10 +195,12 @@ class UserRepository {
 
     return result.docs
         .map((doc) => UserModel.fromFirestore(doc))
-        .where((user) =>
-            user.name.toLowerCase().contains(query.toLowerCase()) ||
-            user.email.toLowerCase().contains(query.toLowerCase()) ||
-            (user.phone?.contains(query) ?? false))
+        .where(
+          (user) =>
+              user.name.toLowerCase().contains(query.toLowerCase()) ||
+              user.email.toLowerCase().contains(query.toLowerCase()) ||
+              (user.phone?.contains(query) ?? false),
+        )
         .toList();
   }
 }

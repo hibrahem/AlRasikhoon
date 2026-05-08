@@ -1,8 +1,69 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
+
+/// Wraps a [FakeFirebaseFirestore] but makes `delete()` on a specific
+/// `<collection>/<docId>` path throw a `permission-denied` FirebaseException —
+/// simulating the real Firestore rule rejection during legacy-doc migration.
+class _DeleteDeniedFirestore extends Mock implements FirebaseFirestore {
+  _DeleteDeniedFirestore(this._delegate, this._denyCollection, this._denyDocId);
+
+  final FirebaseFirestore _delegate;
+  final String _denyCollection;
+  final String _denyDocId;
+
+  @override
+  CollectionReference<Map<String, dynamic>> collection(String path) {
+    final inner = _delegate.collection(path);
+    if (path == _denyCollection) {
+      return _DeleteDeniedCollection(inner, _denyDocId);
+    }
+    return inner;
+  }
+}
+
+class _DeleteDeniedCollection extends Mock
+    implements CollectionReference<Map<String, dynamic>> {
+  _DeleteDeniedCollection(this._delegate, this._denyDocId);
+
+  final CollectionReference<Map<String, dynamic>> _delegate;
+  final String _denyDocId;
+
+  @override
+  DocumentReference<Map<String, dynamic>> doc([String? path]) {
+    final inner = _delegate.doc(path);
+    if (path == _denyDocId) {
+      return _DeleteDeniedDocument(inner);
+    }
+    return inner;
+  }
+}
+
+class _DeleteDeniedDocument extends Mock
+    implements DocumentReference<Map<String, dynamic>> {
+  _DeleteDeniedDocument(this._delegate);
+
+  final DocumentReference<Map<String, dynamic>> _delegate;
+
+  @override
+  Future<void> delete() {
+    return Future.error(
+      FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'permission-denied',
+        message: 'Missing or insufficient permissions.',
+      ),
+    );
+  }
+
+  @override
+  Future<DocumentSnapshot<Map<String, dynamic>>> get([GetOptions? options]) =>
+      _delegate.get(options);
+}
 
 void main() {
   group('UserRepository', () {
@@ -18,6 +79,7 @@ void main() {
       test('creates user with all required fields', () async {
         final user = await repository.createUser(
           id: 'user123',
+          username: 'mohammed.a',
           email: 'test@example.com',
           phone: '+966512345678',
           name: 'محمد أحمد',
@@ -25,6 +87,7 @@ void main() {
         );
 
         expect(user.id, 'user123');
+        expect(user.username, 'mohammed.a');
         expect(user.email, 'test@example.com');
         expect(user.phone, '+966512345678');
         expect(user.name, 'محمد أحمد');
@@ -32,21 +95,38 @@ void main() {
         expect(user.isActive, true);
       });
 
-      test('persists user to Firestore', () async {
+      test('persists user to Firestore with username', () async {
         await repository.createUser(
           id: 'user123',
+          username: 'test_user',
           email: 'test@example.com',
           phone: '+966512345678',
           name: 'Test User',
           role: UserRole.student,
         );
 
-        final doc = await fakeFirestore.collection('users').doc('user123').get();
+        final doc = await fakeFirestore
+            .collection('users')
+            .doc('user123')
+            .get();
         expect(doc.exists, true);
+        expect(doc.data()?['username'], 'test_user');
         expect(doc.data()?['email'], 'test@example.com');
         expect(doc.data()?['phone'], '+966512345678');
         expect(doc.data()?['name'], 'Test User');
         expect(doc.data()?['role'], 'student');
+      });
+
+      test('lowercases username', () async {
+        final user = await repository.createUser(
+          id: 'user123',
+          username: 'Mohammed_A',
+          email: 'test@example.com',
+          name: 'Test',
+          role: UserRole.student,
+        );
+
+        expect(user.username, 'mohammed_a');
       });
     });
 
@@ -112,27 +192,44 @@ void main() {
       });
     });
 
-    group('getUserByPhone', () {
-      test('finds user by phone number', () async {
+    group('getUserByUsername', () {
+      test('finds user by username', () async {
         await fakeFirestore.collection('users').doc('user123').set({
-          'phone': '+966512345678',
+          'username': 'mohammed.a',
+          'email': 'test@example.com',
           'name': 'Test User',
           'role': 'teacher',
           'is_active': true,
           'created_at': Timestamp.now(),
         });
 
-        final user = await repository.getUserByPhone('+966512345678');
+        final user = await repository.getUserByUsername('mohammed.a');
 
         expect(user, isNotNull);
         expect(user?.id, 'user123');
-        expect(user?.phone, '+966512345678');
+        expect(user?.username, 'mohammed.a');
       });
 
-      test('returns null when phone not found', () async {
-        final user = await repository.getUserByPhone('+966599999999');
+      test('returns null when username not found', () async {
+        final user = await repository.getUserByUsername('nobody');
 
         expect(user, isNull);
+      });
+
+      test('matches lowercase form', () async {
+        await fakeFirestore.collection('users').doc('user123').set({
+          'username': 'mohammed.a',
+          'email': 'test@example.com',
+          'name': 'Test',
+          'role': 'student',
+          'is_active': true,
+          'created_at': Timestamp.now(),
+        });
+
+        final user = await repository.getUserByUsername('Mohammed.A');
+
+        expect(user, isNotNull);
+        expect(user?.username, 'mohammed.a');
       });
     });
 
@@ -159,7 +256,10 @@ void main() {
 
         await repository.updateUser(user);
 
-        final doc = await fakeFirestore.collection('users').doc('user123').get();
+        final doc = await fakeFirestore
+            .collection('users')
+            .doc('user123')
+            .get();
         expect(doc.data()?['name'], 'Updated Name');
         expect(doc.data()?['is_active'], false);
       });
@@ -177,7 +277,10 @@ void main() {
 
         await repository.deleteUser('user123');
 
-        final doc = await fakeFirestore.collection('users').doc('user123').get();
+        final doc = await fakeFirestore
+            .collection('users')
+            .doc('user123')
+            .get();
         expect(doc.exists, true);
         expect(doc.data()?['is_active'], false);
       });
@@ -298,8 +401,10 @@ void main() {
           newFirebaseUid: 'firebaseUid456',
         );
 
-        final oldDoc =
-            await fakeFirestore.collection('users').doc('oldId123').get();
+        final oldDoc = await fakeFirestore
+            .collection('users')
+            .doc('oldId123')
+            .get();
         expect(oldDoc.exists, false);
       });
 
@@ -352,6 +457,43 @@ void main() {
 
         expect(user, isNull);
       });
+
+      test(
+        'returns migrated user even when deleting old doc is denied',
+        () async {
+          await fakeFirestore.collection('users').doc('oldId123').set({
+            'email': 'test@example.com',
+            'phone': '+966512345678',
+            'name': 'Test User',
+            'role': 'teacher',
+            'is_active': true,
+            'created_at': Timestamp.now(),
+          });
+
+          final firestore = _DeleteDeniedFirestore(
+            fakeFirestore,
+            'users',
+            'oldId123',
+          );
+          final repoWithDeniedDelete = UserRepository(firestore: firestore);
+
+          final user = await repoWithDeniedDelete.migrateUserToFirebaseUid(
+            oldId: 'oldId123',
+            newFirebaseUid: 'firebaseUid456',
+          );
+
+          expect(user, isNotNull);
+          expect(user?.id, 'firebaseUid456');
+          expect(user?.email, 'test@example.com');
+
+          // The new UID-keyed doc was successfully written.
+          final newDoc = await fakeFirestore
+              .collection('users')
+              .doc('firebaseUid456')
+              .get();
+          expect(newDoc.exists, true);
+        },
+      );
     });
 
     group('searchUsers', () {
@@ -393,7 +535,10 @@ void main() {
       });
 
       test('filters by role when specified', () async {
-        final results = await repository.searchUsers('أحمد', role: UserRole.teacher);
+        final results = await repository.searchUsers(
+          'أحمد',
+          role: UserRole.teacher,
+        );
 
         expect(results.length, 1);
         expect(results.first.role, UserRole.teacher);
