@@ -1,38 +1,72 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
+import 'package:al_rasikhoon/data/services/firebase_service.dart';
+
+class _MockFirebaseService extends Mock implements FirebaseService {}
+
+class _MockUserCredential extends Mock implements UserCredential {}
+
+class _MockUser extends Mock implements User {}
+
+/// Stubs FirebaseService.createUserWithEmailPassword to return a deterministic
+/// UID derived from the email's local part. Each call gets a fresh UID.
+void _stubAuthCreate(_MockFirebaseService service) {
+  when(
+    () => service.createUserWithEmailPassword(
+      email: any(named: 'email'),
+      password: any(named: 'password'),
+    ),
+  ).thenAnswer((invocation) async {
+    final email = invocation.namedArguments[#email] as String;
+    final localPart = email.split('@').first;
+    final mockUser = _MockUser();
+    when(() => mockUser.uid).thenReturn('uid-$localPart');
+    final cred = _MockUserCredential();
+    when(() => cred.user).thenReturn(mockUser);
+    return cred;
+  });
+}
 
 void main() {
   group('StudentRepository', () {
     late FakeFirebaseFirestore fakeFirestore;
+    late _MockFirebaseService firebaseService;
     late UserRepository userRepository;
     late StudentRepository studentRepository;
 
     setUp(() {
       fakeFirestore = FakeFirebaseFirestore();
+      firebaseService = _MockFirebaseService();
+      _stubAuthCreate(firebaseService);
       userRepository = UserRepository(firestore: fakeFirestore);
       studentRepository = StudentRepository(
         firestore: fakeFirestore,
+        firebaseService: firebaseService,
         userRepository: userRepository,
       );
     });
 
-    Future<void> _createUser({
+    Future<void> seedUser({
       required String id,
+      String username = 'seeded_user',
       String email = 'test@example.com',
       String name = 'Test User',
       String role = 'student',
     }) async {
       await fakeFirestore.collection('users').doc(id).set({
+        'username': username,
         'email': email,
         'name': name,
         'role': role,
         'is_active': true,
-        'auth_provider': 'pending',
+        'auth_provider': 'email_password',
         'created_at': Timestamp.now(),
       });
     }
@@ -41,14 +75,17 @@ void main() {
       test('creates user and student documents', () async {
         final result = await studentRepository.createStudent(
           name: 'طالب جديد',
-          email: 'student@example.com',
+          username: 'student_one',
+          password: 'pass123',
           instituteId: 'institute1',
           teacherId: 'teacher1',
         );
 
         expect(result.user.name, 'طالب جديد');
-        expect(result.user.email, 'student@example.com');
+        expect(result.user.username, 'student_one');
+        expect(result.user.email, 'student_one@alrasikhoon.local');
         expect(result.user.role, UserRole.student);
+        expect(result.user.authProvider, UserAuthProvider.emailPassword);
         expect(result.student.instituteId, 'institute1');
         expect(result.student.teacherId, 'teacher1');
       });
@@ -56,7 +93,8 @@ void main() {
       test('sets default student progression values', () async {
         final result = await studentRepository.createStudent(
           name: 'طالب',
-          email: 'student@example.com',
+          username: 'student_two',
+          password: 'pass123',
           instituteId: 'institute1',
           teacherId: 'teacher1',
         );
@@ -68,77 +106,93 @@ void main() {
         expect(result.student.currentAttempt, 1);
       });
 
-      test('creates guardian user when guardian email provided', () async {
-        final result = await studentRepository.createStudent(
-          name: 'طالب',
-          email: 'student@example.com',
-          instituteId: 'institute1',
-          teacherId: 'teacher1',
-          guardianEmail: 'guardian@example.com',
-          guardianPhone: '+966512345678',
-        );
+      test(
+        'creates guardian user when guardian credentials provided',
+        () async {
+          final result = await studentRepository.createStudent(
+            name: 'طالب',
+            username: 'student_three',
+            password: 'pass123',
+            instituteId: 'institute1',
+            teacherId: 'teacher1',
+            guardianUsername: 'guardian_one',
+            guardianPassword: 'guard123',
+            guardianPhone: '+966512345678',
+          );
 
-        expect(result.student.guardianId, isNotNull);
+          expect(result.student.guardianId, isNotNull);
 
-        // Verify guardian user was created
-        final guardian = await userRepository.getUserByEmail('guardian@example.com');
-        expect(guardian, isNotNull);
-        expect(guardian?.role, UserRole.guardian);
-        expect(guardian?.name, 'ولي أمر طالب');
-      });
+          final guardian = await userRepository.getUserByUsername(
+            'guardian_one',
+          );
+          expect(guardian, isNotNull);
+          expect(guardian?.role, UserRole.guardian);
+          expect(guardian?.name, 'ولي أمر طالب');
+          expect(guardian?.username, 'guardian_one');
+        },
+      );
 
-      test('reuses existing guardian if email already exists', () async {
-        // Create existing guardian
-        await _createUser(
+      test('reuses existing guardian if username already exists', () async {
+        await seedUser(
           id: 'existing-guardian',
-          email: 'guardian@example.com',
+          username: 'guardian_one',
+          email: 'guardian_one@alrasikhoon.local',
           name: 'ولي أمر موجود',
           role: 'guardian',
         );
 
         final result = await studentRepository.createStudent(
           name: 'طالب',
-          email: 'student@example.com',
+          username: 'student_four',
+          password: 'pass123',
           instituteId: 'institute1',
           teacherId: 'teacher1',
-          guardianEmail: 'guardian@example.com',
+          guardianUsername: 'guardian_one',
         );
 
         expect(result.student.guardianId, 'existing-guardian');
       });
 
-      test('creates student without guardian when no email provided', () async {
-        final result = await studentRepository.createStudent(
-          name: 'طالب',
-          email: 'student@example.com',
-          instituteId: 'institute1',
-          teacherId: 'teacher1',
+      test('throws when new guardian provided without password', () async {
+        expect(
+          () => studentRepository.createStudent(
+            name: 'طالب',
+            username: 'student_five',
+            password: 'pass123',
+            instituteId: 'institute1',
+            teacherId: 'teacher1',
+            guardianUsername: 'fresh_guardian',
+          ),
+          throwsArgumentError,
         );
-
-        expect(result.student.guardianId, isNull);
       });
+
+      test(
+        'creates student without guardian when no username provided',
+        () async {
+          final result = await studentRepository.createStudent(
+            name: 'طالب',
+            username: 'student_six',
+            password: 'pass123',
+            instituteId: 'institute1',
+            teacherId: 'teacher1',
+          );
+
+          expect(result.student.guardianId, isNull);
+        },
+      );
 
       test('stores phone number when provided', () async {
         final result = await studentRepository.createStudent(
           name: 'طالب',
-          email: 'student@example.com',
+          username: 'student_seven',
+          password: 'pass123',
           phone: '+966512345678',
           instituteId: 'institute1',
           teacherId: 'teacher1',
         );
 
         expect(result.user.phone, '+966512345678');
-      });
-
-      test('user auth_provider defaults to pending', () async {
-        final result = await studentRepository.createStudent(
-          name: 'طالب',
-          email: 'student@example.com',
-          instituteId: 'institute1',
-          teacherId: 'teacher1',
-        );
-
-        expect(result.user.authProvider, UserAuthProvider.pending);
       });
     });
 
@@ -170,7 +224,7 @@ void main() {
 
     group('getStudentByUserId', () {
       test('returns student by user_id', () async {
-        await _createUser(id: 'user1');
+        await seedUser(id: 'user1');
         await fakeFirestore.collection('students').doc('student1').set({
           'user_id': 'user1',
           'institute_id': 'institute1',
@@ -185,17 +239,19 @@ void main() {
       });
 
       test('returns null when no student for user', () async {
-        await _createUser(id: 'user-no-student');
-        final student = await studentRepository.getStudentByUserId('user-no-student');
+        await seedUser(id: 'user-no-student');
+        final student = await studentRepository.getStudentByUserId(
+          'user-no-student',
+        );
         expect(student, isNull);
       });
     });
 
     group('getStudentsForTeacher', () {
       test('returns only active students for teacher', () async {
-        await _createUser(id: 'user1', name: 'طالب 1');
-        await _createUser(id: 'user2', name: 'طالب 2');
-        await _createUser(id: 'user3', name: 'طالب غير فعال');
+        await seedUser(id: 'user1', name: 'طالب 1');
+        await seedUser(id: 'user2', name: 'طالب 2');
+        await seedUser(id: 'user3', name: 'طالب غير فعال');
 
         await fakeFirestore.collection('students').doc('s1').set({
           'user_id': 'user1',
@@ -219,14 +275,16 @@ void main() {
           'created_at': Timestamp.now(),
         });
 
-        final students = await studentRepository.getStudentsForTeacher('teacher1');
+        final students = await studentRepository.getStudentsForTeacher(
+          'teacher1',
+        );
 
         expect(students.length, 2);
         expect(students.every((s) => s.student.teacherId == 'teacher1'), true);
       });
 
       test('excludes students from other teachers', () async {
-        await _createUser(id: 'user1', name: 'طالب');
+        await seedUser(id: 'user1', name: 'طالب');
 
         await fakeFirestore.collection('students').doc('s1').set({
           'user_id': 'user1',
@@ -236,7 +294,9 @@ void main() {
           'created_at': Timestamp.now(),
         });
 
-        final students = await studentRepository.getStudentsForTeacher('teacher1');
+        final students = await studentRepository.getStudentsForTeacher(
+          'teacher1',
+        );
 
         expect(students, isEmpty);
       });
@@ -265,33 +325,38 @@ void main() {
         expect(doc.data()?['current_attempt'], 1); // Reset to 1
       });
 
-      test('completes level and advances when session exceeds 36 at level boundary',
-          () async {
-        // At level 1, hizb 59 is the first hizb. After exam (session 36),
-        // hizb decrements to 58 which is below the level boundary (59),
-        // triggering level completion and advancement to level 2.
-        await fakeFirestore.collection('students').doc('s1').set({
-          'user_id': 'u1',
-          'institute_id': 'i1',
-          'current_level': 1,
-          'current_juz': 30,
-          'current_hizb': 59,
-          'current_session': 36,
-          'current_attempt': 1,
-          'completed_levels': [],
-          'unlocked_levels': [1],
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
+      test(
+        'completes level and advances when session exceeds 36 at level boundary',
+        () async {
+          // At level 1, hizb 59 is the first hizb. After exam (session 36),
+          // hizb decrements to 58 which is below the level boundary (59),
+          // triggering level completion and advancement to level 2.
+          await fakeFirestore.collection('students').doc('s1').set({
+            'user_id': 'u1',
+            'institute_id': 'i1',
+            'current_level': 1,
+            'current_juz': 30,
+            'current_hizb': 59,
+            'current_session': 36,
+            'current_attempt': 1,
+            'completed_levels': [],
+            'unlocked_levels': [1],
+            'is_active': true,
+            'created_at': Timestamp.now(),
+          });
 
-        await studentRepository.advanceStudentSession('s1');
+          await studentRepository.advanceStudentSession('s1');
 
-        final doc = await fakeFirestore.collection('students').doc('s1').get();
-        expect(doc.data()?['current_session'], 1);
-        expect(doc.data()?['current_level'], 2);
-        expect(doc.data()?['completed_levels'], contains(1));
-        expect(doc.data()?['unlocked_levels'], contains(2));
-      });
+          final doc = await fakeFirestore
+              .collection('students')
+              .doc('s1')
+              .get();
+          expect(doc.data()?['current_session'], 1);
+          expect(doc.data()?['current_level'], 2);
+          expect(doc.data()?['completed_levels'], contains(1));
+          expect(doc.data()?['unlocked_levels'], contains(2));
+        },
+      );
 
       test('wraps session and decrements hizb mid-level', () async {
         // At hizb 58 (still within level 1 range), advancing past session 36
@@ -401,7 +466,7 @@ void main() {
 
     group('getStudentsByGuardianId', () {
       test('returns students for guardian', () async {
-        await _createUser(id: 'user1', name: 'طالب');
+        await seedUser(id: 'user1', name: 'طالب');
 
         await fakeFirestore.collection('students').doc('s1').set({
           'user_id': 'user1',
@@ -411,23 +476,29 @@ void main() {
           'created_at': Timestamp.now(),
         });
 
-        final students =
-            await studentRepository.getStudentsByGuardianId('guardian1');
+        final students = await studentRepository.getStudentsByGuardianId(
+          'guardian1',
+        );
 
         expect(students.length, 1);
         expect(students.first.student.guardianId, 'guardian1');
       });
 
       test('returns empty list when guardian has no students', () async {
-        final students =
-            await studentRepository.getStudentsByGuardianId('no-guardian');
+        final students = await studentRepository.getStudentsByGuardianId(
+          'no-guardian',
+        );
 
         expect(students, isEmpty);
       });
 
       test('returns multiple students for same guardian', () async {
-        await _createUser(id: 'user1', name: 'طالب 1');
-        await _createUser(id: 'user2', name: 'طالب 2', email: 'student2@example.com');
+        await seedUser(id: 'user1', name: 'طالب 1');
+        await seedUser(
+          id: 'user2',
+          name: 'طالب 2',
+          email: 'student2@example.com',
+        );
 
         await fakeFirestore.collection('students').doc('s1').set({
           'user_id': 'user1',
@@ -444,8 +515,9 @@ void main() {
           'created_at': Timestamp.now(),
         });
 
-        final students =
-            await studentRepository.getStudentsByGuardianId('guardian1');
+        final students = await studentRepository.getStudentsByGuardianId(
+          'guardian1',
+        );
 
         expect(students.length, 2);
       });
@@ -461,16 +533,18 @@ void main() {
           'created_at': Timestamp.now(),
         });
 
-        final student =
-            await studentRepository.getFirstStudentByGuardianId('guardian1');
+        final student = await studentRepository.getFirstStudentByGuardianId(
+          'guardian1',
+        );
 
         expect(student, isNotNull);
         expect(student?.guardianId, 'guardian1');
       });
 
       test('returns null when no student for guardian', () async {
-        final student =
-            await studentRepository.getFirstStudentByGuardianId('no-guardian');
+        final student = await studentRepository.getFirstStudentByGuardianId(
+          'no-guardian',
+        );
 
         expect(student, isNull);
       });
@@ -478,7 +552,7 @@ void main() {
 
     group('getStudentsForInstitute', () {
       test('returns active students for institute', () async {
-        await _createUser(id: 'user1', name: 'طالب');
+        await seedUser(id: 'user1', name: 'طالب');
 
         await fakeFirestore.collection('students').doc('s1').set({
           'user_id': 'user1',
@@ -495,16 +569,18 @@ void main() {
           'created_at': Timestamp.now(),
         });
 
-        final students =
-            await studentRepository.getStudentsForInstitute('institute1');
+        final students = await studentRepository.getStudentsForInstitute(
+          'institute1',
+        );
 
         expect(students.length, 1);
         expect(students.first.student.instituteId, 'institute1');
       });
 
       test('returns empty list for unknown institute', () async {
-        final students =
-            await studentRepository.getStudentsForInstitute('nonexistent');
+        final students = await studentRepository.getStudentsForInstitute(
+          'nonexistent',
+        );
 
         expect(students, isEmpty);
       });
@@ -512,8 +588,12 @@ void main() {
 
     group('getStudentsReadyForExam', () {
       test('returns students at session 36', () async {
-        await _createUser(id: 'user1', name: 'طالب جاهز');
-        await _createUser(id: 'user2', name: 'طالب غير جاهز', email: 'u2@example.com');
+        await seedUser(id: 'user1', name: 'طالب جاهز');
+        await seedUser(
+          id: 'user2',
+          name: 'طالب غير جاهز',
+          email: 'u2@example.com',
+        );
 
         await fakeFirestore.collection('students').doc('s1').set({
           'user_id': 'user1',
@@ -530,15 +610,16 @@ void main() {
           'created_at': Timestamp.now(),
         });
 
-        final ready =
-            await studentRepository.getStudentsReadyForExam('institute1');
+        final ready = await studentRepository.getStudentsReadyForExam(
+          'institute1',
+        );
 
         expect(ready.length, 1);
         expect(ready.first.user.name, 'طالب جاهز');
       });
 
       test('excludes inactive students', () async {
-        await _createUser(id: 'user1', name: 'طالب غير فعال');
+        await seedUser(id: 'user1', name: 'طالب غير فعال');
 
         await fakeFirestore.collection('students').doc('s1').set({
           'user_id': 'user1',
@@ -548,8 +629,9 @@ void main() {
           'created_at': Timestamp.now(),
         });
 
-        final ready =
-            await studentRepository.getStudentsReadyForExam('institute1');
+        final ready = await studentRepository.getStudentsReadyForExam(
+          'institute1',
+        );
 
         expect(ready, isEmpty);
       });

@@ -10,21 +10,21 @@ class StudentWithUser {
   final StudentModel student;
   final UserModel user;
 
-  const StudentWithUser({
-    required this.student,
-    required this.user,
-  });
+  const StudentWithUser({required this.student, required this.user});
 }
 
 class StudentRepository {
   final FirebaseFirestore _firestore;
+  final FirebaseService _firebaseService;
   final UserRepository _userRepository;
 
   StudentRepository({
     FirebaseFirestore? firestore,
+    required FirebaseService firebaseService,
     required UserRepository userRepository,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _userRepository = userRepository;
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _firebaseService = firebaseService,
+       _userRepository = userRepository;
 
   CollectionReference<Map<String, dynamic>> get _studentsCollection =>
       _firestore.collection(AppConstants.collectionStudents);
@@ -32,52 +32,79 @@ class StudentRepository {
   CollectionReference<Map<String, dynamic>> get _usersCollection =>
       _firestore.collection(AppConstants.collectionUsers);
 
-  /// Create student with user
+  /// Create a student plus the underlying user account (Firebase Auth +
+  /// Firestore doc). Optionally provisions a guardian account too. Throws on
+  /// username collision (caller should pre-check via UserRepository).
   Future<StudentWithUser> createStudent({
     required String name,
-    required String email,
+    required String username,
+    required String password,
     String? phone,
     required String instituteId,
     required String teacherId,
-    String? guardianEmail,
+    String? guardianUsername,
+    String? guardianPassword,
     String? guardianPhone,
   }) async {
-    // First, create the user
-    final userDocRef = _usersCollection.doc();
+    final normalizedUsername = username.toLowerCase();
+    final synthesizedEmail =
+        '$normalizedUsername@${AppConstants.synthesizedEmailDomain}';
+
+    final credential = await _firebaseService.createUserWithEmailPassword(
+      email: synthesizedEmail,
+      password: password,
+    );
+    final uid = credential.user!.uid;
+
     final user = UserModel(
-      id: userDocRef.id,
-      email: email.toLowerCase(),
+      id: uid,
+      username: normalizedUsername,
+      email: synthesizedEmail,
       phone: phone,
       name: name,
       role: UserRole.student,
+      authProvider: UserAuthProvider.emailPassword,
       createdAt: DateTime.now(),
     );
-    await userDocRef.set(user.toFirestore());
+    await _usersCollection.doc(uid).set(user.toFirestore());
 
-    // Create guardian if provided
     String? guardianId;
-    if (guardianEmail != null && guardianEmail.isNotEmpty) {
-      // Check if guardian already exists
-      final existingGuardian = await _userRepository.getUserByEmail(guardianEmail);
+    if (guardianUsername != null && guardianUsername.isNotEmpty) {
+      final guardianNormalized = guardianUsername.toLowerCase();
+      final existingGuardian = await _userRepository.getUserByUsername(
+        guardianNormalized,
+      );
       if (existingGuardian != null) {
         guardianId = existingGuardian.id;
       } else {
-        // Create new guardian user
-        final guardianDocRef = _usersCollection.doc();
+        if (guardianPassword == null || guardianPassword.isEmpty) {
+          throw ArgumentError(
+            'guardianPassword is required when creating a new guardian',
+          );
+        }
+        final guardianEmail =
+            '$guardianNormalized@${AppConstants.synthesizedEmailDomain}';
+        final guardianCredential = await _firebaseService
+            .createUserWithEmailPassword(
+              email: guardianEmail,
+              password: guardianPassword,
+            );
+        final guardianUid = guardianCredential.user!.uid;
         final guardian = UserModel(
-          id: guardianDocRef.id,
-          email: guardianEmail.toLowerCase(),
+          id: guardianUid,
+          username: guardianNormalized,
+          email: guardianEmail,
           phone: guardianPhone,
           name: 'ولي أمر $name',
           role: UserRole.guardian,
+          authProvider: UserAuthProvider.emailPassword,
           createdAt: DateTime.now(),
         );
-        await guardianDocRef.set(guardian.toFirestore());
-        guardianId = guardianDocRef.id;
+        await _usersCollection.doc(guardianUid).set(guardian.toFirestore());
+        guardianId = guardianUid;
       }
     }
 
-    // Create student record
     final studentDocRef = _studentsCollection.doc();
     final student = StudentModel(
       id: studentDocRef.id,
@@ -186,7 +213,9 @@ class StudentRepository {
   }
 
   /// Get students for institute
-  Future<List<StudentWithUser>> getStudentsForInstitute(String instituteId) async {
+  Future<List<StudentWithUser>> getStudentsForInstitute(
+    String instituteId,
+  ) async {
     final query = await _studentsCollection
         .where('institute_id', isEqualTo: instituteId)
         .where('is_active', isEqualTo: true)
@@ -209,7 +238,9 @@ class StudentRepository {
   }
 
   /// Get students ready for exam (session 36)
-  Future<List<StudentWithUser>> getStudentsReadyForExam(String instituteId) async {
+  Future<List<StudentWithUser>> getStudentsReadyForExam(
+    String instituteId,
+  ) async {
     final query = await _studentsCollection
         .where('institute_id', isEqualTo: instituteId)
         .where('current_session', isEqualTo: AppConstants.examSessionNumber)
@@ -254,7 +285,8 @@ class StudentRepository {
     // Check if hizb is complete (after exam = session 36)
     if (newSession > 36) {
       newSession = 1;
-      newHizb = newHizb - 1; // Move to previous hizb (going backwards through Quran)
+      newHizb =
+          newHizb - 1; // Move to previous hizb (going backwards through Quran)
 
       // Check if level is complete (6 hizbs)
       if (newHizb < _getFirstHizbOfLevel(newLevel)) {
@@ -312,13 +344,17 @@ class StudentRepository {
         .where('teacher_id', isEqualTo: teacherId)
         .where('is_active', isEqualTo: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => StudentModel.fromFirestore(doc))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => StudentModel.fromFirestore(doc))
+              .toList(),
+        );
   }
 
   /// Get students by guardian ID (for guardian role)
-  Future<List<StudentWithUser>> getStudentsByGuardianId(String guardianId) async {
+  Future<List<StudentWithUser>> getStudentsByGuardianId(
+    String guardianId,
+  ) async {
     final query = await _studentsCollection
         .where('guardian_id', isEqualTo: guardianId)
         .where('is_active', isEqualTo: true)
@@ -370,6 +406,7 @@ class StudentRepository {
 final studentRepositoryProvider = Provider<StudentRepository>((ref) {
   return StudentRepository(
     firestore: ref.watch(firestoreProvider),
+    firebaseService: ref.watch(firebaseServiceProvider),
     userRepository: ref.watch(userRepositoryProvider),
   );
 });

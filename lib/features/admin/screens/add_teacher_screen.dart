@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/countries.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/repositories/user_repository.dart';
@@ -22,7 +23,9 @@ class AddTeacherScreen extends ConsumerStatefulWidget {
 class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final _phoneController = TextEditingController();
   bool _isLoading = false;
   Country _selectedCountry = Countries.defaultCountry;
@@ -30,7 +33,9 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _emailController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
@@ -38,32 +43,23 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
   Future<void> _handleCreate() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Validate email
-    final emailError = Validators.validateEmail(_emailController.text);
-    if (emailError != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(emailError),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
     setState(() => _isLoading = true);
 
     try {
       final repo = ref.read(userRepositoryProvider);
       final firebaseService = ref.read(firebaseServiceProvider);
-      final email = _emailController.text.trim().toLowerCase();
+      final username = _usernameController.text.trim().toLowerCase();
+      final password = _passwordController.text;
+      final synthesizedEmail =
+          '$username@${AppConstants.synthesizedEmailDomain}';
 
-      // Check if user with this email already exists in Firestore
-      final existingUser = await repo.getUserByEmail(email);
-      if (existingUser != null) {
+      // Username uniqueness check
+      final existing = await repo.getUserByUsername(username);
+      if (existing != null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('البريد الإلكتروني مسجل مسبقاً'),
+              content: Text('اسم المستخدم مسجل مسبقاً'),
               backgroundColor: AppColors.error,
             ),
           );
@@ -71,7 +67,6 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
         return;
       }
 
-      // Format phone if provided
       String? phone;
       if (_phoneController.text.isNotEmpty) {
         phone = Validators.formatPhoneWithCountryCode(
@@ -80,21 +75,23 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
         );
       }
 
-      // Only create Firestore user document (no Firebase Auth)
-      // Firebase Auth account will be created on first login attempt
-      final userId = const Uuid().v4();
-      await firebaseService.firestore.collection('users').doc(userId).set({
-        'id': userId,
-        'email': email,
+      final credential = await firebaseService.createUserWithEmailPassword(
+        email: synthesizedEmail,
+        password: password,
+      );
+      final uid = credential.user!.uid;
+
+      await firebaseService.firestore.collection('users').doc(uid).set({
+        'username': username,
+        'email': synthesizedEmail,
         'name': _nameController.text.trim(),
         'role': 'teacher',
         'phone': phone,
-        'auth_provider': 'pending',
+        'auth_provider': 'email_password',
         'is_active': true,
         'created_at': FieldValue.serverTimestamp(),
       });
 
-      // Refresh teachers list
       ref.invalidate(allTeachersProvider);
 
       if (mounted) {
@@ -106,12 +103,22 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
         );
         context.pop();
       }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        final msg = e.code == 'email-already-in-use'
+            ? 'اسم المستخدم مسجل مسبقاً'
+            : e.code == 'weak-password'
+            ? 'كلمة المرور ضعيفة'
+            : 'فشل إنشاء الحساب: ${e.message ?? e.code}';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), backgroundColor: AppColors.error),
+        );
+      }
     } catch (e) {
       if (mounted) {
-        String errorMessage = 'حدث خطأ: $e';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(errorMessage),
+            content: Text('حدث خطأ: $e'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -126,9 +133,7 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('إضافة معلم'),
-      ),
+      appBar: AppBar(title: const Text('إضافة معلم')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -136,7 +141,6 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Icon
               Container(
                 width: 80,
                 height: 80,
@@ -151,8 +155,6 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
                   color: AppColors.primary,
                 ),
               ),
-
-              // Name field
               AppTextField(
                 label: 'اسم المعلم',
                 hint: 'الاسم الكامل',
@@ -161,15 +163,33 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 20),
-
-              // Email field
-              AppEmailField(
-                controller: _emailController,
+              AppTextField(
+                label: 'اسم المستخدم',
+                hint: 'username',
+                controller: _usernameController,
+                validator: Validators.validateUsername,
+                textInputAction: TextInputAction.next,
+                textDirection: TextDirection.ltr,
+                textAlign: TextAlign.left,
+                prefixIcon: const Icon(Icons.alternate_email),
+              ),
+              const SizedBox(height: 20),
+              AppPasswordField(
+                controller: _passwordController,
+                validator: Validators.validatePassword,
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 20),
-
-              // Phone field (optional)
+              AppPasswordField(
+                label: 'تأكيد كلمة المرور',
+                controller: _confirmPasswordController,
+                validator: (value) => Validators.validateConfirmPassword(
+                  value,
+                  _passwordController.text,
+                ),
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: 20),
               AppPhoneField(
                 controller: _phoneController,
                 initialCountry: _selectedCountry,
@@ -179,8 +199,6 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
                 },
               ),
               const SizedBox(height: 32),
-
-              // Info box
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -190,25 +208,20 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.info_outline,
-                      color: AppColors.info,
-                    ),
+                    const Icon(Icons.info_outline, color: AppColors.info),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'سيتمكن المعلم من تسجيل الدخول بـ Google أو بالبريد الإلكتروني (سيتم إرسال رابط تعيين كلمة المرور عند أول محاولة)',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.info,
-                            ),
+                        'شارك اسم المستخدم وكلمة المرور مع المعلم. يمكنه تسجيل الدخول مباشرة بهما.',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: AppColors.info),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 32),
-
-              // Create button
               AppButton(
                 text: 'إضافة المعلم',
                 onPressed: _handleCreate,

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -23,9 +24,12 @@ class AddStudentScreen extends ConsumerStatefulWidget {
 class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _guardianEmailController = TextEditingController();
+  final _guardianUsernameController = TextEditingController();
+  final _guardianPasswordController = TextEditingController();
   final _guardianPhoneController = TextEditingController();
   InstituteModel? _selectedInstitute;
   bool _isLoading = false;
@@ -57,27 +61,18 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _emailController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _phoneController.dispose();
-    _guardianEmailController.dispose();
+    _guardianUsernameController.dispose();
+    _guardianPasswordController.dispose();
     _guardianPhoneController.dispose();
     super.dispose();
   }
 
   Future<void> _handleCreate() async {
     if (!_formKey.currentState!.validate()) return;
-
-    // Validate required email
-    final emailError = Validators.validateEmail(_emailController.text);
-    if (emailError != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(emailError),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
 
     if (_selectedInstitute == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -97,15 +92,14 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
 
       final userRepo = ref.read(userRepositoryProvider);
       final studentRepo = ref.read(studentRepositoryProvider);
-      final email = _emailController.text.trim().toLowerCase();
+      final username = _usernameController.text.trim().toLowerCase();
 
-      // Check if user with this email already exists
-      final existingUser = await userRepo.getUserByEmail(email);
+      final existingUser = await userRepo.getUserByUsername(username);
       if (existingUser != null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('البريد الإلكتروني مسجل مسبقاً'),
+              content: Text('اسم المستخدم مسجل مسبقاً'),
               backgroundColor: AppColors.error,
             ),
           );
@@ -113,7 +107,6 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
         return;
       }
 
-      // Format optional phone numbers
       String? phone;
       if (_phoneController.text.isNotEmpty) {
         phone = Validators.formatPhoneWithCountryCode(
@@ -122,9 +115,13 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
         );
       }
 
-      String? guardianEmail;
-      if (_guardianEmailController.text.isNotEmpty) {
-        guardianEmail = _guardianEmailController.text.trim().toLowerCase();
+      String? guardianUsername;
+      String? guardianPassword;
+      if (_guardianUsernameController.text.isNotEmpty) {
+        guardianUsername = _guardianUsernameController.text
+            .trim()
+            .toLowerCase();
+        guardianPassword = _guardianPasswordController.text;
       }
 
       String? guardianPhone;
@@ -135,19 +132,18 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
         );
       }
 
-      // Create student with auto-generated user document (no Firebase Auth)
-      // Firebase Auth account will be created on first login attempt
       await studentRepo.createStudent(
         name: _nameController.text.trim(),
-        email: email,
+        username: username,
+        password: _passwordController.text,
         phone: phone,
         instituteId: _selectedInstitute!.id,
         teacherId: currentUser.id,
-        guardianEmail: guardianEmail,
+        guardianUsername: guardianUsername,
+        guardianPassword: guardianPassword,
         guardianPhone: guardianPhone,
       );
 
-      // Refresh students list
       ref.invalidate(teacherStudentsProvider);
 
       if (mounted) {
@@ -159,12 +155,22 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
         );
         context.pop();
       }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        final msg = e.code == 'email-already-in-use'
+            ? 'اسم المستخدم مسجل مسبقاً'
+            : e.code == 'weak-password'
+            ? 'كلمة المرور ضعيفة'
+            : 'فشل إنشاء الحساب: ${e.message ?? e.code}';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), backgroundColor: AppColors.error),
+        );
+      }
     } catch (e) {
       if (mounted) {
-        String errorMessage = 'حدث خطأ: $e';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(errorMessage),
+            content: Text('حدث خطأ: $e'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -176,12 +182,20 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
     }
   }
 
+  String? _validateGuardianPassword(String? value) {
+    if (_guardianUsernameController.text.isEmpty) return null;
+    return Validators.validatePassword(value);
+  }
+
+  String? _validateGuardianUsername(String? value) {
+    if (value == null || value.isEmpty) return null;
+    return Validators.validateUsername(value);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('إضافة طالب'),
-      ),
+      appBar: AppBar(title: const Text('إضافة طالب')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -189,7 +203,6 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Icon
               Container(
                 width: 80,
                 height: 80,
@@ -204,8 +217,6 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                   color: AppColors.primary,
                 ),
               ),
-
-              // Student name field
               AppTextField(
                 label: 'اسم الطالب',
                 hint: 'الاسم الكامل',
@@ -214,15 +225,33 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 20),
-
-              // Student email field (required)
-              AppEmailField(
-                controller: _emailController,
+              AppTextField(
+                label: 'اسم المستخدم',
+                hint: 'username',
+                controller: _usernameController,
+                validator: Validators.validateUsername,
+                textInputAction: TextInputAction.next,
+                textDirection: TextDirection.ltr,
+                textAlign: TextAlign.left,
+                prefixIcon: const Icon(Icons.alternate_email),
+              ),
+              const SizedBox(height: 20),
+              AppPasswordField(
+                controller: _passwordController,
+                validator: Validators.validatePassword,
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 20),
-
-              // Student phone field (optional)
+              AppPasswordField(
+                label: 'تأكيد كلمة المرور',
+                controller: _confirmPasswordController,
+                validator: (value) => Validators.validateConfirmPassword(
+                  value,
+                  _passwordController.text,
+                ),
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: 20),
               AppPhoneField(
                 controller: _phoneController,
                 initialCountry: _studentCountry,
@@ -232,46 +261,31 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                 },
               ),
               const SizedBox(height: 24),
-
-              // Guardian section header
               Text(
                 'بيانات ولي الأمر (اختياري)',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-
-              // Guardian email field (optional)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'البريد الإلكتروني لولي الأمر (اختياري)',
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _guardianEmailController,
-                    keyboardType: TextInputType.emailAddress,
-                    textDirection: TextDirection.ltr,
-                    textAlign: TextAlign.left,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                    textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(
-                      hintText: 'example@email.com',
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      prefixIcon: Icon(Icons.email_outlined),
-                    ),
-                  ),
-                ],
+              AppTextField(
+                label: 'اسم المستخدم لولي الأمر (اختياري)',
+                hint: 'guardian_username',
+                controller: _guardianUsernameController,
+                validator: _validateGuardianUsername,
+                textInputAction: TextInputAction.next,
+                textDirection: TextDirection.ltr,
+                textAlign: TextAlign.left,
+                prefixIcon: const Icon(Icons.alternate_email),
               ),
               const SizedBox(height: 20),
-
-              // Guardian phone field (optional)
+              AppPasswordField(
+                label: 'كلمة المرور لولي الأمر',
+                controller: _guardianPasswordController,
+                validator: _validateGuardianPassword,
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: 20),
               AppPhoneField(
                 label: 'رقم ولي الأمر',
                 controller: _guardianPhoneController,
@@ -282,15 +296,10 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                 },
               ),
               const SizedBox(height: 24),
-
-              // Institute dropdown
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'المعهد',
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
+                  Text('المعهد', style: Theme.of(context).textTheme.labelLarge),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -318,8 +327,6 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                 ],
               ),
               const SizedBox(height: 24),
-
-              // Info box
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -327,50 +334,22 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppColors.info.withOpacity(0.3)),
                 ),
-                child: Column(
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.info_outline,
-                          color: AppColors.info,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'سيبدأ الطالب من المستوى الأول - الحلقة الأولى',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: AppColors.info,
-                                ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.login,
-                          color: AppColors.info,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'يمكن للطالب تسجيل الدخول بـ Google أو بالبريد الإلكتروني',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: AppColors.info,
-                                ),
-                          ),
-                        ),
-                      ],
+                    const Icon(Icons.info_outline, color: AppColors.info),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'الطالب يبدأ من المستوى الأول. شارك اسم المستخدم وكلمة المرور معه.',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: AppColors.info),
+                      ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 32),
-
-              // Create button
               AppButton(
                 text: 'إضافة الطالب',
                 onPressed: _handleCreate,
