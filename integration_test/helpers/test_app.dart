@@ -11,7 +11,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:al_rasikhoon/data/repositories/auth_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/data/services/local_storage_service.dart';
-import 'package:al_rasikhoon/data/services/deep_link_service.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -95,12 +94,9 @@ class TestEnvironment {
     SharedPreferences.setMockInitialValues({});
     sharedPreferences = await SharedPreferences.getInstance();
 
-    final deepLinkService = DeepLinkService();
-
     overrides = [
       firestoreProvider.overrideWithValue(fakeFirestore),
       sharedPreferencesProvider.overrideWithValue(sharedPreferences),
-      deepLinkServiceProvider.overrideWithValue(deepLinkService),
       firebaseServiceProvider.overrideWithValue(
         _TestFirebaseService(firestore: fakeFirestore),
       ),

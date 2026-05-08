@@ -18,11 +18,9 @@ class FirebaseService {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
-  FirebaseService({
-    FirebaseAuth? auth,
-    FirebaseFirestore? firestore,
-  })  : _auth = auth ?? FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+  FirebaseService({FirebaseAuth? auth, FirebaseFirestore? firestore})
+    : _auth = auth ?? FirebaseAuth.instance,
+      _firestore = firestore ?? FirebaseFirestore.instance;
 
   FirebaseAuth get auth => _auth;
   FirebaseFirestore get firestore => _firestore;
@@ -38,7 +36,8 @@ class FirebaseService {
     await _auth.signOut();
   }
 
-  // Email/Password auth
+  // Email/Password auth — feeds the synthesized
+  // '<username>@alrasikhoon.local' email under the hood.
   Future<UserCredential> signInWithEmailPassword({
     required String email,
     required String password,
@@ -49,52 +48,14 @@ class FirebaseService {
     );
   }
 
-  // Email Link (passwordless) auth
-  Future<void> sendSignInLinkToEmail({
+  Future<UserCredential> createUserWithEmailPassword({
     required String email,
-    required ActionCodeSettings actionCodeSettings,
+    required String password,
   }) async {
-    await _auth.sendSignInLinkToEmail(
+    return await _auth.createUserWithEmailAndPassword(
       email: email,
-      actionCodeSettings: actionCodeSettings,
+      password: password,
     );
-  }
-
-  bool isSignInWithEmailLink(String link) {
-    return _auth.isSignInWithEmailLink(link);
-  }
-
-  Future<UserCredential> signInWithEmailLink({
-    required String email,
-    required String emailLink,
-  }) async {
-    return await _auth.signInWithEmailLink(
-      email: email,
-      emailLink: emailLink,
-    );
-  }
-
-  // Google auth
-  Future<UserCredential> signInWithGoogleCredential({
-    required String idToken,
-    required String accessToken,
-  }) async {
-    final credential = GoogleAuthProvider.credential(
-      idToken: idToken,
-      accessToken: accessToken,
-    );
-    return await _auth.signInWithCredential(credential);
-  }
-
-  // Google Sign-In for Web using popup (recommended for web)
-  Future<UserCredential> signInWithGooglePopup() async {
-    final googleProvider = GoogleAuthProvider();
-    googleProvider.addScope('email');
-    return await _auth.signInWithPopup(googleProvider);
-  }
-
-  Future<UserCredential> signInWithCredential(AuthCredential credential) async {
-    return await _auth.signInWithCredential(credential);
   }
 
   // Firestore helpers

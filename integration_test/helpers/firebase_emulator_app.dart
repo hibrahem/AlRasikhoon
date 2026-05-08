@@ -31,7 +31,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:al_rasikhoon/core/theme/app_theme.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/auth_repository.dart';
-import 'package:al_rasikhoon/data/services/deep_link_service.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/data/services/local_storage_service.dart';
 import 'package:al_rasikhoon/firebase_options.dart';
@@ -183,11 +182,9 @@ class EmulatorTestEnvironment {
 
     SharedPreferences.setMockInitialValues({});
     sharedPreferences = await SharedPreferences.getInstance();
-    final deepLinkService = DeepLinkService();
 
     overrides = <dynamic>[
       sharedPreferencesProvider.overrideWithValue(sharedPreferences),
-      deepLinkServiceProvider.overrideWithValue(deepLinkService),
       // The default `firebaseServiceProvider` would build a service against
       // real `FirebaseAuth.instance`. The instance is now connected to the
       // Auth emulator, so we could pass it through — but the app's auth

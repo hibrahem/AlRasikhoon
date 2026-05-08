@@ -66,17 +66,13 @@ extension UserRoleExtension on UserRole {
   }
 }
 
-enum UserAuthProvider { google, emailPassword, emailLink, pending }
+enum UserAuthProvider { emailPassword, pending }
 
 extension UserAuthProviderExtension on UserAuthProvider {
   String get value {
     switch (this) {
-      case UserAuthProvider.google:
-        return 'google';
       case UserAuthProvider.emailPassword:
         return 'email_password';
-      case UserAuthProvider.emailLink:
-        return 'email_link';
       case UserAuthProvider.pending:
         return 'pending';
     }
@@ -84,14 +80,8 @@ extension UserAuthProviderExtension on UserAuthProvider {
 
   static UserAuthProvider fromString(String? value) {
     switch (value) {
-      case 'google':
-        return UserAuthProvider.google;
       case 'email_password':
         return UserAuthProvider.emailPassword;
-      case 'email_link':
-        return UserAuthProvider.emailLink;
-      case 'pending':
-        return UserAuthProvider.pending;
       default:
         return UserAuthProvider.pending;
     }

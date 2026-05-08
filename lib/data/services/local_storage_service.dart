@@ -56,24 +56,10 @@ class LocalStorageService {
     await _prefs.clear();
   }
 
-  // Pending sign-in email (for email link auth)
-  Future<void> setPendingSignInEmail(String email) async {
-    await _prefs.setString(AppConstants.keyPendingSignInEmail, email);
-  }
-
-  String? getPendingSignInEmail() {
-    return _prefs.getString(AppConstants.keyPendingSignInEmail);
-  }
-
-  Future<void> clearPendingSignInEmail() async {
-    await _prefs.remove(AppConstants.keyPendingSignInEmail);
-  }
-
   // Clear user data (on logout)
   Future<void> clearUserData() async {
     await _prefs.remove(AppConstants.keyUserId);
     await _prefs.remove(AppConstants.keyUserRole);
-    await _prefs.remove(AppConstants.keyPendingSignInEmail);
   }
 }
 

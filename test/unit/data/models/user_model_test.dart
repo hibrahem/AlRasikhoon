@@ -107,16 +107,8 @@ void main() {
 
   group('UserAuthProvider', () {
     group('value', () {
-      test('google returns google', () {
-        expect(UserAuthProvider.google.value, 'google');
-      });
-
       test('emailPassword returns email_password', () {
         expect(UserAuthProvider.emailPassword.value, 'email_password');
-      });
-
-      test('emailLink returns email_link', () {
-        expect(UserAuthProvider.emailLink.value, 'email_link');
       });
 
       test('pending returns pending', () {
@@ -125,13 +117,6 @@ void main() {
     });
 
     group('fromString', () {
-      test('converts google to google', () {
-        expect(
-          UserAuthProviderExtension.fromString('google'),
-          UserAuthProvider.google,
-        );
-      });
-
       test('converts email_password to emailPassword', () {
         expect(
           UserAuthProviderExtension.fromString('email_password'),
@@ -139,16 +124,23 @@ void main() {
         );
       });
 
-      test('converts email_link to emailLink', () {
-        expect(
-          UserAuthProviderExtension.fromString('email_link'),
-          UserAuthProvider.emailLink,
-        );
-      });
-
       test('converts pending to pending', () {
         expect(
           UserAuthProviderExtension.fromString('pending'),
+          UserAuthProvider.pending,
+        );
+      });
+
+      test('legacy google value falls back to pending', () {
+        expect(
+          UserAuthProviderExtension.fromString('google'),
+          UserAuthProvider.pending,
+        );
+      });
+
+      test('legacy email_link value falls back to pending', () {
+        expect(
+          UserAuthProviderExtension.fromString('email_link'),
           UserAuthProvider.pending,
         );
       });
@@ -264,11 +256,11 @@ void main() {
           phone: '+966512345678',
           name: 'Test User',
           role: UserRole.student,
-          authProvider: UserAuthProvider.google,
+          authProvider: UserAuthProvider.emailPassword,
           createdAt: DateTime.now(),
         );
 
-        expect(user.authProvider, UserAuthProvider.google);
+        expect(user.authProvider, UserAuthProvider.emailPassword);
       });
     });
 
@@ -369,7 +361,25 @@ void main() {
         expect(user.email, '');
       });
 
-      test('deserializes auth_provider correctly', () async {
+      test('deserializes email_password auth_provider correctly', () async {
+        await fakeFirestore.collection('users').doc('user123').set({
+          'email': 'test@example.com',
+          'name': 'Test User',
+          'role': 'teacher',
+          'auth_provider': 'email_password',
+          'is_active': true,
+        });
+
+        final doc = await fakeFirestore
+            .collection('users')
+            .doc('user123')
+            .get();
+        final user = UserModel.fromFirestore(doc);
+
+        expect(user.authProvider, UserAuthProvider.emailPassword);
+      });
+
+      test('legacy google auth_provider falls back to pending', () async {
         await fakeFirestore.collection('users').doc('user123').set({
           'email': 'test@example.com',
           'name': 'Test User',
@@ -384,10 +394,10 @@ void main() {
             .get();
         final user = UserModel.fromFirestore(doc);
 
-        expect(user.authProvider, UserAuthProvider.google);
+        expect(user.authProvider, UserAuthProvider.pending);
       });
 
-      test('deserializes email_link auth_provider correctly', () async {
+      test('legacy email_link auth_provider falls back to pending', () async {
         await fakeFirestore.collection('users').doc('user123').set({
           'email': 'test@example.com',
           'name': 'Test User',
@@ -402,7 +412,7 @@ void main() {
             .get();
         final user = UserModel.fromFirestore(doc);
 
-        expect(user.authProvider, UserAuthProvider.emailLink);
+        expect(user.authProvider, UserAuthProvider.pending);
       });
 
       test('defaults auth_provider to pending when missing', () async {
@@ -600,9 +610,11 @@ void main() {
           createdAt: DateTime.now(),
         );
 
-        final updated = user.copyWith(authProvider: UserAuthProvider.google);
+        final updated = user.copyWith(
+          authProvider: UserAuthProvider.emailPassword,
+        );
 
-        expect(updated.authProvider, UserAuthProvider.google);
+        expect(updated.authProvider, UserAuthProvider.emailPassword);
         expect(updated.name, 'Test'); // Other fields preserved
       });
     });
