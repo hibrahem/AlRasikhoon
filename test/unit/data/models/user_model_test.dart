@@ -73,7 +73,10 @@ void main() {
 
     group('fromString', () {
       test('converts super_admin to superAdmin', () {
-        expect(UserRoleExtension.fromString('super_admin'), UserRole.superAdmin);
+        expect(
+          UserRoleExtension.fromString('super_admin'),
+          UserRole.superAdmin,
+        );
       });
 
       test('converts supervisor to supervisor', () {
@@ -124,37 +127,51 @@ void main() {
     group('fromString', () {
       test('converts google to google', () {
         expect(
-            UserAuthProviderExtension.fromString('google'), UserAuthProvider.google);
+          UserAuthProviderExtension.fromString('google'),
+          UserAuthProvider.google,
+        );
       });
 
       test('converts email_password to emailPassword', () {
-        expect(UserAuthProviderExtension.fromString('email_password'),
-            UserAuthProvider.emailPassword);
+        expect(
+          UserAuthProviderExtension.fromString('email_password'),
+          UserAuthProvider.emailPassword,
+        );
       });
 
       test('converts email_link to emailLink', () {
-        expect(UserAuthProviderExtension.fromString('email_link'),
-            UserAuthProvider.emailLink);
+        expect(
+          UserAuthProviderExtension.fromString('email_link'),
+          UserAuthProvider.emailLink,
+        );
       });
 
       test('converts pending to pending', () {
-        expect(UserAuthProviderExtension.fromString('pending'),
-            UserAuthProvider.pending);
+        expect(
+          UserAuthProviderExtension.fromString('pending'),
+          UserAuthProvider.pending,
+        );
       });
 
       test('defaults to pending for invalid value', () {
-        expect(UserAuthProviderExtension.fromString('invalid'),
-            UserAuthProvider.pending);
+        expect(
+          UserAuthProviderExtension.fromString('invalid'),
+          UserAuthProvider.pending,
+        );
       });
 
       test('defaults to pending for null', () {
         expect(
-            UserAuthProviderExtension.fromString(null), UserAuthProvider.pending);
+          UserAuthProviderExtension.fromString(null),
+          UserAuthProvider.pending,
+        );
       });
 
       test('defaults to pending for empty string', () {
         expect(
-            UserAuthProviderExtension.fromString(''), UserAuthProvider.pending);
+          UserAuthProviderExtension.fromString(''),
+          UserAuthProvider.pending,
+        );
       });
     });
   });
@@ -186,6 +203,32 @@ void main() {
         expect(user.createdAt, now);
         expect(user.updatedAt, isNull);
         expect(user.isActive, true);
+      });
+
+      test('defaults username to empty string', () {
+        final user = UserModel(
+          id: 'user123',
+          email: 'test@example.com',
+          phone: '+966512345678',
+          name: 'Test User',
+          role: UserRole.student,
+          createdAt: DateTime.now(),
+        );
+
+        expect(user.username, '');
+      });
+
+      test('allows setting username', () {
+        final user = UserModel(
+          id: 'user123',
+          username: 'mohammed.a',
+          email: 'test@example.com',
+          name: 'Test',
+          role: UserRole.student,
+          createdAt: DateTime.now(),
+        );
+
+        expect(user.username, 'mohammed.a');
       });
 
       test('defaults isActive to true', () {
@@ -235,6 +278,7 @@ void main() {
         final updatedAt = DateTime(2024, 1, 16, 14, 0);
 
         await fakeFirestore.collection('users').doc('user123').set({
+          'username': 'mohammed.a',
           'phone': '+966512345678',
           'name': 'محمد أحمد',
           'role': 'teacher',
@@ -243,10 +287,14 @@ void main() {
           'is_active': true,
         });
 
-        final doc = await fakeFirestore.collection('users').doc('user123').get();
+        final doc = await fakeFirestore
+            .collection('users')
+            .doc('user123')
+            .get();
         final user = UserModel.fromFirestore(doc);
 
         expect(user.id, 'user123');
+        expect(user.username, 'mohammed.a');
         expect(user.phone, '+966512345678');
         expect(user.name, 'محمد أحمد');
         expect(user.role, UserRole.teacher);
@@ -257,6 +305,22 @@ void main() {
         expect(user.isActive, true);
       });
 
+      test('defaults username to empty string when missing', () async {
+        await fakeFirestore.collection('users').doc('user123').set({
+          'email': 'test@example.com',
+          'name': 'Test',
+          'role': 'student',
+        });
+
+        final doc = await fakeFirestore
+            .collection('users')
+            .doc('user123')
+            .get();
+        final user = UserModel.fromFirestore(doc);
+
+        expect(user.username, '');
+      });
+
       test('handles missing optional fields', () async {
         await fakeFirestore.collection('users').doc('user123').set({
           'phone': '+966512345678',
@@ -264,7 +328,10 @@ void main() {
           'role': 'student',
         });
 
-        final doc = await fakeFirestore.collection('users').doc('user123').get();
+        final doc = await fakeFirestore
+            .collection('users')
+            .doc('user123')
+            .get();
         final user = UserModel.fromFirestore(doc);
 
         expect(user.updatedAt, isNull);
@@ -277,7 +344,10 @@ void main() {
           'name': 'Test',
         });
 
-        final doc = await fakeFirestore.collection('users').doc('user123').get();
+        final doc = await fakeFirestore
+            .collection('users')
+            .doc('user123')
+            .get();
         final user = UserModel.fromFirestore(doc);
 
         expect(user.role, UserRole.student);
@@ -288,7 +358,10 @@ void main() {
           'role': 'teacher',
         });
 
-        final doc = await fakeFirestore.collection('users').doc('user123').get();
+        final doc = await fakeFirestore
+            .collection('users')
+            .doc('user123')
+            .get();
         final user = UserModel.fromFirestore(doc);
 
         expect(user.phone, isNull);
@@ -305,7 +378,10 @@ void main() {
           'is_active': true,
         });
 
-        final doc = await fakeFirestore.collection('users').doc('user123').get();
+        final doc = await fakeFirestore
+            .collection('users')
+            .doc('user123')
+            .get();
         final user = UserModel.fromFirestore(doc);
 
         expect(user.authProvider, UserAuthProvider.google);
@@ -320,7 +396,10 @@ void main() {
           'is_active': true,
         });
 
-        final doc = await fakeFirestore.collection('users').doc('user123').get();
+        final doc = await fakeFirestore
+            .collection('users')
+            .doc('user123')
+            .get();
         final user = UserModel.fromFirestore(doc);
 
         expect(user.authProvider, UserAuthProvider.emailLink);
@@ -334,7 +413,10 @@ void main() {
           'is_active': true,
         });
 
-        final doc = await fakeFirestore.collection('users').doc('user123').get();
+        final doc = await fakeFirestore
+            .collection('users')
+            .doc('user123')
+            .get();
         final user = UserModel.fromFirestore(doc);
 
         expect(user.authProvider, UserAuthProvider.pending);
@@ -348,6 +430,7 @@ void main() {
 
         final user = UserModel(
           id: 'user123',
+          username: 'mohammed.a',
           email: 'test@example.com',
           phone: '+966512345678',
           name: 'محمد أحمد',
@@ -359,6 +442,7 @@ void main() {
 
         final map = user.toFirestore();
 
+        expect(map['username'], 'mohammed.a');
         expect(map['email'], 'test@example.com');
         expect(map['phone'], '+966512345678');
         expect(map['name'], 'محمد أحمد');
@@ -366,6 +450,20 @@ void main() {
         expect(map['is_active'], false);
         expect((map['created_at'] as Timestamp).toDate().year, createdAt.year);
         expect((map['updated_at'] as Timestamp).toDate().year, updatedAt.year);
+      });
+
+      test('serializes empty username when not set', () {
+        final user = UserModel(
+          id: 'user123',
+          email: 'test@example.com',
+          name: 'Test',
+          role: UserRole.student,
+          createdAt: DateTime.now(),
+        );
+
+        final map = user.toFirestore();
+
+        expect(map['username'], '');
       });
 
       test('handles null updatedAt', () {
@@ -474,6 +572,23 @@ void main() {
         expect(updated.isActive, false);
       });
 
+      test('can update username', () {
+        final user = UserModel(
+          id: 'user123',
+          username: 'old_name',
+          email: 'test@example.com',
+          name: 'Test',
+          role: UserRole.student,
+          createdAt: DateTime.now(),
+        );
+
+        final updated = user.copyWith(username: 'new_name');
+
+        expect(updated.username, 'new_name');
+        expect(updated.id, user.id);
+        expect(updated.name, user.name);
+      });
+
       test('can update authProvider', () {
         final user = UserModel(
           id: 'user123',
@@ -485,9 +600,7 @@ void main() {
           createdAt: DateTime.now(),
         );
 
-        final updated = user.copyWith(
-          authProvider: UserAuthProvider.google,
-        );
+        final updated = user.copyWith(authProvider: UserAuthProvider.google);
 
         expect(updated.authProvider, UserAuthProvider.google);
         expect(updated.name, 'Test'); // Other fields preserved
@@ -566,6 +679,7 @@ void main() {
       test('returns formatted string', () {
         final user = UserModel(
           id: 'user123',
+          username: 'test_user',
           email: 'test@example.com',
           phone: '+966512345678',
           name: 'Test User',
@@ -576,8 +690,8 @@ void main() {
         final str = user.toString();
 
         expect(str, contains('user123'));
+        expect(str, contains('test_user'));
         expect(str, contains('Test User'));
-        expect(str, contains('test@example.com'));
         expect(str, contains('teacher'));
       });
     });

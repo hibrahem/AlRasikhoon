@@ -1,12 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum UserRole {
-  superAdmin,
-  supervisor,
-  teacher,
-  student,
-  guardian,
-}
+enum UserRole { superAdmin, supervisor, teacher, student, guardian }
 
 extension UserRoleExtension on UserRole {
   String get value {
@@ -72,12 +66,7 @@ extension UserRoleExtension on UserRole {
   }
 }
 
-enum UserAuthProvider {
-  google,
-  emailPassword,
-  emailLink,
-  pending,
-}
+enum UserAuthProvider { google, emailPassword, emailLink, pending }
 
 extension UserAuthProviderExtension on UserAuthProvider {
   String get value {
@@ -111,6 +100,7 @@ extension UserAuthProviderExtension on UserAuthProvider {
 
 class UserModel {
   final String id;
+  final String username;
   final String email;
   final String? phone;
   final String name;
@@ -122,6 +112,7 @@ class UserModel {
 
   const UserModel({
     required this.id,
+    this.username = '',
     required this.email,
     this.phone,
     required this.name,
@@ -136,6 +127,7 @@ class UserModel {
     final data = doc.data() as Map<String, dynamic>;
     return UserModel(
       id: doc.id,
+      username: (data['username'] as String?) ?? '',
       email: data['email'] ?? '',
       phone: data['phone'],
       name: data['name'] ?? '',
@@ -149,6 +141,7 @@ class UserModel {
 
   Map<String, dynamic> toFirestore() {
     return {
+      'username': username,
       'email': email,
       'phone': phone,
       'name': name,
@@ -162,6 +155,7 @@ class UserModel {
 
   UserModel copyWith({
     String? id,
+    String? username,
     String? email,
     String? phone,
     String? name,
@@ -173,6 +167,7 @@ class UserModel {
   }) {
     return UserModel(
       id: id ?? this.id,
+      username: username ?? this.username,
       email: email ?? this.email,
       phone: phone ?? this.phone,
       name: name ?? this.name,
@@ -186,7 +181,7 @@ class UserModel {
 
   @override
   String toString() {
-    return 'UserModel(id: $id, name: $name, email: $email, role: ${role.value})';
+    return 'UserModel(id: $id, username: $username, name: $name, role: ${role.value})';
   }
 
   @override

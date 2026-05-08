@@ -21,6 +21,29 @@ class Validators {
     return null;
   }
 
+  /// Validate username (3-20 chars, lowercase ASCII letters, digits, underscore, dot).
+  /// Used as the user-visible login identifier and to derive the synthesized
+  /// Firebase Auth email '<username>@alrasikhoon.local'.
+  static String? validateUsername(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'يرجى إدخال اسم المستخدم';
+    }
+
+    if (value.length < 3) {
+      return 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل';
+    }
+
+    if (value.length > 20) {
+      return 'اسم المستخدم يجب ألا يتجاوز 20 حرفاً';
+    }
+
+    if (!RegExp(r'^[a-z0-9_.]+$').hasMatch(value)) {
+      return 'اسم المستخدم يجب أن يحتوي على حروف إنجليزية صغيرة وأرقام و _ . فقط';
+    }
+
+    return null;
+  }
+
   /// Validate password (min 6 characters)
   static String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {

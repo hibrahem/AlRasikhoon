@@ -281,6 +281,54 @@ void main() {
       });
     });
 
+    group('validateUsername', () {
+      test('rejects empty username', () {
+        expect(Validators.validateUsername(''), isNotNull);
+        expect(Validators.validateUsername(null), isNotNull);
+      });
+
+      test('rejects username shorter than 3 characters', () {
+        expect(Validators.validateUsername('ab'), isNotNull);
+      });
+
+      test('accepts username of exactly 3 characters', () {
+        expect(Validators.validateUsername('abc'), isNull);
+      });
+
+      test('accepts username of exactly 20 characters', () {
+        expect(Validators.validateUsername('a' * 20), isNull);
+      });
+
+      test('rejects username longer than 20 characters', () {
+        expect(Validators.validateUsername('a' * 21), isNotNull);
+      });
+
+      test('accepts lowercase letters, digits, underscore, dot', () {
+        expect(Validators.validateUsername('mohammed.a'), isNull);
+        expect(Validators.validateUsername('user_123'), isNull);
+        expect(Validators.validateUsername('abc.def_g1'), isNull);
+      });
+
+      test('rejects uppercase letters', () {
+        expect(Validators.validateUsername('Mohammed'), isNotNull);
+        expect(Validators.validateUsername('USER'), isNotNull);
+      });
+
+      test('rejects spaces', () {
+        expect(Validators.validateUsername('user name'), isNotNull);
+      });
+
+      test('rejects special characters other than _ and .', () {
+        expect(Validators.validateUsername('user-name'), isNotNull);
+        expect(Validators.validateUsername('user@name'), isNotNull);
+        expect(Validators.validateUsername('user!'), isNotNull);
+      });
+
+      test('rejects Arabic characters', () {
+        expect(Validators.validateUsername('محمد'), isNotNull);
+      });
+    });
+
     group('validatePassword', () {
       test('rejects empty password', () {
         expect(Validators.validatePassword(''), isNotNull);
@@ -309,12 +357,16 @@ void main() {
 
       test('rejects non-matching passwords', () {
         expect(
-            Validators.validateConfirmPassword('different', 'password'), isNotNull);
+          Validators.validateConfirmPassword('different', 'password'),
+          isNotNull,
+        );
       });
 
       test('accepts matching passwords', () {
         expect(
-            Validators.validateConfirmPassword('password', 'password'), isNull);
+          Validators.validateConfirmPassword('password', 'password'),
+          isNull,
+        );
       });
     });
 
