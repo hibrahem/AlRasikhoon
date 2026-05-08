@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../data/models/institute_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/auth_repository.dart';
+import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/bottom_nav_bar.dart';
 import '../../../shared/widgets/student_card.dart';
@@ -69,16 +70,23 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
                       final studentWithUser = students[index];
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: StudentCard(
-                          studentWithUser: studentWithUser,
-                          onTap: () {
-                            context.push(
-                              AppRoutes.sessionOverview.replaceFirst(
-                                ':studentId',
-                                studentWithUser.student.id,
-                              ),
-                            );
-                          },
+                        child: GestureDetector(
+                          onLongPress: () => _showStudentActions(
+                            context,
+                            studentWithUser.user.id,
+                            studentWithUser.user.name,
+                          ),
+                          child: StudentCard(
+                            studentWithUser: studentWithUser,
+                            onTap: () {
+                              context.push(
+                                AppRoutes.sessionOverview.replaceFirst(
+                                  ':studentId',
+                                  studentWithUser.student.id,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       );
                     },
@@ -113,6 +121,37 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
           }
         },
         role: UserRole.teacher,
+      ),
+    );
+  }
+
+  void _showStudentActions(
+    BuildContext context,
+    String userId,
+    String userName,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.lock_reset),
+              title: const Text('إعادة تعيين كلمة المرور'),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => ResetPasswordDialog(
+                    userId: userId,
+                    userDisplayName: userName,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

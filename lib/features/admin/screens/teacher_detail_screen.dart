@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../providers/admin_provider.dart';
 
 class TeacherDetailScreen extends ConsumerWidget {
   final String teacherId;
 
-  const TeacherDetailScreen({
-    super.key,
-    required this.teacherId,
-  });
+  const TeacherDetailScreen({super.key, required this.teacherId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -18,9 +16,7 @@ class TeacherDetailScreen extends ConsumerWidget {
     final institutesAsync = ref.watch(institutesForTeacherProvider(teacherId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('تفاصيل المعلم'),
-      ),
+      appBar: AppBar(title: const Text('تفاصيل المعلم')),
       body: teacherAsync.when(
         data: (teacher) {
           if (teacher == null) {
@@ -61,16 +57,16 @@ class TeacherDetailScreen extends ConsumerWidget {
                             Row(
                               children: [
                                 Icon(
-                                  teacher.phone != null ? Icons.phone : Icons.email,
+                                  teacher.phone != null
+                                      ? Icons.phone
+                                      : Icons.email,
                                   size: 16,
                                   color: AppColors.textSecondary,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   teacher.phone ?? teacher.email,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
+                                  style: Theme.of(context).textTheme.bodyMedium
                                       ?.copyWith(
                                         color: AppColors.textSecondary,
                                       ),
@@ -112,6 +108,24 @@ class TeacherDetailScreen extends ConsumerWidget {
                 Text(
                   'المعاهد المعين بها',
                   style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 12),
+
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.lock_reset),
+                    label: const Text('إعادة تعيين كلمة المرور'),
+                    onPressed: () {
+                      showDialog<void>(
+                        context: context,
+                        builder: (_) => ResetPasswordDialog(
+                          userId: teacher.id,
+                          userDisplayName: teacher.name,
+                        ),
+                      );
+                    },
+                  ),
                 ),
                 const SizedBox(height: 12),
 
@@ -161,9 +175,9 @@ class TeacherDetailScreen extends ConsumerWidget {
                                   children: [
                                     Text(
                                       institute.name,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleSmall,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleSmall,
                                     ),
                                     Text(
                                       institute.location,

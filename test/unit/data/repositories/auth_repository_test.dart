@@ -288,19 +288,8 @@ void main() {
       });
     });
 
-    group('setPasswordForUser', () {
-      test('throws UnimplementedError pending phase 7', () async {
-        final authRepo = container.read(authRepositoryProvider.notifier);
-
-        expect(
-          () => authRepo.setPasswordForUser(
-            userId: 'uid',
-            newPassword: 'pass123',
-          ),
-          throwsA(isA<UnimplementedError>()),
-        );
-      });
-    });
+    // setPasswordForUser is intentionally not unit-tested — it just calls
+    // the setUserPassword Cloud Function (covered by functions/test/).
 
     group('signOut', () {
       test('signs out and clears local storage', () async {

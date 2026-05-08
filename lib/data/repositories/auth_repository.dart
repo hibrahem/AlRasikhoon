@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/firebase_service.dart';
@@ -122,16 +123,20 @@ class AuthRepository extends Notifier<AuthState> {
     }
   }
 
-  /// Reset another user's password. Admin-only path. The actual implementation
-  /// (calling a Firebase Cloud Function backed by the Admin SDK) lands in
-  /// phase 7 of the username+password migration.
+  /// Reset another user's password via the setUserPassword Cloud Function.
+  /// Authorization is enforced server-side: super_admin can reset any user;
+  /// teachers can reset their own students/guardians.
   Future<void> setPasswordForUser({
     required String userId,
     required String newPassword,
   }) async {
-    throw UnimplementedError(
-      'Password reset is wired in phase 7 (Cloud Function setUserPassword)',
+    final callable = FirebaseFunctions.instance.httpsCallable(
+      'setUserPassword',
     );
+    await callable.call<dynamic>({
+      'userId': userId,
+      'newPassword': newPassword,
+    });
   }
 
   Future<void> signOut() async {
