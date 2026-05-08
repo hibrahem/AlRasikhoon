@@ -25,14 +25,16 @@ service cloud.firestore {
 
     // Users collection
     match /users/{userId} {
-      // Allow all reads - needed for unauthenticated email lookup during forgot password flow
-      // Note: This enables email enumeration, but is required for the lazy auth flow
-      allow read: if true;
-      // Allow create if: super_admin, teacher, OR user creating their own doc (for migration)
-      allow create: if isSuperAdmin() || isTeacher() || (isAuthenticated() && request.auth.uid == userId);
+      // Reads require auth. The username+password flow looks up users
+      // from authenticated callers only (admin screens checking
+      // username uniqueness, the auth listener loading the signed-in
+      // user's doc, etc.). The legacy unauthenticated read carve-out
+      // for email-link sign-in is gone.
+      allow read: if isAuthenticated();
+      allow create: if isSuperAdmin() || isTeacher() ||
+        (isAuthenticated() && request.auth.uid == userId);
       allow update: if isSuperAdmin() || request.auth.uid == userId;
-      // Allow delete if: super_admin OR user deleting their old migrated doc (email must match)
-      allow delete: if isSuperAdmin() || (isAuthenticated() && resource.data.email == request.auth.token.email);
+      allow delete: if isSuperAdmin();
     }
 
     // Institutes collection
