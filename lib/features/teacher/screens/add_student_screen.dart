@@ -72,6 +72,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
   }
 
   Future<void> _handleCreate() async {
+    if (_isLoading) return;
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedInstitute == null) {

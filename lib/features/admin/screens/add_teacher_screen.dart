@@ -40,6 +40,7 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
   }
 
   Future<void> _handleCreate() async {
+    if (_isLoading) return;
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
