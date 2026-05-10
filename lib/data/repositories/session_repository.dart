@@ -11,7 +11,7 @@ class SessionRepository {
   final FirebaseFirestore _firestore;
 
   SessionRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _sessionRecordsCollection =>
       _firestore.collection(AppConstants.collectionSessionRecords);
@@ -69,6 +69,15 @@ class SessionRepository {
     return record;
   }
 
+  /// Get a single session record by id.
+  Future<SessionRecordModel?> getSessionRecordById(String recordId) async {
+    final doc = await _sessionRecordsCollection.doc(recordId).get();
+    if (doc.exists) {
+      return SessionRecordModel.fromFirestore(doc);
+    }
+    return null;
+  }
+
   /// Get session records for student
   Future<List<SessionRecordModel>> getSessionRecordsForStudent(
     String studentId, {
@@ -100,10 +109,16 @@ class SessionRepository {
         .orderBy('date', descending: true);
 
     if (startDate != null) {
-      query = query.where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
+      query = query.where(
+        'date',
+        isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
+      );
     }
     if (endDate != null) {
-      query = query.where('date', isLessThanOrEqualTo: Timestamp.fromDate(endDate));
+      query = query.where(
+        'date',
+        isLessThanOrEqualTo: Timestamp.fromDate(endDate),
+      );
     }
     if (limit != null) {
       query = query.limit(limit);
@@ -166,7 +181,9 @@ class SessionRepository {
   }
 
   /// Get sard records for student
-  Future<List<SardRecordModel>> getSardRecordsForStudent(String studentId) async {
+  Future<List<SardRecordModel>> getSardRecordsForStudent(
+    String studentId,
+  ) async {
     final result = await _sardRecordsCollection
         .where('student_id', isEqualTo: studentId)
         .orderBy('date', descending: true)
@@ -228,7 +245,9 @@ class SessionRepository {
   }
 
   /// Get exam records for student
-  Future<List<ExamRecordModel>> getExamRecordsForStudent(String studentId) async {
+  Future<List<ExamRecordModel>> getExamRecordsForStudent(
+    String studentId,
+  ) async {
     final result = await _examRecordsCollection
         .where('student_id', isEqualTo: studentId)
         .orderBy('date', descending: true)
@@ -250,10 +269,16 @@ class SessionRepository {
         .orderBy('date', descending: true);
 
     if (startDate != null) {
-      query = query.where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
+      query = query.where(
+        'date',
+        isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
+      );
     }
     if (endDate != null) {
-      query = query.where('date', isLessThanOrEqualTo: Timestamp.fromDate(endDate));
+      query = query.where(
+        'date',
+        isLessThanOrEqualTo: Timestamp.fromDate(endDate),
+      );
     }
 
     final result = await query.get();
@@ -294,7 +319,9 @@ class SessionRepository {
     return {
       'total_sessions': totalSessions,
       'passed_sessions': passedSessions,
-      'session_pass_rate': totalSessions > 0 ? passedSessions / totalSessions : 0,
+      'session_pass_rate': totalSessions > 0
+          ? passedSessions / totalSessions
+          : 0,
       'total_sards': totalSards,
       'passed_sards': passedSards,
       'total_exams': totalExams,
@@ -311,9 +338,11 @@ class SessionRepository {
         .orderBy('date', descending: true)
         .limit(50)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => SessionRecordModel.fromFirestore(doc))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => SessionRecordModel.fromFirestore(doc))
+              .toList(),
+        );
   }
 }
 

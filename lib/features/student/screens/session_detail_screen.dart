@@ -10,25 +10,19 @@ import '../providers/student_provider.dart';
 class SessionDetailScreen extends ConsumerWidget {
   final String recordId;
 
-  const SessionDetailScreen({
-    super.key,
-    required this.recordId,
-  });
+  const SessionDetailScreen({super.key, required this.recordId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final historyAsync = ref.watch(studentHistoryProvider);
+    final recordAsync = ref.watch(sessionRecordByIdProvider(recordId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('تفاصيل الحلقة'),
-      ),
-      body: historyAsync.when(
-        data: (records) {
-          final record = records.firstWhere(
-            (r) => r.id == recordId,
-            orElse: () => throw Exception('Record not found'),
-          );
+      appBar: AppBar(title: const Text('تفاصيل الحلقة')),
+      body: recordAsync.when(
+        data: (record) {
+          if (record == null) {
+            return const Center(child: Text('الحلقة غير موجودة'));
+          }
 
           final dateFormat = DateFormat('yyyy/MM/dd hh:mm a', 'ar');
 
@@ -62,14 +56,13 @@ class SessionDetailScreen extends ConsumerWidget {
                               children: [
                                 Text(
                                   record.curriculumSessionId,
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
                                 ),
                                 Text(
                                   dateFormat.format(record.date),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
+                                  style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
                                         color: AppColors.textSecondary,
                                       ),
@@ -158,10 +151,7 @@ class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _InfoRow({
-    required this.label,
-    required this.value,
-  });
+  const _InfoRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -172,15 +162,15 @@ class _InfoRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
           Text(
             value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -192,10 +182,7 @@ class _PartResultCard extends StatelessWidget {
   final String title;
   final int errors;
 
-  const _PartResultCard({
-    required this.title,
-    required this.errors,
-  });
+  const _PartResultCard({required this.title, required this.errors});
 
   @override
   Widget build(BuildContext context) {
@@ -212,10 +199,7 @@ class _PartResultCard extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              title,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            child: Text(title, style: Theme.of(context).textTheme.bodyMedium),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -229,9 +213,9 @@ class _PartResultCard extends StatelessWidget {
               ),
               Text(
                 gradeInfo.nameAr,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: gradeInfo.color,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: gradeInfo.color),
               ),
             ],
           ),

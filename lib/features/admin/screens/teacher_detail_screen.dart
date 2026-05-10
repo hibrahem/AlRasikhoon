@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
+import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/student_card.dart';
 import '../providers/admin_provider.dart';
 
 class TeacherDetailScreen extends ConsumerWidget {
@@ -14,6 +17,7 @@ class TeacherDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final teacherAsync = ref.watch(teacherProvider(teacherId));
     final institutesAsync = ref.watch(institutesForTeacherProvider(teacherId));
+    final studentsAsync = ref.watch(studentsForTeacherAdminProvider(teacherId));
 
     return Scaffold(
       appBar: AppBar(title: const Text('تفاصيل المعلم')),
@@ -192,6 +196,55 @@ class TeacherDetailScreen extends ConsumerWidget {
                                 ),
                               ),
                             ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Text('Error: $e'),
+                ),
+
+                const SizedBox(height: 24),
+
+                Text('الطلاب', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 12),
+
+                studentsAsync.when(
+                  data: (students) {
+                    if (students.isEmpty) {
+                      return AppCard(
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.school_outlined,
+                              size: 48,
+                              color: AppColors.textSecondary.withOpacity(0.5),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text('لا يوجد طلاب لهذا المعلم'),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: students.length,
+                      itemBuilder: (context, index) {
+                        final studentWithUser = students[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: StudentCard(
+                            studentWithUser: studentWithUser,
+                            onTap: () => context.push(
+                              AppRoutes.adminStudentProgress.replaceFirst(
+                                ':id',
+                                studentWithUser.student.id,
+                              ),
+                            ),
                           ),
                         );
                       },

@@ -180,6 +180,37 @@ class StudentRepository {
     return null;
   }
 
+  /// Get all active students across every institute.
+  Future<List<StudentWithUser>> getAllStudents() async {
+    final query = await _studentsCollection
+        .where('is_active', isEqualTo: true)
+        .orderBy('created_at', descending: true)
+        .get();
+
+    final students = query.docs
+        .map((doc) => StudentModel.fromFirestore(doc))
+        .toList();
+
+    final studentsWithUsers = <StudentWithUser>[];
+    for (final student in students) {
+      final user = await _userRepository.getUserById(student.userId);
+      if (user != null) {
+        studentsWithUsers.add(StudentWithUser(student: student, user: user));
+      }
+    }
+
+    return studentsWithUsers;
+  }
+
+  /// Get a single student plus its underlying user account.
+  Future<StudentWithUser?> getStudentWithUserById(String studentId) async {
+    final student = await getStudentById(studentId);
+    if (student == null) return null;
+    final user = await _userRepository.getUserById(student.userId);
+    if (user == null) return null;
+    return StudentWithUser(student: student, user: user);
+  }
+
   /// Get students for teacher
   Future<List<StudentWithUser>> getStudentsForTeacher(String teacherId) async {
     final query = await _studentsCollection

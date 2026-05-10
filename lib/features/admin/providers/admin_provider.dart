@@ -1,7 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/institute_repository.dart';
+import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/repositories/student_repository.dart';
+import '../../../data/models/session_model.dart';
+import '../../../data/models/session_record_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/institute_model.dart';
 
@@ -62,15 +66,19 @@ final allSupervisorsProvider = FutureProvider<List<UserModel>>((ref) async {
 });
 
 /// Provider for single institute
-final instituteProvider =
-    FutureProvider.family<InstituteModel?, String>((ref, id) async {
+final instituteProvider = FutureProvider.family<InstituteModel?, String>((
+  ref,
+  id,
+) async {
   final repo = ref.watch(instituteRepositoryProvider);
   return repo.getInstituteById(id);
 });
 
 /// Provider for single teacher
-final teacherProvider =
-    FutureProvider.family<UserModel?, String>((ref, id) async {
+final teacherProvider = FutureProvider.family<UserModel?, String>((
+  ref,
+  id,
+) async {
   final repo = ref.watch(userRepositoryProvider);
   return repo.getUserById(id);
 });
@@ -78,25 +86,81 @@ final teacherProvider =
 /// Provider for teachers in an institute
 final teachersForInstituteProvider =
     FutureProvider.family<List<UserModel>, String>((ref, instituteId) async {
-  final instituteRepo = ref.watch(instituteRepositoryProvider);
-  final userRepo = ref.watch(userRepositoryProvider);
+      final instituteRepo = ref.watch(instituteRepositoryProvider);
+      final userRepo = ref.watch(userRepositoryProvider);
 
-  final teacherIds = await instituteRepo.getTeacherIdsForInstitute(instituteId);
-  final teachers = <UserModel>[];
+      final teacherIds = await instituteRepo.getTeacherIdsForInstitute(
+        instituteId,
+      );
+      final teachers = <UserModel>[];
 
-  for (final id in teacherIds) {
-    final teacher = await userRepo.getUserById(id);
-    if (teacher != null) {
-      teachers.add(teacher);
-    }
-  }
+      for (final id in teacherIds) {
+        final teacher = await userRepo.getUserById(id);
+        if (teacher != null) {
+          teachers.add(teacher);
+        }
+      }
 
-  return teachers;
-});
+      return teachers;
+    });
 
 /// Provider for institutes for a teacher
 final institutesForTeacherProvider =
     FutureProvider.family<List<InstituteModel>, String>((ref, teacherId) async {
-  final repo = ref.watch(instituteRepositoryProvider);
-  return repo.getInstitutesForTeacher(teacherId);
+      final repo = ref.watch(instituteRepositoryProvider);
+      return repo.getInstitutesForTeacher(teacherId);
+    });
+
+/// All active students across every institute (admin-only).
+final allStudentsProvider = FutureProvider<List<StudentWithUser>>((ref) async {
+  final repo = ref.watch(studentRepositoryProvider);
+  return repo.getAllStudents();
 });
+
+/// Students assigned to a specific teacher (admin-only view).
+final studentsForTeacherAdminProvider =
+    FutureProvider.family<List<StudentWithUser>, String>((
+      ref,
+      teacherId,
+    ) async {
+      final repo = ref.watch(studentRepositoryProvider);
+      return repo.getStudentsForTeacher(teacherId);
+    });
+
+/// A single student with its user profile (admin-only read-only view).
+final adminStudentProvider = FutureProvider.family<StudentWithUser?, String>((
+  ref,
+  studentId,
+) async {
+  final repo = ref.watch(studentRepositoryProvider);
+  return repo.getStudentWithUserById(studentId);
+});
+
+/// The curriculum session a student is currently on (admin-only view).
+final adminStudentCurrentSessionProvider =
+    FutureProvider.family<SessionModel?, String>((ref, studentId) async {
+      final studentWithUser = await ref.watch(
+        adminStudentProvider(studentId).future,
+      );
+      if (studentWithUser == null) return null;
+
+      final student = studentWithUser.student;
+      final curriculumRepo = ref.watch(curriculumRepositoryProvider);
+
+      return curriculumRepo.getCurrentSessionForStudent(
+        levelId: student.currentLevel,
+        juzNumber: student.currentJuz,
+        hizbNumber: student.currentHizb,
+        sessionNumber: student.currentSession,
+      );
+    });
+
+/// Recent session records for a student (admin-only view).
+final adminStudentSessionHistoryProvider =
+    FutureProvider.family<List<SessionRecordModel>, String>((
+      ref,
+      studentId,
+    ) async {
+      final repo = ref.watch(sessionRepositoryProvider);
+      return repo.getSessionRecordsForStudent(studentId, limit: 50);
+    });

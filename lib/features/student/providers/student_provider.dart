@@ -83,6 +83,14 @@ final studentHistoryProvider = FutureProvider<List<SessionRecordModel>>((
   return repo.getSessionRecordsForStudent(student.id, limit: 50);
 });
 
+/// Fetches a single session record by its id. Works for any caller —
+/// student, guardian, or admin viewing someone else's history.
+final sessionRecordByIdProvider =
+    FutureProvider.family<SessionRecordModel?, String>((ref, recordId) async {
+      final repo = ref.watch(sessionRepositoryProvider);
+      return repo.getSessionRecordById(recordId);
+    });
+
 /// Provider for student statistics
 final studentStatsProvider = FutureProvider<StudentStats>((ref) async {
   final student = await ref.watch(currentStudentProvider.future);
