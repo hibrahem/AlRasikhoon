@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../data/models/user_model.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/bottom_nav_bar.dart';
 import '../providers/admin_provider.dart';
 
 class InstitutesScreen extends ConsumerStatefulWidget {
@@ -21,9 +19,7 @@ class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
     final institutesAsync = ref.watch(institutesProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('المعاهد'),
-      ),
+      appBar: AppBar(title: const Text('المعاهد')),
       body: institutesAsync.when(
         data: (institutes) {
           if (institutes.isEmpty) {
@@ -76,9 +72,7 @@ class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
                                 const SizedBox(width: 4),
                                 Text(
                                   institute.location,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
+                                  style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
                                         color: AppColors.textSecondary,
                                       ),
@@ -106,23 +100,6 @@ class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
         onPressed: () => context.push(AppRoutes.createInstitute),
         child: const Icon(Icons.add),
       ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: 1,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              context.go(AppRoutes.adminDashboard);
-              break;
-            case 2:
-              context.go(AppRoutes.teachers);
-              break;
-            case 3:
-              context.go(AppRoutes.curriculum);
-              break;
-          }
-        },
-        role: UserRole.superAdmin,
-      ),
     );
   }
 
@@ -139,16 +116,16 @@ class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
           const SizedBox(height: 16),
           Text(
             'لا يوجد معاهد',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 8),
           Text(
             'اضغط على + لإضافة معهد جديد',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),

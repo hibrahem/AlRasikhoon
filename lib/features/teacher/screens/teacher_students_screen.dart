@@ -3,11 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/institute_model.dart';
-import '../../../data/models/user_model.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
-import '../../../shared/widgets/bottom_nav_bar.dart';
 import '../../../shared/widgets/student_card.dart';
 import '../providers/teacher_provider.dart';
 
@@ -20,8 +18,6 @@ class TeacherStudentsScreen extends ConsumerStatefulWidget {
 }
 
 class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
-  int _currentIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     final studentsAsync = ref.watch(filteredTeacherStudentsProvider);
@@ -102,25 +98,6 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.addStudent),
         child: const Icon(Icons.person_add),
-      ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() => _currentIndex = index);
-          // Handle navigation based on index
-          switch (index) {
-            case 1:
-              // Session tab - show current session if any
-              break;
-            case 2:
-              // History tab
-              break;
-            case 3:
-              // Settings tab
-              break;
-          }
-        },
-        role: UserRole.teacher,
       ),
     );
   }

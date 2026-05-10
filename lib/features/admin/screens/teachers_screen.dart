@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../data/models/user_model.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/bottom_nav_bar.dart';
 import '../providers/admin_provider.dart';
 
 class TeachersScreen extends ConsumerWidget {
@@ -16,9 +14,7 @@ class TeachersScreen extends ConsumerWidget {
     final teachersAsync = ref.watch(allTeachersProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('المعلمون'),
-      ),
+      appBar: AppBar(title: const Text('المعلمون')),
       body: teachersAsync.when(
         data: (teachers) {
           if (teachers.isEmpty) {
@@ -64,16 +60,16 @@ class TeachersScreen extends ConsumerWidget {
                             Row(
                               children: [
                                 Icon(
-                                  teacher.phone != null ? Icons.phone : Icons.email,
+                                  teacher.phone != null
+                                      ? Icons.phone
+                                      : Icons.email,
                                   size: 14,
                                   color: AppColors.textSecondary,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   teacher.phone ?? teacher.email,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
+                                  style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
                                         color: AppColors.textSecondary,
                                       ),
@@ -123,23 +119,6 @@ class TeachersScreen extends ConsumerWidget {
         onPressed: () => context.push(AppRoutes.addTeacher),
         child: const Icon(Icons.add),
       ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: 2,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              context.go(AppRoutes.adminDashboard);
-              break;
-            case 1:
-              context.go(AppRoutes.institutes);
-              break;
-            case 3:
-              context.go(AppRoutes.curriculum);
-              break;
-          }
-        },
-        role: UserRole.superAdmin,
-      ),
     );
   }
 
@@ -156,16 +135,16 @@ class TeachersScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(
             'لا يوجد معلمون',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 8),
           Text(
             'اضغط على + لإضافة معلم جديد',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),

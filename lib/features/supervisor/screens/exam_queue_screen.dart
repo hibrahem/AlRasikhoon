@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../data/models/user_model.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/bottom_nav_bar.dart';
 import '../providers/supervisor_provider.dart';
 
 class ExamQueueScreen extends ConsumerWidget {
@@ -16,9 +14,7 @@ class ExamQueueScreen extends ConsumerWidget {
     final examQueueAsync = ref.watch(examQueueProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('قائمة الاختبارات'),
-      ),
+      appBar: AppBar(title: const Text('قائمة الاختبارات')),
       body: examQueueAsync.when(
         data: (students) {
           if (students.isEmpty) {
@@ -41,8 +37,10 @@ class ExamQueueScreen extends ConsumerWidget {
                   margin: const EdgeInsets.only(bottom: 12),
                   onTap: () {
                     context.push(
-                      AppRoutes.examSession
-                          .replaceFirst(':studentId', student.id),
+                      AppRoutes.examSession.replaceFirst(
+                        ':studentId',
+                        student.id,
+                      ),
                     );
                   },
                   child: Row(
@@ -114,17 +112,6 @@ class ExamQueueScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: 1,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              context.go(AppRoutes.supervisorDashboard);
-              break;
-          }
-        },
-        role: UserRole.supervisor,
-      ),
     );
   }
 
@@ -141,16 +128,16 @@ class ExamQueueScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(
             'لا يوجد طلاب بالانتظار',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 8),
           Text(
             'جميع الاختبارات مكتملة',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -162,10 +149,7 @@ class _InfoBadge extends StatelessWidget {
   final IconData icon;
   final String text;
 
-  const _InfoBadge({
-    required this.icon,
-    required this.text,
-  });
+  const _InfoBadge({required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -178,11 +162,7 @@ class _InfoBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 12,
-            color: AppColors.textSecondary,
-          ),
+          Icon(icon, size: 12, color: AppColors.textSecondary),
           const SizedBox(width: 4),
           Text(
             text,

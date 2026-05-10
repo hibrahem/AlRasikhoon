@@ -9,7 +9,6 @@ import '../../../routing/app_router.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/stat_card.dart';
-import '../../../shared/widgets/bottom_nav_bar.dart';
 import '../../../shared/widgets/progress_bar.dart';
 import '../../../shared/widgets/level_progression_widget.dart';
 import '../providers/student_provider.dart';
@@ -24,8 +23,6 @@ class StudentDashboardScreen extends ConsumerStatefulWidget {
 
 class _StudentDashboardScreenState
     extends ConsumerState<StudentDashboardScreen> {
-  int _currentIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     final currentUser = ref.watch(currentUserProvider);
@@ -135,21 +132,6 @@ class _StudentDashboardScreenState
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() => _currentIndex = index);
-          switch (index) {
-            case 1:
-              context.go(AppRoutes.homePractice);
-              break;
-            case 2:
-              context.go(AppRoutes.sessionHistory);
-              break;
-          }
-        },
-        role: UserRole.student,
       ),
     );
   }

@@ -3,11 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/repositories/auth_repository.dart';
-import '../../../data/models/user_model.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/stat_card.dart';
-import '../../../shared/widgets/bottom_nav_bar.dart';
 import '../providers/admin_provider.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
@@ -19,8 +17,6 @@ class AdminDashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
-  int _currentIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     // Watch auth state for reactivity (user data available via authState.appUser if needed)
@@ -39,24 +35,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         ],
       ),
       body: _buildBody(),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() => _currentIndex = index);
-          switch (index) {
-            case 1:
-              context.go(AppRoutes.institutes);
-              break;
-            case 2:
-              context.go(AppRoutes.teachers);
-              break;
-            case 3:
-              context.go(AppRoutes.curriculum);
-              break;
-          }
-        },
-        role: UserRole.superAdmin,
-      ),
     );
   }
 
@@ -81,9 +59,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             const SizedBox(height: 8),
             Text(
               'إدارة المعاهد والمعلمين',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 24),
 
@@ -143,6 +121,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           value: '${stats.studentsCount}',
           icon: Icons.school,
           iconColor: AppColors.success,
+          onTap: () => context.push(AppRoutes.adminStudents),
         ),
       ],
     );
@@ -160,10 +139,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               color: AppColors.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
-              Icons.add_business,
-              color: AppColors.primary,
-            ),
+            child: const Icon(Icons.add_business, color: AppColors.primary),
           ),
           trailing: const Icon(Icons.chevron_left),
           onTap: () => context.push(AppRoutes.createInstitute),
@@ -178,10 +154,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               color: AppColors.info.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
-              Icons.person_add,
-              color: AppColors.info,
-            ),
+            child: const Icon(Icons.person_add, color: AppColors.info),
           ),
           trailing: const Icon(Icons.chevron_left),
           onTap: () => context.push(AppRoutes.addTeacher),
@@ -196,10 +169,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               color: AppColors.secondary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
-              Icons.menu_book,
-              color: AppColors.secondary,
-            ),
+            child: const Icon(Icons.menu_book, color: AppColors.secondary),
           ),
           trailing: const Icon(Icons.chevron_left),
           onTap: () => context.go(AppRoutes.curriculum),

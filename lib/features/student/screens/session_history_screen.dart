@@ -4,10 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/grade_calculator.dart';
-import '../../../data/models/user_model.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/bottom_nav_bar.dart';
 import '../../../shared/widgets/grade_display.dart';
 import '../providers/student_provider.dart';
 
@@ -19,9 +17,7 @@ class SessionHistoryScreen extends ConsumerWidget {
     final historyAsync = ref.watch(studentHistoryProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('سجل الحلقات'),
-      ),
+      appBar: AppBar(title: const Text('سجل الحلقات')),
       body: historyAsync.when(
         data: (records) {
           if (records.isEmpty) {
@@ -46,8 +42,10 @@ class SessionHistoryScreen extends ConsumerWidget {
                   margin: const EdgeInsets.only(bottom: 12),
                   onTap: () {
                     context.push(
-                      AppRoutes.sessionDetail
-                          .replaceFirst(':recordId', record.id),
+                      AppRoutes.sessionDetail.replaceFirst(
+                        ':recordId',
+                        record.id,
+                      ),
                     );
                   },
                   child: Row(
@@ -61,9 +59,7 @@ class SessionHistoryScreen extends ConsumerWidget {
                         ),
                         child: Center(
                           child: Icon(
-                            record.passed
-                                ? Icons.check_circle
-                                : Icons.cancel,
+                            record.passed ? Icons.check_circle : Icons.cancel,
                             color: gradeInfo.color,
                           ),
                         ),
@@ -80,21 +76,13 @@ class SessionHistoryScreen extends ConsumerWidget {
                             const SizedBox(height: 4),
                             Text(
                               'المستوى ${record.levelId} - الحزب ${record.hizbNumber}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.textSecondary),
                             ),
                             Text(
                               dateFormat.format(record.date),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.textSecondary),
                             ),
                           ],
                         ),
@@ -111,10 +99,8 @@ class SessionHistoryScreen extends ConsumerWidget {
                           const SizedBox(height: 4),
                           Text(
                             '${record.grades.totalErrors} أخطاء',
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: AppColors.textSecondary),
                           ),
                         ],
                       ),
@@ -127,17 +113,6 @@ class SessionHistoryScreen extends ConsumerWidget {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
-      ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: 1,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              context.go(AppRoutes.studentDashboard);
-              break;
-          }
-        },
-        role: UserRole.student,
       ),
     );
   }
@@ -155,16 +130,16 @@ class SessionHistoryScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(
             'لا يوجد سجل',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 8),
           Text(
             'ستظهر هنا سجلات الحلقات السابقة',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),

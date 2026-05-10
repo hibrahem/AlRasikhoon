@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../data/models/user_model.dart';
-import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/bottom_nav_bar.dart';
 import '../providers/student_provider.dart';
 
 class HomePracticeScreen extends ConsumerStatefulWidget {
@@ -43,9 +39,13 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
 
     setState(() => _isSubmitting = true);
 
-    final success = await ref.read(homePracticeNotifierProvider.notifier).addPractice(
+    final success = await ref
+        .read(homePracticeNotifierProvider.notifier)
+        .addPractice(
           repetitions: repetitions,
-          notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+          notes: _notesController.text.isNotEmpty
+              ? _notesController.text
+              : null,
         );
 
     setState(() => _isSubmitting = false);
@@ -69,26 +69,7 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
     final studentAsync = ref.watch(currentStudentProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('التكرار في المنزل'),
-      ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: 1, // "التكرار" tab
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              context.go(AppRoutes.studentDashboard);
-              break;
-            case 1:
-              // Already on home practice
-              break;
-            case 2:
-              context.go(AppRoutes.sessionHistory);
-              break;
-          }
-        },
-        role: UserRole.student,
-      ),
+      appBar: AppBar(title: const Text('التكرار في المنزل')),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(homePracticeStatsProvider);
@@ -120,7 +101,9 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                 data: (student) {
                   if (student == null) {
                     return const AppCard(
-                      child: Center(child: Text('لم يتم العثور على بيانات الطالب')),
+                      child: Center(
+                        child: Text('لم يتم العثور على بيانات الطالب'),
+                      ),
                     );
                   }
                   return _buildAddPracticeCard(student);
@@ -155,7 +138,9 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                               SizedBox(height: 12),
                               Text(
                                 'لا يوجد سجل تكرارات',
-                                style: TextStyle(color: AppColors.textSecondary),
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
                             ],
                           ),
@@ -239,10 +224,7 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
             ),
             child: Row(
               children: [
-                const Icon(
-                  Icons.menu_book,
-                  color: AppColors.primary,
-                ),
+                const Icon(Icons.menu_book, color: AppColors.primary),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -255,8 +237,8 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                       Text(
                         'المستوى ${student.currentLevel} - الحزب ${student.currentHizb}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -268,16 +250,14 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
           const SizedBox(height: 16),
 
           // Repetitions input
-          Text(
-            'عدد التكرارات',
-            style: Theme.of(context).textTheme.labelMedium,
-          ),
+          Text('عدد التكرارات', style: Theme.of(context).textTheme.labelMedium),
           const SizedBox(height: 8),
           Row(
             children: [
               IconButton(
                 onPressed: () {
-                  final current = int.tryParse(_repetitionsController.text) ?? 1;
+                  final current =
+                      int.tryParse(_repetitionsController.text) ?? 1;
                   if (current > 1) {
                     _repetitionsController.text = '${current - 1}';
                   }
@@ -299,7 +279,8 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
               ),
               IconButton(
                 onPressed: () {
-                  final current = int.tryParse(_repetitionsController.text) ?? 1;
+                  final current =
+                      int.tryParse(_repetitionsController.text) ?? 1;
                   _repetitionsController.text = '${current + 1}';
                 },
                 icon: const Icon(Icons.add_circle_outline),
@@ -360,9 +341,9 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                   child: Text(
                     '${practice.repetitions}',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -378,16 +359,13 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                     Text(
                       dateFormat.format(practice.practiceDate),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
-                Icons.repeat,
-                color: AppColors.textSecondary,
-              ),
+              const Icon(Icons.repeat, color: AppColors.textSecondary),
             ],
           ),
         );
@@ -419,16 +397,16 @@ class _StatCard extends StatelessWidget {
           Text(
             value,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),

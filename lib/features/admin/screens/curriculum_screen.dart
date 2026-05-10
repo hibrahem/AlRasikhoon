@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../data/models/user_model.dart';
 import '../../../data/repositories/curriculum_repository.dart';
-import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/bottom_nav_bar.dart';
 
 class CurriculumScreen extends ConsumerWidget {
   const CurriculumScreen({super.key});
@@ -16,9 +12,7 @@ class CurriculumScreen extends ConsumerWidget {
     final levelsAsync = ref.watch(levelsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('المنهج'),
-      ),
+      appBar: AppBar(title: const Text('المنهج')),
       body: levelsAsync.when(
         data: (levels) {
           return ListView(
@@ -53,10 +47,8 @@ class CurriculumScreen extends ConsumerWidget {
                           const SizedBox(height: 4),
                           Text(
                             '10 مستويات • 1,453 حلقة',
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: AppColors.textSecondary),
                           ),
                         ],
                       ),
@@ -68,10 +60,7 @@ class CurriculumScreen extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // Levels header
-              Text(
-                'المستويات',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              Text('المستويات', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 12),
 
               // Levels list
@@ -87,8 +76,9 @@ class CurriculumScreen extends ConsumerWidget {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: _getLevelColor(level.levelNumber)
-                                  .withOpacity(0.1),
+                              color: _getLevelColor(
+                                level.levelNumber,
+                              ).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Center(
@@ -109,14 +99,11 @@ class CurriculumScreen extends ConsumerWidget {
                               children: [
                                 Text(
                                   level.nameAr,
-                                  style:
-                                      Theme.of(context).textTheme.titleSmall,
+                                  style: Theme.of(context).textTheme.titleSmall,
                                 ),
                                 Text(
                                   level.juzRangeAr,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
+                                  style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
                                         color: AppColors.textSecondary,
                                       ),
@@ -159,23 +146,6 @@ class CurriculumScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: 3,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              context.go(AppRoutes.adminDashboard);
-              break;
-            case 1:
-              context.go(AppRoutes.institutes);
-              break;
-            case 2:
-              context.go(AppRoutes.teachers);
-              break;
-          }
-        },
-        role: UserRole.superAdmin,
-      ),
     );
   }
 
@@ -211,23 +181,19 @@ class _StatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Icon(
-          icon,
-          size: 20,
-          color: AppColors.textSecondary,
-        ),
+        Icon(icon, size: 20, color: AppColors.textSecondary),
         const SizedBox(height: 4),
         Text(
           value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
         ),
       ],
     );

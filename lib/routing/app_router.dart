@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../data/models/user_model.dart';
 import '../shared/providers/user_provider.dart';
+import '../shared/widgets/role_shell.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/account_not_found_screen.dart';
 import '../features/admin/screens/admin_dashboard_screen.dart';
@@ -14,6 +15,8 @@ import '../features/admin/screens/teachers_screen.dart';
 import '../features/admin/screens/add_teacher_screen.dart';
 import '../features/admin/screens/teacher_detail_screen.dart';
 import '../features/admin/screens/curriculum_screen.dart';
+import '../features/admin/screens/all_students_screen.dart';
+import '../features/admin/screens/admin_student_progress_screen.dart';
 import '../features/supervisor/screens/supervisor_dashboard_screen.dart';
 import '../features/supervisor/screens/exam_queue_screen.dart';
 import '../features/supervisor/screens/exam_session_screen.dart';
@@ -48,6 +51,8 @@ class AppRoutes {
   static const String addTeacher = '/admin/teachers/add';
   static const String teacherDetail = '/admin/teachers/:id';
   static const String curriculum = '/admin/curriculum';
+  static const String adminStudents = '/admin/students';
+  static const String adminStudentProgress = '/admin/students/:id';
 
   // Supervisor
   static const String supervisorDashboard = '/supervisor';
@@ -100,7 +105,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      // Auth routes
+      // Auth routes (no shell)
       GoRoute(
         path: AppRoutes.login,
         builder: (context, state) => const LoginScreen(),
@@ -110,164 +115,258 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const AccountNotFoundScreen(),
       ),
 
-      // Admin routes
-      GoRoute(
-        path: AppRoutes.adminDashboard,
-        builder: (context, state) => const AdminDashboardScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.institutes,
-        builder: (context, state) => const InstitutesScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.createInstitute,
-        builder: (context, state) => const CreateInstituteScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.instituteDetail,
-        builder: (context, state) {
-          final id = state.pathParameters['id']!;
-          return InstituteDetailScreen(instituteId: id);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.editInstitute,
-        builder: (context, state) {
-          final id = state.pathParameters['id']!;
-          return EditInstituteScreen(instituteId: id);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.teachers,
-        builder: (context, state) => const TeachersScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.addTeacher,
-        builder: (context, state) => const AddTeacherScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.teacherDetail,
-        builder: (context, state) {
-          final id = state.pathParameters['id']!;
-          return TeacherDetailScreen(teacherId: id);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.curriculum,
-        builder: (context, state) => const CurriculumScreen(),
-      ),
-
-      // Supervisor routes
-      GoRoute(
-        path: AppRoutes.supervisorDashboard,
-        builder: (context, state) => const SupervisorDashboardScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.examQueue,
-        builder: (context, state) => const ExamQueueScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.examSession,
-        builder: (context, state) {
-          final studentId = state.pathParameters['studentId']!;
-          return ExamSessionScreen(studentId: studentId);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.examResult,
-        builder: (context, state) {
-          final studentId = state.pathParameters['studentId']!;
-          final errorCount = state.extra as int? ?? 0;
-          return ExamResultScreen(studentId: studentId, errorCount: errorCount);
-        },
-      ),
-
-      // Teacher routes
-      GoRoute(
-        path: AppRoutes.teacherStudents,
-        builder: (context, state) => const TeacherStudentsScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.addStudent,
-        builder: (context, state) => const AddStudentScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.sessionOverview,
-        builder: (context, state) {
-          final studentId = state.pathParameters['studentId']!;
-          return SessionOverviewScreen(studentId: studentId);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.recitation,
-        builder: (context, state) {
-          final studentId = state.pathParameters['studentId']!;
-          final part = int.parse(state.pathParameters['part']!);
-          return RecitationScreen(studentId: studentId, part: part);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.recitationResult,
-        builder: (context, state) {
-          final studentId = state.pathParameters['studentId']!;
-          final part = int.parse(state.pathParameters['part']!);
-          final errorCount = state.extra as int? ?? 0;
-          return RecitationResultScreen(
-            studentId: studentId,
-            part: part,
-            errorCount: errorCount,
-          );
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.newMemorization,
-        builder: (context, state) {
-          final studentId = state.pathParameters['studentId']!;
-          return NewMemorizationScreen(studentId: studentId);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.sessionSummary,
-        builder: (context, state) {
-          final studentId = state.pathParameters['studentId']!;
-          return SessionSummaryScreen(studentId: studentId);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.sardSession,
-        builder: (context, state) {
-          final studentId = state.pathParameters['studentId']!;
-          return SardSessionScreen(studentId: studentId);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.sardResult,
-        builder: (context, state) {
-          final studentId = state.pathParameters['studentId']!;
-          final errorCount = state.extra as int? ?? 0;
-          return SardResultScreen(studentId: studentId, errorCount: errorCount);
-        },
+      // Admin shell — Home / Institutes / Teachers / Curriculum
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) => RoleShell(
+          navigationShell: navigationShell,
+          role: UserRole.superAdmin,
+        ),
+        branches: [
+          // Branch 0: Home (also hosts students list/detail pushed from dashboard)
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.adminDashboard,
+                builder: (context, state) => const AdminDashboardScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.adminStudents,
+                builder: (context, state) => const AllStudentsScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.adminStudentProgress,
+                builder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  return AdminStudentProgressScreen(studentId: id);
+                },
+              ),
+            ],
+          ),
+          // Branch 1: Institutes
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.institutes,
+                builder: (context, state) => const InstitutesScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.createInstitute,
+                builder: (context, state) => const CreateInstituteScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.instituteDetail,
+                builder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  return InstituteDetailScreen(instituteId: id);
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.editInstitute,
+                builder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  return EditInstituteScreen(instituteId: id);
+                },
+              ),
+            ],
+          ),
+          // Branch 2: Teachers
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.teachers,
+                builder: (context, state) => const TeachersScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.addTeacher,
+                builder: (context, state) => const AddTeacherScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.teacherDetail,
+                builder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  return TeacherDetailScreen(teacherId: id);
+                },
+              ),
+            ],
+          ),
+          // Branch 3: Curriculum
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.curriculum,
+                builder: (context, state) => const CurriculumScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
 
-      // Student routes
-      GoRoute(
-        path: AppRoutes.studentDashboard,
-        builder: (context, state) => const StudentDashboardScreen(),
+      // Supervisor shell — Home / Exams (Students & Settings tabs are stubs)
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) => RoleShell(
+          navigationShell: navigationShell,
+          role: UserRole.supervisor,
+        ),
+        branches: [
+          // Branch 0: Home
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.supervisorDashboard,
+                builder: (context, state) => const SupervisorDashboardScreen(),
+              ),
+            ],
+          ),
+          // Branch 1: Exams
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.examQueue,
+                builder: (context, state) => const ExamQueueScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.examSession,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  return ExamSessionScreen(studentId: studentId);
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.examResult,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  final errorCount = state.extra as int? ?? 0;
+                  return ExamResultScreen(
+                    studentId: studentId,
+                    errorCount: errorCount,
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
       ),
-      GoRoute(
-        path: AppRoutes.sessionHistory,
-        builder: (context, state) => const SessionHistoryScreen(),
+
+      // Teacher shell — single Students branch (Session/History/Settings stubs)
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            RoleShell(navigationShell: navigationShell, role: UserRole.teacher),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.teacherStudents,
+                builder: (context, state) => const TeacherStudentsScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.addStudent,
+                builder: (context, state) => const AddStudentScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.sessionOverview,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  return SessionOverviewScreen(studentId: studentId);
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.recitation,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  final part = int.parse(state.pathParameters['part']!);
+                  return RecitationScreen(studentId: studentId, part: part);
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.recitationResult,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  final part = int.parse(state.pathParameters['part']!);
+                  final errorCount = state.extra as int? ?? 0;
+                  return RecitationResultScreen(
+                    studentId: studentId,
+                    part: part,
+                    errorCount: errorCount,
+                  );
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.newMemorization,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  return NewMemorizationScreen(studentId: studentId);
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.sessionSummary,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  return SessionSummaryScreen(studentId: studentId);
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.sardSession,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  return SardSessionScreen(studentId: studentId);
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.sardResult,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  final errorCount = state.extra as int? ?? 0;
+                  return SardResultScreen(
+                    studentId: studentId,
+                    errorCount: errorCount,
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
       ),
-      GoRoute(
-        path: AppRoutes.sessionDetail,
-        builder: (context, state) {
-          final recordId = state.pathParameters['recordId']!;
-          return SessionDetailScreen(recordId: recordId);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.homePractice,
-        builder: (context, state) => const HomePracticeScreen(),
+
+      // Student shell — Home / Practice / History (Settings stub)
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            RoleShell(navigationShell: navigationShell, role: UserRole.student),
+        branches: [
+          // Branch 0: Home
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.studentDashboard,
+                builder: (context, state) => const StudentDashboardScreen(),
+              ),
+            ],
+          ),
+          // Branch 1: Practice
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.homePractice,
+                builder: (context, state) => const HomePracticeScreen(),
+              ),
+            ],
+          ),
+          // Branch 2: History
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.sessionHistory,
+                builder: (context, state) => const SessionHistoryScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.sessionDetail,
+                builder: (context, state) {
+                  final recordId = state.pathParameters['recordId']!;
+                  return SessionDetailScreen(recordId: recordId);
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
