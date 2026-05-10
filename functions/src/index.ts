@@ -10,7 +10,159 @@ interface SetUserPasswordPayload {
   newPassword: string;
 }
 
+type ProvisionableRole = "teacher" | "student" | "guardian";
+
+interface CreateUserAccountPayload {
+  email: string;
+  password: string;
+  role: ProvisionableRole;
+  name: string;
+  username: string;
+  phone?: string | null;
+}
+
 const MIN_PASSWORD_LENGTH = 6;
+
+const ROLES_BY_CALLER: Record<string, ReadonlySet<ProvisionableRole>> = {
+  super_admin: new Set<ProvisionableRole>(["teacher", "student", "guardian"]),
+  teacher: new Set<ProvisionableRole>(["student", "guardian"]),
+};
+
+/**
+ * Provision a Firebase Auth user AND its users/{uid} Firestore profile
+ * atomically on behalf of an admin or teacher caller. The client SDK's
+ * createUserWithEmailAndPassword auto-signs-in the new user and would evict
+ * the caller's session, so all admin/teacher provisioning flows go through
+ * this function.
+ *
+ * Authorization (custom claim 'role' set by syncRoleClaim below):
+ *   - super_admin can provision teacher | student | guardian.
+ *   - teacher    can provision student | guardian.
+ *
+ * Atomicity: pre-checks username uniqueness, creates the auth user, then
+ * writes users/{uid}. If the Firestore write fails, the auth user is
+ * deleted to avoid orphans. (No two-phase commit between Auth and
+ * Firestore exists; this rollback closes the dominant client-crash window.)
+ *
+ * Returns: { uid: string }
+ */
+export const createUserAccount = onCall<CreateUserAccountPayload>(
+  { region: "us-central1" },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Sign in required");
+    }
+
+    const callerRole = request.auth.token.role as string | undefined;
+    const allowed = callerRole ? ROLES_BY_CALLER[callerRole] : undefined;
+    if (!allowed) {
+      throw new HttpsError(
+        "permission-denied",
+        "Only admins and teachers can provision accounts",
+      );
+    }
+
+    const { email, password, role, name, username, phone } =
+      request.data ?? ({} as CreateUserAccountPayload);
+
+    if (!email || typeof email !== "string") {
+      throw new HttpsError("invalid-argument", "email is required");
+    }
+    if (!password || typeof password !== "string") {
+      throw new HttpsError("invalid-argument", "password is required");
+    }
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      throw new HttpsError("invalid-argument", "weak-password");
+    }
+    if (!name || typeof name !== "string" || name.trim().length === 0) {
+      throw new HttpsError("invalid-argument", "name is required");
+    }
+    if (!username || typeof username !== "string" || username.trim().length === 0) {
+      throw new HttpsError("invalid-argument", "username is required");
+    }
+    if (!role || !allowed.has(role as ProvisionableRole)) {
+      throw new HttpsError(
+        "permission-denied",
+        `Caller role '${callerRole}' cannot provision role '${role}'`,
+      );
+    }
+
+    const normalizedUsername = username.trim().toLowerCase();
+
+    const usernameClash = await admin
+      .firestore()
+      .collection("users")
+      .where("username", "==", normalizedUsername)
+      .limit(1)
+      .get();
+    if (!usernameClash.empty) {
+      throw new HttpsError("already-exists", "username-taken");
+    }
+
+    let uid: string;
+    try {
+      const userRecord = await admin.auth().createUser({ email, password });
+      uid = userRecord.uid;
+    } catch (e) {
+      const code = (e as { code?: string }).code;
+      if (code === "auth/email-already-exists") {
+        throw new HttpsError("already-exists", "email-already-in-use");
+      }
+      if (code === "auth/invalid-email") {
+        throw new HttpsError("invalid-argument", "invalid-email");
+      }
+      if (code === "auth/invalid-password") {
+        throw new HttpsError("invalid-argument", "weak-password");
+      }
+      logger.error("createUserAccount: auth.createUser failed", {
+        caller: request.auth.uid,
+        error: String(e),
+      });
+      throw new HttpsError("internal", "Account creation failed");
+    }
+
+    try {
+      await admin
+        .firestore()
+        .collection("users")
+        .doc(uid)
+        .set({
+          username: normalizedUsername,
+          email,
+          name: name.trim(),
+          role,
+          phone: phone ?? null,
+          auth_provider: "email_password",
+          is_active: true,
+          created_at: admin.firestore.FieldValue.serverTimestamp(),
+        });
+    } catch (e) {
+      // Roll back the auth user so we don't leak an orphan.
+      logger.error("createUserAccount: Firestore write failed, rolling back auth user", {
+        caller: request.auth.uid,
+        uid,
+        error: String(e),
+      });
+      try {
+        await admin.auth().deleteUser(uid);
+      } catch (rollbackErr) {
+        logger.error("createUserAccount: rollback deleteUser also failed", {
+          uid,
+          error: String(rollbackErr),
+        });
+      }
+      throw new HttpsError("internal", "Account creation failed");
+    }
+
+    logger.info("createUserAccount: created", {
+      caller: request.auth.uid,
+      callerRole,
+      uid,
+      role,
+    });
+    return { uid };
+  },
+);
 
 /**
  * Reset another user's password. Admin-only path used by the admin and

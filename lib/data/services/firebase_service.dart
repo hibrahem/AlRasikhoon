@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -48,14 +49,35 @@ class FirebaseService {
     );
   }
 
-  Future<UserCredential> createUserWithEmailPassword({
+  // Atomic server-side account provisioning. Creates both the Firebase Auth
+  // user AND the users/{uid} Firestore profile in one call (with rollback
+  // on partial failure). The client SDK's createUserWithEmailAndPassword
+  // auto-signs-in the new user and would evict the caller's session — so
+  // admin/teacher account creation goes through this Cloud Function instead.
+  Future<String> provisionUserAccount({
     required String email,
     required String password,
+    required String role,
+    required String name,
+    required String username,
+    String? phone,
   }) async {
-    return await _auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
+    final callable = FirebaseFunctions.instance.httpsCallable(
+      'createUserAccount',
     );
+    final result = await callable.call<Map<Object?, Object?>>({
+      'email': email,
+      'password': password,
+      'role': role,
+      'name': name,
+      'username': username,
+      'phone': phone,
+    });
+    final uid = result.data['uid'];
+    if (uid is! String || uid.isEmpty) {
+      throw StateError('createUserAccount returned no uid');
+    }
+    return uid;
   }
 
   // Firestore helpers

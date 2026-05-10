@@ -1,5 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -75,22 +74,14 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
         );
       }
 
-      final credential = await firebaseService.createUserWithEmailPassword(
+      await firebaseService.provisionUserAccount(
         email: synthesizedEmail,
         password: password,
+        role: 'teacher',
+        name: _nameController.text.trim(),
+        username: username,
+        phone: phone,
       );
-      final uid = credential.user!.uid;
-
-      await firebaseService.firestore.collection('users').doc(uid).set({
-        'username': username,
-        'email': synthesizedEmail,
-        'name': _nameController.text.trim(),
-        'role': 'teacher',
-        'phone': phone,
-        'auth_provider': 'email_password',
-        'is_active': true,
-        'created_at': FieldValue.serverTimestamp(),
-      });
 
       ref.invalidate(allTeachersProvider);
 
@@ -103,11 +94,13 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
         );
         context.pop();
       }
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       if (mounted) {
-        final msg = e.code == 'email-already-in-use'
+        final msg =
+            (e.message == 'email-already-in-use' ||
+                e.message == 'username-taken')
             ? 'اسم المستخدم مسجل مسبقاً'
-            : e.code == 'weak-password'
+            : e.message == 'weak-password'
             ? 'كلمة المرور ضعيفة'
             : 'فشل إنشاء الحساب: ${e.message ?? e.code}';
         ScaffoldMessenger.of(context).showSnackBar(

@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
@@ -11,26 +10,42 @@ import 'package:al_rasikhoon/data/services/firebase_service.dart';
 
 class _MockFirebaseService extends Mock implements FirebaseService {}
 
-class _MockUserCredential extends Mock implements UserCredential {}
-
-class _MockUser extends Mock implements User {}
-
-/// Stubs FirebaseService.createUserWithEmailPassword to return a deterministic
-/// UID derived from the email's local part. Each call gets a fresh UID.
-void _stubAuthCreate(_MockFirebaseService service) {
+/// Stubs FirebaseService.provisionUserAccount to mirror what the
+/// createUserAccount Cloud Function does in production: pick a deterministic
+/// UID derived from the email's local part, then write the users/{uid}
+/// Firestore profile. Each call gets a fresh UID.
+void _stubAuthCreate(
+  _MockFirebaseService service,
+  FakeFirebaseFirestore firestore,
+) {
   when(
-    () => service.createUserWithEmailPassword(
+    () => service.provisionUserAccount(
       email: any(named: 'email'),
       password: any(named: 'password'),
+      role: any(named: 'role'),
+      name: any(named: 'name'),
+      username: any(named: 'username'),
+      phone: any(named: 'phone'),
     ),
   ).thenAnswer((invocation) async {
     final email = invocation.namedArguments[#email] as String;
+    final role = invocation.namedArguments[#role] as String;
+    final name = invocation.namedArguments[#name] as String;
+    final username = invocation.namedArguments[#username] as String;
+    final phone = invocation.namedArguments[#phone] as String?;
     final localPart = email.split('@').first;
-    final mockUser = _MockUser();
-    when(() => mockUser.uid).thenReturn('uid-$localPart');
-    final cred = _MockUserCredential();
-    when(() => cred.user).thenReturn(mockUser);
-    return cred;
+    final uid = 'uid-$localPart';
+    await firestore.collection('users').doc(uid).set({
+      'username': username,
+      'email': email,
+      'name': name,
+      'role': role,
+      'phone': phone,
+      'auth_provider': 'email_password',
+      'is_active': true,
+      'created_at': Timestamp.now(),
+    });
+    return uid;
   });
 }
 
@@ -44,7 +59,7 @@ void main() {
     setUp(() {
       fakeFirestore = FakeFirebaseFirestore();
       firebaseService = _MockFirebaseService();
-      _stubAuthCreate(firebaseService);
+      _stubAuthCreate(firebaseService, fakeFirestore);
       userRepository = UserRepository(firestore: fakeFirestore);
       studentRepository = StudentRepository(
         firestore: fakeFirestore,
@@ -193,6 +208,29 @@ void main() {
         );
 
         expect(result.user.phone, '+966512345678');
+      });
+
+      test('provisions the student account through the server gateway '
+          '(never the client-side Firebase Auth path, which would evict the '
+          'admin caller session)', () async {
+        await studentRepository.createStudent(
+          name: 'طالب',
+          username: 'student_no_client_auth',
+          password: 'pass123',
+          instituteId: 'institute1',
+          teacherId: 'teacher1',
+        );
+
+        verify(
+          () => firebaseService.provisionUserAccount(
+            email: 'student_no_client_auth@alrasikhoon.local',
+            password: 'pass123',
+            role: 'student',
+            name: 'طالب',
+            username: 'student_no_client_auth',
+            phone: null,
+          ),
+        ).called(1);
       });
     });
 

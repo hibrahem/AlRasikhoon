@@ -1,4 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -155,11 +155,13 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
         );
         context.pop();
       }
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       if (mounted) {
-        final msg = e.code == 'email-already-in-use'
+        final msg =
+            (e.message == 'email-already-in-use' ||
+                e.message == 'username-taken')
             ? 'اسم المستخدم مسجل مسبقاً'
-            : e.code == 'weak-password'
+            : e.message == 'weak-password'
             ? 'كلمة المرور ضعيفة'
             : 'فشل إنشاء الحساب: ${e.message ?? e.code}';
         ScaffoldMessenger.of(context).showSnackBar(

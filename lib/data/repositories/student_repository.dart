@@ -29,12 +29,10 @@ class StudentRepository {
   CollectionReference<Map<String, dynamic>> get _studentsCollection =>
       _firestore.collection(AppConstants.collectionStudents);
 
-  CollectionReference<Map<String, dynamic>> get _usersCollection =>
-      _firestore.collection(AppConstants.collectionUsers);
-
-  /// Create a student plus the underlying user account (Firebase Auth +
-  /// Firestore doc). Optionally provisions a guardian account too. Throws on
-  /// username collision (caller should pre-check via UserRepository).
+  /// Create a student plus the underlying user account. The auth user AND
+  /// users/{uid} Firestore profile are provisioned atomically by the
+  /// createUserAccount Cloud Function. Optionally provisions a guardian
+  /// account too. Throws on username collision.
   Future<StudentWithUser> createStudent({
     required String name,
     required String username,
@@ -50,11 +48,14 @@ class StudentRepository {
     final synthesizedEmail =
         '$normalizedUsername@${AppConstants.synthesizedEmailDomain}';
 
-    final credential = await _firebaseService.createUserWithEmailPassword(
+    final uid = await _firebaseService.provisionUserAccount(
       email: synthesizedEmail,
       password: password,
+      role: UserRole.student.value,
+      name: name,
+      username: normalizedUsername,
+      phone: phone,
     );
-    final uid = credential.user!.uid;
 
     final user = UserModel(
       id: uid,
@@ -66,7 +67,6 @@ class StudentRepository {
       authProvider: UserAuthProvider.emailPassword,
       createdAt: DateTime.now(),
     );
-    await _usersCollection.doc(uid).set(user.toFirestore());
 
     String? guardianId;
     if (guardianUsername != null && guardianUsername.isNotEmpty) {
@@ -84,23 +84,15 @@ class StudentRepository {
         }
         final guardianEmail =
             '$guardianNormalized@${AppConstants.synthesizedEmailDomain}';
-        final guardianCredential = await _firebaseService
-            .createUserWithEmailPassword(
-              email: guardianEmail,
-              password: guardianPassword,
-            );
-        final guardianUid = guardianCredential.user!.uid;
-        final guardian = UserModel(
-          id: guardianUid,
-          username: guardianNormalized,
+        final guardianName = 'ولي أمر $name';
+        final guardianUid = await _firebaseService.provisionUserAccount(
           email: guardianEmail,
+          password: guardianPassword,
+          role: UserRole.guardian.value,
+          name: guardianName,
+          username: guardianNormalized,
           phone: guardianPhone,
-          name: 'ولي أمر $name',
-          role: UserRole.guardian,
-          authProvider: UserAuthProvider.emailPassword,
-          createdAt: DateTime.now(),
         );
-        await _usersCollection.doc(guardianUid).set(guardian.toFirestore());
         guardianId = guardianUid;
       }
     }
