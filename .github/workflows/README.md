@@ -26,7 +26,7 @@ Runs with working directory `functions/`.
 
 | Step | Command | Notes |
 |------|---------|-------|
-| Set up Node.js | `actions/setup-node@v4` | Version from the single `NODE_VERSION` env constant in `ci.yml`, which mirrors `functions/package.json` → `engines.node` (currently `20`; issue #3 bumps to `22` — change that one constant). |
+| Set up Node.js | `actions/setup-node@v4` | Version from the single `NODE_VERSION` env constant in `ci.yml`, which mirrors `functions/package.json` → `engines.node` (`22`). Change that one constant on a runtime bump. |
 | Install deps | `npm install` | Not `npm ci`: `functions/package-lock.json` is intentionally gitignored, so there is no committed lockfile to install from. See the AgDR tradeoffs section. |
 | Build | `npm run build` | `tsc` per `functions/package.json`. |
 | Lint | `npm run lint --if-present` | Runs `eslint --ext .ts src/`; `--if-present` makes it a no-op if the script is ever removed. |
@@ -41,5 +41,5 @@ live under `scripts/` and are out of scope for issue #6.
 - **Flutter bump:** edit `FLUTTER_VERSION` in `ci.yml`. Keep it on a stable
   release whose bundled Dart still satisfies `pubspec.yaml`'s SDK constraint
   (Flutter 3.35.0–3.35.2 bundle Dart 3.9.0 and would fail `^3.9.2`).
-- **Node bump (issue #3):** edit `NODE_VERSION` in `ci.yml` to match the new
-  `functions/package.json` → `engines.node`.
+- **Node bump:** edit `NODE_VERSION` in `ci.yml` to match
+  `functions/package.json` → `engines.node` whenever the runtime changes.

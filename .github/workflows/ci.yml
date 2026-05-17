@@ -38,9 +38,9 @@ env:
   FLUTTER_VERSION: "3.35.7"
 
   # Node version for the Cloud Functions job. Source of truth is
-  # functions/package.json -> engines.node (currently "20"). Issue #3 bumps
-  # this to 22; when that lands, update ONLY this single constant.
-  NODE_VERSION: "20"
+  # functions/package.json -> engines.node ("22"). Keep this constant in
+  # sync with engines.node; it is the single place to change on a runtime bump.
+  NODE_VERSION: "22"
 
 jobs:
   # ===========================================================================
