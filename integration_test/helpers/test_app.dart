@@ -346,9 +346,37 @@ class TestEnvironment {
 
 /// Fake FirebaseService that doesn't require FirebaseAuth initialization.
 /// Only provides Firestore access for screens that use firebaseService.firestore.
+///
+/// `authStateChanges` is overridden to return a *finite, completing* stream
+/// instead of delegating to the unstubbed `_MockFirebaseAuth` mock. A mocktail
+/// mock's unstubbed `authStateChanges()` yields a stream that never closes;
+/// any subscriber (e.g. `AuthRepository._init()`) then keeps a live
+/// subscription open for the lifetime of the widget tree. On the Android-9
+/// (API 28) scheduler this open subscription keeps the frame ticker from ever
+/// reaching an idle state, so `pumpAndSettle()` spins forever (issue #5). The
+/// iOS scheduler tolerates the never-closing stream, which is why the iOS
+/// simulator passed 69/69 while the physical Galaxy Note 8 hung at +0.
+///
+/// Returning `Stream<User?>.empty()` (unauthenticated) or a single-shot
+/// `Stream<User?>.value(user)` (authenticated) makes the stream complete
+/// immediately, so the binding can reach idle. Test authentication state is
+/// driven entirely through the overridden `authRepositoryProvider` /
+/// `currentUserProvider` (see `_setupAuthenticatedUser`), so this stream is
+/// never the source of truth in tests — behaviour is unchanged, the hang is
+/// removed.
 class _TestFirebaseService extends FirebaseService {
-  _TestFirebaseService({required FirebaseFirestore firestore})
-      : super(auth: _MockFirebaseAuth(), firestore: firestore);
+  _TestFirebaseService({
+    required FirebaseFirestore firestore,
+    User? authenticatedUser,
+  })  : _authenticatedUser = authenticatedUser,
+        super(auth: _MockFirebaseAuth(), firestore: firestore);
+
+  final User? _authenticatedUser;
+
+  @override
+  Stream<User?> get authStateChanges => _authenticatedUser == null
+      ? const Stream<User?>.empty()
+      : Stream<User?>.value(_authenticatedUser);
 }
 
 /// Fake AuthRepository that doesn't depend on Firebase Auth
