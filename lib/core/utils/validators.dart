@@ -23,7 +23,7 @@ class Validators {
 
   /// Validate username (3-20 chars, lowercase ASCII letters, digits, underscore, dot).
   /// Used as the user-visible login identifier and to derive the synthesized
-  /// Firebase Auth email '<username>@alrasikhoon.local'.
+  /// Firebase Auth email `<username>@alrasikhoon.local`.
   static String? validateUsername(String? value) {
     if (value == null || value.isEmpty) {
       return 'يرجى إدخال اسم المستخدم';

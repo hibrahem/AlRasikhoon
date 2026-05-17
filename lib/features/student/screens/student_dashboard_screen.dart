@@ -97,7 +97,7 @@ class _StudentDashboardScreenState
                   completedLevels: stats.completedLevelsList,
                 ),
                 loading: () => const SizedBox(),
-                error: (_, __) => const SizedBox(),
+                error: (_, _) => const SizedBox(),
               ),
 
               const SizedBox(height: 24),
@@ -127,7 +127,7 @@ class _StudentDashboardScreenState
               statsAsync.when(
                 data: (stats) => _buildQuickStats(stats),
                 loading: () => const SizedBox(),
-                error: (_, __) => const SizedBox(),
+                error: (_, _) => const SizedBox(),
               ),
             ],
           ),
@@ -196,7 +196,7 @@ class _StudentDashboardScreenState
               ),
             ),
           ),
-          error: (_, __) => const SizedBox(),
+          error: (_, _) => const SizedBox(),
         ),
       ],
     );
