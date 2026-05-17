@@ -116,14 +116,19 @@ class _ResetPasswordDialogState extends ConsumerState<ResetPasswordDialog> {
                     icon: const Icon(Icons.copy, size: 20),
                     tooltip: 'نسخ',
                     onPressed: () async {
+                      // Capture the messenger before the async gap so we
+                      // never touch `context` after the await. If the
+                      // dialog is dismissed while Clipboard.setData is in
+                      // flight, `context` may point at a defunct element;
+                      // the captured messenger reference stays valid.
+                      final messenger = ScaffoldMessenger.of(context);
                       await Clipboard.setData(
                         ClipboardData(text: _committedPassword!),
                       );
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('تم نسخ كلمة المرور')),
-                        );
-                      }
+                      if (!context.mounted) return;
+                      messenger.showSnackBar(
+                        const SnackBar(content: Text('تم نسخ كلمة المرور')),
+                      );
                     },
                   ),
                 ],
