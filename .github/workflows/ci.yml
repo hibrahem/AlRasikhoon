@@ -64,10 +64,18 @@ jobs:
       - name: Resolve dependencies
         run: flutter pub get
 
-      # `flutter analyze` exits non-zero when the analyzer reports any
-      # error/warning, so this step already fails the job on issues.
+      # `flutter analyze` is fatal-on-infos-and-warnings by default. The repo
+      # carries pre-existing whole-project *info* debt (notably 106
+      # `withOpacity` deprecation infos) that would red-block this job and
+      # skip the Unit-tests step below. `--no-fatal-infos` makes infos
+      # non-blocking while keeping warnings AND errors fatal (we deliberately
+      # do NOT pass `--no-fatal-warnings` — real signal, e.g. the fixed
+      # sealed-class mock warnings, must still fail the job).
+      #
+      # The info debt is tracked: issue #13 (withOpacity → Color.withValues
+      # migration). Rationale + options: docs/agdr/AgDR-0002-ci-non-fatal-infos.md
       - name: Analyze
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos
 
       # Unit suite only. `flutter test` defaults to the `test/` directory and
       # does NOT pick up `integration_test/` — scoping to `test/` explicitly
