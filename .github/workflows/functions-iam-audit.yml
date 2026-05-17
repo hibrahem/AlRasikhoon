@@ -1,0 +1,133 @@
+# Daily audit that every Gen2 Cloud Function in production is publicly
+# invocable (member `allUsers` holds role `roles/run.invoker` on the backing
+# Cloud Run service).
+#
+# Background: on 2026-05-10 `setUserPassword` was silently broken for ~14h
+# because its Cloud Run service was missing that binding — Firebase only
+# grants it on a clean new-service create, not on a retry of a failed create.
+# A successful-looking deploy left the function returning 403 to every client.
+# This job catches that class of drift within 24h instead of when a user
+# reports it.
+#
+# ────────────────────────────────────────────────────────────────────────────
+# BEFORE THIS WORKS, A HUMAN MUST FILL IN THE `TODO:` PLACEHOLDERS BELOW.
+# All three are under the `auth` step. The service account must be READ-ONLY
+# (roles/cloudfunctions.viewer + roles/run.viewer) — this job never mutates
+# IAM; it only reports drift and the audit script's --fix flag merely PRINTS
+# the remediation command, it does not execute it.
+# ────────────────────────────────────────────────────────────────────────────
+
+name: Functions IAM Audit
+
+on:
+  schedule:
+    # Daily at 06:00 UTC. Adjust if you want it before/after a deploy window.
+    - cron: "0 6 * * *"
+  # Allow a maintainer to run it on demand from the Actions tab.
+  workflow_dispatch:
+
+# Least privilege: read the repo, mint the OIDC token for Workload Identity
+# Federation, and (on failure) open/comment a tracking issue.
+permissions:
+  contents: read
+  id-token: write
+  issues: write
+
+# Never run two audits at once; cancel an in-flight run if a newer one starts.
+concurrency:
+  group: functions-iam-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    name: Audit prod functions IAM
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (Workload Identity Federation)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          # TODO: set to the production GCP / Firebase project ID
+          #       (the live one is alrasikhoon-57151 — confirm before use).
+          project_id: "TODO_GCP_PROJECT_ID"
+          # TODO: full resource name of the Workload Identity Provider, e.g.
+          # projects/123456789/locations/global/workloadIdentityPools/POOL/providers/PROVIDER
+          workload_identity_provider: "TODO_WIF_PROVIDER_RESOURCE_NAME"
+          # TODO: email of a READ-ONLY service account this WIF provider may
+          # impersonate. Needs roles/cloudfunctions.viewer + roles/run.viewer
+          # ONLY. Do NOT grant any IAM-write role.
+          service_account: "TODO_READONLY_SERVICE_ACCOUNT_EMAIL"
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Run Gen2 functions IAM audit (prod)
+        id: audit
+        run: |
+          # FUNCTIONS_REGION must match the region in functions/src/index.ts
+          # (currently us-central1). Keep these in sync if the region changes.
+          bash scripts/audit_functions_iam.sh \
+            --project "${{ steps.auth.outputs.project_id }}" \
+            --region us-central1
+
+      - name: Open / comment a tracking issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "Cloud Functions IAM audit FAILED — a function is not publicly invocable";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              "The daily Functions IAM audit failed: at least one Gen2 Cloud",
+              "Function is missing the `allUsers` → `roles/run.invoker` binding",
+              "on its backing Cloud Run service.",
+              "",
+              "**Impact:** that function returns 403 to every client call",
+              "(this is exactly the failure mode that silently broke",
+              "`setUserPassword` for ~14h on 2026-05-10).",
+              "",
+              `**Failed run:** ${runUrl}`,
+              "",
+              "**Remediation:** run the audit locally with `--fix` to print the",
+              "exact `gcloud run services add-iam-policy-binding` command(s):",
+              "",
+              "```",
+              "scripts/audit_functions_iam.sh \\",
+              "  --project <PROD_PROJECT_ID> --region us-central1 --fix",
+              "```",
+              "",
+              "Then run the printed command(s) after review, and re-trigger this",
+              "workflow from the Actions tab to confirm green.",
+            ].join("\n");
+
+            // Reuse an existing open issue if one is already tracking this,
+            // otherwise open a fresh one. Avoids a new issue every day.
+            const marker = "<!-- functions-iam-audit -->";
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              labels: "functions-iam-audit",
+              per_page: 50,
+            });
+            const open = existing.data.find(i => i.body && i.body.includes(marker));
+
+            if (open) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: open.number,
+                body: `Audit failed again on ${new Date().toISOString()}.\n\n${runUrl}`,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body: `${marker}\n\n${body}`,
+                labels: ["functions-iam-audit"],
+              });
+            }
