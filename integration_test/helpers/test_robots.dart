@@ -75,9 +75,49 @@ abstract class TestRobot {
 class AuthRobot extends TestRobot {
   AuthRobot(super.tester);
 
-  /// Verify we're on the login screen
+  /// Bounded settle: pump a fixed number of frames at a fixed interval
+  /// instead of `pumpAndSettle()`, which loops until the binding reports
+  /// no scheduled frames. On the Galaxy Note 8 (Android 9 / API 28) a
+  /// long-lived auth-listener subscription keeps the frame ticker from
+  /// ever idling, so `pumpAndSettle()` never returns (issue #5). The
+  /// auth listener stream is now finite (see `_TestFirebaseService` in
+  /// test_app.dart) AND the wait here is explicitly bounded so a future
+  /// regression of the same shape cannot reintroduce an infinite hang.
+  /// 30 × 100ms = 3s of settle budget — comfortably longer than the
+  /// login screen's first-frame layout + localisation resolution, with
+  /// no upper-bound dependency on scheduler idleness.
+  Future<void> _settleBounded({
+    int frames = 30,
+    Duration interval = const Duration(milliseconds: 100),
+  }) async {
+    for (var i = 0; i < frames; i++) {
+      await tester.pump(interval);
+    }
+  }
+
+  /// Wait until [finder] resolves to at least one widget, pumping a
+  /// bounded number of frames. Throws via the final `expect` if the
+  /// widget never appears within the budget — keeps the assertion
+  /// strength identical to the previous `pumpAndSettle()` + `expect`.
+  Future<void> _pumpUntilFound(
+    Finder finder, {
+    int frames = 30,
+    Duration interval = const Duration(milliseconds: 100),
+  }) async {
+    for (var i = 0; i < frames; i++) {
+      await tester.pump(interval);
+      if (finder.evaluate().isNotEmpty) return;
+    }
+  }
+
+  /// Verify we're on the login screen.
+  ///
+  /// Uses bounded pumps + an explicit wait for the login title instead of
+  /// `pumpAndSettle()` (see [_settleBounded]). Assertions are unchanged —
+  /// both texts must resolve to exactly one widget.
   Future<void> verifyLoginScreen() async {
-    await pumpAndSettle();
+    await _pumpUntilFound(find.text('الراسخون'));
+    await _settleBounded();
     expect(find.text('الراسخون'), findsOneWidget);
     expect(find.text('تسجيل الدخول'), findsOneWidget);
   }
@@ -101,15 +141,21 @@ class AuthRobot extends TestRobot {
     await tapByText('تسجيل الدخول');
   }
 
-  /// Verify account not found screen
+  /// Verify account not found screen.
+  /// Bounded wait for the target text (see [_settleBounded]); assertion
+  /// unchanged.
   Future<void> verifyAccountNotFoundScreen() async {
-    await pumpAndSettle();
+    await _pumpUntilFound(find.textContaining('غير مسجل'));
+    await _settleBounded();
     expect(find.textContaining('غير مسجل'), findsOneWidget);
   }
 
-  /// Verify error message displayed
+  /// Verify error message displayed.
+  /// Bounded wait for the target text (see [_settleBounded]); assertion
+  /// unchanged.
   Future<void> verifyErrorMessage(String message) async {
-    await pumpAndSettle();
+    await _pumpUntilFound(find.text(message));
+    await _settleBounded();
     expect(find.text(message), findsOneWidget);
   }
 }
