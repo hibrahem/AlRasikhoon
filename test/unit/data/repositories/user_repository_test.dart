@@ -26,6 +26,11 @@ class _DeleteDeniedFirestore extends Mock implements FirebaseFirestore {
   }
 }
 
+// `CollectionReference` (via its sealed ancestor `Query`) is `sealed` in
+// cloud_firestore v6+. mocktail's only mechanism for a test double is
+// `extends Mock implements <type>`; there is no non-sealed seam to inject the
+// simulated `permission-denied` on `delete()`. Scoped to this one declaration.
+// ignore: subtype_of_sealed_class
 class _DeleteDeniedCollection extends Mock
     implements CollectionReference<Map<String, dynamic>> {
   _DeleteDeniedCollection(this._delegate, this._denyDocId);
@@ -43,6 +48,10 @@ class _DeleteDeniedCollection extends Mock
   }
 }
 
+// `DocumentReference` is `sealed` in cloud_firestore v6+. Same rationale as
+// `_DeleteDeniedCollection` above: mocktail requires `implements` of the
+// sealed type to override `delete()` with the simulated failure. Scoped here.
+// ignore: subtype_of_sealed_class
 class _DeleteDeniedDocument extends Mock
     implements DocumentReference<Map<String, dynamic>> {
   _DeleteDeniedDocument(this._delegate);
