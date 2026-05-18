@@ -85,7 +85,7 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
               statsAsync.when(
                 data: (stats) => _buildStatsSection(stats),
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (_, __) => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
               ),
 
               const SizedBox(height: 24),
@@ -109,7 +109,7 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                   return _buildAddPracticeCard(student);
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (_, __) => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
               ),
 
               const SizedBox(height: 24),

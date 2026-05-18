@@ -145,7 +145,7 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                 );
               },
               loading: () => const SizedBox(),
-              error: (_, __) => const SizedBox(),
+              error: (_, _) => const SizedBox(),
             ),
 
             // Overall grade

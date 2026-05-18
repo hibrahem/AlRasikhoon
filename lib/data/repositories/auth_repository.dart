@@ -75,7 +75,7 @@ class AuthRepository extends Notifier<AuthState> {
 
   /// Sign in with username + password. The username is the user-visible
   /// identifier; under the hood we feed Firebase Auth the synthesized email
-  /// '<username>@alrasikhoon.local'. Returns the loaded UserModel on success
+  /// `<username>@alrasikhoon.local`. Returns the loaded UserModel on success
   /// or null on failure (state.error is set).
   Future<UserModel?> signInWithUsernameAndPassword({
     required String username,

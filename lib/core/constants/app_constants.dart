@@ -79,7 +79,7 @@ class AppConstants {
   static const String keyFirstLaunch = 'first_launch';
 
   /// Domain used to synthesize a Firebase Auth email from a username.
-  /// Format: '<username>@alrasikhoon.local'. RFC-6762 reserves '.local',
+  /// Format: `<username>@alrasikhoon.local`. RFC-6762 reserves '.local',
   /// so this can never collide with a real deliverable domain.
   static const String synthesizedEmailDomain = 'alrasikhoon.local';
 }

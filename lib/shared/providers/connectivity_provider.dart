@@ -13,7 +13,7 @@ final isConnectedProvider = Provider<bool>((ref) {
     data: (results) => results.isNotEmpty &&
         !results.contains(ConnectivityResult.none),
     loading: () => true,
-    error: (_, __) => false,
+    error: (_, _) => false,
   );
 });
 
@@ -23,6 +23,6 @@ final connectivityTypeProvider = Provider<ConnectivityResult?>((ref) {
   return connectivity.when(
     data: (results) => results.isNotEmpty ? results.first : null,
     loading: () => null,
-    error: (_, __) => null,
+    error: (_, _) => null,
   );
 });

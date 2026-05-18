@@ -146,7 +146,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
                   );
                 },
                 loading: () => const SizedBox(),
-                error: (_, __) => const SizedBox(),
+                error: (_, _) => const SizedBox(),
               ),
               const SizedBox(height: 32),
 
