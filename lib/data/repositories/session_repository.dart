@@ -45,7 +45,9 @@ class SessionRepository {
       distantReviewErrors: distantReviewErrors,
     );
 
-    final passed = grades.allPartsPassed;
+    // Session-level pass/fail is level-based and fails on ANY محب component
+    // (hibrahem/AlRasikhoon#24) — no averaging, no level-agnostic threshold.
+    final passed = grades.passesForLevel(levelId);
 
     final docRef = _sessionRecordsCollection.doc();
     final record = SessionRecordModel(

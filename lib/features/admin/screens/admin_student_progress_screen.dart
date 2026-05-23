@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
-import '../../../core/utils/grade_calculator.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
 import '../../../data/models/student_model.dart';
@@ -12,7 +11,6 @@ import '../../../data/models/user_model.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/grade_display.dart';
 import '../../../shared/widgets/progress_bar.dart';
 import '../providers/admin_provider.dart';
 
@@ -396,9 +394,12 @@ class _SessionHistoryList extends StatelessWidget {
       itemCount: records.length,
       itemBuilder: (context, index) {
         final record = records[index];
-        final gradeInfo = GradeCalculator.calculate(
-          (record.grades.totalErrors / 3).ceil(),
-        );
+        // Listing shows only binary pass/fail (نجح / رسب), never an average
+        // of the three component grades (#24). The per-component breakdown
+        // lives in the session detail view.
+        final passColor = record.passed
+            ? AppColors.success
+            : AppColors.error;
         return AppCard(
           margin: const EdgeInsets.only(bottom: 8),
           onTap: () => context.push(
@@ -410,12 +411,12 @@ class _SessionHistoryList extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: gradeInfo.color.withOpacity(0.1),
+                  color: passColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   record.passed ? Icons.check_circle : Icons.cancel,
-                  color: gradeInfo.color,
+                  color: passColor,
                 ),
               ),
               const SizedBox(width: 12),
@@ -442,11 +443,24 @@ class _SessionHistoryList extends StatelessWidget {
                   ],
                 ),
               ),
-              GradeDisplay(
-                errorCount: (record.grades.totalErrors / 3).ceil(),
-                showStars: false,
-                showPassStatus: false,
-                isCompact: true,
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: passColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: passColor),
+                ),
+                child: Text(
+                  record.passed ? 'نجح' : 'رسب',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: passColor,
+                  ),
+                ),
               ),
             ],
           ),

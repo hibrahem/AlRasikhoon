@@ -88,10 +88,19 @@ class SessionDetailScreen extends ConsumerWidget {
 
                 const SizedBox(height: 24),
 
-                // Overall grade
+                // Overall session result — binary pass/fail, fails on ANY
+                // محب component, no averaging (#24). The session grade is the
+                // worst of the three level-based component grades (#22).
                 Center(
                   child: GradeDisplay(
-                    errorCount: (record.grades.totalErrors / 3).ceil(),
+                    errorCount: record.grades.totalErrors,
+                    gradeInfo: GradeCalculator.calculateSessionGrade(
+                      level: record.levelId,
+                      newMemorizationErrors:
+                          record.grades.newMemorizationErrors,
+                      recentReviewErrors: record.grades.recentReviewErrors,
+                      distantReviewErrors: record.grades.distantReviewErrors,
+                    ),
                     showStars: true,
                     showPassStatus: true,
                   ),

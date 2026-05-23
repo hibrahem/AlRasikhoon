@@ -6,6 +6,7 @@ import '../../../data/repositories/session_repository.dart';
 import '../../../data/models/institute_model.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
+import '../../../core/utils/grade_calculator.dart';
 import '../../../shared/providers/user_provider.dart';
 
 /// Provider for teacher's students
@@ -142,8 +143,16 @@ class ActiveSessionState {
     }
   }
 
-  bool get allPartsPassed =>
-      part1Errors <= 3 && part2Errors <= 3 && part3Errors <= 3;
+  /// Whether the in-progress session passes at the student's [level], per
+  /// hibrahem/AlRasikhoon#24: FAILED if ANY component (new/near/far) grades
+  /// محب (ويعاد); passes only if none is محب. No averaging, no level-agnostic
+  /// ≤3 threshold — component grades are level-based (#22).
+  bool passesForLevel(int level) => GradeCalculator.sessionPassesForLevel(
+    level: level,
+    newMemorizationErrors: part1Errors,
+    recentReviewErrors: part2Errors,
+    distantReviewErrors: part3Errors,
+  );
 
   int get totalErrors => part1Errors + part2Errors + part3Errors;
 }

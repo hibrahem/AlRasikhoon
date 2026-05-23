@@ -235,9 +235,97 @@ void main() {
       });
     });
 
-    group('calculateSessionGrade', () {
-      test('all parts 0 errors returns راسخ', () {
+    // Session-level aggregation (hibrahem/AlRasikhoon#24): a session is
+    // FAILED if ANY one component (new/near/far) grades محب (ويعاد); it
+    // passes only if none is محب. NO averaging — a single محب can never be
+    // masked by good grades. Component grades are level-based (#22): at
+    // level 1 (B = 0), محب starts at 4 mistakes and مجتهد is exactly 3.
+    group('sessionPassesForLevel (any-محب fail rule — issue #24)', () {
+      test('passes when all parts are راسخ (0 errors)', () {
+        expect(
+          GradeCalculator.sessionPassesForLevel(
+            level: 1,
+            newMemorizationErrors: 0,
+            recentReviewErrors: 0,
+            distantReviewErrors: 0,
+          ),
+          true,
+        );
+      });
+
+      test('passes when worst non-محب grade is مجتهد (3 errors at level 1)',
+          () {
+        expect(
+          GradeCalculator.sessionPassesForLevel(
+            level: 1,
+            newMemorizationErrors: 3,
+            recentReviewErrors: 3,
+            distantReviewErrors: 3,
+          ),
+          true,
+        );
+      });
+
+      test('FAILS when NEW (الجديد) is محب — even with راسخ/متقن elsewhere',
+          () {
+        // Repro from the issue: new = محب (4 @ L1), near = متقن (1),
+        // far = راسخ (0). Averaging would have masked the محب; any-محب fails.
+        expect(
+          GradeCalculator.sessionPassesForLevel(
+            level: 1,
+            newMemorizationErrors: 4,
+            recentReviewErrors: 1,
+            distantReviewErrors: 0,
+          ),
+          false,
+        );
+      });
+
+      test('FAILS when NEAR (القريب) is محب — masked by good others', () {
+        expect(
+          GradeCalculator.sessionPassesForLevel(
+            level: 1,
+            newMemorizationErrors: 0,
+            recentReviewErrors: 4,
+            distantReviewErrors: 1,
+          ),
+          false,
+        );
+      });
+
+      test('FAILS when FAR (البعيد) is محب — the issue repro (راسخ/متقن/محب)',
+          () {
+        // new = راسخ (0), near = متقن (1), far = محب (4 @ L1).
+        expect(
+          GradeCalculator.sessionPassesForLevel(
+            level: 1,
+            newMemorizationErrors: 0,
+            recentReviewErrors: 1,
+            distantReviewErrors: 4,
+          ),
+          false,
+        );
+      });
+
+      test('respects level — same 4 errors is NOT محب at a high level', () {
+        // Level 9: B = 4, محب only at >= 8 mistakes; 4 errors → راسخ.
+        expect(
+          GradeCalculator.sessionPassesForLevel(
+            level: 9,
+            newMemorizationErrors: 4,
+            recentReviewErrors: 4,
+            distantReviewErrors: 4,
+          ),
+          true,
+        );
+      });
+    });
+
+    group('calculateSessionGrade (worst-component, no averaging — issue #24)',
+        () {
+      test('all parts راسخ returns راسخ and passes', () {
         final grade = GradeCalculator.calculateSessionGrade(
+          level: 1,
           newMemorizationErrors: 0,
           recentReviewErrors: 0,
           distantReviewErrors: 0,
@@ -247,95 +335,42 @@ void main() {
         expect(grade.passed, true);
       });
 
-      test('all parts 6 errors each passes with calculated average', () {
+      test('returns the WORST component grade, never an average', () {
+        // new = راسخ (0), near = راسخ (0), far = مجتهد (3 @ L1).
+        // Old averaging gave متقن (ceil(3/3)=1); worst-component gives مجتهد.
         final grade = GradeCalculator.calculateSessionGrade(
-          newMemorizationErrors: 6,
-          recentReviewErrors: 6,
-          distantReviewErrors: 6,
-        );
-
-        // Total: 18, Average: 6 (ceiling) = مجتهد (passes with 5-6 errors)
-        expect(grade.passed, true);
-        expect(grade.grade, Grade.mujtahid);
-      });
-
-      test('part1 fails (7 errors) returns محب', () {
-        final grade = GradeCalculator.calculateSessionGrade(
-          newMemorizationErrors: 7,
-          recentReviewErrors: 0,
-          distantReviewErrors: 0,
-        );
-
-        expect(grade.grade, Grade.muhib);
-        expect(grade.passed, false);
-      });
-
-      test('part2 fails (7 errors) returns محب', () {
-        final grade = GradeCalculator.calculateSessionGrade(
-          newMemorizationErrors: 0,
-          recentReviewErrors: 7,
-          distantReviewErrors: 0,
-        );
-
-        expect(grade.grade, Grade.muhib);
-        expect(grade.passed, false);
-      });
-
-      test('part3 fails (7 errors) returns محب', () {
-        final grade = GradeCalculator.calculateSessionGrade(
+          level: 1,
           newMemorizationErrors: 0,
           recentReviewErrors: 0,
-          distantReviewErrors: 7,
-        );
-
-        expect(grade.grade, Grade.muhib);
-        expect(grade.passed, false);
-      });
-
-      test('average calculation with uneven errors', () {
-        final grade = GradeCalculator.calculateSessionGrade(
-          newMemorizationErrors: 0,
-          recentReviewErrors: 2,
-          distantReviewErrors: 4,
-        );
-
-        // Total: 6, Average: 2 (ceiling) = متقن
-        expect(grade.grade, Grade.mutqin);
-        expect(grade.passed, true);
-      });
-
-      test('ceiling rounding applied correctly', () {
-        final grade = GradeCalculator.calculateSessionGrade(
-          newMemorizationErrors: 3,
-          recentReviewErrors: 3,
           distantReviewErrors: 3,
         );
 
-        // Total: 9, Average: 3 (9/3) = حافظ
-        expect(grade.grade, Grade.hafiz);
+        expect(grade.grade, Grade.mujtahid);
+        expect(grade.passed, true);
       });
 
-      test('ceiling rounds up for non-integer average', () {
+      test('returns محب (failed) when any single part is محب', () {
         final grade = GradeCalculator.calculateSessionGrade(
-          newMemorizationErrors: 4,
-          recentReviewErrors: 4,
+          level: 1,
+          newMemorizationErrors: 0,
+          recentReviewErrors: 0,
           distantReviewErrors: 4,
         );
 
-        // Total: 12, Average: 4 (12/3) = حافظ
-        expect(grade.grade, Grade.hafiz);
+        expect(grade.grade, Grade.muhib);
+        expect(grade.passed, false);
       });
 
-      test('mixed low and medium errors averages correctly', () {
+      test('a single محب is never masked by راسخ in the other two parts', () {
         final grade = GradeCalculator.calculateSessionGrade(
-          newMemorizationErrors: 0,
+          level: 1,
+          newMemorizationErrors: 4,
           recentReviewErrors: 0,
-          distantReviewErrors: 6,
+          distantReviewErrors: 0,
         );
 
-        // Total: 6, Average: 2 (ceiling of 6/3) = متقن
-        expect(grade.grade, Grade.mutqin);
-        expect(grade.passed, true);
+        expect(grade.grade, Grade.muhib);
+        expect(grade.passed, false);
       });
     });
 
