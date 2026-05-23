@@ -113,11 +113,15 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
   @override
   Widget build(BuildContext context) {
     final studentAsync = ref.watch(studentProvider(widget.studentId));
-    // Grade is level-based (hibrahem/AlRasikhoon#22). Default to level 1
-    // until the student loads; the display refreshes once the level is known.
-    final level = studentAsync.value?.student.currentLevel ?? 1;
-    final gradeInfo =
-        GradeCalculator.calculateForLevel(level, widget.errorCount);
+    // Grade is level-based (hibrahem/AlRasikhoon#22). The level-based grade is
+    // only computed once the student value resolves — never from a default
+    // level=1 while loading, which would flash a harsher grade (#36).
+    final gradeInfo = studentAsync.value != null
+        ? GradeCalculator.calculateForLevel(
+            studentAsync.value!.student.currentLevel,
+            widget.errorCount,
+          )
+        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -154,12 +158,22 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Grade display
-              GradeDisplay(
-                errorCount: widget.errorCount,
-                gradeInfo: gradeInfo,
-                showStars: true,
-                showPassStatus: true,
+              // Grade display — withhold until the real level resolves (#36).
+              studentAsync.when(
+                data: (_) => GradeDisplay(
+                  errorCount: widget.errorCount,
+                  gradeInfo: gradeInfo,
+                  showStars: true,
+                  showPassStatus: true,
+                ),
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: CircularProgressIndicator(),
+                ),
+                error: (_, _) => const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Text('تعذّر تحميل النتيجة'),
+                ),
               ),
 
               const SizedBox(height: 32),
@@ -195,7 +209,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
                 size: AppButtonSize.large,
               ),
               const SizedBox(height: 12),
-              if (!gradeInfo.passed)
+              if (gradeInfo != null && !gradeInfo.passed)
                 AppButton(
                   text: 'إعادة السرد',
                   onPressed: () {
