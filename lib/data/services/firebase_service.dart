@@ -61,6 +61,7 @@ class FirebaseService {
     required String name,
     required String username,
     String? phone,
+    String? instituteId,
   }) async {
     final callable = FirebaseFunctions.instance.httpsCallable(
       'createUserAccount',
@@ -72,6 +73,8 @@ class FirebaseService {
       'name': name,
       'username': username,
       'phone': phone,
+      // Required by the Cloud Function when role == 'supervisor'.
+      'instituteId': instituteId,
     });
     final uid = result.data['uid'];
     if (uid is! String || uid.isEmpty) {

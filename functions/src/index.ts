@@ -10,7 +10,11 @@ interface SetUserPasswordPayload {
   newPassword: string;
 }
 
-type ProvisionableRole = "teacher" | "student" | "guardian";
+type ProvisionableRole =
+  | "supervisor"
+  | "teacher"
+  | "student"
+  | "guardian";
 
 interface CreateUserAccountPayload {
   email: string;
@@ -19,12 +23,20 @@ interface CreateUserAccountPayload {
   name: string;
   username: string;
   phone?: string | null;
+  // Required when role === "supervisor": the single institute the
+  // supervisor is bound to. Ignored for other roles.
+  instituteId?: string | null;
 }
 
 const MIN_PASSWORD_LENGTH = 6;
 
 const ROLES_BY_CALLER: Record<string, ReadonlySet<ProvisionableRole>> = {
-  super_admin: new Set<ProvisionableRole>(["teacher", "student", "guardian"]),
+  super_admin: new Set<ProvisionableRole>([
+    "supervisor",
+    "teacher",
+    "student",
+    "guardian",
+  ]),
   teacher: new Set<ProvisionableRole>(["student", "guardian"]),
 };
 
@@ -36,13 +48,19 @@ const ROLES_BY_CALLER: Record<string, ReadonlySet<ProvisionableRole>> = {
  * this function.
  *
  * Authorization (custom claim 'role' set by syncRoleClaim below):
- *   - super_admin can provision teacher | student | guardian.
+ *   - super_admin can provision supervisor | teacher | student | guardian.
  *   - teacher    can provision student | guardian.
  *
+ * Supervisor accounts are bound to exactly one institute: the caller must
+ * pass `instituteId`, which is persisted onto users/{uid}.institute_id AND
+ * recorded as a supervisor_institutes/{uid}_{instituteId} assignment so the
+ * existing supervisor experience (getInstitutesForSupervisor) resolves it.
+ *
  * Atomicity: pre-checks username uniqueness, creates the auth user, then
- * writes users/{uid}. If the Firestore write fails, the auth user is
- * deleted to avoid orphans. (No two-phase commit between Auth and
- * Firestore exists; this rollback closes the dominant client-crash window.)
+ * writes users/{uid} (+ the supervisor_institutes assignment for
+ * supervisors). If any Firestore write fails, the auth user is deleted to
+ * avoid orphans. (No two-phase commit between Auth and Firestore exists;
+ * this rollback closes the dominant client-crash window.)
  *
  * Returns: { uid: string }
  */
@@ -62,7 +80,7 @@ export const createUserAccount = onCall<CreateUserAccountPayload>(
       );
     }
 
-    const { email, password, role, name, username, phone } =
+    const { email, password, role, name, username, phone, instituteId } =
       request.data ?? ({} as CreateUserAccountPayload);
 
     if (!email || typeof email !== "string") {
@@ -85,6 +103,30 @@ export const createUserAccount = onCall<CreateUserAccountPayload>(
         "permission-denied",
         `Caller role '${callerRole}' cannot provision role '${role}'`,
       );
+    }
+
+    // Supervisors are bound to exactly one institute at creation time.
+    let normalizedInstituteId: string | null = null;
+    if (role === "supervisor") {
+      if (
+        !instituteId ||
+        typeof instituteId !== "string" ||
+        instituteId.trim().length === 0
+      ) {
+        throw new HttpsError(
+          "invalid-argument",
+          "instituteId is required for supervisor accounts",
+        );
+      }
+      normalizedInstituteId = instituteId.trim();
+      const instituteDoc = await admin
+        .firestore()
+        .collection("institutes")
+        .doc(normalizedInstituteId)
+        .get();
+      if (!instituteDoc.exists || instituteDoc.data()?.is_active === false) {
+        throw new HttpsError("not-found", "institute-not-found");
+      }
     }
 
     const normalizedUsername = username.trim().toLowerCase();
@@ -122,20 +164,44 @@ export const createUserAccount = onCall<CreateUserAccountPayload>(
     }
 
     try {
-      await admin
-        .firestore()
-        .collection("users")
-        .doc(uid)
-        .set({
-          username: normalizedUsername,
-          email,
-          name: name.trim(),
-          role,
-          phone: phone ?? null,
-          auth_provider: "email_password",
-          is_active: true,
-          created_at: admin.firestore.FieldValue.serverTimestamp(),
-        });
+      const userDoc: Record<string, unknown> = {
+        username: normalizedUsername,
+        email,
+        name: name.trim(),
+        role,
+        phone: phone ?? null,
+        auth_provider: "email_password",
+        is_active: true,
+        created_at: admin.firestore.FieldValue.serverTimestamp(),
+      };
+      // Carry the institute binding on the account record itself so the
+      // permission/scoping model (#28) can enforce it without a join read.
+      if (normalizedInstituteId) {
+        userDoc.institute_id = normalizedInstituteId;
+      }
+
+      if (normalizedInstituteId) {
+        // Write the user doc and the supervisor_institutes assignment in one
+        // atomic batch — the supervisor experience resolves institutes via
+        // getInstitutesForSupervisor() against this join collection.
+        const batch = admin.firestore().batch();
+        batch.set(admin.firestore().collection("users").doc(uid), userDoc);
+        batch.set(
+          admin
+            .firestore()
+            .collection("supervisor_institutes")
+            .doc(`${uid}_${normalizedInstituteId}`),
+          {
+            supervisor_id: uid,
+            institute_id: normalizedInstituteId,
+            assigned_at: admin.firestore.FieldValue.serverTimestamp(),
+            is_active: true,
+          },
+        );
+        await batch.commit();
+      } else {
+        await admin.firestore().collection("users").doc(uid).set(userDoc);
+      }
     } catch (e) {
       // Roll back the auth user so we don't leak an orphan.
       logger.error("createUserAccount: Firestore write failed, rolling back auth user", {
@@ -159,6 +225,7 @@ export const createUserAccount = onCall<CreateUserAccountPayload>(
       callerRole,
       uid,
       role,
+      instituteId: normalizedInstituteId,
     });
     return { uid };
   },

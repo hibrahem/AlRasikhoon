@@ -115,6 +115,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           value: '${stats.supervisorsCount}',
           icon: Icons.admin_panel_settings,
           iconColor: AppColors.secondary,
+          onTap: () => context.push(AppRoutes.addSupervisor),
         ),
         StatCard(
           title: 'الطلاب',
@@ -158,6 +159,24 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           ),
           trailing: const Icon(Icons.chevron_left),
           onTap: () => context.push(AppRoutes.addTeacher),
+        ),
+        const SizedBox(height: 8),
+        AppListTile(
+          title: 'إضافة مشرف جديد',
+          subtitle: 'تسجيل مشرف وربطه بمعهد',
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.admin_panel_settings,
+              color: AppColors.secondary,
+            ),
+          ),
+          trailing: const Icon(Icons.chevron_left),
+          onTap: () => context.push(AppRoutes.addSupervisor),
         ),
         const SizedBox(height: 8),
         AppListTile(
