@@ -16,6 +16,7 @@ import '../features/admin/screens/add_teacher_screen.dart';
 import '../features/admin/screens/add_supervisor_screen.dart';
 import '../features/admin/screens/teacher_detail_screen.dart';
 import '../features/admin/screens/curriculum_screen.dart';
+import '../features/admin/screens/level_detail_screen.dart';
 import '../features/admin/screens/all_students_screen.dart';
 import '../features/admin/screens/admin_student_progress_screen.dart';
 import '../features/supervisor/screens/supervisor_dashboard_screen.dart';
@@ -54,6 +55,7 @@ class AppRoutes {
   static const String addSupervisor = '/admin/supervisors/add';
   static const String teacherDetail = '/admin/teachers/:id';
   static const String curriculum = '/admin/curriculum';
+  static const String levelDetail = '/admin/curriculum/:levelNumber';
   static const String adminStudents = '/admin/students';
   static const String adminStudentProgress = '/admin/students/:id';
 
@@ -205,6 +207,14 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoutes.curriculum,
                 builder: (context, state) => const CurriculumScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.levelDetail,
+                builder: (context, state) {
+                  final levelNumber =
+                      int.parse(state.pathParameters['levelNumber']!);
+                  return LevelDetailScreen(levelNumber: levelNumber);
+                },
               ),
             ],
           ),

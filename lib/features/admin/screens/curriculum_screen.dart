@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/repositories/curriculum_repository.dart';
+import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
 
 class CurriculumScreen extends ConsumerWidget {
@@ -67,6 +69,9 @@ class CurriculumScreen extends ConsumerWidget {
               ...levels.map((level) {
                 return AppCard(
                   margin: const EdgeInsets.only(bottom: 12),
+                  onTap: () => context.push(
+                    '${AppRoutes.curriculum}/${level.levelNumber}',
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -110,6 +115,10 @@ class CurriculumScreen extends ConsumerWidget {
                                 ),
                               ],
                             ),
+                          ),
+                          const Icon(
+                            Icons.chevron_left,
+                            color: AppColors.textSecondary,
                           ),
                         ],
                       ),
