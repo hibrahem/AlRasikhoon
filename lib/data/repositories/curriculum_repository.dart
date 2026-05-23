@@ -173,3 +173,13 @@ final levelProvider =
   final repository = ref.watch(curriculumRepositoryProvider);
   return repository.getLevelByNumber(levelNumber);
 });
+
+/// Provider for the curriculum sessions that compose a level (by level number).
+///
+/// Reuses [CurriculumRepository.getSessionsForLevel] — the same query the
+/// student/teacher flows use to load a level's predefined sessions.
+final levelSessionsProvider =
+    FutureProvider.family<List<SessionModel>, int>((ref, levelNumber) async {
+  final repository = ref.watch(curriculumRepositoryProvider);
+  return repository.getSessionsForLevel(levelNumber);
+});
