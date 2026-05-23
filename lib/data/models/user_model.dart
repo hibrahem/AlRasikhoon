@@ -96,6 +96,11 @@ class UserModel {
   final String name;
   final UserRole role;
   final UserAuthProvider authProvider;
+
+  /// The institute this user is bound to. Set for supervisors (one institute
+  /// per supervisor); null for other roles. Carried on the account record so
+  /// the supervisor permission/scoping model can enforce it.
+  final String? instituteId;
   final DateTime createdAt;
   final DateTime? updatedAt;
   final bool isActive;
@@ -108,6 +113,7 @@ class UserModel {
     required this.name,
     required this.role,
     this.authProvider = UserAuthProvider.pending,
+    this.instituteId,
     required this.createdAt,
     this.updatedAt,
     this.isActive = true,
@@ -123,6 +129,7 @@ class UserModel {
       name: data['name'] ?? '',
       role: UserRoleExtension.fromString(data['role'] ?? 'student'),
       authProvider: UserAuthProviderExtension.fromString(data['auth_provider']),
+      instituteId: data['institute_id'] as String?,
       createdAt: (data['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updated_at'] as Timestamp?)?.toDate(),
       isActive: data['is_active'] ?? true,
@@ -137,6 +144,7 @@ class UserModel {
       'name': name,
       'role': role.value,
       'auth_provider': authProvider.value,
+      'institute_id': instituteId,
       'created_at': Timestamp.fromDate(createdAt),
       'updated_at': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
       'is_active': isActive,
@@ -151,6 +159,7 @@ class UserModel {
     String? name,
     UserRole? role,
     UserAuthProvider? authProvider,
+    String? instituteId,
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isActive,
@@ -163,6 +172,7 @@ class UserModel {
       name: name ?? this.name,
       role: role ?? this.role,
       authProvider: authProvider ?? this.authProvider,
+      instituteId: instituteId ?? this.instituteId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isActive: isActive ?? this.isActive,

@@ -249,6 +249,32 @@ void main() {
         expect(user.authProvider, UserAuthProvider.pending);
       });
 
+      test('defaults instituteId to null', () {
+        final user = UserModel(
+          id: 'user123',
+          email: 'test@example.com',
+          name: 'Test User',
+          role: UserRole.supervisor,
+          createdAt: DateTime.now(),
+        );
+
+        expect(user.instituteId, isNull);
+      });
+
+      test('allows setting instituteId for a supervisor', () {
+        final user = UserModel(
+          id: 'sup123',
+          email: 'test@example.com',
+          name: 'Supervisor',
+          role: UserRole.supervisor,
+          instituteId: 'inst_abc',
+          createdAt: DateTime.now(),
+        );
+
+        expect(user.instituteId, 'inst_abc');
+        expect(user.role, UserRole.supervisor);
+      });
+
       test('allows setting authProvider', () {
         final user = UserModel(
           id: 'user123',
@@ -295,6 +321,36 @@ void main() {
         expect(user.createdAt.day, createdAt.day);
         expect(user.updatedAt?.year, updatedAt.year);
         expect(user.isActive, true);
+      });
+
+      test('deserializes institute_id for a supervisor', () async {
+        await fakeFirestore.collection('users').doc('sup123').set({
+          'username': 'super.a',
+          'name': 'Supervisor',
+          'role': 'supervisor',
+          'institute_id': 'inst_abc',
+          'is_active': true,
+        });
+
+        final doc =
+            await fakeFirestore.collection('users').doc('sup123').get();
+        final user = UserModel.fromFirestore(doc);
+
+        expect(user.role, UserRole.supervisor);
+        expect(user.instituteId, 'inst_abc');
+      });
+
+      test('institute_id is null when missing', () async {
+        await fakeFirestore.collection('users').doc('user123').set({
+          'name': 'Teacher',
+          'role': 'teacher',
+        });
+
+        final doc =
+            await fakeFirestore.collection('users').doc('user123').get();
+        final user = UserModel.fromFirestore(doc);
+
+        expect(user.instituteId, isNull);
       });
 
       test('defaults username to empty string when missing', () async {
@@ -462,6 +518,37 @@ void main() {
         expect((map['updated_at'] as Timestamp).toDate().year, updatedAt.year);
       });
 
+      test('serializes institute_id for a supervisor', () {
+        final user = UserModel(
+          id: 'sup123',
+          username: 'super.a',
+          email: 'test@example.com',
+          name: 'Supervisor',
+          role: UserRole.supervisor,
+          instituteId: 'inst_abc',
+          createdAt: DateTime.now(),
+        );
+
+        final map = user.toFirestore();
+
+        expect(map['institute_id'], 'inst_abc');
+        expect(map['role'], 'supervisor');
+      });
+
+      test('serializes null institute_id when not set', () {
+        final user = UserModel(
+          id: 'user123',
+          email: 'test@example.com',
+          name: 'Teacher',
+          role: UserRole.teacher,
+          createdAt: DateTime.now(),
+        );
+
+        final map = user.toFirestore();
+
+        expect(map['institute_id'], isNull);
+      });
+
       test('serializes empty username when not set', () {
         final user = UserModel(
           id: 'user123',
@@ -597,6 +684,22 @@ void main() {
         expect(updated.username, 'new_name');
         expect(updated.id, user.id);
         expect(updated.name, user.name);
+      });
+
+      test('can update instituteId', () {
+        final user = UserModel(
+          id: 'sup123',
+          email: 'test@example.com',
+          name: 'Supervisor',
+          role: UserRole.supervisor,
+          createdAt: DateTime.now(),
+        );
+
+        final updated = user.copyWith(instituteId: 'inst_xyz');
+
+        expect(updated.instituteId, 'inst_xyz');
+        expect(updated.id, user.id);
+        expect(updated.role, UserRole.supervisor);
       });
 
       test('can update authProvider', () {

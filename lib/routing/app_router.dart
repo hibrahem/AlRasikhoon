@@ -13,6 +13,7 @@ import '../features/admin/screens/institute_detail_screen.dart';
 import '../features/admin/screens/edit_institute_screen.dart';
 import '../features/admin/screens/teachers_screen.dart';
 import '../features/admin/screens/add_teacher_screen.dart';
+import '../features/admin/screens/add_supervisor_screen.dart';
 import '../features/admin/screens/teacher_detail_screen.dart';
 import '../features/admin/screens/curriculum_screen.dart';
 import '../features/admin/screens/all_students_screen.dart';
@@ -49,6 +50,7 @@ class AppRoutes {
   static const String editInstitute = '/admin/institutes/:id/edit';
   static const String teachers = '/admin/teachers';
   static const String addTeacher = '/admin/teachers/add';
+  static const String addSupervisor = '/admin/supervisors/add';
   static const String teacherDetail = '/admin/teachers/:id';
   static const String curriculum = '/admin/curriculum';
   static const String adminStudents = '/admin/students';
@@ -179,6 +181,10 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoutes.addTeacher,
                 builder: (context, state) => const AddTeacherScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.addSupervisor,
+                builder: (context, state) => const AddSupervisorScreen(),
               ),
               GoRoute(
                 path: AppRoutes.teacherDetail,
