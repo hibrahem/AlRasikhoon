@@ -23,6 +23,36 @@ service cloud.firestore {
       return isAuthenticated() && getUserRole() == 'teacher';
     }
 
+    // The canonical institute the signed-in user is bound to, read off
+    // users/{uid}.institute_id (AgDR-0003: single source of truth for
+    // supervisor scoping). Null when the field is absent.
+    function callerInstituteId() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.institute_id;
+    }
+
+    // A supervisor scoped to the institute of the given student document data.
+    // Compares student.institute_id against the supervisor's
+    // users/{uid}.institute_id with NO multi-hop read (AgDR-0003 denormalizes
+    // institute_id onto student docs). Defensive against students that pre-date
+    // the field: a student with no institute_id ('institute_id' in data == false)
+    // is treated as out-of-scope and DENIED, so a missing field never widens
+    // access. Backfilling existing student docs is a tracked follow-up.
+    function isSupervisorOfStudentInstitute(studentData) {
+      return isSupervisor() &&
+        ('institute_id' in studentData) &&
+        studentData.institute_id != null &&
+        studentData.institute_id == callerInstituteId();
+    }
+
+    // A supervisor scoped to the institute of the student referenced by a
+    // session/sard record. Single get() on the student doc to read its
+    // denormalized institute_id, compared against the supervisor's institute.
+    function isSupervisorOfRecordStudent(recordData) {
+      return isSupervisor() &&
+        ('student_id' in recordData) &&
+        get(/databases/$(database)/documents/students/$(recordData.student_id)).data.institute_id == callerInstituteId();
+    }
+
     // Users collection
     match /users/{userId} {
       // Reads require auth. The username+password flow looks up users
@@ -33,7 +63,17 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isSuperAdmin() || isTeacher() ||
         (isAuthenticated() && request.auth.uid == userId);
-      allow update: if isSuperAdmin() || request.auth.uid == userId;
+      // SuperAdmin may update any field on any user. A self-update (a
+      // non-superadmin editing their own doc) is allowed for normal profile
+      // fields ONLY — `role` and `institute_id` are frozen to their current
+      // values. Without this guard a supervisor could self-promote to
+      // role: 'super_admin' (mirrored into the Auth claim by syncRoleClaim) or
+      // change their own institute_id and rescope every #28 check. Privilege
+      // boundary: only a superadmin may move a user between roles/institutes.
+      allow update: if isSuperAdmin() ||
+        (request.auth.uid == userId &&
+         request.resource.data.role == resource.data.role &&
+         request.resource.data.institute_id == resource.data.institute_id);
       allow delete: if isSuperAdmin();
     }
 
@@ -46,12 +86,20 @@ service cloud.firestore {
     // Students collection
     match /students/{studentId} {
       allow read: if isAuthenticated();
-      // Allow create if: teacher, OR student creating their own record (for invitation flow)
+      // Allow create if: teacher, supervisor (only within their own institute —
+      // teacher-parity student management, AgDR-0003 / #28), OR student creating
+      // their own record (for invitation flow).
       allow create: if isTeacher() ||
+        isSupervisorOfStudentInstitute(request.resource.data) ||
         (isAuthenticated() && getUserRole() == 'student' && request.resource.data.user_id == request.auth.uid);
-      // Allow update if: teacher, supervisor, OR student claiming their own record
-      // (setting user_id to their own UID during migration repair)
-      allow update: if isTeacher() || isSupervisor() ||
+      // Allow update if: teacher, supervisor (scoped to their institute on BOTH
+      // the existing doc and the incoming doc, so a supervisor can neither edit
+      // a student outside their institute nor move one in/out of it), OR student
+      // claiming their own record (setting user_id to their own UID during
+      // migration repair).
+      allow update: if isTeacher() ||
+        (isSupervisorOfStudentInstitute(resource.data) &&
+         isSupervisorOfStudentInstitute(request.resource.data)) ||
         (isAuthenticated() &&
          getUserRole() == 'student' &&
          request.resource.data.user_id == request.auth.uid &&
@@ -70,18 +118,36 @@ service cloud.firestore {
       allow write: if isSuperAdmin();
     }
 
-    // Session records
+    // Session records — teachers write any; supervisors write only for a
+    // student in their own institute (teacher-parity evaluation scoped to the
+    // institute, AgDR-0003 / #28).
     match /session_records/{recordId} {
       allow read: if isAuthenticated();
-      allow create: if isTeacher();
-      allow update: if isTeacher();
+      allow create: if isTeacher() ||
+        isSupervisorOfRecordStudent(request.resource.data);
+      // A supervisor must own BOTH the existing record's student AND the
+      // incoming record's student (institute-scoped), so they can neither edit
+      // a record outside their institute nor repoint student_id to a student in
+      // another institute. Mirrors the dual-check on the students update rule.
+      allow update: if isTeacher() ||
+        (isSupervisorOfRecordStudent(resource.data) &&
+         isSupervisorOfRecordStudent(request.resource.data));
     }
 
-    // Sard records
+    // Sard records — same parity + institute scope for supervisors. (#29 will
+    // gate Sard to supervisors only; this rule only adds the institute-scoped
+    // supervisor write and does NOT remove the teacher's existing access.)
     match /sard_records/{sardId} {
       allow read: if isAuthenticated();
-      allow create: if isTeacher();
-      allow update: if isTeacher();
+      allow create: if isTeacher() ||
+        isSupervisorOfRecordStudent(request.resource.data);
+      // Dual-check (old AND new student in-institute), same as session_records:
+      // prevents a supervisor repointing a sard record's student_id to a
+      // student in another institute. Teacher access preserved (#29 handles
+      // Sard teacher-removal).
+      allow update: if isTeacher() ||
+        (isSupervisorOfRecordStudent(resource.data) &&
+         isSupervisorOfRecordStudent(request.resource.data));
     }
 
     // Exam records

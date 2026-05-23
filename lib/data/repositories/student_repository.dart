@@ -33,13 +33,19 @@ class StudentRepository {
   /// users/{uid} Firestore profile are provisioned atomically by the
   /// createUserAccount Cloud Function. Optionally provisions a guardian
   /// account too. Throws on username collision.
+  /// [teacherId] is optional: a teacher provisioning a student assigns it to
+  /// themselves; a supervisor provisioning a student for their institute may
+  /// leave it null (the student is institute-scoped, not teacher-owned). The
+  /// student record always carries [instituteId] so both UI providers and
+  /// Firestore rules can scope access by `users/{uid}.institute_id` per
+  /// AgDR-0003 — no multi-hop reads.
   Future<StudentWithUser> createStudent({
     required String name,
     required String username,
     required String password,
     String? phone,
     required String instituteId,
-    required String teacherId,
+    String? teacherId,
     String? guardianUsername,
     String? guardianPassword,
     String? guardianPhone,
@@ -365,6 +371,22 @@ class StudentRepository {
   Stream<List<StudentModel>> streamStudentsForTeacher(String teacherId) {
     return _studentsCollection
         .where('teacher_id', isEqualTo: teacherId)
+        .where('is_active', isEqualTo: true)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => StudentModel.fromFirestore(doc))
+              .toList(),
+        );
+  }
+
+  /// Stream the active students of an institute. Backing query for the
+  /// supervisor's institute-scoped student-management view (AgDR-0003): a
+  /// supervisor sees exactly the students whose `institute_id` matches their
+  /// own `users/{uid}.institute_id`.
+  Stream<List<StudentModel>> streamStudentsForInstitute(String instituteId) {
+    return _studentsCollection
+        .where('institute_id', isEqualTo: instituteId)
         .where('is_active', isEqualTo: true)
         .snapshots()
         .map(

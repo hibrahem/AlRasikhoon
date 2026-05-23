@@ -13,9 +13,16 @@ import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../providers/teacher_provider.dart';
+import '../../supervisor/providers/supervisor_provider.dart';
 
 class AddStudentScreen extends ConsumerStatefulWidget {
-  const AddStudentScreen({super.key});
+  /// When true, the screen runs in supervisor mode: the institute list is the
+  /// supervisor's single bound institute (read off users/{uid}.institute_id,
+  /// AgDR-0003) and the created student carries no teacher_id (institute-scoped,
+  /// not teacher-owned). When false (default) it is the teacher flow.
+  final bool asSupervisor;
+
+  const AddStudentScreen({super.key, this.asSupervisor = false});
 
   @override
   ConsumerState<AddStudentScreen> createState() => _AddStudentScreenState();
@@ -48,7 +55,21 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
     if (currentUser == null) return;
 
     final repo = ref.read(instituteRepositoryProvider);
-    final institutes = await repo.getInstitutesForTeacher(currentUser.id);
+
+    List<InstituteModel> institutes;
+    if (widget.asSupervisor) {
+      // Supervisor mode: the only institute is the supervisor's canonical
+      // bound institute (users/{uid}.institute_id, AgDR-0003).
+      final instituteId = currentUser.instituteId;
+      if (instituteId == null || instituteId.isEmpty) {
+        institutes = const [];
+      } else {
+        final institute = await repo.getInstituteById(instituteId);
+        institutes = institute == null ? const [] : [institute];
+      }
+    } else {
+      institutes = await repo.getInstitutesForTeacher(currentUser.id);
+    }
 
     setState(() {
       _institutes = institutes;
@@ -139,13 +160,20 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
         password: _passwordController.text,
         phone: phone,
         instituteId: _selectedInstitute!.id,
-        teacherId: currentUser.id,
+        // Supervisor-created students are institute-scoped, not teacher-owned
+        // (AgDR-0003): no teacher_id. Teacher-created students are assigned to
+        // the creating teacher.
+        teacherId: widget.asSupervisor ? null : currentUser.id,
         guardianUsername: guardianUsername,
         guardianPassword: guardianPassword,
         guardianPhone: guardianPhone,
       );
 
-      ref.invalidate(teacherStudentsProvider);
+      if (widget.asSupervisor) {
+        ref.invalidate(supervisorStudentsProvider);
+      } else {
+        ref.invalidate(teacherStudentsProvider);
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
