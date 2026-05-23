@@ -5,6 +5,46 @@ import '../../../data/repositories/session_repository.dart';
 import '../../../data/models/exam_record_model.dart';
 import '../../../shared/providers/user_provider.dart';
 
+/// The canonical institute a supervisor is scoped to, read off
+/// `users/{uid}.institute_id` (AgDR-0003 — the single source of truth for
+/// authorization). `null` when the current user is not a supervisor or has no
+/// institute bound. All supervisor student-management providers scope through
+/// this value so a supervisor can never see or touch another institute's data.
+final supervisorInstituteIdProvider = Provider<String?>((ref) {
+  final currentUser = ref.watch(currentUserProvider);
+  return currentUser?.instituteId;
+});
+
+/// Students of the supervisor's institute — teacher-parity student management
+/// (#28) scoped to `users/{uid}.institute_id`. Reuses the same
+/// `StudentRepository.getStudentsForInstitute` backing query the teacher view
+/// uses, parameterized by the supervisor's institute rather than a teacher id.
+/// Returns empty when the supervisor has no institute bound.
+final supervisorStudentsProvider = FutureProvider<List<StudentWithUser>>((
+  ref,
+) async {
+  final instituteId = ref.watch(supervisorInstituteIdProvider);
+  if (instituteId == null || instituteId.isEmpty) return [];
+
+  final repo = ref.watch(studentRepositoryProvider);
+  return repo.getStudentsForInstitute(instituteId);
+});
+
+/// A single student within the supervisor's institute, looked up from
+/// [supervisorStudentsProvider] so the institute scope is enforced for
+/// detail/evaluation views too. Returns null when the id is not in the
+/// supervisor's institute scope — a supervisor can never resolve a student
+/// from outside their institute (no cross-institute leak), and an out-of-scope
+/// id is indistinguishable from a non-existent one.
+final supervisorStudentProvider =
+    FutureProvider.family<StudentWithUser?, String>((ref, studentId) async {
+      final students = await ref.watch(supervisorStudentsProvider.future);
+      for (final s in students) {
+        if (s.student.id == studentId) return s;
+      }
+      return null;
+    });
+
 /// Provider for students ready for exam in supervisor's institutes
 final examQueueProvider = FutureProvider<List<StudentWithUser>>((ref) async {
   final currentUser = ref.watch(currentUserProvider);

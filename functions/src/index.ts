@@ -38,6 +38,12 @@ const ROLES_BY_CALLER: Record<string, ReadonlySet<ProvisionableRole>> = {
     "guardian",
   ]),
   teacher: new Set<ProvisionableRole>(["student", "guardian"]),
+  // Supervisors have teacher-parity student management scoped to their own
+  // institute (#28 / AgDR-0003): they may provision student + guardian
+  // accounts. The institute scoping itself is enforced by (a) requiring the
+  // supervisor caller to have a bound institute (checked below) and (b) the
+  // student doc carrying that institute, enforced in firestore.rules.
+  supervisor: new Set<ProvisionableRole>(["student", "guardian"]),
 };
 
 /**
@@ -103,6 +109,29 @@ export const createUserAccount = onCall<CreateUserAccountPayload>(
         "permission-denied",
         `Caller role '${callerRole}' cannot provision role '${role}'`,
       );
+    }
+
+    // A supervisor caller may only provision accounts within their own
+    // institute (#28 / AgDR-0003). The supervisor's canonical institute is
+    // users/{caller}.institute_id; a supervisor with no bound institute cannot
+    // provision at all. The provisioned student/guardian is then scoped to
+    // that institute by the student doc the client writes (enforced in rules).
+    if (callerRole === "supervisor") {
+      const callerDoc = await admin
+        .firestore()
+        .collection("users")
+        .doc(request.auth.uid)
+        .get();
+      const callerInstituteId = callerDoc.data()?.institute_id;
+      if (
+        typeof callerInstituteId !== "string" ||
+        callerInstituteId.trim().length === 0
+      ) {
+        throw new HttpsError(
+          "permission-denied",
+          "supervisor-has-no-institute",
+        );
+      }
     }
 
     // Supervisors are bound to exactly one institute at creation time.
@@ -232,10 +261,12 @@ export const createUserAccount = onCall<CreateUserAccountPayload>(
 );
 
 /**
- * Reset another user's password. Admin-only path used by the admin and
- * teacher detail screens. Authorization:
+ * Reset another user's password. Used by the admin, teacher, and supervisor
+ * detail screens. Authorization:
  *   - super_admin can reset any user.
  *   - teacher can reset a student whose teacher_id matches the caller.
+ *   - supervisor can reset a student/guardian in their own institute
+ *     (teacher-parity student management, #28 / AgDR-0003).
  * Custom claim 'role' is set by syncRoleClaim below.
  */
 export const setUserPassword = onCall<SetUserPasswordPayload>(
@@ -298,10 +329,59 @@ export const setUserPassword = onCall<SetUserPasswordPayload>(
           "Teacher does not own this student",
         );
       }
+    } else if (callerRole === "supervisor") {
+      // Teacher-parity (#28 / AgDR-0003): a supervisor may reset a
+      // student/guardian password only for a student in their own institute.
+      const targetUserDoc = await admin
+        .firestore()
+        .collection("users")
+        .doc(userId)
+        .get();
+      if (!targetUserDoc.exists) {
+        throw new HttpsError("not-found", "Target user not found");
+      }
+      const targetRole = targetUserDoc.data()?.role;
+      if (targetRole !== "student" && targetRole !== "guardian") {
+        throw new HttpsError(
+          "permission-denied",
+          "Supervisors may only reset student/guardian passwords",
+        );
+      }
+      const callerDoc = await admin
+        .firestore()
+        .collection("users")
+        .doc(request.auth.uid)
+        .get();
+      const supervisorInstituteId = callerDoc.data()?.institute_id;
+      if (
+        typeof supervisorInstituteId !== "string" ||
+        supervisorInstituteId.trim().length === 0
+      ) {
+        throw new HttpsError("permission-denied", "supervisor-has-no-institute");
+      }
+      // The target must be a student in the supervisor's institute (a guardian
+      // is reachable via the student they guard).
+      const ownedStudent = await admin
+        .firestore()
+        .collection("students")
+        .where("institute_id", "==", supervisorInstituteId)
+        .where(
+          targetRole === "guardian" ? "guardian_id" : "user_id",
+          "==",
+          userId,
+        )
+        .limit(1)
+        .get();
+      if (ownedStudent.empty) {
+        throw new HttpsError(
+          "permission-denied",
+          "Supervisor cannot reset this user (not in their institute)",
+        );
+      }
     } else {
       throw new HttpsError(
         "permission-denied",
-        "Only admins and teachers can reset passwords",
+        "Only admins, teachers, and supervisors can reset passwords",
       );
     }
 

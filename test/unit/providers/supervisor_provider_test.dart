@@ -39,7 +39,7 @@ void main() {
     mockSessionRepository = MockSessionRepository();
   });
 
-  UserModel buildSupervisor({String id = 'supervisor-1'}) {
+  UserModel buildSupervisor({String id = 'supervisor-1', String? instituteId}) {
     return UserModel(
       id: id,
       username: 'supervisor_one',
@@ -47,6 +47,7 @@ void main() {
       name: 'مشرف',
       role: UserRole.supervisor,
       authProvider: UserAuthProvider.emailPassword,
+      instituteId: instituteId,
       createdAt: DateTime(2026, 1, 1),
     );
   }
@@ -61,12 +62,15 @@ void main() {
     );
   }
 
-  StudentWithUser buildStudentWithUser({required String studentId}) {
+  StudentWithUser buildStudentWithUser({
+    required String studentId,
+    String instituteId = 'institute-1',
+  }) {
     return StudentWithUser(
       student: StudentModel(
         id: studentId,
         userId: 'user-$studentId',
-        instituteId: 'institute-1',
+        instituteId: instituteId,
         currentSession: 36,
         createdAt: DateTime(2026, 1, 1),
       ),
@@ -258,6 +262,160 @@ void main() {
         expect(stats.completedToday, 3);
         expect(stats.passedToday, 2);
         expect(stats.failedToday, 1);
+      },
+    );
+  });
+
+  // #28 / AgDR-0003 — institute-scoped, teacher-parity student management.
+  // The supervisor's scope is read off users/{uid}.institute_id; the providers
+  // must only ever surface that one institute's students.
+  group('supervisorInstituteIdProvider', () {
+    test('exposes the institute bound on the supervisor user doc', () {
+      final container = makeContainer(
+        user: buildSupervisor(instituteId: 'inst-a'),
+      );
+
+      expect(container.read(supervisorInstituteIdProvider), 'inst-a');
+    });
+
+    test('is null when no user is authenticated', () {
+      final container = makeContainer(user: null);
+
+      expect(container.read(supervisorInstituteIdProvider), isNull);
+    });
+
+    test('is null when the supervisor has no institute bound', () {
+      final container = makeContainer(user: buildSupervisor());
+
+      expect(container.read(supervisorInstituteIdProvider), isNull);
+    });
+  });
+
+  group('supervisorStudentsProvider', () {
+    test(
+      "returns only the supervisor's institute students (scoped read)",
+      () async {
+        when(
+          () => mockStudentRepository.getStudentsForInstitute('inst-a'),
+        ).thenAnswer(
+          (_) async => [
+            buildStudentWithUser(studentId: 's-1', instituteId: 'inst-a'),
+            buildStudentWithUser(studentId: 's-2', instituteId: 'inst-a'),
+          ],
+        );
+
+        final container = makeContainer(
+          user: buildSupervisor(instituteId: 'inst-a'),
+        );
+
+        final students = await container.read(
+          supervisorStudentsProvider.future,
+        );
+
+        expect(students, hasLength(2));
+        expect(
+          students.every((s) => s.student.instituteId == 'inst-a'),
+          isTrue,
+        );
+        // The scoped query is the ONLY query issued — the provider never
+        // reaches for a cross-institute or unscoped listing.
+        verify(
+          () => mockStudentRepository.getStudentsForInstitute('inst-a'),
+        ).called(1);
+        verifyNever(() => mockStudentRepository.getAllStudents());
+        verifyNever(
+          () => mockStudentRepository.getStudentsForInstitute(
+            any(that: isNot('inst-a')),
+          ),
+        );
+      },
+    );
+
+    test(
+      'queries the bound institute, never another institute',
+      () async {
+        when(
+          () => mockStudentRepository.getStudentsForInstitute('inst-a'),
+        ).thenAnswer((_) async => []);
+
+        final container = makeContainer(
+          user: buildSupervisor(instituteId: 'inst-a'),
+        );
+
+        await container.read(supervisorStudentsProvider.future);
+
+        // A supervisor bound to inst-a can never trigger a read for inst-b —
+        // cross-institute access is impossible at the provider layer.
+        verifyNever(
+          () => mockStudentRepository.getStudentsForInstitute('inst-b'),
+        );
+      },
+    );
+
+    test('returns empty when the supervisor has no institute bound', () async {
+      final container = makeContainer(user: buildSupervisor());
+
+      final students = await container.read(supervisorStudentsProvider.future);
+
+      expect(students, isEmpty);
+      verifyNever(() => mockStudentRepository.getStudentsForInstitute(any()));
+    });
+
+    test('returns empty when no user is authenticated', () async {
+      final container = makeContainer(user: null);
+
+      final students = await container.read(supervisorStudentsProvider.future);
+
+      expect(students, isEmpty);
+      verifyNever(() => mockStudentRepository.getStudentsForInstitute(any()));
+    });
+  });
+
+  group('supervisorStudentProvider', () {
+    test('resolves a student that is in the institute scope', () async {
+      when(
+        () => mockStudentRepository.getStudentsForInstitute('inst-a'),
+      ).thenAnswer(
+        (_) async => [
+          buildStudentWithUser(studentId: 's-1', instituteId: 'inst-a'),
+        ],
+      );
+
+      final container = makeContainer(
+        user: buildSupervisor(instituteId: 'inst-a'),
+      );
+
+      final student = await container.read(
+        supervisorStudentProvider('s-1').future,
+      );
+
+      expect(student, isNotNull);
+      expect(student!.student.id, 's-1');
+    });
+
+    test(
+      'returns null for a student outside the institute scope '
+      '(cross-institute access denied, no leak)',
+      () async {
+        // The scoped listing for inst-a does NOT contain s-other (which lives
+        // in inst-b); resolving it must yield null rather than leak the record.
+        when(
+          () => mockStudentRepository.getStudentsForInstitute('inst-a'),
+        ).thenAnswer(
+          (_) async => [
+            buildStudentWithUser(studentId: 's-1', instituteId: 'inst-a'),
+          ],
+        );
+
+        final container = makeContainer(
+          user: buildSupervisor(instituteId: 'inst-a'),
+        );
+
+        final student = await container.read(
+          supervisorStudentProvider('s-other').future,
+        );
+
+        expect(student, isNull);
       },
     );
   });

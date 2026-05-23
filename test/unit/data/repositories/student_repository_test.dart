@@ -197,6 +197,32 @@ void main() {
         },
       );
 
+      test(
+        'supervisor path: stamps institute_id and leaves teacher_id null',
+        () async {
+          // A supervisor provisions an institute-scoped student (no teacher
+          // assignment) — the student doc must still carry institute_id so
+          // rules/UI can scope by users/{uid}.institute_id (AgDR-0003).
+          final result = await studentRepository.createStudent(
+            name: 'طالب المشرف',
+            username: 'sup_student',
+            password: 'pass123',
+            instituteId: 'institute-sup',
+            teacherId: null,
+          );
+
+          expect(result.student.instituteId, 'institute-sup');
+          expect(result.student.teacherId, isNull);
+
+          final doc = await fakeFirestore
+              .collection('students')
+              .doc(result.student.id)
+              .get();
+          expect(doc.data()?['institute_id'], 'institute-sup');
+          expect(doc.data()?['teacher_id'], isNull);
+        },
+      );
+
       test('stores phone number when provided', () async {
         final result = await studentRepository.createStudent(
           name: 'طالب',
@@ -619,6 +645,79 @@ void main() {
         final students = await studentRepository.getStudentsForInstitute(
           'nonexistent',
         );
+
+        expect(students, isEmpty);
+      });
+
+      test(
+        'excludes students of other institutes (supervisor scope)',
+        () async {
+          // A supervisor scoped to institute1 (AgDR-0003) must not see the
+          // students of institute2.
+          await seedUser(id: 'user-in', name: 'طالب المعهد');
+          await seedUser(id: 'user-out', name: 'طالب معهد آخر');
+
+          await fakeFirestore.collection('students').doc('s-in').set({
+            'user_id': 'user-in',
+            'institute_id': 'institute1',
+            'is_active': true,
+            'created_at': Timestamp.now(),
+          });
+          await fakeFirestore.collection('students').doc('s-out').set({
+            'user_id': 'user-out',
+            'institute_id': 'institute2',
+            'is_active': true,
+            'created_at': Timestamp.now(),
+          });
+
+          final scoped = await studentRepository.getStudentsForInstitute(
+            'institute1',
+          );
+
+          expect(scoped, hasLength(1));
+          expect(scoped.single.student.id, 's-in');
+          expect(
+            scoped.every((s) => s.student.instituteId == 'institute1'),
+            isTrue,
+          );
+        },
+      );
+    });
+
+    group('streamStudentsForInstitute', () {
+      test('streams only the active students of the given institute', () async {
+        await fakeFirestore.collection('students').doc('s-a1').set({
+          'user_id': 'u-a1',
+          'institute_id': 'institute1',
+          'is_active': true,
+          'created_at': Timestamp.now(),
+        });
+        await fakeFirestore.collection('students').doc('s-a2').set({
+          'user_id': 'u-a2',
+          'institute_id': 'institute1',
+          'is_active': false, // inactive — excluded
+          'created_at': Timestamp.now(),
+        });
+        await fakeFirestore.collection('students').doc('s-b1').set({
+          'user_id': 'u-b1',
+          'institute_id': 'institute2',
+          'is_active': true, // other institute — excluded
+          'created_at': Timestamp.now(),
+        });
+
+        final students = await studentRepository
+            .streamStudentsForInstitute('institute1')
+            .first;
+
+        expect(students, hasLength(1));
+        expect(students.single.id, 's-a1');
+        expect(students.single.instituteId, 'institute1');
+      });
+
+      test('emits empty list for an institute with no students', () async {
+        final students = await studentRepository
+            .streamStudentsForInstitute('empty-institute')
+            .first;
 
         expect(students, isEmpty);
       });

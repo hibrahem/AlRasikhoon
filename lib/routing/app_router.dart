@@ -22,6 +22,7 @@ import '../features/supervisor/screens/supervisor_dashboard_screen.dart';
 import '../features/supervisor/screens/exam_queue_screen.dart';
 import '../features/supervisor/screens/exam_session_screen.dart';
 import '../features/supervisor/screens/exam_result_screen.dart';
+import '../features/supervisor/screens/supervisor_students_screen.dart';
 import '../features/teacher/screens/teacher_students_screen.dart';
 import '../features/teacher/screens/session_overview_screen.dart';
 import '../features/teacher/screens/recitation_screen.dart';
@@ -61,6 +62,9 @@ class AppRoutes {
   static const String examQueue = '/supervisor/exams';
   static const String examSession = '/supervisor/exams/:studentId';
   static const String examResult = '/supervisor/exams/:studentId/result';
+  // Supervisor student management (teacher-parity, institute-scoped — #28)
+  static const String supervisorStudents = '/supervisor/students';
+  static const String supervisorAddStudent = '/supervisor/students/add';
 
   // Teacher
   static const String teacherStudents = '/teacher';
@@ -247,6 +251,21 @@ final routerProvider = Provider<GoRouter>((ref) {
                     errorCount: errorCount,
                   );
                 },
+              ),
+            ],
+          ),
+          // Branch 2: Students — institute-scoped teacher-parity student
+          // management (#28 / AgDR-0003).
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.supervisorStudents,
+                builder: (context, state) => const SupervisorStudentsScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.supervisorAddStudent,
+                builder: (context, state) =>
+                    const AddStudentScreen(asSupervisor: true),
               ),
             ],
           ),
