@@ -46,32 +46,39 @@ class _ResetPasswordDialogState extends ConsumerState<ResetPasswordDialog> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
+    // Capture the messenger before the async gap so error-path SnackBars
+    // never touch `context` after the await. If the dialog is dismissed
+    // while setPasswordForUser is in flight, `context` may point at a
+    // defunct element; the captured messenger reference stays valid.
+    // Mirrors the copy-button hardening from #18. The post-await
+    // `if (!context.mounted) return;` guards the actual context/element
+    // (not the bare State.mounted getter, which can pass while the
+    // specific element is gone).
+    final messenger = ScaffoldMessenger.of(context);
     try {
       final authRepo = ref.read(authRepositoryProvider.notifier);
       await authRepo.setPasswordForUser(
         userId: widget.userId,
         newPassword: _passwordController.text,
       );
-      if (!mounted) return;
+      if (!context.mounted) return;
       setState(() => _committedPassword = _passwordController.text);
     } on FirebaseFunctionsException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('فشل إعادة التعيين: ${e.message ?? e.code}'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
+      if (!context.mounted) return;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('فشل إعادة التعيين: ${e.message ?? e.code}'),
+          backgroundColor: AppColors.error,
+        ),
+      );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('حدث خطأ: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
+      if (!context.mounted) return;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('حدث خطأ: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
