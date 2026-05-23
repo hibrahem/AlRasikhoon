@@ -41,10 +41,16 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
   @override
   Widget build(BuildContext context) {
     final sessionAsync = ref.watch(studentCurrentSessionProvider(widget.studentId));
+    // Distinct accent per memorization mode (hibrahem/AlRasikhoon#25).
+    // The Arabic label (_partTitle) is always shown alongside, so the mode is
+    // never communicated by color alone.
+    final modeColor = AppColors.forMemorizationPart(widget.part);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(_partTitle),
+        backgroundColor: modeColor,
+        foregroundColor: AppColors.textOnPrimary,
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () {
@@ -89,14 +95,14 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
+                            color: modeColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
                             'الجزء ${widget.part} من 3',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.primary,
+                              color: modeColor,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -117,9 +123,9 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.menu_book,
-                            color: AppColors.primary,
+                            color: modeColor,
                           ),
                           const SizedBox(width: 12),
                           Expanded(

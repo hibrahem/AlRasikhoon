@@ -16,9 +16,15 @@ class NewMemorizationScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sessionAsync = ref.watch(studentCurrentSessionProvider(studentId));
 
+    // This is the standalone "new memorization" (الجديد) mode screen, so it
+    // carries the same accent as part 1 elsewhere (hibrahem/AlRasikhoon#25).
+    const modeColor = AppColors.kNewColor;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('الحفظ الجديد'),
+        backgroundColor: modeColor,
+        foregroundColor: AppColors.textOnPrimary,
       ),
       body: sessionAsync.when(
         data: (session) {
@@ -35,7 +41,7 @@ class NewMemorizationScreen extends ConsumerWidget {
               children: [
                 // Info card
                 AppCard(
-                  backgroundColor: AppColors.primary.withOpacity(0.05),
+                  backgroundColor: modeColor.withValues(alpha: 0.05),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -44,12 +50,12 @@ class NewMemorizationScreen extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
+                              color: modeColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
                               Icons.auto_stories,
-                              color: AppColors.primary,
+                              color: modeColor,
                             ),
                           ),
                           const SizedBox(width: 12),

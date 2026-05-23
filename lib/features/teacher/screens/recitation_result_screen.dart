@@ -45,10 +45,16 @@ class RecitationResultScreen extends ConsumerWidget {
     final gradeInfo = level != null
         ? GradeCalculator.calculateForLevel(level, errorCount)
         : null;
+    // Distinct accent per memorization mode (hibrahem/AlRasikhoon#25), kept
+    // consistent with the recitation session screen. The Arabic mode label is
+    // always shown, so the mode is never signalled by color alone.
+    final modeColor = AppColors.forMemorizationPart(part);
 
     return Scaffold(
       appBar: AppBar(
         title: Text('نتيجة $_partTitle'),
+        backgroundColor: modeColor,
+        foregroundColor: AppColors.textOnPrimary,
         automaticallyImplyLeading: false,
       ),
       body: SafeArea(
@@ -65,12 +71,15 @@ class RecitationResultScreen extends ConsumerWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
+                  color: modeColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   'الجزء $part من 3',
-                  style: Theme.of(context).textTheme.labelLarge,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: modeColor,
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
               ),
               const SizedBox(height: 24),
