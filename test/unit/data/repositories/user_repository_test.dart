@@ -359,6 +359,57 @@ void main() {
       });
     });
 
+    group('getTeachersConfirmingUid', () {
+      // Read-after-write confirmation (issue #21): a teacher provisioned
+      // server-side by the Cloud Function must be visible in the list before
+      // the provider is invalidated, otherwise it intermittently fails to
+      // appear until the screen is re-opened.
+      test('returns teachers including the freshly added uid', () async {
+        await fakeFirestore.collection('users').doc('existing-teacher').set({
+          'name': 'Existing Teacher',
+          'role': 'teacher',
+          'is_active': true,
+          'created_at': Timestamp.now(),
+        });
+        await fakeFirestore.collection('users').doc('new-teacher').set({
+          'name': 'New Teacher',
+          'role': 'teacher',
+          'is_active': true,
+          'created_at': Timestamp.now(),
+        });
+
+        final teachers = await repository.getTeachersConfirmingUid(
+          'new-teacher',
+          retryDelay: Duration.zero,
+        );
+
+        expect(teachers.any((t) => t.id == 'new-teacher'), isTrue);
+        expect(teachers.any((t) => t.id == 'existing-teacher'), isTrue);
+      });
+
+      test(
+        'returns the last fetched set when the uid never appears',
+        () async {
+          await fakeFirestore.collection('users').doc('existing-teacher').set({
+            'name': 'Existing Teacher',
+            'role': 'teacher',
+            'is_active': true,
+            'created_at': Timestamp.now(),
+          });
+
+          final teachers = await repository.getTeachersConfirmingUid(
+            'missing-teacher',
+            maxAttempts: 2,
+            retryDelay: Duration.zero,
+          );
+
+          // Does not hang or throw; returns whatever the server query saw.
+          expect(teachers.any((t) => t.id == 'missing-teacher'), isFalse);
+          expect(teachers.any((t) => t.id == 'existing-teacher'), isTrue);
+        },
+      );
+    });
+
     group('getSupervisors', () {
       test('returns all active supervisors', () async {
         await fakeFirestore.collection('users').doc('supervisor1').set({
