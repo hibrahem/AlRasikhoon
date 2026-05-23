@@ -3,10 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/utils/grade_calculator.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/grade_display.dart';
 import '../providers/student_provider.dart';
 
 class SessionHistoryScreen extends ConsumerWidget {
@@ -33,9 +31,12 @@ class SessionHistoryScreen extends ConsumerWidget {
               itemCount: records.length,
               itemBuilder: (context, index) {
                 final record = records[index];
-                final gradeInfo = GradeCalculator.calculate(
-                  (record.grades.totalErrors / 3).ceil(),
-                );
+                // Listing shows only binary pass/fail (نجح / رسب), never an
+                // average of the three component grades (#24). The
+                // per-component breakdown lives in the session detail view.
+                final passColor = record.passed
+                    ? AppColors.success
+                    : AppColors.error;
                 final dateFormat = DateFormat('yyyy/MM/dd', 'ar');
 
                 return AppCard(
@@ -54,13 +55,13 @@ class SessionHistoryScreen extends ConsumerWidget {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: gradeInfo.color.withOpacity(0.1),
+                          color: passColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Center(
                           child: Icon(
                             record.passed ? Icons.check_circle : Icons.cancel,
-                            color: gradeInfo.color,
+                            color: passColor,
                           ),
                         ),
                       ),
@@ -87,22 +88,24 @@ class SessionHistoryScreen extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          GradeDisplay(
-                            errorCount: (record.grades.totalErrors / 3).ceil(),
-                            showStars: false,
-                            showPassStatus: false,
-                            isCompact: true,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: passColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: passColor),
+                        ),
+                        child: Text(
+                          record.passed ? 'نجح' : 'رسب',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: passColor,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${record.grades.totalErrors} أخطاء',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: AppColors.textSecondary),
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../core/utils/grade_calculator.dart';
 
 class SessionGrades {
   final int newMemorizationErrors;
@@ -37,10 +38,16 @@ class SessionGrades {
   int get totalErrors =>
       newMemorizationErrors + recentReviewErrors + distantReviewErrors;
 
-  bool get allPartsPassed =>
-      newMemorizationErrors <= 3 &&
-      recentReviewErrors <= 3 &&
-      distantReviewErrors <= 3;
+  /// Whether the session passes at the student's [level], per
+  /// hibrahem/AlRasikhoon#24: FAILED if ANY component grades محب (ويعاد),
+  /// passes only if none is محب. No averaging, no level-agnostic threshold —
+  /// the component grade is level-based (#22) via [GradeCalculator].
+  bool passesForLevel(int level) => GradeCalculator.sessionPassesForLevel(
+    level: level,
+    newMemorizationErrors: newMemorizationErrors,
+    recentReviewErrors: recentReviewErrors,
+    distantReviewErrors: distantReviewErrors,
+  );
 }
 
 class SessionRecordModel {

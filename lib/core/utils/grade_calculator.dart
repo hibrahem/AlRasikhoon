@@ -208,37 +208,61 @@ class GradeCalculator {
     return calculate(errorCount).color;
   }
 
-  /// Calculate overall session grade from the three parts
-  /// Part 1: New memorization
-  /// Part 2: Recent review
-  /// Part 3: Distant review
-  static GradeInfo calculateSessionGrade({
+  /// Whether a whole memorization session passes, given the student's
+  /// [level] and the per-component mistake counts (new / near / far), per
+  /// hibrahem/AlRasikhoon#24.
+  ///
+  /// A session is **FAILED if ANY one component grades محب (ويعاد)** — the
+  /// student must redo it next time. It PASSES only if **none** of the three
+  /// is محب. There is deliberately NO averaging: a single محب can never be
+  /// masked by good grades in the other components.
+  ///
+  /// Each component's grade is computed with the level-based
+  /// [gradeForLevel] (#22), so the same mistake count is stricter at low
+  /// levels and more lenient at high levels.
+  static bool sessionPassesForLevel({
+    required int level,
     required int newMemorizationErrors,
     required int recentReviewErrors,
     required int distantReviewErrors,
   }) {
-    // The session passes if all three parts pass
-    final part1Passed = isPassed(newMemorizationErrors);
-    final part2Passed = isPassed(recentReviewErrors);
-    final part3Passed = isPassed(distantReviewErrors);
+    final newGrade = gradeForLevel(level, newMemorizationErrors);
+    final nearGrade = gradeForLevel(level, recentReviewErrors);
+    final farGrade = gradeForLevel(level, distantReviewErrors);
 
-    if (!part1Passed || !part2Passed || !part3Passed) {
-      // Session failed - return muhib grade
-      return const GradeInfo(
-        grade: Grade.muhib,
-        nameAr: 'محب',
-        nameEn: 'Muhib',
-        stars: 1,
-        passed: false,
-        color: AppColors.gradeMuhib,
-      );
-    }
+    return newGrade != Grade.muhib &&
+        nearGrade != Grade.muhib &&
+        farGrade != Grade.muhib;
+  }
 
-    // All parts passed - calculate average based on total errors
-    final totalErrors = newMemorizationErrors + recentReviewErrors + distantReviewErrors;
+  /// Overall session [GradeInfo] for the three parts at the student's
+  /// [level], per hibrahem/AlRasikhoon#24.
+  ///
+  /// Part 1: New memorization (الجديد)
+  /// Part 2: Recent review (القريب)
+  /// Part 3: Distant review (البعيد)
+  ///
+  /// The outcome is **binary** — there is no averaging. If any component is
+  /// محب the session is failed and this returns the محب [GradeInfo]
+  /// (`passed: false`). Otherwise it returns the **worst (lowest)** of the
+  /// three component grades, so the session grade can never claim to be
+  /// better than its weakest part. Use [sessionPassesForLevel] when only the
+  /// pass/fail boolean is needed.
+  static GradeInfo calculateSessionGrade({
+    required int level,
+    required int newMemorizationErrors,
+    required int recentReviewErrors,
+    required int distantReviewErrors,
+  }) {
+    final grades = <Grade>[
+      gradeForLevel(level, newMemorizationErrors),
+      gradeForLevel(level, recentReviewErrors),
+      gradeForLevel(level, distantReviewErrors),
+    ];
 
-    // Use average errors for final grade
-    final averageErrors = (totalErrors / 3).ceil();
-    return calculate(averageErrors);
+    // The worst (lowest) grade drives the session result — enum values are
+    // ordered best-to-worst (rasikh .. muhib), so the highest index wins.
+    final worst = grades.reduce((a, b) => a.index >= b.index ? a : b);
+    return _infoFor(worst);
   }
 }

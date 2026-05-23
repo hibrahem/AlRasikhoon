@@ -37,65 +37,83 @@ void main() {
       });
     });
 
-    group('allPartsPassed', () {
-      test('returns true when all parts have 0 errors', () {
+    // Session-level pass/fail (hibrahem/AlRasikhoon#24): FAILED if ANY one
+    // component grades محب; passes only if none is محب. Level-based (#22) —
+    // at level 1, base B = 0, so محب is reached at >= 4 mistakes; مجتهد is
+    // the worst non-محب grade (exactly 3 mistakes).
+    group('passesForLevel', () {
+      test('passes when all parts have 0 errors', () {
         const grades = SessionGrades(
           newMemorizationErrors: 0,
           recentReviewErrors: 0,
           distantReviewErrors: 0,
         );
 
-        expect(grades.allPartsPassed, true);
+        expect(grades.passesForLevel(1), true);
       });
 
-      test('returns true when all parts have exactly 3 errors', () {
+      test('passes at level 1 when worst part is مجتهد (3 errors, not محب)',
+          () {
         const grades = SessionGrades(
           newMemorizationErrors: 3,
           recentReviewErrors: 3,
           distantReviewErrors: 3,
         );
 
-        expect(grades.allPartsPassed, true);
+        expect(grades.passesForLevel(1), true);
       });
 
-      test('returns false when newMemorization exceeds 3', () {
+      test('fails when newMemorization is محب (4 errors at level 1)', () {
         const grades = SessionGrades(
           newMemorizationErrors: 4,
           recentReviewErrors: 0,
           distantReviewErrors: 0,
         );
 
-        expect(grades.allPartsPassed, false);
+        expect(grades.passesForLevel(1), false);
       });
 
-      test('returns false when recentReview exceeds 3', () {
+      test('fails when recentReview is محب (4 errors at level 1)', () {
         const grades = SessionGrades(
           newMemorizationErrors: 0,
           recentReviewErrors: 4,
           distantReviewErrors: 0,
         );
 
-        expect(grades.allPartsPassed, false);
+        expect(grades.passesForLevel(1), false);
       });
 
-      test('returns false when distantReview exceeds 3', () {
+      test('fails when distantReview is محب (4 errors at level 1)', () {
         const grades = SessionGrades(
           newMemorizationErrors: 0,
           recentReviewErrors: 0,
           distantReviewErrors: 4,
         );
 
-        expect(grades.allPartsPassed, false);
+        expect(grades.passesForLevel(1), false);
       });
 
-      test('returns false when all parts exceed 3', () {
+      test('fails when all parts are محب', () {
         const grades = SessionGrades(
           newMemorizationErrors: 5,
           recentReviewErrors: 7,
           distantReviewErrors: 10,
         );
 
-        expect(grades.allPartsPassed, false);
+        expect(grades.passesForLevel(1), false);
+      });
+
+      test('higher level is more lenient — 4 errors is not محب at level 9',
+          () {
+        // Level 9: B = (9 - 1) ~/ 2 = 4, so محب starts at >= B + 4 = 8.
+        // 4 errors → مجتهد? Actually 4 == B → راسخ; محب only at 8+.
+        const grades = SessionGrades(
+          newMemorizationErrors: 4,
+          recentReviewErrors: 4,
+          distantReviewErrors: 4,
+        );
+
+        expect(grades.passesForLevel(9), true);
       });
     });
 

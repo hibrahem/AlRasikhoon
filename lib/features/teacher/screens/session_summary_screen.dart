@@ -79,9 +79,8 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
     final activeSession = ref.watch(activeSessionProvider);
     final studentAsync = ref.watch(studentProvider(widget.studentId));
     // Per-part grade is level-based (hibrahem/AlRasikhoon#22). Default to
-    // level 1 until the student loads. NOTE: the session-level overall
-    // grade / pass aggregation is intentionally left unchanged here — that
-    // belongs to the session-aggregation work (#24).
+    // level 1 until the student loads. The session-level overall grade is
+    // the worst component grade and fails on ANY محب (#24) — no averaging.
     final level = studentAsync.value?.student.currentLevel ?? 1;
 
     if (activeSession == null) {
@@ -92,6 +91,7 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
     }
 
     final sessionGrade = GradeCalculator.calculateSessionGrade(
+      level: level,
       newMemorizationErrors: activeSession.part1Errors,
       recentReviewErrors: activeSession.part2Errors,
       distantReviewErrors: activeSession.part3Errors,

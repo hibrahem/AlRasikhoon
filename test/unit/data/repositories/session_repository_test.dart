@@ -34,11 +34,13 @@ void main() {
         expect(record.grades.newMemorizationErrors, 2);
         expect(record.grades.recentReviewErrors, 1);
         expect(record.grades.distantReviewErrors, 0);
-        expect(record.passed, true); // All parts <= 3 errors
+        expect(record.passed, true); // No part is محب at level 1
       });
 
-      test('creates record with failing grades when any part exceeds 3 errors',
+      test('fails when any part is محب — even if the others are good (#24)',
           () async {
+        // Level 1, B = 0: new = محب (4 errors). The other two are good, but
+        // the any-محب rule (no averaging) must fail the whole session.
         final record = await sessionRepository.createSessionRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
@@ -47,7 +49,7 @@ void main() {
           hizbNumber: 59,
           sessionNumber: 5,
           attemptNumber: 1,
-          newMemorizationErrors: 4, // Exceeds 3
+          newMemorizationErrors: 4, // محب at level 1
           recentReviewErrors: 1,
           distantReviewErrors: 2,
         );
@@ -55,7 +57,7 @@ void main() {
         expect(record.passed, false);
       });
 
-      test('creates record with all parts at exactly 3 errors as passing',
+      test('passes when worst part is مجتهد (3 errors @ level 1, not محب)',
           () async {
         final record = await sessionRepository.createSessionRecord(
           studentId: 'student1',
@@ -68,6 +70,26 @@ void main() {
           newMemorizationErrors: 3,
           recentReviewErrors: 3,
           distantReviewErrors: 3,
+        );
+
+        expect(record.passed, true);
+      });
+
+      test('pass/fail is level-based — 4 errors passes at a high level (#24)',
+          () async {
+        // Level 9, B = 4: محب only at >= 8 mistakes, so 4 errors → راسخ.
+        // The same input that fails at level 1 must PASS at level 9.
+        final record = await sessionRepository.createSessionRecord(
+          studentId: 'student1',
+          teacherId: 'teacher1',
+          curriculumSessionId: 'cs1',
+          levelId: 9,
+          hizbNumber: 59,
+          sessionNumber: 5,
+          attemptNumber: 1,
+          newMemorizationErrors: 4,
+          recentReviewErrors: 4,
+          distantReviewErrors: 4,
         );
 
         expect(record.passed, true);

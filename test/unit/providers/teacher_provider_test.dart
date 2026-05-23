@@ -184,7 +184,9 @@ void main() {
       expect(container.read(activeSessionProvider)!.errorsForPart, 7);
     });
 
-    test('allPartsPassed is true when every part has <= 3 errors', () {
+    // Session pass/fail is level-based and fails on ANY محب component (#24).
+    // At level 1, base B = 0: محب starts at 4 mistakes, مجتهد is exactly 3.
+    test('passesForLevel is true when no part is محب (worst = مجتهد)', () {
       final container = makeContainer(user: buildTeacher());
       final notifier = container.read(activeSessionProvider.notifier);
 
@@ -193,10 +195,11 @@ void main() {
       notifier.setPartErrors(2, 3);
       notifier.setPartErrors(3, 3);
 
-      expect(container.read(activeSessionProvider)!.allPartsPassed, isTrue);
+      expect(container.read(activeSessionProvider)!.passesForLevel(1), isTrue);
     });
 
-    test('allPartsPassed is false when any part exceeds 3 errors', () {
+    test('passesForLevel is false when any part is محب (4 errors at level 1)',
+        () {
       final container = makeContainer(user: buildTeacher());
       final notifier = container.read(activeSessionProvider.notifier);
 
@@ -205,7 +208,7 @@ void main() {
       notifier.setPartErrors(2, 4);
       notifier.setPartErrors(3, 0);
 
-      expect(container.read(activeSessionProvider)!.allPartsPassed, isFalse);
+      expect(container.read(activeSessionProvider)!.passesForLevel(1), isFalse);
     });
 
     test('nextPart caps at part 3', () {
