@@ -109,16 +109,19 @@ class SessionDetailScreen extends ConsumerWidget {
                 _PartResultCard(
                   title: 'الحفظ الجديد',
                   errors: record.grades.newMemorizationErrors,
+                  level: record.levelId,
                 ),
                 const SizedBox(height: 8),
                 _PartResultCard(
                   title: 'المراجعة القريبة',
                   errors: record.grades.recentReviewErrors,
+                  level: record.levelId,
                 ),
                 const SizedBox(height: 8),
                 _PartResultCard(
                   title: 'المراجعة البعيدة',
                   errors: record.grades.distantReviewErrors,
+                  level: record.levelId,
                 ),
 
                 // Notes
@@ -181,12 +184,17 @@ class _InfoRow extends StatelessWidget {
 class _PartResultCard extends StatelessWidget {
   final String title;
   final int errors;
+  final int level;
 
-  const _PartResultCard({required this.title, required this.errors});
+  const _PartResultCard({
+    required this.title,
+    required this.errors,
+    required this.level,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final gradeInfo = GradeCalculator.calculate(errors);
+    final gradeInfo = GradeCalculator.calculateForLevel(level, errors);
 
     return AppCard(
       margin: EdgeInsets.zero,

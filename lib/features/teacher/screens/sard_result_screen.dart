@@ -112,8 +112,12 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final gradeInfo = GradeCalculator.calculate(widget.errorCount);
     final studentAsync = ref.watch(studentProvider(widget.studentId));
+    // Grade is level-based (hibrahem/AlRasikhoon#22). Default to level 1
+    // until the student loads; the display refreshes once the level is known.
+    final level = studentAsync.value?.student.currentLevel ?? 1;
+    final gradeInfo =
+        GradeCalculator.calculateForLevel(level, widget.errorCount);
 
     return Scaffold(
       appBar: AppBar(
@@ -153,6 +157,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
               // Grade display
               GradeDisplay(
                 errorCount: widget.errorCount,
+                gradeInfo: gradeInfo,
                 showStars: true,
                 showPassStatus: true,
               ),

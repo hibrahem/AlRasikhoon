@@ -36,8 +36,12 @@ class RecitationResultScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final gradeInfo = GradeCalculator.calculate(errorCount);
     final activeSession = ref.watch(activeSessionProvider);
+    // Per-part grade is level-based (hibrahem/AlRasikhoon#22). Default to
+    // level 1 until the student loads; the display refreshes once known.
+    final studentAsync = ref.watch(studentProvider(studentId));
+    final level = studentAsync.value?.student.currentLevel ?? 1;
+    final gradeInfo = GradeCalculator.calculateForLevel(level, errorCount);
 
     return Scaffold(
       appBar: AppBar(
@@ -71,6 +75,7 @@ class RecitationResultScreen extends ConsumerWidget {
               // Grade display
               GradeDisplay(
                 errorCount: errorCount,
+                gradeInfo: gradeInfo,
                 showStars: true,
                 showPassStatus: true,
               ),
@@ -93,11 +98,13 @@ class RecitationResultScreen extends ConsumerWidget {
                         _SummaryRow(
                           title: 'الحفظ الجديد',
                           errors: activeSession.part1Errors,
+                          level: level,
                         ),
                       if (part >= 3)
                         _SummaryRow(
                           title: 'المراجعة القريبة',
                           errors: activeSession.part2Errors,
+                          level: level,
                         ),
                     ],
                   ),
@@ -187,15 +194,17 @@ class RecitationResultScreen extends ConsumerWidget {
 class _SummaryRow extends StatelessWidget {
   final String title;
   final int errors;
+  final int level;
 
   const _SummaryRow({
     required this.title,
     required this.errors,
+    required this.level,
   });
 
   @override
   Widget build(BuildContext context) {
-    final gradeInfo = GradeCalculator.calculate(errors);
+    final gradeInfo = GradeCalculator.calculateForLevel(level, errors);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
