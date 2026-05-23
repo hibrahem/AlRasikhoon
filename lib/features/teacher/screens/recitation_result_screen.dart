@@ -37,11 +37,14 @@ class RecitationResultScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activeSession = ref.watch(activeSessionProvider);
-    // Per-part grade is level-based (hibrahem/AlRasikhoon#22). Default to
-    // level 1 until the student loads; the display refreshes once known.
+    // Per-part grade is level-based (hibrahem/AlRasikhoon#22). The grade is
+    // only computed once the student value resolves — never from a default
+    // level=1 while loading, which would flash a harsher grade (#36).
     final studentAsync = ref.watch(studentProvider(studentId));
-    final level = studentAsync.value?.student.currentLevel ?? 1;
-    final gradeInfo = GradeCalculator.calculateForLevel(level, errorCount);
+    final int? level = studentAsync.value?.student.currentLevel;
+    final gradeInfo = level != null
+        ? GradeCalculator.calculateForLevel(level, errorCount)
+        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -72,18 +75,29 @@ class RecitationResultScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
 
-              // Grade display
-              GradeDisplay(
-                errorCount: errorCount,
-                gradeInfo: gradeInfo,
-                showStars: true,
-                showPassStatus: true,
+              // Grade display — withhold until the real level resolves (#36).
+              studentAsync.when(
+                data: (_) => GradeDisplay(
+                  errorCount: errorCount,
+                  gradeInfo: gradeInfo,
+                  showStars: true,
+                  showPassStatus: true,
+                ),
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: CircularProgressIndicator(),
+                ),
+                error: (_, _) => const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Text('تعذّر تحميل النتيجة'),
+                ),
               ),
 
               const Spacer(),
 
-              // Summary so far (if not first part)
-              if (part > 1 && activeSession != null)
+              // Summary so far (if not first part). Withheld until the real
+              // level resolves so per-part grades aren't computed at level 1 (#36).
+              if (part > 1 && activeSession != null && level != null)
                 AppCard(
                   margin: const EdgeInsets.only(bottom: 16),
                   child: Column(
@@ -127,7 +141,7 @@ class RecitationResultScreen extends ConsumerWidget {
                       size: AppButtonSize.large,
                     ),
                     const SizedBox(height: 12),
-                    if (!gradeInfo.passed)
+                    if (gradeInfo != null && !gradeInfo.passed)
                       AppButton(
                         text: 'إعادة $_partTitle',
                         onPressed: () {
@@ -157,7 +171,7 @@ class RecitationResultScreen extends ConsumerWidget {
                       size: AppButtonSize.large,
                     ),
                     const SizedBox(height: 12),
-                    if (!gradeInfo.passed)
+                    if (gradeInfo != null && !gradeInfo.passed)
                       AppButton(
                         text: 'إعادة $_partTitle',
                         onPressed: () {

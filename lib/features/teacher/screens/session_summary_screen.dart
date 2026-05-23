@@ -78,10 +78,12 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
   Widget build(BuildContext context) {
     final activeSession = ref.watch(activeSessionProvider);
     final studentAsync = ref.watch(studentProvider(widget.studentId));
-    // Per-part grade is level-based (hibrahem/AlRasikhoon#22). Default to
-    // level 1 until the student loads. The session-level overall grade is
-    // the worst component grade and fails on ANY محب (#24) — no averaging.
-    final level = studentAsync.value?.student.currentLevel ?? 1;
+    // Per-part + overall grades are level-based (hibrahem/AlRasikhoon#22). The
+    // session-level overall grade is the worst component grade and fails on ANY
+    // محب (#24) — no averaging. Grades are only computed once the student value
+    // resolves — never from a default level=1 while loading, which would flash
+    // a harsher grade (#36).
+    final int? level = studentAsync.value?.student.currentLevel;
 
     if (activeSession == null) {
       return Scaffold(
@@ -90,12 +92,14 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
       );
     }
 
-    final sessionGrade = GradeCalculator.calculateSessionGrade(
-      level: level,
-      newMemorizationErrors: activeSession.part1Errors,
-      recentReviewErrors: activeSession.part2Errors,
-      distantReviewErrors: activeSession.part3Errors,
-    );
+    final sessionGrade = level != null
+        ? GradeCalculator.calculateSessionGrade(
+            level: level,
+            newMemorizationErrors: activeSession.part1Errors,
+            recentReviewErrors: activeSession.part2Errors,
+            distantReviewErrors: activeSession.part3Errors,
+          )
+        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -153,40 +157,65 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
               error: (_, _) => const SizedBox(),
             ),
 
-            // Overall grade
-            Center(
-              child: GradeDisplay(
-                errorCount: activeSession.totalErrors,
-                gradeInfo: sessionGrade,
-                showStars: true,
-                showPassStatus: true,
+            // Overall grade + part-by-part results — withheld until the real
+            // level resolves so no grade is computed at a default level=1 (#36).
+            studentAsync.when(
+              data: (_) {
+                // level/sessionGrade are guaranteed non-null in the data state.
+                final resolvedLevel = level!;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Overall grade
+                    Center(
+                      child: GradeDisplay(
+                        errorCount: activeSession.totalErrors,
+                        gradeInfo: sessionGrade,
+                        showStars: true,
+                        showPassStatus: true,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Part-by-part results
+                    Text(
+                      'تفاصيل الأجزاء',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 12),
+
+                    _PartResultCard(
+                      title: 'الحفظ الجديد',
+                      errors: activeSession.part1Errors,
+                      level: resolvedLevel,
+                    ),
+                    const SizedBox(height: 8),
+                    _PartResultCard(
+                      title: 'المراجعة القريبة',
+                      errors: activeSession.part2Errors,
+                      level: resolvedLevel,
+                    ),
+                    const SizedBox(height: 8),
+                    _PartResultCard(
+                      title: 'المراجعة البعيدة',
+                      errors: activeSession.part3Errors,
+                      level: resolvedLevel,
+                    ),
+                  ],
+                );
+              },
+              loading: () => const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: CircularProgressIndicator(),
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-
-            // Part-by-part results
-            Text(
-              'تفاصيل الأجزاء',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 12),
-
-            _PartResultCard(
-              title: 'الحفظ الجديد',
-              errors: activeSession.part1Errors,
-              level: level,
-            ),
-            const SizedBox(height: 8),
-            _PartResultCard(
-              title: 'المراجعة القريبة',
-              errors: activeSession.part2Errors,
-              level: level,
-            ),
-            const SizedBox(height: 8),
-            _PartResultCard(
-              title: 'المراجعة البعيدة',
-              errors: activeSession.part3Errors,
-              level: level,
+              error: (_, _) => const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Text('تعذّر تحميل النتيجة'),
+                ),
+              ),
             ),
 
             const SizedBox(height: 24),
