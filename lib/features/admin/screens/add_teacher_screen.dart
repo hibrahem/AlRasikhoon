@@ -75,7 +75,7 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
         );
       }
 
-      await firebaseService.provisionUserAccount(
+      final newUid = await firebaseService.provisionUserAccount(
         email: synthesizedEmail,
         password: password,
         role: 'teacher',
@@ -84,7 +84,16 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
         phone: phone,
       );
 
+      // The account is provisioned server-side by the Cloud Function, so the
+      // local Firestore cache has no copy of the new teacher doc. A bare
+      // invalidate races the write's propagation to the query index, which is
+      // why the new teacher only *sometimes* appeared in the list (issue #21).
+      // Deterministically confirm the write is queryable from the server
+      // before invalidating, so the provider's refetch sees the new teacher.
+      await repo.getTeachersConfirmingUid(newUid);
+
       ref.invalidate(allTeachersProvider);
+      ref.invalidate(adminStatsProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

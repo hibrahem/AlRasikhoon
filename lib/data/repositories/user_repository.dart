@@ -89,20 +89,63 @@ class UserRepository {
     });
   }
 
-  /// Get all users by role
-  Future<List<UserModel>> getUsersByRole(UserRole role) async {
+  /// Get all users by role.
+  ///
+  /// [source] controls Firestore read behaviour. The default
+  /// ([Source.serverAndCache]) is fine for normal list loads. Pass
+  /// [Source.server] immediately after a server-side write (e.g. an
+  /// account provisioned by the `createUserAccount` Cloud Function) to
+  /// bypass the local cache, which has no copy of the freshly-written
+  /// doc and would otherwise serve a stale result set.
+  Future<List<UserModel>> getUsersByRole(
+    UserRole role, {
+    Source source = Source.serverAndCache,
+  }) async {
     final query = await _usersCollection
         .where('role', isEqualTo: role.value)
         .where('is_active', isEqualTo: true)
         .orderBy('created_at', descending: true)
-        .get();
+        .get(GetOptions(source: source));
 
     return query.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
   }
 
-  /// Get all teachers
-  Future<List<UserModel>> getTeachers() async {
-    return getUsersByRole(UserRole.teacher);
+  /// Get all teachers.
+  ///
+  /// See [getUsersByRole] for the [source] semantics.
+  Future<List<UserModel>> getTeachers({
+    Source source = Source.serverAndCache,
+  }) async {
+    return getUsersByRole(UserRole.teacher, source: source);
+  }
+
+  /// Polls the teachers collection from the server until the teacher with
+  /// [uid] is visible, or [maxAttempts] is exhausted.
+  ///
+  /// A teacher created via the `createUserAccount` Cloud Function is written
+  /// server-side, so the client SDK has no local copy and a single immediate
+  /// `get()` can race the write's propagation to the query index — the new
+  /// teacher intermittently fails to appear in the list (issue #21). This
+  /// performs a deterministic, server-sourced read-after-write confirmation
+  /// (bounded retries) rather than relying on a fixed delay, returning the
+  /// first result set that contains [uid] (or the last fetched set if the
+  /// budget is exhausted).
+  Future<List<UserModel>> getTeachersConfirmingUid(
+    String uid, {
+    int maxAttempts = 5,
+    Duration retryDelay = const Duration(milliseconds: 300),
+  }) async {
+    List<UserModel> teachers = const [];
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      teachers = await getTeachers(source: Source.server);
+      if (teachers.any((t) => t.id == uid)) {
+        return teachers;
+      }
+      if (attempt < maxAttempts - 1) {
+        await Future<void>.delayed(retryDelay);
+      }
+    }
+    return teachers;
   }
 
   /// Get all supervisors
