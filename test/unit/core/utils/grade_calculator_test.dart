@@ -339,6 +339,140 @@ void main() {
       });
     });
 
+    group('calculateForLevel (level-based grading — issue #22)', () {
+      // Exhaustive per-level-pair threshold table. B = (level - 1) ~/ 2.
+      // mistakes <= B → راسخ ; == B+1 → متقن ; == B+2 → حافظ ;
+      // == B+3 → مجتهد ; >= B+4 → محب (must repeat / fail).
+      //
+      // Each tuple: (levels sharing this base, base B).
+      const levelPairs = <List<int>>[
+        [1, 2], // B = 0
+        [3, 4], // B = 1
+        [5, 6], // B = 2
+        [7, 8], // B = 3
+        [9, 10], // B = 4
+      ];
+
+      for (final pair in levelPairs) {
+        final base = (pair.first - 1) ~/ 2;
+
+        for (final level in pair) {
+          group('level $level (base B=$base)', () {
+            test('mistakes == B ($base) → راسخ (top grade)', () {
+              final g = GradeCalculator.calculateForLevel(level, base);
+              expect(g.grade, Grade.rasikh);
+              expect(g.nameAr, 'راسخ');
+              expect(g.stars, 5);
+              expect(g.passed, true);
+            });
+
+            test('mistakes == B+1 (${base + 1}) → متقن', () {
+              final g = GradeCalculator.calculateForLevel(level, base + 1);
+              expect(g.grade, Grade.mutqin);
+              expect(g.nameAr, 'متقن');
+              expect(g.passed, true);
+            });
+
+            test('mistakes == B+2 (${base + 2}) → حافظ', () {
+              final g = GradeCalculator.calculateForLevel(level, base + 2);
+              expect(g.grade, Grade.hafiz);
+              expect(g.nameAr, 'حافظ');
+              expect(g.passed, true);
+            });
+
+            test('mistakes == B+3 (${base + 3}) → مجتهد', () {
+              final g = GradeCalculator.calculateForLevel(level, base + 3);
+              expect(g.grade, Grade.mujtahid);
+              expect(g.nameAr, 'مجتهد');
+              expect(g.passed, true);
+            });
+
+            test('mistakes == B+4 (${base + 4}) → محب (must repeat / fail)',
+                () {
+              final g = GradeCalculator.calculateForLevel(level, base + 4);
+              expect(g.grade, Grade.muhib);
+              expect(g.nameAr, 'محب');
+              expect(g.passed, false);
+            });
+
+            // ≤B boundary: 0 mistakes is always راسخ (even when B > 0).
+            test('mistakes 0 (<= B) → راسخ', () {
+              expect(
+                GradeCalculator.calculateForLevel(level, 0).grade,
+                Grade.rasikh,
+              );
+            });
+
+            // ≥B+4 boundary: anything well above B+4 stays محب.
+            test('mistakes B+10 (>= B+4) → محب', () {
+              expect(
+                GradeCalculator.calculateForLevel(level, base + 10).grade,
+                Grade.muhib,
+              );
+            });
+          });
+        }
+      }
+
+      group('issue #22 repro examples', () {
+        test('level 1 with 2 mistakes → حافظ', () {
+          expect(
+            GradeCalculator.calculateForLevel(1, 2).grade,
+            Grade.hafiz,
+          );
+        });
+
+        test('level 9 with 2 mistakes → راسخ', () {
+          expect(
+            GradeCalculator.calculateForLevel(9, 2).grade,
+            Grade.rasikh,
+          );
+        });
+
+        test('same mistake count yields different grades across levels', () {
+          final atLevel1 = GradeCalculator.calculateForLevel(1, 2).grade;
+          final atLevel9 = GradeCalculator.calculateForLevel(9, 2).grade;
+          expect(atLevel1, isNot(atLevel9));
+        });
+      });
+
+      group('input clamping / defensive bounds', () {
+        test('level below 1 is treated as level 1 (B=0)', () {
+          expect(
+            GradeCalculator.calculateForLevel(0, 0).grade,
+            GradeCalculator.calculateForLevel(1, 0).grade,
+          );
+          expect(
+            GradeCalculator.calculateForLevel(-5, 3).grade,
+            GradeCalculator.calculateForLevel(1, 3).grade,
+          );
+        });
+
+        test('level above 10 is treated as level 10 (B=4)', () {
+          expect(
+            GradeCalculator.calculateForLevel(99, 4).grade,
+            GradeCalculator.calculateForLevel(10, 4).grade,
+          );
+        });
+
+        test('negative mistakes treated as 0 → راسخ', () {
+          expect(
+            GradeCalculator.calculateForLevel(1, -3).grade,
+            Grade.rasikh,
+          );
+        });
+      });
+
+      group('gradeForLevel (pure enum mapping)', () {
+        test('matches calculateForLevel grade', () {
+          expect(
+            GradeCalculator.gradeForLevel(5, 4),
+            GradeCalculator.calculateForLevel(5, 4).grade,
+          );
+        });
+      });
+    });
+
     group('Grade enum', () {
       test('has all expected values', () {
         expect(Grade.values, contains(Grade.rasikh));

@@ -157,7 +157,9 @@ class SessionRepository {
     required int errorCount,
     String? notes,
   }) async {
-    final gradeInfo = GradeCalculator.calculate(errorCount);
+    // Per-component grade is level-based (hibrahem/AlRasikhoon#22): the same
+    // error count maps to a different grade depending on the student's level.
+    final gradeInfo = GradeCalculator.calculateForLevel(levelId, errorCount);
 
     final docRef = _sardRecordsCollection.doc();
     final record = SardRecordModel(
@@ -221,7 +223,9 @@ class SessionRepository {
     required int errorCount,
     String? notes,
   }) async {
-    final gradeInfo = GradeCalculator.calculate(errorCount);
+    // Per-component grade is level-based (hibrahem/AlRasikhoon#22): the same
+    // error count maps to a different grade depending on the student's level.
+    final gradeInfo = GradeCalculator.calculateForLevel(levelId, errorCount);
 
     final docRef = _examRecordsCollection.doc();
     final record = ExamRecordModel(

@@ -78,6 +78,11 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
   Widget build(BuildContext context) {
     final activeSession = ref.watch(activeSessionProvider);
     final studentAsync = ref.watch(studentProvider(widget.studentId));
+    // Per-part grade is level-based (hibrahem/AlRasikhoon#22). Default to
+    // level 1 until the student loads. NOTE: the session-level overall
+    // grade / pass aggregation is intentionally left unchanged here — that
+    // belongs to the session-aggregation work (#24).
+    final level = studentAsync.value?.student.currentLevel ?? 1;
 
     if (activeSession == null) {
       return Scaffold(
@@ -169,16 +174,19 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
             _PartResultCard(
               title: 'الحفظ الجديد',
               errors: activeSession.part1Errors,
+              level: level,
             ),
             const SizedBox(height: 8),
             _PartResultCard(
               title: 'المراجعة القريبة',
               errors: activeSession.part2Errors,
+              level: level,
             ),
             const SizedBox(height: 8),
             _PartResultCard(
               title: 'المراجعة البعيدة',
               errors: activeSession.part3Errors,
+              level: level,
             ),
 
             const SizedBox(height: 24),
@@ -227,12 +235,17 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
 class _PartResultCard extends StatelessWidget {
   final String title;
   final int errors;
+  final int level;
 
-  const _PartResultCard({required this.title, required this.errors});
+  const _PartResultCard({
+    required this.title,
+    required this.errors,
+    required this.level,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final gradeInfo = GradeCalculator.calculate(errors);
+    final gradeInfo = GradeCalculator.calculateForLevel(level, errors);
 
     return AppCard(
       margin: EdgeInsets.zero,

@@ -31,6 +31,107 @@ class GradeInfo {
 class GradeCalculator {
   GradeCalculator._();
 
+  /// Build the [GradeInfo] for a given [Grade] value.
+  ///
+  /// Single source of truth for the per-grade presentation metadata
+  /// (Arabic / English names, stars, pass status, colour) so the
+  /// level-agnostic [calculate] and the level-aware [calculateForLevel]
+  /// never drift apart.
+  static GradeInfo _infoFor(Grade grade) {
+    switch (grade) {
+      case Grade.rasikh:
+        return const GradeInfo(
+          grade: Grade.rasikh,
+          nameAr: 'راسخ',
+          nameEn: 'Rasikh',
+          stars: 5,
+          passed: true,
+          color: AppColors.gradeRasikh,
+        );
+      case Grade.mutqin:
+        return const GradeInfo(
+          grade: Grade.mutqin,
+          nameAr: 'متقن',
+          nameEn: 'Mutqin',
+          stars: 4,
+          passed: true,
+          color: AppColors.gradeMutqin,
+        );
+      case Grade.hafiz:
+        return const GradeInfo(
+          grade: Grade.hafiz,
+          nameAr: 'حافظ',
+          nameEn: 'Hafiz',
+          stars: 3,
+          passed: true,
+          color: AppColors.gradeHafiz,
+        );
+      case Grade.mujtahid:
+        return const GradeInfo(
+          grade: Grade.mujtahid,
+          nameAr: 'مجتهد',
+          nameEn: 'Mujtahid',
+          stars: 2,
+          passed: true,
+          color: AppColors.gradeMujtahid,
+        );
+      case Grade.muhib:
+        return const GradeInfo(
+          grade: Grade.muhib,
+          nameAr: 'محب',
+          nameEn: 'Muhib',
+          stars: 1,
+          passed: false,
+          color: AppColors.gradeMuhib,
+        );
+    }
+  }
+
+  /// Level-aware grade for a single evaluated component (a سرد / اختبار /
+  /// recitation part), per the per-level table in
+  /// hibrahem/AlRasikhoon#22.
+  ///
+  /// The same mistake count is stricter at low levels and more lenient at
+  /// high levels. Let `B = (level - 1) ~/ 2` (levels 1..10 → 0,0,1,1,2,2,
+  /// 3,3,4,4):
+  ///
+  /// * `mistakes <= B`     → راسخ   (top grade)
+  /// * `mistakes == B + 1` → متقن
+  /// * `mistakes == B + 2` → حافظ
+  /// * `mistakes == B + 3` → مجتهد
+  /// * `mistakes >= B + 4` → محب / ويعاد (must repeat — fail)
+  ///
+  /// [level] is the student's memorization level (clamped to 1..10 for
+  /// out-of-range input). [mistakes] is the error count (negative input is
+  /// treated as 0). This is the per-component mapping ONLY — it deliberately
+  /// does NOT decide whether a whole session passes (that aggregation is the
+  /// responsibility of the session-level logic).
+  static GradeInfo calculateForLevel(int level, int mistakes) {
+    return _infoFor(gradeForLevel(level, mistakes));
+  }
+
+  /// Pure (level, mistakes) → [Grade] mapping. See [calculateForLevel].
+  static Grade gradeForLevel(int level, int mistakes) {
+    final clampedLevel = level < 1 ? 1 : (level > 10 ? 10 : level);
+    final safeMistakes = mistakes < 0 ? 0 : mistakes;
+
+    // Base threshold B for راسخ.
+    final base = (clampedLevel - 1) ~/ 2;
+
+    if (safeMistakes <= base) {
+      return Grade.rasikh;
+    } else if (safeMistakes == base + 1) {
+      return Grade.mutqin;
+    } else if (safeMistakes == base + 2) {
+      return Grade.hafiz;
+    } else if (safeMistakes == base + 3) {
+      return Grade.mujtahid;
+    } else {
+      // safeMistakes >= base + 4
+      return Grade.muhib;
+    }
+  }
+
   static GradeInfo calculate(int errorCount) {
     // Grading thresholds per spec:
     // راسخ: 0 errors, متقن: 1-2, حافظ: 3-4, مجتهد: 5-6, محب: 7+
