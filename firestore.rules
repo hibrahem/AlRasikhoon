@@ -63,7 +63,17 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isSuperAdmin() || isTeacher() ||
         (isAuthenticated() && request.auth.uid == userId);
-      allow update: if isSuperAdmin() || request.auth.uid == userId;
+      // SuperAdmin may update any field on any user. A self-update (a
+      // non-superadmin editing their own doc) is allowed for normal profile
+      // fields ONLY — `role` and `institute_id` are frozen to their current
+      // values. Without this guard a supervisor could self-promote to
+      // role: 'super_admin' (mirrored into the Auth claim by syncRoleClaim) or
+      // change their own institute_id and rescope every #28 check. Privilege
+      // boundary: only a superadmin may move a user between roles/institutes.
+      allow update: if isSuperAdmin() ||
+        (request.auth.uid == userId &&
+         request.resource.data.role == resource.data.role &&
+         request.resource.data.institute_id == resource.data.institute_id);
       allow delete: if isSuperAdmin();
     }
 
@@ -115,8 +125,13 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isTeacher() ||
         isSupervisorOfRecordStudent(request.resource.data);
+      // A supervisor must own BOTH the existing record's student AND the
+      // incoming record's student (institute-scoped), so they can neither edit
+      // a record outside their institute nor repoint student_id to a student in
+      // another institute. Mirrors the dual-check on the students update rule.
       allow update: if isTeacher() ||
-        isSupervisorOfRecordStudent(resource.data);
+        (isSupervisorOfRecordStudent(resource.data) &&
+         isSupervisorOfRecordStudent(request.resource.data));
     }
 
     // Sard records — same parity + institute scope for supervisors. (#29 will
@@ -126,8 +141,13 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isTeacher() ||
         isSupervisorOfRecordStudent(request.resource.data);
+      // Dual-check (old AND new student in-institute), same as session_records:
+      // prevents a supervisor repointing a sard record's student_id to a
+      // student in another institute. Teacher access preserved (#29 handles
+      // Sard teacher-removal).
       allow update: if isTeacher() ||
-        isSupervisorOfRecordStudent(resource.data);
+        (isSupervisorOfRecordStudent(resource.data) &&
+         isSupervisorOfRecordStudent(request.resource.data));
     }
 
     // Exam records

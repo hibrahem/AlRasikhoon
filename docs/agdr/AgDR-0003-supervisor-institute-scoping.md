@@ -35,6 +35,14 @@ Rules for #28 (and beyond):
 - Slight denormalization cost (institute stored on the user and projected to the join doc, and to be denormalized onto student docs) accepted for read/rule simplicity.
 - #29 (Sard gating) layers on top: supervisor-only + same institute scope, reading the same canonical field.
 
+### Accepted risk / follow-up — read scoping is client-side only (Shield finding #3, MEDIUM)
+
+The security review of PR #35 flagged that all collections currently use `allow read: if isAuthenticated()` — write paths are institute-scoped in the rules, but **reads are not**. Any authenticated user can read any student / record document via a direct SDK query; institute filtering on reads happens only in the client providers.
+
+**Accepted for now.** Per-document read-scoping in security rules (e.g. gating `students`/`session_records`/`sard_records` reads on `resource.data.institute_id == callerInstituteId()`) is **deferred to a follow-up ticket**. Rationale: it is a larger change (touches every read path and the existing query shapes / indexes, and the existing supervisor-experience queries assume open reads), it is independent of the write-side privilege boundaries this PR closes, and the data is not externally exposed beyond authenticated app users. Current posture: **authenticated-read + client-side institute filtering**; the hardened write rules (findings #1/#2) prevent cross-institute mutation regardless. A separate ticket should add rule-level read scoping and re-validate the affected indexes.
+
+The two write-side BLOCKING findings (#1 self-promote / institute self-change; #2 record repoint to another institute) ARE fixed in this PR and covered by emulator rules tests in `test/rules/`.
+
 ## Artifacts
 
 - Issue #28 (hibrahem/AlRasikhoon), epic #26.
