@@ -373,10 +373,52 @@ class _TestFirebaseService extends FirebaseService {
 
   final User? _authenticatedUser;
 
+  /// Monotonic counter so each provisioned account gets a unique uid.
+  int _provisionSeq = 0;
+
   @override
   Stream<User?> get authStateChanges => _authenticatedUser == null
       ? const Stream<User?>.empty()
       : Stream<User?>.value(_authenticatedUser);
+
+  /// In production this calls the `createUserAccount` Cloud Function, which
+  /// provisions both the Auth user and the `users/{uid}` profile server-side.
+  /// There is no Functions backend (and no initialised Firebase app) in the
+  /// integration tests, so the real call throws and the add-teacher flow
+  /// never wrote the profile — the teacher never appeared in the list (#46).
+  ///
+  /// Here we emulate the Cloud Function's *observable effect*: write the
+  /// `users/{uid}` profile to the fake Firestore with the fields the teachers
+  /// query relies on (`role`, `is_active: true`, `created_at`) and return the
+  /// uid, exactly as the real function does. The subsequent
+  /// `getTeachersConfirmingUid` read-after-write confirmation then finds the
+  /// new doc and the list refresh shows the teacher — the same path prod takes.
+  @override
+  Future<String> provisionUserAccount({
+    required String email,
+    required String password,
+    required String role,
+    required String name,
+    required String username,
+    String? phone,
+    String? instituteId,
+  }) async {
+    _provisionSeq += 1;
+    final uid = 'provisioned_${role}_$_provisionSeq';
+    await firestore.collection('users').doc(uid).set({
+      'username': username,
+      'email': email,
+      'phone': phone,
+      'name': name,
+      'role': role,
+      'auth_provider': 'email_password',
+      'institute_id': instituteId,
+      'created_at': Timestamp.now(),
+      'updated_at': null,
+      'is_active': true,
+    });
+    return uid;
+  }
 }
 
 /// Fake AuthRepository that doesn't depend on Firebase Auth

@@ -256,24 +256,69 @@ class AdminRobot extends TestRobot {
     await tapByIcon(Icons.add);
   }
 
-  /// Fill teacher form (name + email + optional phone)
+  /// Fill the add-teacher form.
+  ///
+  /// The form (see `AddTeacherScreen`) has four *required*, validated fields in
+  /// this order — name, username, password, confirm-password — followed by an
+  /// optional phone field. Earlier this robot filled only fields 0 and 1 and
+  /// passed an email into field 1; field 1 is the **username** (which rejects
+  /// `@`), and the password / confirm-password fields were left empty. Form
+  /// validation therefore always failed, `_handleCreate` returned early, the
+  /// account was never provisioned and the screen never popped — which is why
+  /// "Admin can add a new teacher" failed at `verifyTeacherInList` (issue #46).
+  ///
+  /// We now fill all four required fields with values that satisfy the
+  /// validators ([Validators.validateUsername] requires `^[a-z0-9_.]+$`,
+  /// [Validators.validatePassword] requires ≥ 6 chars, confirm must match).
+  /// [email] is kept as the public parameter name for call-site stability but
+  /// is no longer entered into the username field; a deterministic username is
+  /// derived from it instead.
   Future<void> fillTeacherForm({
     required String name,
     required String email,
     String? phone,
+    String username = 'teacher1',
+    String password = 'password123',
   }) async {
     final textFields = find.byType(TextField);
-    await tester.enterText(textFields.at(0), name);
-    await tester.enterText(textFields.at(1), email);
-    if (phone != null && textFields.evaluate().length > 2) {
-      await tester.enterText(textFields.at(2), phone);
+    await tester.enterText(textFields.at(0), name); // name
+    await tester.enterText(textFields.at(1), username); // username
+    await tester.enterText(textFields.at(2), password); // password
+    await tester.enterText(textFields.at(3), password); // confirm password
+    if (phone != null && textFields.evaluate().length > 4) {
+      await tester.enterText(textFields.at(4), phone);
     }
     await pumpAndSettle();
   }
 
-  /// Verify teacher in list
-  Future<void> verifyTeacherInList(String name) async {
+  /// Verify the newly added teacher appears in the teachers list.
+  ///
+  /// After a successful add, `AddTeacherScreen` runs a bounded server-side
+  /// read-after-write confirmation (`getTeachersConfirmingUid`, ~5 × 300ms of
+  /// real `Future.delayed`) *before* invalidating `allTeachersProvider`,
+  /// popping back to the list, and the list re-fetching asynchronously (#21).
+  /// A single `pumpAndSettle()` cannot drive that real-time async chain
+  /// (`pumpAndSettle` does not advance wall-clock timers, and the work runs
+  /// outside the fake-async zone), so the assertion raced the refresh and
+  /// flaked/failed.
+  ///
+  /// Instead we pump in a bounded loop, advancing real time via
+  /// `tester.runAsync` so the `Future.delayed`-based confirmation poll and the
+  /// provider re-fetch can actually complete, checking for the teacher name on
+  /// each iteration. The budget (~5s) comfortably exceeds the confirmation
+  /// poll's worst case; the final `expect` keeps the assertion strength
+  /// identical to the previous `pumpAndSettle()` + `expect`.
+  Future<void> verifyTeacherInList(
+    String name, {
+    int attempts = 25,
+    Duration interval = const Duration(milliseconds: 200),
+  }) async {
     await pumpAndSettle();
+    for (var i = 0; i < attempts; i++) {
+      if (find.text(name).evaluate().isNotEmpty) break;
+      await tester.runAsync(() => Future<void>.delayed(interval));
+      await pumpAndSettle();
+    }
     expect(find.text(name), findsOneWidget);
   }
 
