@@ -6,7 +6,7 @@ import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_counter.dart';
-import '../providers/teacher_provider.dart';
+import '../../teacher/providers/teacher_provider.dart';
 
 class SardSessionScreen extends ConsumerStatefulWidget {
   final String studentId;

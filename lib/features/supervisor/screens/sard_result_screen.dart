@@ -9,7 +9,7 @@ import '../../../routing/app_router.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/grade_display.dart';
-import '../providers/teacher_provider.dart';
+import '../../teacher/providers/teacher_provider.dart';
 
 class SardResultScreen extends ConsumerStatefulWidget {
   final String studentId;
@@ -91,8 +91,10 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
           ),
         );
 
-        // Navigate back to students list
-        context.go(AppRoutes.teacherStudents);
+        // Navigate back to the supervisor's students list. Sard is a
+        // supervisor-only activity (#29), so we always return to the supervisor
+        // surface, never the teacher students route.
+        context.go(AppRoutes.supervisorStudents);
       }
     } catch (e) {
       if (mounted) {

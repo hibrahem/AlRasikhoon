@@ -24,14 +24,14 @@ import '../features/supervisor/screens/exam_queue_screen.dart';
 import '../features/supervisor/screens/exam_session_screen.dart';
 import '../features/supervisor/screens/exam_result_screen.dart';
 import '../features/supervisor/screens/supervisor_students_screen.dart';
+import '../features/supervisor/screens/sard_session_screen.dart';
+import '../features/supervisor/screens/sard_result_screen.dart';
 import '../features/teacher/screens/teacher_students_screen.dart';
 import '../features/teacher/screens/session_overview_screen.dart';
 import '../features/teacher/screens/recitation_screen.dart';
 import '../features/teacher/screens/recitation_result_screen.dart';
 import '../features/teacher/screens/new_memorization_screen.dart';
 import '../features/teacher/screens/session_summary_screen.dart';
-import '../features/teacher/screens/sard_session_screen.dart';
-import '../features/teacher/screens/sard_result_screen.dart';
 import '../features/teacher/screens/add_student_screen.dart';
 import '../features/student/screens/student_dashboard_screen.dart';
 import '../features/student/screens/session_history_screen.dart';
@@ -67,6 +67,10 @@ class AppRoutes {
   // Supervisor student management (teacher-parity, institute-scoped — #28)
   static const String supervisorStudents = '/supervisor/students';
   static const String supervisorAddStudent = '/supervisor/students/add';
+  // Sard (السرد) — supervisor-only (#29). Lives under /supervisor so a teacher
+  // (in the teacher shell) cannot reach it; the router redirect guards it too.
+  static const String sardSession = '/supervisor/sard/:studentId';
+  static const String sardResult = '/supervisor/sard/:studentId/result';
 
   // Teacher
   static const String teacherStudents = '/teacher';
@@ -78,8 +82,6 @@ class AppRoutes {
       '/teacher/session/:studentId/recitation/:part/result';
   static const String newMemorization = '/teacher/session/:studentId/new';
   static const String sessionSummary = '/teacher/session/:studentId/summary';
-  static const String sardSession = '/teacher/sard/:studentId';
-  static const String sardResult = '/teacher/sard/:studentId/result';
 
   // Student
   static const String studentDashboard = '/student';
@@ -107,6 +109,15 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Authenticated but on login page - redirect to appropriate dashboard
       if (isAuthenticated && isLoggingIn) {
+        return _getDashboardRoute(userRole);
+      }
+
+      // Sard (السرد) is supervisor-only (#29). Block any non-supervisor that
+      // reaches a /supervisor/sard/* path (e.g. a teacher crafting the URL):
+      // bounce them to their own dashboard. UI hides the entry point; this is
+      // the navigation-level backstop. Firestore rules are the true backstop.
+      if (state.matchedLocation.startsWith('/supervisor/sard') &&
+          userRole != UserRole.supervisor) {
         return _getDashboardRoute(userRole);
       }
 
@@ -277,6 +288,27 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) =>
                     const AddStudentScreen(asSupervisor: true),
               ),
+              // Sard (السرد) — supervisor-only (#29). Relocated here from the
+              // teacher shell so a teacher cannot navigate to it; the router
+              // redirect below blocks any non-supervisor that crafts the path.
+              GoRoute(
+                path: AppRoutes.sardSession,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  return SardSessionScreen(studentId: studentId);
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.sardResult,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  final errorCount = state.extra as int? ?? 0;
+                  return SardResultScreen(
+                    studentId: studentId,
+                    errorCount: errorCount,
+                  );
+                },
+              ),
             ],
           ),
         ],
@@ -337,24 +369,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) {
                   final studentId = state.pathParameters['studentId']!;
                   return SessionSummaryScreen(studentId: studentId);
-                },
-              ),
-              GoRoute(
-                path: AppRoutes.sardSession,
-                builder: (context, state) {
-                  final studentId = state.pathParameters['studentId']!;
-                  return SardSessionScreen(studentId: studentId);
-                },
-              ),
-              GoRoute(
-                path: AppRoutes.sardResult,
-                builder: (context, state) {
-                  final studentId = state.pathParameters['studentId']!;
-                  final errorCount = state.extra as int? ?? 0;
-                  return SardResultScreen(
-                    studentId: studentId,
-                    errorCount: errorCount,
-                  );
                 },
               ),
             ],
