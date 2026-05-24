@@ -60,8 +60,13 @@ class SupervisorStudentsScreen extends ConsumerWidget {
                     child: StudentCard(
                       studentWithUser: studentWithUser,
                       onTap: () {
+                        // Push the supervisor-shell session-overview (#45) so
+                        // the whole flow stays in one shell — pushing the
+                        // teacher-shell sessionOverview here and then the
+                        // supervisor-shell Sard route crashes go_router 17 with
+                        // a duplicate-page-key assertion.
                         context.push(
-                          AppRoutes.sessionOverview.replaceFirst(
+                          AppRoutes.supervisorSessionOverview.replaceFirst(
                             ':studentId',
                             studentWithUser.student.id,
                           ),

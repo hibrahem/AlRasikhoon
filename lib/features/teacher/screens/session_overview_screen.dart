@@ -8,20 +8,35 @@ import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/progress_bar.dart';
 import '../../../shared/providers/user_provider.dart';
+import '../../supervisor/providers/supervisor_provider.dart';
 import '../providers/teacher_provider.dart';
 
 class SessionOverviewScreen extends ConsumerWidget {
   final String studentId;
 
+  /// When true, the student + current-session are resolved through the
+  /// supervisor's institute scope (AgDR-0003) instead of the teacher-scoped
+  /// `getStudentsForTeacher` lookup. A supervisor reaches this screen entirely
+  /// within the supervisor shell (route `/supervisor/students/:studentId`), so
+  /// the whole Students → session-overview → Sard flow stays in one shell — no
+  /// cross-shell push (which trips the go_router duplicate-page-key crash, #45)
+  /// — and supervisor-created students with `teacher_id: null` resolve.
+  final bool asSupervisor;
+
   const SessionOverviewScreen({
     super.key,
     required this.studentId,
+    this.asSupervisor = false,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final studentAsync = ref.watch(studentProvider(studentId));
-    final sessionAsync = ref.watch(studentCurrentSessionProvider(studentId));
+    final studentAsync = asSupervisor
+        ? ref.watch(supervisorStudentProvider(studentId))
+        : ref.watch(studentProvider(studentId));
+    final sessionAsync = asSupervisor
+        ? ref.watch(supervisorStudentCurrentSessionProvider(studentId))
+        : ref.watch(studentCurrentSessionProvider(studentId));
 
     return Scaffold(
       appBar: AppBar(

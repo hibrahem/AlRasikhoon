@@ -170,30 +170,30 @@ void main() {
       expect(find.text('3'), findsWidgets); // 3 pending exams
     });
 
-    testWidgets('Supervisor is offered the Sard entry point at a Sard session (#29 / #44)',
+    testWidgets(
+        'Supervisor conducts a Sard end-to-end: start → conduct → save (#29 / #45)',
         (tester) async {
-      // Arrange — Sard became supervisor-only in #29. This is the supervisor
-      // mirror of the teacher-blocked test: a supervisor opening a student
-      // (from their institute-scoped Students tab, #28) at a Sard session (35)
-      // MUST see the "بدء السرد" action and MUST NOT see the teacher-only
-      // read-only notice.
+      // Arrange — full supervisor Sard E2E (regression coverage for #45).
       //
-      // The supervisor's student list is scoped to users/{uid}.institute_id
-      // (AgDR-0003), so the supervisor carries that institute id; it is fixed
-      // up front so it can be stamped on the supervisor user before setUp
-      // persists the authenticated user.
+      // Sard became supervisor-only in #29, which relocated the Sard routes
+      // into the supervisor shell. #45 fixed two coupled bugs that made the
+      // flow non-functional at runtime despite correct gating:
+      //   1. Cross-shell crash: SupervisorStudentsScreen used to push the
+      //      TEACHER-shell sessionOverview, then "بدء السرد" pushed the
+      //      SUPERVISOR-shell Sard route — a teacher-shell page sandwiched
+      //      between supervisor-shell branches tripped go_router 17's
+      //      duplicate-page-key assertion. It now pushes the supervisor-shell
+      //      session-overview (/supervisor/students/:studentId), so the whole
+      //      flow is ONE shell.
+      //   2. Teacher-scoped student lookup: the screens resolved the student
+      //      via getStudentsForTeacher; supervisor-created students carry
+      //      teacher_id: null (AgDR-0003), so the supervisor got "Student not
+      //      found". The supervisor path now resolves institute-scoped.
       //
-      // NOTE (out of #44 scope): the session-overview screen is reached via the
-      // teacher-shell route (/teacher/session/:studentId — that is how
-      // SupervisorStudentsScreen pushes it), and the "بدء السرد" button then
-      // pushes the supervisor-shell route /supervisor/sard/:studentId. Driving
-      // that second cross-shell push to completion (start → end → save) trips a
-      // go_router 17 "duplicate page key" Navigator assertion. That is a real
-      // navigation bug in the supervisor→Sard path introduced when #29
-      // relocated the Sard routes into the supervisor shell, and it is filed
-      // separately — it is NOT test staleness. This test therefore asserts the
-      // supervisor-side gating (the inverse of the teacher block), which is the
-      // meaningful #29 behaviour and is stable on-device.
+      // This test drives the previously-crashing path to completion. The
+      // student carries teacher_id: null on purpose — the exact AgDR-0003
+      // shape that used to fail the lookup — proving institute-scoped
+      // resolution works.
       const instituteId = 'sard_institute_1';
       final supervisor =
           env.createSupervisor().copyWith(instituteId: instituteId);
@@ -210,13 +210,10 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        // The session-overview screen resolves the student through the
-        // teacher-scoped studentProvider (getStudentsForTeacher == the
-        // logged-in user's id). A supervisor evaluating a student is the
-        // "teacher" for that lookup, so the student carries the supervisor's
-        // id here. The institute scope (above) still matches the supervisor's
-        // students tab.
-        teacherId: supervisor.id,
+        // teacher_id: null — a supervisor-created, institute-scoped student
+        // (AgDR-0003). The institute scope matches the supervisor's Students
+        // tab; the institute-scoped lookup (not getStudentsForTeacher) resolves
+        // it. Passing no teacherId leaves it null.
         currentSession: 35, // Sard session
       );
 
@@ -230,8 +227,20 @@ void main() {
       await supervisorRobot.tapStudent('طالب سرد المشرف');
       await supervisorRobot.verifySessionOverview();
 
-      // Assert - supervisor gets the Sard start action; teacher-only notice absent.
+      // The supervisor gets the Sard start action; teacher-only notice absent.
       await supervisorRobot.verifySardAvailableForSupervisor();
+
+      // Drive the full Sard to completion — this is the path that used to
+      // crash (cross-shell push) before #45. No "Student not found", no crash.
+      await supervisorRobot.startSard();
+      await supervisorRobot.verifySardSession();
+      await supervisorRobot.enterSardErrors(2);
+      await supervisorRobot.finishSard();
+      await supervisorRobot.verifySardResult();
+      await supervisorRobot.saveSardResult();
+
+      // Assert — the Sard saved successfully end-to-end.
+      await supervisorRobot.verifySardSaved();
     });
 
     testWidgets('Supervisor only sees students from assigned institutes', (tester) async {

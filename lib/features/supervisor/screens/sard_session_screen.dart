@@ -6,7 +6,7 @@ import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_counter.dart';
-import '../../teacher/providers/teacher_provider.dart';
+import '../providers/supervisor_provider.dart';
 
 class SardSessionScreen extends ConsumerStatefulWidget {
   final String studentId;
@@ -25,7 +25,11 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final studentAsync = ref.watch(studentProvider(widget.studentId));
+    // Sard is supervisor-only (#29). Resolve the student through the
+    // supervisor's institute scope (AgDR-0003) so supervisor-created students
+    // (teacher_id: null) resolve — the teacher-scoped studentProvider would
+    // return "Student not found" for them (#45).
+    final studentAsync = ref.watch(supervisorStudentProvider(widget.studentId));
 
     return Scaffold(
       appBar: AppBar(

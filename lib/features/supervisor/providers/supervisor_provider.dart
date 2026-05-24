@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/institute_repository.dart';
 import '../../../data/repositories/session_repository.dart';
+import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/models/exam_record_model.dart';
+import '../../../data/models/session_model.dart';
 import '../../../shared/providers/user_provider.dart';
 
 /// The canonical institute a supervisor is scoped to, read off
@@ -43,6 +45,31 @@ final supervisorStudentProvider =
         if (s.student.id == studentId) return s;
       }
       return null;
+    });
+
+/// Current-session data for a student resolved through the supervisor's
+/// institute scope. Mirrors the teacher-side `studentCurrentSessionProvider`
+/// but resolves the student via [supervisorStudentProvider] (institute-scoped,
+/// AgDR-0003) instead of the teacher-scoped `getStudentsForTeacher`. This is
+/// what lets a supervisor open the session-overview / Sard flow for an
+/// institute student whose `teacher_id` is null (supervisor-created students,
+/// per AgDR-0003) without hitting "Student not found".
+final supervisorStudentCurrentSessionProvider =
+    FutureProvider.family<SessionModel?, String>((ref, studentId) async {
+      final studentAsync = await ref.watch(
+        supervisorStudentProvider(studentId).future,
+      );
+      if (studentAsync == null) return null;
+
+      final student = studentAsync.student;
+      final curriculumRepo = ref.watch(curriculumRepositoryProvider);
+
+      return curriculumRepo.getCurrentSessionForStudent(
+        levelId: student.currentLevel,
+        juzNumber: student.currentJuz,
+        hizbNumber: student.currentHizb,
+        sessionNumber: student.currentSession,
+      );
     });
 
 /// Provider for students ready for exam in supervisor's institutes
