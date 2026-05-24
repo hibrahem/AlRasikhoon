@@ -217,16 +217,18 @@ void main() {
       await teacherRobot.completeSession();
     });
 
-    testWidgets('Teacher can complete sard session with passing result',
+    testWidgets('Teacher is blocked from Sard at a Sard session (#29 / #44)',
         (tester) async {
-      // Arrange
+      // Arrange — Sard became supervisor-only in #29. A teacher viewing a
+      // student at a Sard session (35) must see the read-only notice and must
+      // NOT see the "بدء السرد" action.
       final teacher = env.createTeacher();
       await env.setUp(authenticatedUser: teacher);
       final instituteId = await env.addInstitute();
       await env.assignTeacherToInstitute(teacher.id, instituteId);
 
       final studentUser = env.createStudent(
-          id: 'student_sard_pass', name: 'طالب السرد');
+          id: 'student_sard_blocked', name: 'طالب السرد');
       await env.fakeFirestore
           .collection('users')
           .doc(studentUser.id)
@@ -244,43 +246,10 @@ void main() {
 
       await teacherRobot.verifyStudentsScreen();
       await teacherRobot.tapStudent('طالب السرد');
-      await teacherRobot.startSardSession();
-      await teacherRobot.verifySardScreen();
+      await teacherRobot.verifySessionOverview();
 
-      // End sard with 0 errors
-      await teacherRobot.tapEndSard();
-
-      // Assert - Sard result screen
-      await teacherRobot.verifySardResult();
-      await teacherRobot.saveSardResult();
-    });
-
-    testWidgets('Teacher can conduct Sard session at session 35', (tester) async {
-      // Arrange
-      final teacher = env.createTeacher();
-      await env.setUp(authenticatedUser: teacher);
-      final instituteId = await env.addInstitute();
-      await env.assignTeacherToInstitute(teacher.id, instituteId);
-
-      final studentUser = env.createStudent(id: 'student_user_4', name: 'خالد فهد');
-      await env.fakeFirestore.collection('users').doc(studentUser.id).set(studentUser.toFirestore());
-      await env.addStudent(
-        userId: studentUser.id,
-        instituteId: instituteId,
-        teacherId: teacher.id,
-        currentSession: 35, // Sard session
-      );
-
-      // Act
-      await tester.pumpWidget(TestApp(overrides: env.overrides));
-      teacherRobot = TeacherRobot(tester);
-
-      await teacherRobot.verifyStudentsScreen();
-      await teacherRobot.tapStudent('خالد فهد');
-
-      // Assert - Sard option should be available
-      await teacherRobot.pumpAndSettle();
-      expect(find.textContaining('سرد'), findsWidgets);
+      // Assert - read-only supervisor-only notice shown, start action absent.
+      await teacherRobot.verifySardBlockedForTeacher();
     });
   });
 }

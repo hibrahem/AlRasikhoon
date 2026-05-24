@@ -405,31 +405,15 @@ class TeacherRobot extends TestRobot {
     await scrollAndTapByText('حفظ وإنهاء الحلقة');
   }
 
-  /// Start sard session
-  Future<void> startSardSession() async {
-    await tapByText('بدء السرد');
-  }
-
-  /// Verify sard session screen
-  Future<void> verifySardScreen() async {
+  /// Verify the teacher is blocked from conducting Sard (#29 / #44).
+  ///
+  /// At a Sard session (session 35) a teacher sees a read-only notice and the
+  /// "بدء السرد" action is absent — Sard is supervisor-only. This asserts both
+  /// the presence of the notice and the absence of the start button.
+  Future<void> verifySardBlockedForTeacher() async {
     await pumpAndSettle();
-    expect(find.text('السرد'), findsOneWidget);
-  }
-
-  /// Tap end sard button
-  Future<void> tapEndSard() async {
-    await tapByText('إنهاء السرد');
-  }
-
-  /// Verify sard result screen
-  Future<void> verifySardResult() async {
-    await pumpAndSettle();
-    expect(find.text('نتيجة السرد'), findsOneWidget);
-  }
-
-  /// Save sard result
-  Future<void> saveSardResult() async {
-    await tapByText('حفظ النتيجة');
+    expect(find.text('السرد يُجرى مع المشرف فقط'), findsOneWidget);
+    expect(find.text('بدء السرد'), findsNothing);
   }
 }
 
@@ -617,5 +601,66 @@ class SupervisorRobot extends TestRobot {
   Future<void> verifyFailResult() async {
     await pumpAndSettle();
     expect(find.textContaining('راسب'), findsOneWidget);
+  }
+
+  // --- Sard (السرد) flow — supervisor-only since #29 (relocated here in #44).
+  // Sard is conducted from the supervisor's institute-scoped Students tab:
+  // Students → tap student → session overview → "بدء السرد" → Sard → result.
+
+  /// Navigate to the supervisor's institute-scoped Students tab via bottom nav.
+  Future<void> goToStudents() async {
+    final navBar = find.byType(BottomNavigationBar);
+    final studentsIcon = find.descendant(
+      of: navBar,
+      matching: find.text('الطلاب'),
+    );
+    await tester.tap(studentsIcon);
+    await pumpAndSettle();
+  }
+
+  /// Verify the supervisor's students screen.
+  /// The list is populated via a FutureProvider chain (institute-scoped, #28),
+  /// so allow extra async ticks for it to resolve.
+  Future<void> verifyStudentsScreen() async {
+    await pumpAndSettle();
+    for (int i = 0; i < 5; i++) {
+      await tester.runAsync(
+        () async =>
+            await Future<void>.delayed(const Duration(milliseconds: 200)),
+      );
+      await pumpAndSettle();
+    }
+    await pumpAndSettle();
+    expect(find.text('طلاب المعهد'), findsOneWidget);
+  }
+
+  /// Tap on a student to open their session overview.
+  Future<void> tapStudent(String name) async {
+    await tapByText(name);
+  }
+
+  /// Verify the session overview screen.
+  Future<void> verifySessionOverview() async {
+    await pumpAndSettle();
+    expect(find.textContaining('الحلقة'), findsWidgets);
+  }
+
+  /// Verify the supervisor is offered the Sard entry point (#29 / #44).
+  ///
+  /// At a Sard session (35) a supervisor sees the "بدء السرد" action and does
+  /// NOT see the teacher-only read-only notice — the exact inverse of
+  /// [TeacherRobot.verifySardBlockedForTeacher]. The button can sit below the
+  /// fold on smaller emulator screens, so scroll it into view before asserting.
+  Future<void> verifySardAvailableForSupervisor() async {
+    await pumpAndSettle();
+    final startButton = find.text('بدء السرد');
+    await tester.scrollUntilVisible(
+      startButton,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await pumpAndSettle();
+    expect(startButton, findsOneWidget);
+    expect(find.text('السرد يُجرى مع المشرف فقط'), findsNothing);
   }
 }
