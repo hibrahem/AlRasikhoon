@@ -78,6 +78,15 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
       institute_id: INST_A,
       name: "Supervisor A",
     });
+    // Supervisor bound to institute B (cross-institute Sard tests, #29).
+    await seed("users", "sup_b", {
+      role: "supervisor",
+      institute_id: INST_B,
+      name: "Supervisor B",
+    });
+    // Teacher (no institute scoping on records; used to assert Sard is
+    // supervisor-only, #29).
+    await seed("users", "teacher_a", { role: "teacher", name: "Teacher A" });
     // Super admin.
     await seed("users", "admin", { role: "super_admin", name: "Admin" });
 
@@ -217,6 +226,70 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
       setDoc(doc(db, "session_records", "sess_new"), {
         student_id: "stu_a",
         score: 8,
+      })
+    );
+  });
+
+  // === #29 — Sard is SUPERVISOR-ONLY (teacher write removed) ================
+
+  it("DENIES a teacher creating a sard_record (Sard is supervisor-only, #29)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      setDoc(doc(db, "sard_records", "sard_new_teacher"), {
+        student_id: "stu_a",
+        pages: 3,
+      })
+    );
+  });
+
+  it("DENIES a teacher updating an existing sard_record (Sard is supervisor-only, #29)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      updateDoc(doc(db, "sard_records", "sard_a"), { pages: 9 })
+    );
+  });
+
+  it("ALLOWS a supervisor creating a sard_record for an in-institute student (#29)", async () => {
+    const db = asUser("sup_a");
+    await assertSucceeds(
+      setDoc(doc(db, "sard_records", "sard_new_sup"), {
+        student_id: "stu_a",
+        pages: 5,
+      })
+    );
+  });
+
+  it("ALLOWS a supervisor updating an in-institute sard_record (no repoint, #29)", async () => {
+    const db = asUser("sup_a");
+    await assertSucceeds(
+      updateDoc(doc(db, "sard_records", "sard_a"), { pages: 6 })
+    );
+  });
+
+  it("DENIES a supervisor creating a sard_record for an out-of-institute student (cross-institute, #29)", async () => {
+    const db = asUser("sup_a");
+    await assertFails(
+      setDoc(doc(db, "sard_records", "sard_cross"), {
+        student_id: "stu_b",
+        pages: 4,
+      })
+    );
+  });
+
+  it("DENIES a supervisor in institute B updating a sard_record whose student is in institute A (cross-institute, #29)", async () => {
+    const db = asUser("sup_b");
+    // sard_a belongs to stu_a (institute A); sup_b is scoped to institute B.
+    await assertFails(
+      updateDoc(doc(db, "sard_records", "sard_a"), { pages: 8 })
+    );
+  });
+
+  it("DENIES a supervisor creating a sard_record for a student with no institute_id (fail-closed, #29)", async () => {
+    const db = asUser("sup_a");
+    await assertFails(
+      setDoc(doc(db, "sard_records", "sard_legacy"), {
+        student_id: "stu_legacy",
+        pages: 1,
       })
     );
   });

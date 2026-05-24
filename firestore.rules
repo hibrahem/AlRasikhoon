@@ -134,20 +134,20 @@ service cloud.firestore {
          isSupervisorOfRecordStudent(request.resource.data));
     }
 
-    // Sard records — same parity + institute scope for supervisors. (#29 will
-    // gate Sard to supervisors only; this rule only adds the institute-scoped
-    // supervisor write and does NOT remove the teacher's existing access.)
+    // Sard records — SUPERVISOR-ONLY (#29, epic #26). Sard (السرد) is
+    // exclusively a supervisor activity; teachers cannot write Sard records.
+    // The teacher write that existed after #28 has been REMOVED — only a
+    // supervisor scoped to the student's institute may create/update a Sard
+    // record. The dual-check (old AND new student in-institute) on update
+    // prevents repointing a sard record's student_id to another institute —
+    // same shape as session_records. Reads stay open (authenticated).
+    // session_records is deliberately untouched: regular sessions remain
+    // teacher-writable.
     match /sard_records/{sardId} {
       allow read: if isAuthenticated();
-      allow create: if isTeacher() ||
+      allow create: if isSupervisorOfRecordStudent(request.resource.data);
+      allow update: if isSupervisorOfRecordStudent(resource.data) &&
         isSupervisorOfRecordStudent(request.resource.data);
-      // Dual-check (old AND new student in-institute), same as session_records:
-      // prevents a supervisor repointing a sard record's student_id to a
-      // student in another institute. Teacher access preserved (#29 handles
-      // Sard teacher-removal).
-      allow update: if isTeacher() ||
-        (isSupervisorOfRecordStudent(resource.data) &&
-         isSupervisorOfRecordStudent(request.resource.data));
     }
 
     // Exam records

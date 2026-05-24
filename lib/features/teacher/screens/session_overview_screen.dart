@@ -7,6 +7,7 @@ import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/progress_bar.dart';
+import '../../../shared/providers/user_provider.dart';
 import '../providers/teacher_provider.dart';
 
 class SessionOverviewScreen extends ConsumerWidget {
@@ -130,7 +131,14 @@ class SessionOverviewScreen extends ConsumerWidget {
                     }
 
                     if (isSard) {
-                      return _buildSardCard(context, student, studentId);
+                      // Sard (السرد) is supervisor-only (#29). This screen is
+                      // shared by teacher and supervisor students lists, so the
+                      // entry point is gated by role: supervisors get the
+                      // "Start Sard" action; teachers see a read-only notice
+                      // and cannot start or navigate to a Sard session.
+                      final isSupervisor = ref.watch(isSupervisorProvider);
+                      return _buildSardCard(
+                          context, student, studentId, isSupervisor);
                     }
 
                     return _buildRegularSessionCard(
@@ -303,7 +311,11 @@ class SessionOverviewScreen extends ConsumerWidget {
   }
 
   Widget _buildSardCard(
-      BuildContext context, dynamic student, String studentId) {
+    BuildContext context,
+    dynamic student,
+    String studentId,
+    bool isSupervisor,
+  ) {
     return AppCard(
       backgroundColor: AppColors.info.withOpacity(0.05),
       child: Column(
@@ -342,8 +354,12 @@ class SessionOverviewScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
-          // Check if max Sard attempts reached
-          if (student.hasReachedMaxSardAttempts)
+          // Sard (السرد) is supervisor-only (#29). A teacher sees a read-only
+          // notice — no "Start Sard" action, no navigation. Only a supervisor
+          // gets the action (and only if the student still has attempts left).
+          if (!isSupervisor)
+            _buildSardSupervisorOnlyMessage(context)
+          else if (student.hasReachedMaxSardAttempts)
             _buildMaxAttemptsReachedMessage(context)
           else
             AppButton(
@@ -357,6 +373,34 @@ class SessionOverviewScreen extends ConsumerWidget {
               backgroundColor: AppColors.info,
               icon: Icons.play_arrow,
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSardSupervisorOnlyMessage(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.info_outline,
+            color: AppColors.warning,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'السرد يُجرى مع المشرف فقط',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.warning,
+                  ),
+            ),
+          ),
         ],
       ),
     );

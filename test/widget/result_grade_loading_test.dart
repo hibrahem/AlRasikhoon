@@ -8,7 +8,7 @@ import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/features/supervisor/providers/supervisor_provider.dart';
 import 'package:al_rasikhoon/features/supervisor/screens/exam_result_screen.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
-import 'package:al_rasikhoon/features/teacher/screens/sard_result_screen.dart';
+import 'package:al_rasikhoon/features/supervisor/screens/sard_result_screen.dart';
 
 /// Loading-state test for hibrahem/AlRasikhoon#36.
 ///
