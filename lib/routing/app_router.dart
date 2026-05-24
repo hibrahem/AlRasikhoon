@@ -67,6 +67,14 @@ class AppRoutes {
   // Supervisor student management (teacher-parity, institute-scoped — #28)
   static const String supervisorStudents = '/supervisor/students';
   static const String supervisorAddStudent = '/supervisor/students/add';
+  // Supervisor session-overview — the supervisor-shell twin of the teacher's
+  // sessionOverview. Lives under /supervisor so the supervisor's whole
+  // Students → session-overview → Sard flow stays in ONE shell; pushing the
+  // teacher-shell sessionOverview from the supervisor shell and then the
+  // supervisor-shell Sard route trips a go_router duplicate-page-key crash
+  // (#45). Resolves the student institute-scoped (AgDR-0003).
+  static const String supervisorSessionOverview =
+      '/supervisor/students/:studentId';
   // Sard (السرد) — supervisor-only (#29). Lives under /supervisor so a teacher
   // (in the teacher shell) cannot reach it; the router redirect guards it too.
   static const String sardSession = '/supervisor/sard/:studentId';
@@ -287,6 +295,21 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: AppRoutes.supervisorAddStudent,
                 builder: (context, state) =>
                     const AddStudentScreen(asSupervisor: true),
+              ),
+              // Supervisor session-overview — same screen as the teacher's, but
+              // institute-scoped (asSupervisor) and inside the supervisor shell
+              // so the Sard push that follows does NOT cross shells (#45).
+              // Registered AFTER the literal `add` route so `/students/add`
+              // still matches AddStudentScreen, not this :studentId route.
+              GoRoute(
+                path: AppRoutes.supervisorSessionOverview,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  return SessionOverviewScreen(
+                    studentId: studentId,
+                    asSupervisor: true,
+                  );
+                },
               ),
               // Sard (السرد) — supervisor-only (#29). Relocated here from the
               // teacher shell so a teacher cannot navigate to it; the router

@@ -9,7 +9,7 @@ import '../../../routing/app_router.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/grade_display.dart';
-import '../../teacher/providers/teacher_provider.dart';
+import '../providers/supervisor_provider.dart';
 
 class SardResultScreen extends ConsumerStatefulWidget {
   final String studentId;
@@ -42,8 +42,11 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
       final currentUser = ref.read(currentUserProvider);
       if (currentUser == null) throw Exception('User not authenticated');
 
+      // Resolve through the supervisor's institute scope (AgDR-0003) — Sard is
+      // supervisor-only (#29), and supervisor-created students have
+      // teacher_id: null, so the teacher-scoped lookup would fail (#45).
       final studentAsync =
-          await ref.read(studentProvider(widget.studentId).future);
+          await ref.read(supervisorStudentProvider(widget.studentId).future);
       if (studentAsync == null) throw Exception('Student not found');
 
       final student = studentAsync.student;
@@ -77,8 +80,10 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
         await studentRepo.incrementStudentAttempt(student.id);
       }
 
-      // Invalidate providers
-      ref.invalidate(teacherStudentsProvider);
+      // Invalidate the supervisor's institute-scoped providers so the students
+      // list and the resolved student reflect the advanced/incremented state.
+      ref.invalidate(supervisorStudentsProvider);
+      ref.invalidate(supervisorStudentProvider(widget.studentId));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -114,7 +119,8 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final studentAsync = ref.watch(studentProvider(widget.studentId));
+    final studentAsync =
+        ref.watch(supervisorStudentProvider(widget.studentId));
     // Grade is level-based (hibrahem/AlRasikhoon#22). The level-based grade is
     // only computed once the student value resolves — never from a default
     // level=1 while loading, which would flash a harsher grade (#36).

@@ -663,4 +663,69 @@ class SupervisorRobot extends TestRobot {
     expect(startButton, findsOneWidget);
     expect(find.text('السرد يُجرى مع المشرف فقط'), findsNothing);
   }
+
+  /// Start the Sard session from the session overview (#45).
+  /// Scrolls the "بدء السرد" action into view (it can sit below the fold on
+  /// smaller emulator screens) then taps it. After this the app navigates,
+  /// entirely within the supervisor shell, to the Sard session screen.
+  Future<void> startSard() async {
+    final startButton = find.text('بدء السرد');
+    await tester.scrollUntilVisible(
+      startButton,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await pumpAndSettle();
+    await tester.tap(startButton);
+    await pumpAndSettle();
+  }
+
+  /// Verify the Sard session screen is showing.
+  Future<void> verifySardSession() async {
+    await pumpAndSettle();
+    expect(find.text('السرد'), findsWidgets);
+  }
+
+  /// Enter Sard errors by tapping the ErrorCounter add button N times.
+  /// The Sard session screen uses an ErrorCounter widget (like the exam flow).
+  Future<void> enterSardErrors(int errors) async {
+    for (int i = 0; i < errors; i++) {
+      final addButtons = find.byIcon(Icons.add);
+      await tester.tap(addButtons.last);
+      await pumpAndSettle();
+    }
+  }
+
+  /// Finish the Sard and navigate to the result screen.
+  Future<void> finishSard() async {
+    await tapByText('إنهاء السرد');
+  }
+
+  /// Verify the Sard result screen is showing.
+  Future<void> verifySardResult() async {
+    await pumpAndSettle();
+    expect(find.text('نتيجة السرد'), findsOneWidget);
+  }
+
+  /// Save the Sard result. Stops one pump short of settling so the success
+  /// snackbar is still on-screen for the assertion (it auto-dismisses).
+  Future<void> saveSardResult() async {
+    final finder = find.text('حفظ النتيجة');
+    await tester.scrollUntilVisible(
+      finder,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await pumpAndSettle();
+    await tester.tap(finder);
+    // Pump enough for the async Firestore write + snackbar, without
+    // pumpAndSettle (which would wait out the snackbar's full duration).
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+  }
+
+  /// Verify the Sard was saved (success snackbar — passing or failing).
+  Future<void> verifySardSaved() async {
+    expect(find.textContaining('تم حفظ السرد'), findsOneWidget);
+  }
 }

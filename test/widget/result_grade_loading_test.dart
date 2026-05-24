@@ -7,7 +7,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/features/supervisor/providers/supervisor_provider.dart';
 import 'package:al_rasikhoon/features/supervisor/screens/exam_result_screen.dart';
-import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/features/supervisor/screens/sard_result_screen.dart';
 
 /// Loading-state test for hibrahem/AlRasikhoon#36.
@@ -45,7 +44,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            studentProvider.overrideWith((ref, id) => pending.future),
+            // SardResultScreen resolves the student through the supervisor's
+            // institute scope (AgDR-0003 / #45 — Sard is supervisor-only and
+            // its students may have teacher_id: null), so override that
+            // provider, not the teacher-scoped studentProvider.
+            supervisorStudentProvider.overrideWith((ref, id) => pending.future),
           ],
           child: const MaterialApp(
             home: SardResultScreen(studentId: 'student1', errorCount: 3),
