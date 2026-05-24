@@ -29,7 +29,7 @@ class GradeDisplay extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: gradeInfo.color.withOpacity(0.1),
+        color: gradeInfo.color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: gradeInfo.color, width: 2),
       ),
@@ -58,7 +58,7 @@ class GradeDisplay extends StatelessWidget {
                     index < gradeInfo.stars ? Icons.star : Icons.star_border,
                     color: index < gradeInfo.stars
                         ? AppColors.secondary
-                        : AppColors.textSecondary.withOpacity(0.3),
+                        : AppColors.textSecondary.withValues(alpha: 0.3),
                     size: 32,
                   ),
                 );
@@ -73,8 +73,8 @@ class GradeDisplay extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               decoration: BoxDecoration(
                 color: gradeInfo.passed
-                    ? AppColors.success.withOpacity(0.1)
-                    : AppColors.error.withOpacity(0.1),
+                    ? AppColors.success.withValues(alpha: 0.1)
+                    : AppColors.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -128,7 +128,7 @@ class GradeDisplay extends StatelessWidget {
                 index < gradeInfo.stars ? Icons.star : Icons.star_border,
                 color: index < gradeInfo.stars
                     ? AppColors.secondary
-                    : AppColors.textSecondary.withOpacity(0.3),
+                    : AppColors.textSecondary.withValues(alpha: 0.3),
                 size: 16,
               );
             }),
@@ -138,7 +138,7 @@ class GradeDisplay extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: gradeInfo.color.withOpacity(0.1),
+            color: gradeInfo.color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: gradeInfo.color),
           ),
@@ -180,7 +180,7 @@ class StarsDisplay extends StatelessWidget {
           index < stars ? Icons.star : Icons.star_border,
           color: index < stars
               ? (activeColor ?? AppColors.secondary)
-              : (inactiveColor ?? AppColors.textSecondary.withOpacity(0.3)),
+              : (inactiveColor ?? AppColors.textSecondary.withValues(alpha: 0.3)),
           size: size,
         );
       }),
@@ -201,7 +201,7 @@ class GradeBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: gradeInfo.color.withOpacity(0.1),
+        color: gradeInfo.color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: gradeInfo.color),
       ),

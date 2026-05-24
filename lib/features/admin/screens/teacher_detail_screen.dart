@@ -38,7 +38,7 @@ class TeacherDetailScreen extends ConsumerWidget {
                     children: [
                       CircleAvatar(
                         radius: 32,
-                        backgroundColor: AppColors.primary.withOpacity(0.1),
+                        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                         child: Text(
                           teacher.name.isNotEmpty ? teacher.name[0] : '?',
                           style: const TextStyle(
@@ -85,8 +85,8 @@ class TeacherDetailScreen extends ConsumerWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: teacher.isActive
-                                    ? AppColors.success.withOpacity(0.1)
-                                    : AppColors.error.withOpacity(0.1),
+                                    ? AppColors.success.withValues(alpha: 0.1)
+                                    : AppColors.error.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -142,7 +142,7 @@ class TeacherDetailScreen extends ConsumerWidget {
                             Icon(
                               Icons.account_balance_outlined,
                               size: 48,
-                              color: AppColors.textSecondary.withOpacity(0.5),
+                              color: AppColors.textSecondary.withValues(alpha: 0.5),
                             ),
                             const SizedBox(height: 8),
                             const Text('غير معين لأي معهد'),
@@ -164,7 +164,7 @@ class TeacherDetailScreen extends ConsumerWidget {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary.withOpacity(0.1),
+                                  color: AppColors.primary.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Icon(
@@ -220,7 +220,7 @@ class TeacherDetailScreen extends ConsumerWidget {
                             Icon(
                               Icons.school_outlined,
                               size: 48,
-                              color: AppColors.textSecondary.withOpacity(0.5),
+                              color: AppColors.textSecondary.withValues(alpha: 0.5),
                             ),
                             const SizedBox(height: 8),
                             const Text('لا يوجد طلاب لهذا المعلم'),

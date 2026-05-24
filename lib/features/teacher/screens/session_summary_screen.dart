@@ -121,7 +121,7 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                   child: Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: AppColors.primary.withOpacity(0.1),
+                        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                         child: Text(
                           studentWithUser.user.name.isNotEmpty
                               ? studentWithUser.user.name[0]

@@ -81,14 +81,14 @@ class _LevelHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppCard(
       margin: EdgeInsets.zero,
-      backgroundColor: AppColors.primary.withOpacity(0.05),
+      backgroundColor: AppColors.primary.withValues(alpha: 0.05),
       child: Row(
         children: [
           Container(
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
@@ -235,7 +235,7 @@ class _SessionTypeChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
@@ -266,7 +266,7 @@ class _EmptyState extends StatelessWidget {
             Icon(
               Icons.menu_book_outlined,
               size: 64,
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(

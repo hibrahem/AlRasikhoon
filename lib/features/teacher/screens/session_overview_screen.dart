@@ -47,7 +47,7 @@ class SessionOverviewScreen extends ConsumerWidget {
                     children: [
                       CircleAvatar(
                         radius: 28,
-                        backgroundColor: AppColors.primary.withOpacity(0.1),
+                        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                         child: Text(
                           user.name.isNotEmpty ? user.name[0] : '?',
                           style: const TextStyle(
@@ -86,7 +86,7 @@ class SessionOverviewScreen extends ConsumerWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.warning.withOpacity(0.1),
+                            color: AppColors.warning.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -191,7 +191,7 @@ class SessionOverviewScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -278,9 +278,9 @@ class SessionOverviewScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.error.withOpacity(0.1),
+        color: AppColors.error.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.error.withOpacity(0.3)),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -317,7 +317,7 @@ class SessionOverviewScreen extends ConsumerWidget {
     bool isSupervisor,
   ) {
     return AppCard(
-      backgroundColor: AppColors.info.withOpacity(0.05),
+      backgroundColor: AppColors.info.withValues(alpha: 0.05),
       child: Column(
         children: [
           Row(
@@ -325,7 +325,7 @@ class SessionOverviewScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.info.withOpacity(0.1),
+                  color: AppColors.info.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -382,7 +382,7 @@ class SessionOverviewScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.warning.withOpacity(0.1),
+        color: AppColors.warning.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -408,7 +408,7 @@ class SessionOverviewScreen extends ConsumerWidget {
 
   Widget _buildExamCard(BuildContext context, dynamic student) {
     return AppCard(
-      backgroundColor: AppColors.secondary.withOpacity(0.05),
+      backgroundColor: AppColors.secondary.withValues(alpha: 0.05),
       child: Column(
         children: [
           Row(
@@ -416,7 +416,7 @@ class SessionOverviewScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.secondary.withOpacity(0.1),
+                  color: AppColors.secondary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -448,7 +448,7 @@ class SessionOverviewScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.warning.withOpacity(0.1),
+              color: AppColors.warning.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(

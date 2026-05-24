@@ -37,7 +37,7 @@ class TeachersScreen extends ConsumerWidget {
                     children: [
                       CircleAvatar(
                         radius: 24,
-                        backgroundColor: AppColors.primary.withOpacity(0.1),
+                        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                         child: Text(
                           teacher.name.isNotEmpty ? teacher.name[0] : '?',
                           style: const TextStyle(
@@ -86,8 +86,8 @@ class TeachersScreen extends ConsumerWidget {
                         ),
                         decoration: BoxDecoration(
                           color: teacher.isActive
-                              ? AppColors.success.withOpacity(0.1)
-                              : AppColors.error.withOpacity(0.1),
+                              ? AppColors.success.withValues(alpha: 0.1)
+                              : AppColors.error.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -130,7 +130,7 @@ class TeachersScreen extends ConsumerWidget {
           Icon(
             Icons.people_outline,
             size: 80,
-            color: AppColors.textSecondary.withOpacity(0.5),
+            color: AppColors.textSecondary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(

@@ -204,7 +204,7 @@ class _StudentDashboardScreenState
 
   Widget _buildProgressCard(StudentStats stats) {
     return AppCard(
-      backgroundColor: AppColors.primary.withOpacity(0.05),
+      backgroundColor: AppColors.primary.withValues(alpha: 0.05),
       child: Column(
         children: [
           Row(
@@ -212,7 +212,7 @@ class _StudentDashboardScreenState
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -245,7 +245,7 @@ class _StudentDashboardScreenState
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.secondary.withOpacity(0.1),
+                  color: AppColors.secondary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
@@ -280,13 +280,13 @@ class _StudentDashboardScreenState
 
         if (isExam) {
           return AppCard(
-            backgroundColor: AppColors.secondary.withOpacity(0.05),
+            backgroundColor: AppColors.secondary.withValues(alpha: 0.05),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.secondary.withOpacity(0.1),
+                    color: AppColors.secondary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(Icons.quiz, color: AppColors.secondary),
@@ -316,13 +316,13 @@ class _StudentDashboardScreenState
 
         if (isSard) {
           return AppCard(
-            backgroundColor: AppColors.info.withOpacity(0.05),
+            backgroundColor: AppColors.info.withValues(alpha: 0.05),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.info.withOpacity(0.1),
+                    color: AppColors.info.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
@@ -362,7 +362,7 @@ class _StudentDashboardScreenState
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(

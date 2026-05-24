@@ -43,7 +43,7 @@ class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
+                          color: AppColors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
@@ -111,7 +111,7 @@ class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
           Icon(
             Icons.account_balance_outlined,
             size: 80,
-            color: AppColors.textSecondary.withOpacity(0.5),
+            color: AppColors.textSecondary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(

@@ -50,7 +50,7 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
               // Info card
               AppCard(
                 margin: const EdgeInsets.all(16),
-                backgroundColor: AppColors.info.withOpacity(0.05),
+                backgroundColor: AppColors.info.withValues(alpha: 0.05),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -59,7 +59,7 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.info.withOpacity(0.1),
+                            color: AppColors.info.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(

@@ -94,7 +94,7 @@ class LevelProgressionWidget extends StatelessWidget {
           icon: Icons.lock_open,
         ),
         _LegendItem(
-          color: AppColors.textSecondary.withOpacity(0.5),
+          color: AppColors.textSecondary.withValues(alpha: 0.5),
           label: 'مغلق',
           icon: Icons.lock,
         ),
@@ -127,7 +127,7 @@ class _LevelTile extends StatelessWidget {
         boxShadow: status == LevelStatus.current
             ? [
                 BoxShadow(
-                  color: AppColors.primary.withOpacity(0.3),
+                  color: AppColors.primary.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -169,21 +169,21 @@ class _LevelTile extends StatelessWidget {
     switch (status) {
       case LevelStatus.completed:
         return (
-          AppColors.success.withOpacity(0.15),
+          AppColors.success.withValues(alpha: 0.15),
           AppColors.success,
           AppColors.success,
           Icons.check,
         );
       case LevelStatus.current:
         return (
-          AppColors.primary.withOpacity(0.15),
+          AppColors.primary.withValues(alpha: 0.15),
           AppColors.primary,
           AppColors.primary,
           Icons.play_arrow,
         );
       case LevelStatus.unlocked:
         return (
-          AppColors.secondary.withOpacity(0.1),
+          AppColors.secondary.withValues(alpha: 0.1),
           AppColors.secondary,
           AppColors.secondaryDark,
           null,
@@ -192,7 +192,7 @@ class _LevelTile extends StatelessWidget {
         return (
           AppColors.surfaceVariant,
           AppColors.border,
-          AppColors.textSecondary.withOpacity(0.5),
+          AppColors.textSecondary.withValues(alpha: 0.5),
           Icons.lock,
         );
     }

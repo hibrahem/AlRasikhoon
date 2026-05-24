@@ -47,7 +47,7 @@ class ExamQueueScreen extends ConsumerWidget {
                     children: [
                       CircleAvatar(
                         radius: 24,
-                        backgroundColor: AppColors.secondary.withOpacity(0.1),
+                        backgroundColor: AppColors.secondary.withValues(alpha: 0.1),
                         child: Text(
                           user.name.isNotEmpty ? user.name[0] : '?',
                           style: const TextStyle(
@@ -89,7 +89,7 @@ class ExamQueueScreen extends ConsumerWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.secondary.withOpacity(0.1),
+                          color: AppColors.secondary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: AppColors.secondary),
                         ),
@@ -123,7 +123,7 @@ class ExamQueueScreen extends ConsumerWidget {
           Icon(
             Icons.check_circle_outline,
             size: 80,
-            color: AppColors.success.withOpacity(0.5),
+            color: AppColors.success.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(

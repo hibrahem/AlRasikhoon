@@ -103,7 +103,7 @@ class ErrorCounter extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: gradeInfo.color.withOpacity(0.1),
+                    color: gradeInfo.color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: gradeInfo.color),
                   ),
@@ -160,7 +160,7 @@ class _CounterButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: color.withOpacity(onPressed != null ? 0.1 : 0.05),
+      color: color.withValues(alpha: onPressed != null ? 0.1 : 0.05),
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onPressed,
@@ -172,7 +172,7 @@ class _CounterButton extends StatelessWidget {
           child: Icon(
             icon,
             size: 32,
-            color: onPressed != null ? color : color.withOpacity(0.3),
+            color: onPressed != null ? color : color.withValues(alpha: 0.3),
           ),
         ),
       ),

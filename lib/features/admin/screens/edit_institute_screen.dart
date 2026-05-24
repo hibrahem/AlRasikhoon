@@ -123,7 +123,7 @@ class _EditInstituteScreenState extends ConsumerState<EditInstituteScreen> {
                     height: 80,
                     margin: const EdgeInsets.only(bottom: 32),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(

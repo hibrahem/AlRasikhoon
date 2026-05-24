@@ -55,7 +55,7 @@ class SessionHistoryScreen extends ConsumerWidget {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: passColor.withOpacity(0.1),
+                          color: passColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Center(
@@ -94,7 +94,7 @@ class SessionHistoryScreen extends ConsumerWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: passColor.withOpacity(0.1),
+                          color: passColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: passColor),
                         ),
@@ -128,7 +128,7 @@ class SessionHistoryScreen extends ConsumerWidget {
           Icon(
             Icons.history,
             size: 80,
-            color: AppColors.textSecondary.withOpacity(0.5),
+            color: AppColors.textSecondary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
