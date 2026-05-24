@@ -215,23 +215,29 @@ class SessionOverviewScreen extends ConsumerWidget {
           const Divider(),
           const SizedBox(height: 12),
 
-          // Three parts
+          // Three parts — each carries its memorization-mode accent so the
+          // new/near/far color association is learnable from the entry point
+          // (hibrahem/AlRasikhoon#25). The Arabic title always accompanies the
+          // accent, so the mode is never signalled by color alone.
           _SessionPartTile(
             number: 1,
             title: 'الحفظ الجديد',
             content: session.currentLevelContent.rangeAr,
+            accent: AppColors.forMemorizationPart(1),
           ),
           const SizedBox(height: 8),
           _SessionPartTile(
             number: 2,
             title: 'المراجعة القريبة',
             content: session.recentReviewContent.rangeAr,
+            accent: AppColors.forMemorizationPart(2),
           ),
           const SizedBox(height: 8),
           _SessionPartTile(
             number: 3,
             title: 'المراجعة البعيدة',
             content: session.distantReviewContent.rangeAr,
+            accent: AppColors.forMemorizationPart(3),
           ),
 
           const SizedBox(height: 20),
@@ -430,11 +436,13 @@ class _SessionPartTile extends StatelessWidget {
   final int number;
   final String title;
   final String content;
+  final Color accent;
 
   const _SessionPartTile({
     required this.number,
     required this.title,
     required this.content,
+    required this.accent,
   });
 
   @override
@@ -444,6 +452,9 @@ class _SessionPartTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant,
         borderRadius: BorderRadius.circular(8),
+        border: Border(
+          right: BorderSide(color: accent, width: 4),
+        ),
       ),
       child: Row(
         children: [
@@ -451,14 +462,14 @@ class _SessionPartTile extends StatelessWidget {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: accent.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 '$number',
-                style: const TextStyle(
-                  color: AppColors.primary,
+                style: TextStyle(
+                  color: accent,
                   fontWeight: FontWeight.bold,
                 ),
               ),
