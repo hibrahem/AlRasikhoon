@@ -51,7 +51,7 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
               // Student and exam info
               AppCard(
                 margin: const EdgeInsets.all(16),
-                backgroundColor: AppColors.secondary.withOpacity(0.05),
+                backgroundColor: AppColors.secondary.withValues(alpha: 0.05),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -59,7 +59,7 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                       children: [
                         CircleAvatar(
                           radius: 24,
-                          backgroundColor: AppColors.secondary.withOpacity(0.1),
+                          backgroundColor: AppColors.secondary.withValues(alpha: 0.1),
                           child: Text(
                             user.name.isNotEmpty ? user.name[0] : '?',
                             style: const TextStyle(
@@ -100,7 +100,7 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.secondary.withOpacity(0.1),
+                            color: AppColors.secondary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(

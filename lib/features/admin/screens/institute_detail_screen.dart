@@ -221,7 +221,7 @@ class InstituteDetailScreen extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
+                          color: AppColors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
@@ -294,7 +294,7 @@ class InstituteDetailScreen extends ConsumerWidget {
                             Icon(
                               Icons.people_outline,
                               size: 48,
-                              color: AppColors.textSecondary.withOpacity(0.5),
+                              color: AppColors.textSecondary.withValues(alpha: 0.5),
                             ),
                             const SizedBox(height: 8),
                             const Text('لا يوجد معلمون'),
@@ -326,7 +326,7 @@ class InstituteDetailScreen extends ConsumerWidget {
                             children: [
                               CircleAvatar(
                                 backgroundColor:
-                                    AppColors.primary.withOpacity(0.1),
+                                    AppColors.primary.withValues(alpha: 0.1),
                                 child: Text(
                                   teacher.name.isNotEmpty
                                       ? teacher.name[0]
@@ -405,7 +405,7 @@ class _TeacherSelectionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: AppColors.primary.withOpacity(0.1),
+        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
         child: Text(
           teacher.name.isNotEmpty ? teacher.name[0] : '?',
           style: const TextStyle(

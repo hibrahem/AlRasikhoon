@@ -39,7 +39,7 @@ class StudentCard extends StatelessWidget {
                 children: [
                   // Avatar
                   CircleAvatar(
-                    backgroundColor: AppColors.primary.withOpacity(0.1),
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                     child: Text(
                       user.name.isNotEmpty ? user.name[0] : '?',
                       style: const TextStyle(
@@ -76,7 +76,7 @@ class StudentCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: _getSessionColor(student.currentSession)
-                            .withOpacity(0.1),
+                            .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: _getSessionColor(student.currentSession),
@@ -133,7 +133,7 @@ class StudentCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.warning.withOpacity(0.1),
+                    color: AppColors.warning.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -226,7 +226,7 @@ class StudentListTile extends StatelessWidget {
     return ListTile(
       onTap: onTap,
       leading: CircleAvatar(
-        backgroundColor: AppColors.primary.withOpacity(0.1),
+        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
         child: Text(
           user.name.isNotEmpty ? user.name[0] : '?',
           style: const TextStyle(

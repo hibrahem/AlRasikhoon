@@ -22,13 +22,13 @@ class CurriculumScreen extends ConsumerWidget {
             children: [
               // Overview card
               AppCard(
-                backgroundColor: AppColors.primary.withOpacity(0.05),
+                backgroundColor: AppColors.primary.withValues(alpha: 0.05),
                 child: Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
@@ -83,7 +83,7 @@ class CurriculumScreen extends ConsumerWidget {
                             decoration: BoxDecoration(
                               color: _getLevelColor(
                                 level.levelNumber,
-                              ).withOpacity(0.1),
+                              ).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Center(
