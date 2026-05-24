@@ -170,6 +170,70 @@ void main() {
       expect(find.text('3'), findsWidgets); // 3 pending exams
     });
 
+    testWidgets('Supervisor is offered the Sard entry point at a Sard session (#29 / #44)',
+        (tester) async {
+      // Arrange — Sard became supervisor-only in #29. This is the supervisor
+      // mirror of the teacher-blocked test: a supervisor opening a student
+      // (from their institute-scoped Students tab, #28) at a Sard session (35)
+      // MUST see the "بدء السرد" action and MUST NOT see the teacher-only
+      // read-only notice.
+      //
+      // The supervisor's student list is scoped to users/{uid}.institute_id
+      // (AgDR-0003), so the supervisor carries that institute id; it is fixed
+      // up front so it can be stamped on the supervisor user before setUp
+      // persists the authenticated user.
+      //
+      // NOTE (out of #44 scope): the session-overview screen is reached via the
+      // teacher-shell route (/teacher/session/:studentId — that is how
+      // SupervisorStudentsScreen pushes it), and the "بدء السرد" button then
+      // pushes the supervisor-shell route /supervisor/sard/:studentId. Driving
+      // that second cross-shell push to completion (start → end → save) trips a
+      // go_router 17 "duplicate page key" Navigator assertion. That is a real
+      // navigation bug in the supervisor→Sard path introduced when #29
+      // relocated the Sard routes into the supervisor shell, and it is filed
+      // separately — it is NOT test staleness. This test therefore asserts the
+      // supervisor-side gating (the inverse of the teacher block), which is the
+      // meaningful #29 behaviour and is stable on-device.
+      const instituteId = 'sard_institute_1';
+      final supervisor =
+          env.createSupervisor().copyWith(instituteId: instituteId);
+      await env.setUp(authenticatedUser: supervisor);
+      await env.addInstitute(id: instituteId);
+      await env.assignSupervisorToInstitute(supervisor.id, instituteId);
+
+      final studentUser =
+          env.createStudent(id: 'sup_sard_student', name: 'طالب سرد المشرف');
+      await env.fakeFirestore
+          .collection('users')
+          .doc(studentUser.id)
+          .set(studentUser.toFirestore());
+      await env.addStudent(
+        userId: studentUser.id,
+        instituteId: instituteId,
+        // The session-overview screen resolves the student through the
+        // teacher-scoped studentProvider (getStudentsForTeacher == the
+        // logged-in user's id). A supervisor evaluating a student is the
+        // "teacher" for that lookup, so the student carries the supervisor's
+        // id here. The institute scope (above) still matches the supervisor's
+        // students tab.
+        teacherId: supervisor.id,
+        currentSession: 35, // Sard session
+      );
+
+      // Act
+      await tester.pumpWidget(TestApp(overrides: env.overrides));
+      supervisorRobot = SupervisorRobot(tester);
+
+      await supervisorRobot.verifyDashboard();
+      await supervisorRobot.goToStudents();
+      await supervisorRobot.verifyStudentsScreen();
+      await supervisorRobot.tapStudent('طالب سرد المشرف');
+      await supervisorRobot.verifySessionOverview();
+
+      // Assert - supervisor gets the Sard start action; teacher-only notice absent.
+      await supervisorRobot.verifySardAvailableForSupervisor();
+    });
+
     testWidgets('Supervisor only sees students from assigned institutes', (tester) async {
       // Arrange
       final supervisor = env.createSupervisor();
