@@ -2,19 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../data/models/institute_model.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/student_card.dart';
 import '../providers/admin_provider.dart';
 
-class TeacherDetailScreen extends ConsumerWidget {
+class TeacherDetailScreen extends ConsumerStatefulWidget {
   final String teacherId;
 
   const TeacherDetailScreen({super.key, required this.teacherId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TeacherDetailScreen> createState() =>
+      _TeacherDetailScreenState();
+}
+
+class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
+  /// Institute ids the admin has selected to filter the student list by.
+  /// Empty set = "All" — every student is shown (the default). Local,
+  /// view-only state; no persistence, no schema change. See #53.
+  final Set<String> _selectedInstituteIds = <String>{};
+
+  String get teacherId => widget.teacherId;
+
+  void _toggleInstitute(String instituteId, bool selected) {
+    setState(() {
+      if (selected) {
+        _selectedInstituteIds.add(instituteId);
+      } else {
+        _selectedInstituteIds.remove(instituteId);
+      }
+    });
+  }
+
+  void _clearFilter() {
+    setState(_selectedInstituteIds.clear);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final teacherAsync = ref.watch(teacherProvider(teacherId));
     final institutesAsync = ref.watch(institutesForTeacherProvider(teacherId));
     final studentsAsync = ref.watch(studentsForTeacherAdminProvider(teacherId));
@@ -213,6 +241,14 @@ class TeacherDetailScreen extends ConsumerWidget {
 
                 studentsAsync.when(
                   data: (students) {
+                    // Institute name lookup, built from the teacher's institutes.
+                    final institutes = institutesAsync.asData?.value ??
+                        const <InstituteModel>[];
+                    final instituteNameById = <String, String>{
+                      for (final institute in institutes)
+                        institute.id: institute.name,
+                    };
+
                     if (students.isEmpty) {
                       return AppCard(
                         child: Column(
@@ -229,25 +265,76 @@ class TeacherDetailScreen extends ConsumerWidget {
                       );
                     }
 
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: students.length,
-                      itemBuilder: (context, index) {
-                        final studentWithUser = students[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: StudentCard(
-                            studentWithUser: studentWithUser,
-                            onTap: () => context.push(
-                              AppRoutes.adminStudentProgress.replaceFirst(
-                                ':id',
-                                studentWithUser.student.id,
-                              ),
+                    // Empty selection = "All". Otherwise keep only the students
+                    // whose institute is in the selected set.
+                    final filtered = _selectedInstituteIds.isEmpty
+                        ? students
+                        : students
+                            .where(
+                              (s) => _selectedInstituteIds
+                                  .contains(s.student.instituteId),
+                            )
+                            .toList();
+
+                    // Whether the *visible* list spans more than one institute.
+                    // The per-card badge is only useful then — when a single
+                    // institute is shown the chip already names it.
+                    final visibleInstituteIds = filtered
+                        .map((s) => s.student.instituteId)
+                        .toSet();
+                    final showBadges = visibleInstituteIds.length > 1;
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _InstituteFilterBar(
+                          institutes: institutes,
+                          selectedInstituteIds: _selectedInstituteIds,
+                          onToggle: _toggleInstitute,
+                          onClear: _clearFilter,
+                        ),
+                        const SizedBox(height: 12),
+                        if (filtered.isEmpty)
+                          AppCard(
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.filter_alt_off_outlined,
+                                  size: 48,
+                                  color: AppColors.textSecondary
+                                      .withValues(alpha: 0.5),
+                                ),
+                                const SizedBox(height: 8),
+                                const Text('لا يوجد طلاب في المعهد المحدد'),
+                              ],
                             ),
+                          )
+                        else
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: filtered.length,
+                            itemBuilder: (context, index) {
+                              final studentWithUser = filtered[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: StudentCard(
+                                  studentWithUser: studentWithUser,
+                                  instituteName: showBadges
+                                      ? instituteNameById[
+                                          studentWithUser.student.instituteId]
+                                      : null,
+                                  onTap: () => context.push(
+                                    AppRoutes.adminStudentProgress.replaceFirst(
+                                      ':id',
+                                      studentWithUser.student.id,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
+                      ],
                     );
                   },
                   loading: () =>
@@ -260,6 +347,60 @@ class TeacherDetailScreen extends ConsumerWidget {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
+      ),
+    );
+  }
+}
+
+/// Horizontal, scrollable row of multi-select institute filter chips plus an
+/// "All" reset affordance. Renders nothing when the teacher has no institutes.
+/// RTL-consistent (the parent app forces TextDirection.rtl). See #53.
+class _InstituteFilterBar extends StatelessWidget {
+  final List<InstituteModel> institutes;
+  final Set<String> selectedInstituteIds;
+  final void Function(String instituteId, bool selected) onToggle;
+  final VoidCallback onClear;
+
+  const _InstituteFilterBar({
+    required this.institutes,
+    required this.selectedInstituteIds,
+    required this.onToggle,
+    required this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (institutes.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final allSelected = selectedInstituteIds.isEmpty;
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          // "All" resets the filter to showing every student.
+          FilterChip(
+            label: const Text('الكل'),
+            selected: allSelected,
+            onSelected: (_) => onClear(),
+            showCheckmark: false,
+            selectedColor: AppColors.primary.withValues(alpha: 0.15),
+            checkmarkColor: AppColors.primary,
+          ),
+          const SizedBox(width: 8),
+          for (final institute in institutes) ...[
+            FilterChip(
+              label: Text(institute.name),
+              selected: selectedInstituteIds.contains(institute.id),
+              onSelected: (selected) => onToggle(institute.id, selected),
+              selectedColor: AppColors.primary.withValues(alpha: 0.15),
+              checkmarkColor: AppColors.primary,
+            ),
+            const SizedBox(width: 8),
+          ],
+        ],
       ),
     );
   }
