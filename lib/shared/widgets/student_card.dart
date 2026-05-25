@@ -9,12 +9,20 @@ class StudentCard extends StatelessWidget {
   final bool showProgress;
   final bool showSession;
 
+  /// Optional institute name shown as a small text badge on the card.
+  /// Used when a list spans more than one institute (e.g. the admin
+  /// teacher-detail view) so each card names which institute the student
+  /// belongs to. Null or empty hides the badge — redundant when the list
+  /// already shows a single institute. See hibrahem/AlRasikhoon#53.
+  final String? instituteName;
+
   const StudentCard({
     super.key,
     required this.studentWithUser,
     this.onTap,
     this.showProgress = true,
     this.showSession = true,
+    this.instituteName,
   });
 
   @override
@@ -64,6 +72,11 @@ class StudentCard extends StatelessWidget {
                                 color: AppColors.textSecondary,
                               ),
                         ),
+                        if (instituteName != null &&
+                            instituteName!.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          _InstituteBadge(name: instituteName!),
+                        ],
                       ],
                     ),
                   ),
@@ -197,6 +210,48 @@ class _InfoChip extends StatelessWidget {
             style: const TextStyle(
               fontSize: 11,
               color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Small text badge naming the institute a student belongs to. Text-based
+/// (not colour-only) so the affiliation is accessible. Shown on student
+/// cards when a list spans more than one institute — see #53.
+class _InstituteBadge extends StatelessWidget {
+  final String name;
+
+  const _InstituteBadge({required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.account_balance,
+            size: 12,
+            color: AppColors.primary,
+          ),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              name,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 11,
+                color: AppColors.primary,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
