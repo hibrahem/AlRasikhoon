@@ -4,6 +4,9 @@ import '../models/student_model.dart';
 import '../models/user_model.dart';
 import '../services/firebase_service.dart';
 import '../../core/constants/app_constants.dart';
+import '../../domain/curriculum/curriculum_order.dart';
+import '../../domain/curriculum/curriculum_position.dart';
+import 'curriculum_repository.dart';
 import 'user_repository.dart';
 
 class StudentWithUser {
@@ -17,14 +20,17 @@ class StudentRepository {
   final FirebaseFirestore _firestore;
   final FirebaseService _firebaseService;
   final UserRepository _userRepository;
+  final CurriculumRepository _curriculumRepository;
 
   StudentRepository({
     FirebaseFirestore? firestore,
     required FirebaseService firebaseService,
     required UserRepository userRepository,
+    required CurriculumRepository curriculumRepository,
   }) : _firestore = firestore ?? FirebaseFirestore.instance,
        _firebaseService = firebaseService,
-       _userRepository = userRepository;
+       _userRepository = userRepository,
+       _curriculumRepository = curriculumRepository;
 
   CollectionReference<Map<String, dynamic>> get _studentsCollection =>
       _firestore.collection(AppConstants.collectionStudents);
@@ -299,48 +305,79 @@ class StudentRepository {
     });
   }
 
-  /// Advance student to next session
+  /// Advance the student to the next session in the curriculum.
+  ///
+  /// Follows the real teaching order (level 1 runs 59, 60, 57, 58, 55, 56) over
+  /// the sessions that actually exist — the curriculum is sparse, so the next
+  /// session is rarely `current + 1`. A level completes only after its last
+  /// hizb. At the end of the curriculum the student stays where they are.
   Future<void> advanceStudentSession(String studentId) async {
     final student = await getStudentById(studentId);
     if (student == null) return;
 
-    int newSession = student.currentSession + 1;
-    int newHizb = student.currentHizb;
-    int newJuz = student.currentJuz;
-    int newLevel = student.currentLevel;
-    List<int> completedLevels = List.from(student.completedLevels);
-    List<int> unlockedLevels = List.from(student.unlockedLevels);
+    final next = await _nextPosition(student.currentPosition);
+    if (next == null) {
+      await resetStudentAttempt(studentId);
+      return;
+    }
 
-    // Check if hizb is complete (after exam = session 36)
-    if (newSession > 36) {
-      newSession = 1;
-      newHizb =
-          newHizb - 1; // Move to previous hizb (going backwards through Quran)
-
-      // Check if level is complete (6 hizbs)
-      if (newHizb < _getFirstHizbOfLevel(newLevel)) {
-        if (!completedLevels.contains(newLevel)) {
-          completedLevels.add(newLevel);
-        }
-        newLevel = newLevel + 1;
-        if (newLevel <= 10 && !unlockedLevels.contains(newLevel)) {
-          unlockedLevels.add(newLevel);
-        }
-        newHizb = _getFirstHizbOfLevel(newLevel);
-        newJuz = _getFirstJuzOfLevel(newLevel);
+    final completedLevels = List<int>.from(student.completedLevels);
+    final unlockedLevels = List<int>.from(student.unlockedLevels);
+    if (next.level > student.currentLevel) {
+      if (!completedLevels.contains(student.currentLevel)) {
+        completedLevels.add(student.currentLevel);
+      }
+      if (!unlockedLevels.contains(next.level)) {
+        unlockedLevels.add(next.level);
       }
     }
 
     await _studentsCollection.doc(studentId).update({
-      'current_session': newSession,
-      'current_hizb': newHizb,
-      'current_juz': newJuz,
-      'current_level': newLevel,
+      'current_level': next.level,
+      'current_juz': next.juz,
+      'current_hizb': next.hizb,
+      'current_session': next.session,
       'current_attempt': 1,
       'completed_levels': completedLevels,
       'unlocked_levels': unlockedLevels,
       'updated_at': FieldValue.serverTimestamp(),
     });
+  }
+
+  /// The next position after [from] in teaching order, or null at the end of
+  /// the curriculum. Hizbs with no seeded sessions are stepped over.
+  Future<CurriculumPosition?> _nextPosition(CurriculumPosition from) async {
+    final sessions = await _curriculumRepository.getSessionNumbersForHizb(
+      level: from.level,
+      hizb: from.hizb,
+    );
+    final laterInHizb = sessions.where((s) => s > from.session);
+    if (laterInHizb.isNotEmpty) {
+      return CurriculumPosition(
+        level: from.level,
+        hizb: from.hizb,
+        session: laterInHizb.first,
+      );
+    }
+
+    int? hizb = CurriculumOrder.nextHizb(from.hizb);
+    while (hizb != null) {
+      final level = CurriculumOrder.levelOfHizb(hizb);
+      final next = await _curriculumRepository.getSessionNumbersForHizb(
+        level: level,
+        hizb: hizb,
+      );
+      if (next.isNotEmpty) {
+        return CurriculumPosition(
+          level: level,
+          hizb: hizb,
+          session: next.first,
+        );
+      }
+      hizb = CurriculumOrder.nextHizb(hizb);
+    }
+
+    return null;
   }
 
   /// Increment attempt for failed session
@@ -433,19 +470,6 @@ class StudentRepository {
     }
     return null;
   }
-
-  // Helper methods to map levels to hizbs/juz
-  int _getFirstHizbOfLevel(int level) {
-    // Level 1: Juz 30, 29, 28 -> Hizb 59-54
-    // Level 2: Juz 27, 26, 25 -> Hizb 53-48
-    // ... and so on
-    return 60 - ((level - 1) * 6) - 1; // Returns 59, 53, 47, etc.
-  }
-
-  int _getFirstJuzOfLevel(int level) {
-    // Level 1: 30, Level 2: 27, etc.
-    return 31 - (level * 3) + 2; // Returns 30, 27, 24, etc.
-  }
 }
 
 final studentRepositoryProvider = Provider<StudentRepository>((ref) {
@@ -453,5 +477,6 @@ final studentRepositoryProvider = Provider<StudentRepository>((ref) {
     firestore: ref.watch(firestoreProvider),
     firebaseService: ref.watch(firebaseServiceProvider),
     userRepository: ref.watch(userRepositoryProvider),
+    curriculumRepository: ref.watch(curriculumRepositoryProvider),
   );
 });

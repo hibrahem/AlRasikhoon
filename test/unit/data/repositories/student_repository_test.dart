@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
+import 'package:al_rasikhoon/data/repositories/curriculum_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
@@ -65,6 +66,7 @@ void main() {
         firestore: fakeFirestore,
         firebaseService: firebaseService,
         userRepository: userRepository,
+        curriculumRepository: CurriculumRepository(firestore: fakeFirestore),
       );
     });
 
@@ -367,112 +369,172 @@ void main() {
     });
 
     group('advanceStudentSession', () {
-      test('increments session number within same hizb', () async {
+      /// Seeds one curriculum session. The curriculum is sparse, so tests seed
+      /// exactly the sessions they mean to exist.
+      Future<void> seedSession({
+        required int level,
+        required int hizb,
+        required int session,
+      }) async {
+        final juz = (hizb + 1) ~/ 2;
+        await fakeFirestore
+            .collection('sessions')
+            .doc('L${level}_J${juz}_H${hizb}_S$session')
+            .set({
+              'session_number': session,
+              'level_id': level,
+              'juz_number': juz,
+              'hizb_number': hizb,
+              'session_type': session == 35
+                  ? 'sard'
+                  : session == 36
+                  ? 'exam'
+                  : 'regular',
+            });
+      }
+
+      Future<void> seedStudent({
+        required int level,
+        required int hizb,
+        required int session,
+        int attempt = 1,
+        List<int> completedLevels = const [],
+        List<int> unlockedLevels = const [1],
+      }) async {
         await fakeFirestore.collection('students').doc('s1').set({
           'user_id': 'u1',
           'institute_id': 'i1',
-          'current_level': 1,
-          'current_juz': 30,
-          'current_hizb': 59,
-          'current_session': 5,
-          'current_attempt': 2,
-          'completed_levels': [],
-          'unlocked_levels': [1],
+          'current_level': level,
+          'current_juz': (hizb + 1) ~/ 2,
+          'current_hizb': hizb,
+          'current_session': session,
+          'current_attempt': attempt,
+          'completed_levels': completedLevels,
+          'unlocked_levels': unlockedLevels,
           'is_active': true,
           'created_at': Timestamp.now(),
         });
+      }
+
+      Future<Map<String, dynamic>> readStudent() async {
+        final doc = await fakeFirestore.collection('students').doc('s1').get();
+        return doc.data()!;
+      }
+
+      test('moves to the next session in the same hizb', () async {
+        await seedSession(level: 1, hizb: 59, session: 5);
+        await seedSession(level: 1, hizb: 59, session: 6);
+        await seedStudent(level: 1, hizb: 59, session: 5, attempt: 2);
 
         await studentRepository.advanceStudentSession('s1');
 
-        final doc = await fakeFirestore.collection('students').doc('s1').get();
-        expect(doc.data()?['current_session'], 6);
-        expect(doc.data()?['current_attempt'], 1); // Reset to 1
+        final student = await readStudent();
+        expect(student['current_session'], 6);
+        expect(student['current_hizb'], 59);
+        expect(student['current_attempt'], 1);
+      });
+
+      test('skips session numbers the curriculum does not contain', () async {
+        // Hizb 49 is sparse: sessions 2 and 18 exist, nothing between them.
+        await seedSession(level: 2, hizb: 49, session: 2);
+        await seedSession(level: 2, hizb: 49, session: 18);
+        await seedStudent(
+          level: 2,
+          hizb: 49,
+          session: 2,
+          completedLevels: [1],
+          unlockedLevels: [1, 2],
+        );
+
+        await studentRepository.advanceStudentSession('s1');
+
+        expect((await readStudent())['current_session'], 18);
       });
 
       test(
-        'completes level and advances when session exceeds 36 at level boundary',
+        'moves to the next hizb in teaching order, not the next number down',
         () async {
-          // At level 1, hizb 59 is the first hizb. After exam (session 36),
-          // hizb decrements to 58 which is below the level boundary (59),
-          // triggering level completion and advancement to level 2.
-          await fakeFirestore.collection('students').doc('s1').set({
-            'user_id': 'u1',
-            'institute_id': 'i1',
-            'current_level': 1,
-            'current_juz': 30,
-            'current_hizb': 59,
-            'current_session': 36,
-            'current_attempt': 1,
-            'completed_levels': [],
-            'unlocked_levels': [1],
-            'is_active': true,
-            'created_at': Timestamp.now(),
-          });
+          // Level 1 is taught 59, 60, 57, 58, 55, 56 — after hizb 59 comes 60.
+          await seedSession(level: 1, hizb: 59, session: 36);
+          await seedSession(level: 1, hizb: 60, session: 1);
+          await seedStudent(level: 1, hizb: 59, session: 36);
 
           await studentRepository.advanceStudentSession('s1');
 
-          final doc = await fakeFirestore
-              .collection('students')
-              .doc('s1')
-              .get();
-          expect(doc.data()?['current_session'], 1);
-          expect(doc.data()?['current_level'], 2);
-          expect(doc.data()?['completed_levels'], contains(1));
-          expect(doc.data()?['unlocked_levels'], contains(2));
+          final student = await readStudent();
+          expect(student['current_hizb'], 60);
+          expect(student['current_juz'], 30);
+          expect(student['current_session'], 1);
+          expect(student['current_level'], 1);
+          expect(student['completed_levels'], isEmpty);
         },
       );
 
-      test('wraps session and decrements hizb mid-level', () async {
-        // At hizb 58 (still within level 1 range), advancing past session 36
-        // should wrap session to 1 and decrement hizb without level change.
-        // Level 1 first hizb = 59, but hizb 57 is still >= first hizb of
-        // level boundary check. Actually let's test with level 2.
-        // Level 2: first hizb = 53. At hizb 55, decrementing to 54 is still >= 53.
-        await fakeFirestore.collection('students').doc('s1').set({
-          'user_id': 'u1',
-          'institute_id': 'i1',
-          'current_level': 2,
-          'current_juz': 28,
-          'current_hizb': 55,
-          'current_session': 36,
-          'current_attempt': 1,
-          'completed_levels': [1],
-          'unlocked_levels': [1, 2],
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
+      test('finishing a hizb does not complete the level', () async {
+        // The old code promoted the student to level 2 here. It must not.
+        await seedSession(level: 1, hizb: 60, session: 36);
+        await seedSession(level: 1, hizb: 57, session: 1);
+        await seedStudent(level: 1, hizb: 60, session: 36);
 
         await studentRepository.advanceStudentSession('s1');
 
-        final doc = await fakeFirestore.collection('students').doc('s1').get();
-        expect(doc.data()?['current_session'], 1);
-        expect(doc.data()?['current_hizb'], 54);
-        expect(doc.data()?['current_level'], 2); // Level unchanged
+        final student = await readStudent();
+        expect(student['current_level'], 1);
+        expect(student['current_hizb'], 57);
+        expect(student['current_juz'], 29);
+        expect(student['completed_levels'], isEmpty);
       });
 
-      test('resets attempt to 1 after advancement', () async {
-        await fakeFirestore.collection('students').doc('s1').set({
-          'user_id': 'u1',
-          'institute_id': 'i1',
-          'current_level': 1,
-          'current_juz': 30,
-          'current_hizb': 59,
-          'current_session': 10,
-          'current_attempt': 3,
-          'completed_levels': [],
-          'unlocked_levels': [1],
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
+      test('the level completes only after its last hizb', () async {
+        // Hizb 56 is the last hizb of level 1; the next is 53, in level 2.
+        await seedSession(level: 1, hizb: 56, session: 36);
+        await seedSession(level: 2, hizb: 53, session: 1);
+        await seedStudent(level: 1, hizb: 56, session: 36);
 
         await studentRepository.advanceStudentSession('s1');
 
-        final doc = await fakeFirestore.collection('students').doc('s1').get();
-        expect(doc.data()?['current_attempt'], 1);
+        final student = await readStudent();
+        expect(student['current_level'], 2);
+        expect(student['current_hizb'], 53);
+        expect(student['current_juz'], 27);
+        expect(student['current_session'], 1);
+        expect(student['completed_levels'], contains(1));
+        expect(student['unlocked_levels'], contains(2));
       });
 
-      test('does nothing when student not found', () async {
-        // Should not throw
+      test('a hizb with no seeded sessions is stepped over', () async {
+        await seedSession(level: 1, hizb: 59, session: 36);
+        // Hizb 60 has no sessions at all; the next real one is in hizb 57.
+        await seedSession(level: 1, hizb: 57, session: 1);
+        await seedStudent(level: 1, hizb: 59, session: 36);
+
+        await studentRepository.advanceStudentSession('s1');
+
+        expect((await readStudent())['current_hizb'], 57);
+      });
+
+      test('the end of the curriculum is a terminal position', () async {
+        // Hizb 2 is the last hizb of level 10, session 36 its exam.
+        await seedSession(level: 10, hizb: 2, session: 36);
+        await seedStudent(
+          level: 10,
+          hizb: 2,
+          session: 36,
+          attempt: 2,
+          completedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9],
+          unlockedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        );
+
+        await studentRepository.advanceStudentSession('s1');
+
+        final student = await readStudent();
+        expect(student['current_level'], 10);
+        expect(student['current_hizb'], 2);
+        expect(student['current_session'], 36);
+        expect(student['current_attempt'], 1);
+      });
+
+      test('does nothing when the student does not exist', () async {
         await studentRepository.advanceStudentSession('nonexistent');
       });
     });
