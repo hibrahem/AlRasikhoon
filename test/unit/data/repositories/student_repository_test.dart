@@ -646,6 +646,92 @@ void main() {
         expect(student['current_session'], 10);
       });
 
+      test('credits and unlocks from the hizb-derived level, not the stored '
+          'level, when the two disagree', () async {
+        // Stored level says 2, but hizb 56 is really the last hizb of
+        // level 1 (the corruption the old bug produced). The comparison
+        // and crediting loop must key off the level derived from the hizb
+        // (1), not the stored level (2) — otherwise `2 > 2` is false and
+        // completion credit for level 1 is silently dropped even though
+        // the student is genuinely moving from level 1 into level 2.
+        await seedSession(level: 1, hizb: 56, session: 36);
+        await seedSession(level: 2, hizb: 53, session: 1);
+        await seedStudent(
+          level: 2, // corrupted: hizb 56 actually belongs to level 1
+          hizb: 56,
+          session: 36,
+          completedLevels: const [],
+          unlockedLevels: const [1],
+        );
+
+        await studentRepository.advanceStudentSession('s1');
+
+        final student = await readStudent();
+        expect(student['current_level'], 2);
+        expect(student['current_hizb'], 53);
+        expect(student['completed_levels'], contains(1));
+        expect(student['unlocked_levels'], containsAll([1, 2]));
+      });
+
+      test('a hizb outside the valid curriculum range is classified as '
+          'missing data, not curriculum completion', () async {
+        // A legacy record corrupted to level 11 / hizb -1 (an out-of-range
+        // hizb) must not be misread as "finished the curriculum" —
+        // nextHizb(-1) returning null is ambiguous between "garbage" and
+        // "true end", so this must be caught by an explicit range guard
+        // and treated as a complete no-op: nothing is written.
+        await seedStudent(
+          level: 11,
+          hizb: -1,
+          session: 36,
+          completedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          unlockedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        );
+
+        await studentRepository.advanceStudentSession('s1');
+
+        final student = await readStudent();
+        expect(student['current_level'], 11);
+        expect(student['current_hizb'], -1);
+        expect(student['current_session'], 36);
+        expect(student['completed_levels'], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      });
+
+      test(
+        'finishing the curriculum backfills unlocked_levels through 10',
+        () async {
+          // The _Advanced branch backfills unlocked_levels 1..B, but the
+          // completion branch backfilled nothing — a student who finishes
+          // the curriculum with a stale unlocked_levels must still end up
+          // with every level 1..10 unlocked.
+          await seedSession(level: 10, hizb: 2, session: 36);
+          await seedStudent(
+            level: 10,
+            hizb: 2,
+            session: 36,
+            completedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            unlockedLevels: const [1],
+          );
+
+          await studentRepository.advanceStudentSession('s1');
+
+          final student = await readStudent();
+          expect(
+            student['completed_levels'],
+            containsAll([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+          );
+          expect(
+            (student['completed_levels'] as List).where((l) => l == 10).length,
+            1,
+          );
+          expect(
+            student['unlocked_levels'],
+            containsAll([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+          );
+          expect((student['unlocked_levels'] as List).length, 10);
+        },
+      );
+
       test('does nothing when the student does not exist', () async {
         await studentRepository.advanceStudentSession('nonexistent');
       });

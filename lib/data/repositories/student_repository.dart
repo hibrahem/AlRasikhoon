@@ -364,29 +364,42 @@ class StudentRepository {
         return;
 
       case _CurriculumCompleted():
+        // Bookkeeping is keyed off the level derived from the hizb, not
+        // the stored level, so a corrupted record (stored level disagreeing
+        // with its hizb) still gets credited for the level it actually
+        // finished.
+        final fromLevel = CurriculumOrder.levelOfHizb(student.currentHizb);
         final completedLevels = List<int>.from(student.completedLevels);
-        if (!completedLevels.contains(student.currentLevel)) {
-          completedLevels.add(student.currentLevel);
+        if (!completedLevels.contains(fromLevel)) {
+          completedLevels.add(fromLevel);
+        }
+        // There is no eleventh level to unlock into, so finishing the
+        // curriculum backfills every level 1..10 as unlocked.
+        final unlockedLevels = List<int>.from(student.unlockedLevels);
+        for (var level = 1; level <= CurriculumOrder.totalLevels; level++) {
+          if (!unlockedLevels.contains(level)) {
+            unlockedLevels.add(level);
+          }
         }
         await _studentsCollection.doc(studentId).update({
           'current_attempt': 1,
           'completed_levels': completedLevels,
+          'unlocked_levels': unlockedLevels,
           'updated_at': FieldValue.serverTimestamp(),
         });
         return;
 
       case _Advanced(:final position):
+        // Bookkeeping is keyed off the level derived from the hizb, not
+        // the stored level — see the _CurriculumCompleted branch above.
+        final fromLevel = CurriculumOrder.levelOfHizb(student.currentHizb);
         final completedLevels = List<int>.from(student.completedLevels);
         final unlockedLevels = List<int>.from(student.unlockedLevels);
-        if (position.level > student.currentLevel) {
+        if (position.level > fromLevel) {
           // Every level strictly between the student's current level and
           // the new one was walked through without stopping (e.g. an
           // entirely unseeded level) and must still be credited complete.
-          for (
-            var level = student.currentLevel;
-            level < position.level;
-            level++
-          ) {
+          for (var level = fromLevel; level < position.level; level++) {
             if (!completedLevels.contains(level)) {
               completedLevels.add(level);
             }
@@ -421,6 +434,15 @@ class StudentRepository {
   /// cannot loop unboundedly even if [CurriculumOrder.nextHizb] were ever
   /// buggy again.
   Future<_NextPositionOutcome> _nextPosition(CurriculumPosition from) async {
+    // A hizb outside the curriculum's valid range (1-60) is a corrupted or
+    // legacy record, not a real position. Without this guard, nextHizb
+    // returning null for such a hizb would be indistinguishable from
+    // "structurally the last hizb of the curriculum" below, misclassifying
+    // garbage data as curriculum completion.
+    if (from.hizb < 1 || from.hizb > 60) {
+      return const _CurriculumDataMissing();
+    }
+
     // The level is derived from the hizb, not read off the stored position,
     // so a corrupted record (stored level disagreeing with its hizb) still
     // finds the sessions that actually exist there.
@@ -443,11 +465,11 @@ class StudentRepository {
     // Structural terminality: no later session in this hizb, and the
     // curriculum has no next hizb at all. This is decided independently of
     // what's seeded ahead, so it can never be confused with missing data.
-    if (CurriculumOrder.nextHizb(from.hizb) == null) {
+    int? hizb = CurriculumOrder.nextHizb(from.hizb);
+    if (hizb == null) {
       return const _CurriculumCompleted();
     }
 
-    int? hizb = CurriculumOrder.nextHizb(from.hizb);
     var steps = 0;
     const maxSteps =
         CurriculumOrder.totalLevels * CurriculumOrder.hizbsPerLevel;
