@@ -75,6 +75,10 @@ class StudentRepository {
   /// student record always carries [instituteId] so both UI providers and
   /// Firestore rules can scope access by `users/{uid}.institute_id` per
   /// AgDR-0003 — no multi-hop reads.
+  /// [startingPosition] is where the student enters the curriculum. It defaults
+  /// to the first session; a teacher or supervisor may place a student who has
+  /// already memorized part of the Quran at any point, which credits everything
+  /// before that point as memorized before joining.
   Future<StudentWithUser> createStudent({
     required String name,
     required String username,
@@ -85,6 +89,7 @@ class StudentRepository {
     String? guardianUsername,
     String? guardianPassword,
     String? guardianPhone,
+    CurriculumPosition startingPosition = CurriculumPosition.start,
   }) async {
     final normalizedUsername = username.toLowerCase();
     final synthesizedEmail =
@@ -140,12 +145,13 @@ class StudentRepository {
     }
 
     final studentDocRef = _studentsCollection.doc();
-    final student = StudentModel(
+    final student = StudentModel.enrolledAt(
       id: studentDocRef.id,
       userId: user.id,
       instituteId: instituteId,
       teacherId: teacherId,
       guardianId: guardianId,
+      position: startingPosition,
       createdAt: DateTime.now(),
     );
     await studentDocRef.set(student.toFirestore());

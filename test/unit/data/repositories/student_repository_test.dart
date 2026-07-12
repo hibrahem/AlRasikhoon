@@ -8,6 +8,7 @@ import 'package:al_rasikhoon/data/repositories/curriculum_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
+import 'package:al_rasikhoon/domain/curriculum/curriculum_position.dart';
 
 class _MockFirebaseService extends Mock implements FirebaseService {}
 
@@ -260,6 +261,59 @@ void main() {
           ),
         ).called(1);
       });
+
+      test(
+        'a student created without a position starts at the beginning',
+        () async {
+          final result = await studentRepository.createStudent(
+            name: 'طالب جديد',
+            username: 'newstudent',
+            password: 'secret123',
+            instituteId: 'i1',
+            teacherId: 't1',
+          );
+
+          expect(result.student.enrollmentPosition, CurriculumPosition.start);
+          expect(result.student.currentHizb, 59);
+          expect(result.student.completedLevels, isEmpty);
+        },
+      );
+
+      test(
+        'a student placed mid-curriculum is credited with the levels before them',
+        () async {
+          final result = await studentRepository.createStudent(
+            name: 'طالب حافظ',
+            username: 'hafiz',
+            password: 'secret123',
+            instituteId: 'i1',
+            teacherId: 't1',
+            startingPosition: const CurriculumPosition(
+              level: 2,
+              hizb: 53,
+              session: 35,
+            ),
+          );
+
+          expect(result.student.currentLevel, 2);
+          expect(result.student.currentHizb, 53);
+          expect(result.student.currentJuz, 27);
+          expect(result.student.currentSession, 35);
+          expect(result.student.completedLevels, [1]);
+          expect(result.student.unlockedLevels, [1, 2]);
+
+          final doc = await fakeFirestore
+              .collection('students')
+              .doc(result.student.id)
+              .get();
+          expect(doc.data()?['enrollment_position'], {
+            'level': 2,
+            'juz': 27,
+            'hizb': 53,
+            'session': 35,
+          });
+        },
+      );
     });
 
     group('getStudentById', () {
