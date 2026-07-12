@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:al_rasikhoon/core/constants/app_constants.dart';
+import '../../domain/curriculum/curriculum_position.dart';
 
 class StudentModel {
   final String id;
@@ -18,6 +19,12 @@ class StudentModel {
   final DateTime? updatedAt;
   final bool isActive;
 
+  /// Where this student entered the curriculum. Everything before it is
+  /// credited as memorized before joining — the app never taught it. Students
+  /// created before flexible placement have no stored anchor and read back as
+  /// [CurriculumPosition.start], which is exactly what they were.
+  final CurriculumPosition enrollmentPosition;
+
   const StudentModel({
     required this.id,
     required this.userId,
@@ -34,7 +41,44 @@ class StudentModel {
     required this.createdAt,
     this.updatedAt,
     this.isActive = true,
+    this.enrollmentPosition = CurriculumPosition.start,
   });
+
+  /// Enrolls a student at [position], crediting every level before it as
+  /// already memorized. The student's current position *is* the anchor: they
+  /// start work at the session they were placed on.
+  factory StudentModel.enrolledAt({
+    required String id,
+    required String userId,
+    required String instituteId,
+    String? teacherId,
+    String? guardianId,
+    required CurriculumPosition position,
+    required DateTime createdAt,
+  }) {
+    final completedLevels = [
+      for (var level = 1; level < position.level; level++) level,
+    ];
+    final unlockedLevels = [
+      for (var level = 1; level <= position.level; level++) level,
+    ];
+
+    return StudentModel(
+      id: id,
+      userId: userId,
+      instituteId: instituteId,
+      teacherId: teacherId,
+      guardianId: guardianId,
+      currentLevel: position.level,
+      currentJuz: position.juz,
+      currentHizb: position.hizb,
+      currentSession: position.session,
+      completedLevels: completedLevels,
+      unlockedLevels: unlockedLevels,
+      enrollmentPosition: position,
+      createdAt: createdAt,
+    );
+  }
 
   factory StudentModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -54,6 +98,11 @@ class StudentModel {
       createdAt: (data['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updated_at'] as Timestamp?)?.toDate(),
       isActive: data['is_active'] ?? true,
+      enrollmentPosition: data['enrollment_position'] == null
+          ? CurriculumPosition.start
+          : CurriculumPosition.fromMap(
+              Map<String, dynamic>.from(data['enrollment_position'] as Map),
+            ),
     );
   }
 
@@ -73,6 +122,7 @@ class StudentModel {
       'created_at': Timestamp.fromDate(createdAt),
       'updated_at': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
       'is_active': isActive,
+      'enrollment_position': enrollmentPosition.toMap(),
     };
   }
 
@@ -92,6 +142,7 @@ class StudentModel {
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isActive,
+    CurriculumPosition? enrollmentPosition,
   }) {
     return StudentModel(
       id: id ?? this.id,
@@ -109,8 +160,16 @@ class StudentModel {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isActive: isActive ?? this.isActive,
+      enrollmentPosition: enrollmentPosition ?? this.enrollmentPosition,
     );
   }
+
+  /// Where the student is now, as a curriculum position.
+  CurriculumPosition get currentPosition => CurriculumPosition(
+    level: currentLevel,
+    hizb: currentHizb,
+    session: currentSession,
+  );
 
   /// Get progress percentage for current level
   double get levelProgressPercentage {
@@ -127,7 +186,8 @@ class StudentModel {
   bool get canTakeExam => currentSession == 36;
 
   /// Check if student has reached max attempts for current session
-  bool get hasReachedMaxAttempts => currentAttempt > AppConstants.maxSessionAttempts;
+  bool get hasReachedMaxAttempts =>
+      currentAttempt > AppConstants.maxSessionAttempts;
 
   /// Check if student can start a new session attempt
   /// Returns false if max attempts (3) have been exhausted

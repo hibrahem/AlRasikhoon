@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
+import 'package:al_rasikhoon/domain/curriculum/curriculum_position.dart';
 
 void main() {
   group('StudentModel', () {
@@ -249,8 +250,10 @@ void main() {
           'is_active': true,
         });
 
-        final doc =
-            await fakeFirestore.collection('students').doc('student123').get();
+        final doc = await fakeFirestore
+            .collection('students')
+            .doc('student123')
+            .get();
         final student = StudentModel.fromFirestore(doc);
 
         expect(student.id, 'student123');
@@ -274,8 +277,10 @@ void main() {
           'institute_id': 'institute123',
         });
 
-        final doc =
-            await fakeFirestore.collection('students').doc('student123').get();
+        final doc = await fakeFirestore
+            .collection('students')
+            .doc('student123')
+            .get();
         final student = StudentModel.fromFirestore(doc);
 
         expect(student.teacherId, isNull);
@@ -590,6 +595,135 @@ void main() {
 
         expect(student1, isNot(equals(student2)));
       });
+    });
+
+    group('enrollment position', () {
+      test(
+        'a student enrolled at the start of the curriculum earns no credit',
+        () {
+          final student = StudentModel.enrolledAt(
+            id: 's1',
+            userId: 'u1',
+            instituteId: 'i1',
+            position: CurriculumPosition.start,
+            createdAt: DateTime(2026, 7, 13),
+          );
+
+          expect(student.enrollmentPosition, CurriculumPosition.start);
+          expect(student.currentLevel, 1);
+          expect(student.currentJuz, 30);
+          expect(student.currentHizb, 59);
+          expect(student.currentSession, 1);
+          expect(student.completedLevels, isEmpty);
+          expect(student.unlockedLevels, [1]);
+        },
+      );
+
+      test(
+        'a student enrolled mid-curriculum is credited with the levels before them',
+        () {
+          final student = StudentModel.enrolledAt(
+            id: 's1',
+            userId: 'u1',
+            instituteId: 'i1',
+            position: const CurriculumPosition(level: 3, hizb: 47, session: 12),
+            createdAt: DateTime(2026, 7, 13),
+          );
+
+          expect(student.currentLevel, 3);
+          expect(student.currentJuz, 24);
+          expect(student.currentHizb, 47);
+          expect(student.currentSession, 12);
+          expect(student.completedLevels, [1, 2]);
+          expect(student.unlockedLevels, [1, 2, 3]);
+        },
+      );
+
+      test('a student can be enrolled directly onto a Sard session', () {
+        final student = StudentModel.enrolledAt(
+          id: 's1',
+          userId: 'u1',
+          instituteId: 'i1',
+          position: const CurriculumPosition(level: 2, hizb: 53, session: 35),
+          createdAt: DateTime(2026, 7, 13),
+        );
+
+        expect(student.currentSession, 35);
+        expect(student.canTakeSard, isTrue);
+        expect(student.completedLevels, [1]);
+      });
+
+      test('the current position is exposed as a curriculum position', () {
+        final student = StudentModel(
+          id: 's1',
+          userId: 'u1',
+          instituteId: 'i1',
+          currentLevel: 2,
+          currentJuz: 27,
+          currentHizb: 53,
+          currentSession: 4,
+          createdAt: DateTime(2026, 7, 13),
+        );
+
+        expect(
+          student.currentPosition,
+          const CurriculumPosition(level: 2, hizb: 53, session: 4),
+        );
+      });
+
+      test('the enrollment position round-trips through Firestore', () async {
+        final student = StudentModel.enrolledAt(
+          id: 's1',
+          userId: 'u1',
+          instituteId: 'i1',
+          position: const CurriculumPosition(level: 2, hizb: 53, session: 35),
+          createdAt: DateTime(2026, 7, 13),
+        );
+
+        final data = student.toFirestore();
+        expect(data['enrollment_position'], {
+          'level': 2,
+          'juz': 27,
+          'hizb': 53,
+          'session': 35,
+        });
+
+        final firestore = FakeFirebaseFirestore();
+        await firestore.collection('students').doc('s1').set(data);
+        final doc = await firestore.collection('students').doc('s1').get();
+
+        expect(
+          StudentModel.fromFirestore(doc).enrollmentPosition,
+          const CurriculumPosition(level: 2, hizb: 53, session: 35),
+        );
+      });
+
+      test(
+        'a student created before this feature reads back as starting at the beginning',
+        () async {
+          final firestore = FakeFirebaseFirestore();
+          await firestore.collection('students').doc('old').set({
+            'user_id': 'u1',
+            'institute_id': 'i1',
+            'current_level': 1,
+            'current_juz': 30,
+            'current_hizb': 59,
+            'current_session': 8,
+            'current_attempt': 1,
+            'completed_levels': <int>[],
+            'unlocked_levels': [1],
+            'is_active': true,
+            'created_at': Timestamp.fromDate(DateTime(2026, 1, 1)),
+          });
+
+          final doc = await firestore.collection('students').doc('old').get();
+
+          expect(
+            StudentModel.fromFirestore(doc).enrollmentPosition,
+            CurriculumPosition.start,
+          );
+        },
+      );
     });
   });
 }
