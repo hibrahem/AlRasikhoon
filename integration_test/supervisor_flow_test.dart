@@ -1,5 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:al_rasikhoon/data/repositories/student_repository.dart';
+import 'package:al_rasikhoon/domain/curriculum/curriculum_position.dart';
 
 import 'helpers/test_app.dart';
 import 'helpers/test_robots.dart';
@@ -242,6 +246,116 @@ void main() {
       // Assert — the Sard saved successfully end-to-end.
       await supervisorRobot.verifySardSaved();
     });
+
+    testWidgets(
+      'a student placed on a Sard is assessed with no prior sessions (#flexible-start)',
+      (tester) async {
+        // A student arrives having already memorized through level 1 and part of
+        // level 2, and is placed directly on the Sard of hizb 53. The app taught
+        // them none of it — they hold zero session records — and the supervisor
+        // must still be able to assess them.
+        const instituteId = 'placed_institute';
+        final supervisor = env
+            .createSupervisor()
+            .copyWith(instituteId: instituteId);
+        await env.setUp(authenticatedUser: supervisor);
+        await env.addInstitute(id: instituteId);
+        await env.assignSupervisorToInstitute(supervisor.id, instituteId);
+
+        // The curriculum session they are placed on: level 2, juz 27, hizb 53,
+        // session 35 (the Sard).
+        await env.fakeFirestore
+            .collection('sessions')
+            .doc('L2_J27_H53_S35')
+            .set({
+              'session_number': 35,
+              'level_id': 2,
+              'juz_number': 27,
+              'hizb_number': 53,
+              'session_type': 'sard',
+              'current_level_content': {
+                'from_surah': 'الزمر',
+                'from_verse': 1,
+                'to_surah': 'الزمر',
+                'to_verse': 31,
+              },
+              'recent_review_content': {
+                'from_surah': 'ص',
+                'from_verse': 1,
+                'to_surah': 'ص',
+                'to_verse': 88,
+              },
+              'distant_review_content': {
+                'from_surah': 'يس',
+                'from_verse': 1,
+                'to_surah': 'يس',
+                'to_verse': 83,
+              },
+            });
+
+        // Place the student through the production path, not a seeded document.
+        final container = ProviderContainer(overrides: env.overrides.cast());
+        addTearDown(container.dispose);
+        final created = await container
+            .read(studentRepositoryProvider)
+            .createStudent(
+              name: 'طالب حافظ',
+              username: 'placed_student',
+              password: 'secret123',
+              instituteId: instituteId,
+              // teacher_id stays null: an institute-scoped student (AgDR-0003).
+              startingPosition: const CurriculumPosition(
+                level: 2,
+                hizb: 53,
+                session: 35,
+              ),
+            );
+
+        // The anchor and the credit it implies are persisted.
+        final doc = await env.fakeFirestore
+            .collection('students')
+            .doc(created.student.id)
+            .get();
+        expect(doc.data()?['current_level'], 2);
+        expect(doc.data()?['current_hizb'], 53);
+        expect(doc.data()?['current_juz'], 27);
+        expect(doc.data()?['current_session'], 35);
+        expect(doc.data()?['completed_levels'], [1]);
+        expect(doc.data()?['enrollment_position'], {
+          'level': 2,
+          'juz': 27,
+          'hizb': 53,
+          'session': 35,
+        });
+
+        // They hold no session records at all — nothing was taught in the app.
+        final records = await env.fakeFirestore
+            .collection('session_records')
+            .where('student_id', isEqualTo: created.student.id)
+            .get();
+        expect(records.docs, isEmpty);
+
+        // The supervisor conducts their Sard end-to-end regardless.
+        await tester.pumpWidget(TestApp(overrides: env.overrides));
+        supervisorRobot = SupervisorRobot(tester);
+
+        await supervisorRobot.verifyDashboard();
+        await supervisorRobot.goToStudents();
+        await supervisorRobot.verifyStudentsScreen();
+        await supervisorRobot.tapStudent('طالب حافظ');
+        await supervisorRobot.verifySessionOverview();
+        await supervisorRobot.verifySardAvailableForSupervisor();
+
+        await supervisorRobot.startSard();
+        await supervisorRobot.verifySardSession();
+        await supervisorRobot.enterSardErrors(2);
+        await supervisorRobot.finishSard();
+        await supervisorRobot.verifySardResult();
+        await supervisorRobot.saveSardResult();
+
+        await supervisorRobot.verifySardSaved();
+      },
+    );
 
     testWidgets('Supervisor only sees students from assigned institutes', (tester) async {
       // Arrange
