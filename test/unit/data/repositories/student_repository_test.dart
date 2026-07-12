@@ -314,6 +314,29 @@ void main() {
           });
         },
       );
+
+      test(
+        'rejects a starting position whose hizb does not belong to its level',
+        () async {
+          // Hizb 53 belongs to level 2, not level 1 — a self-contradictory
+          // position must never reach Firestore as corrupt credit.
+          expect(
+            () => studentRepository.createStudent(
+              name: 'طالب',
+              username: 'bad_position',
+              password: 'pass123',
+              instituteId: 'institute1',
+              teacherId: 'teacher1',
+              startingPosition: const CurriculumPosition(
+                level: 1,
+                hizb: 53,
+                session: 1,
+              ),
+            ),
+            throwsArgumentError,
+          );
+        },
+      );
     });
 
     group('getStudentById', () {

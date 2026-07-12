@@ -9,10 +9,12 @@ import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/institute_repository.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/models/institute_model.dart';
+import '../../../domain/curriculum/curriculum_position.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../providers/teacher_provider.dart';
+import '../widgets/starting_point_picker.dart';
 import '../../supervisor/providers/supervisor_provider.dart';
 
 class AddStudentScreen extends ConsumerStatefulWidget {
@@ -39,6 +41,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
   final _guardianPasswordController = TextEditingController();
   final _guardianPhoneController = TextEditingController();
   InstituteModel? _selectedInstitute;
+  CurriculumPosition _startingPosition = CurriculumPosition.start;
   bool _isLoading = false;
   List<InstituteModel> _institutes = [];
   Country _studentCountry = Countries.defaultCountry;
@@ -167,6 +170,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
         guardianUsername: guardianUsername,
         guardianPassword: guardianPassword,
         guardianPhone: guardianPhone,
+        startingPosition: _startingPosition,
       );
 
       if (widget.asSupervisor) {
@@ -358,12 +362,21 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                 ],
               ),
               const SizedBox(height: 24),
+              StartingPointPicker(
+                value: _startingPosition,
+                onChanged: (position) {
+                  setState(() => _startingPosition = position);
+                },
+              ),
+              const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: AppColors.info.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: AppColors.info.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -371,7 +384,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'الطالب يبدأ من المستوى الأول. شارك اسم المستخدم وكلمة المرور معه.',
+                        'شارك اسم المستخدم وكلمة المرور مع الطالب.',
                         style: Theme.of(
                           context,
                         ).textTheme.bodySmall?.copyWith(color: AppColors.info),

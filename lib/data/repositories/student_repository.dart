@@ -91,6 +91,16 @@ class StudentRepository {
     String? guardianPhone,
     CurriculumPosition startingPosition = CurriculumPosition.start,
   }) async {
+    // Reject a self-contradictory position (e.g. level 1 with a hizb that
+    // really belongs to level 2) before it can be persisted as corrupt
+    // credit. CurriculumPosition.validated already knows what a real
+    // position looks like — reuse its checks rather than duplicating them.
+    CurriculumPosition.validated(
+      level: startingPosition.level,
+      hizb: startingPosition.hizb,
+      session: startingPosition.session,
+    );
+
     final normalizedUsername = username.toLowerCase();
     final synthesizedEmail =
         '$normalizedUsername@${AppConstants.synthesizedEmailDomain}';
