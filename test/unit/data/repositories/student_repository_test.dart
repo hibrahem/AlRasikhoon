@@ -315,28 +315,47 @@ void main() {
         },
       );
 
-      test(
-        'rejects a starting position whose hizb does not belong to its level',
-        () async {
-          // Hizb 53 belongs to level 2, not level 1 — a self-contradictory
-          // position must never reach Firestore as corrupt credit.
-          expect(
-            () => studentRepository.createStudent(
-              name: 'طالب',
-              username: 'bad_position',
-              password: 'pass123',
-              instituteId: 'institute1',
-              teacherId: 'teacher1',
-              startingPosition: const CurriculumPosition(
-                level: 1,
-                hizb: 53,
-                session: 1,
-              ),
+      test('rejects a starting position whose hizb does not belong to its '
+          'level, before any side effect', () async {
+        // Hizb 53 belongs to level 2, not level 1 — a self-contradictory
+        // position must never reach Firestore as corrupt credit. This
+        // must be caught before the auth account is provisioned: running
+        // validation after provisioning would leave a half-provisioned
+        // user (an auth account with no matching student document) on
+        // every rejection, which is the exact failure this hardening
+        // exists to prevent.
+        await expectLater(
+          studentRepository.createStudent(
+            name: 'طالب',
+            username: 'bad_position',
+            password: 'pass123',
+            instituteId: 'institute1',
+            teacherId: 'teacher1',
+            startingPosition: const CurriculumPosition(
+              level: 1,
+              hizb: 53,
+              session: 1,
             ),
-            throwsArgumentError,
-          );
-        },
-      );
+          ),
+          throwsArgumentError,
+        );
+
+        verifyNever(
+          () => firebaseService.provisionUserAccount(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+            role: any(named: 'role'),
+            name: any(named: 'name'),
+            username: any(named: 'username'),
+            phone: any(named: 'phone'),
+          ),
+        );
+
+        final users = await fakeFirestore.collection('users').get();
+        expect(users.docs, isEmpty);
+        final students = await fakeFirestore.collection('students').get();
+        expect(students.docs, isEmpty);
+      });
     });
 
     group('getStudentById', () {

@@ -41,7 +41,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
   final _guardianPasswordController = TextEditingController();
   final _guardianPhoneController = TextEditingController();
   InstituteModel? _selectedInstitute;
-  CurriculumPosition _startingPosition = CurriculumPosition.start;
+  CurriculumPosition? _startingPosition = CurriculumPosition.start;
   bool _isLoading = false;
   List<InstituteModel> _institutes = [];
   Country _studentCountry = Countries.defaultCountry;
@@ -109,6 +109,17 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
       return;
     }
 
+    final startingPosition = _startingPosition;
+    if (startingPosition == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('يرجى اختيار نقطة بداية صالحة في المنهج'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -170,7 +181,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
         guardianUsername: guardianUsername,
         guardianPassword: guardianPassword,
         guardianPhone: guardianPhone,
-        startingPosition: _startingPosition,
+        startingPosition: startingPosition,
       );
 
       if (widget.asSupervisor) {
@@ -363,7 +374,11 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
               ),
               const SizedBox(height: 24),
               StartingPointPicker(
-                value: _startingPosition,
+                // Only seeds the picker's initial selection — the picker
+                // manages its own level/hizb/session state after that and
+                // reports every change through onChanged (including `null`
+                // while no valid session is selected).
+                value: CurriculumPosition.start,
                 onChanged: (position) {
                   setState(() => _startingPosition = position);
                 },

@@ -14,9 +14,15 @@ import '../../../domain/curriculum/curriculum_position.dart';
 /// the sessions are the ones the curriculum actually contains — it is sparse, so
 /// a hizb may hold 18 sessions numbered between 2 and 36. Sard (35) and Exam (36)
 /// are valid starting points: a student may arrive ready to be assessed.
+///
+/// [value] seeds the picker's initial level/hizb/session; from then on the
+/// picker owns the selection itself and reports every change through
+/// [onChanged]. Some hizbs hold no sessions at all (a gap in the seeded
+/// curriculum) — when that happens there is no valid starting point to
+/// report, so [onChanged] is called with `null` rather than inventing one.
 class StartingPointPicker extends ConsumerStatefulWidget {
   final CurriculumPosition value;
-  final ValueChanged<CurriculumPosition> onChanged;
+  final ValueChanged<CurriculumPosition?> onChanged;
 
   const StartingPointPicker({
     super.key,
@@ -30,34 +36,84 @@ class StartingPointPicker extends ConsumerStatefulWidget {
 }
 
 class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
+  late int _level;
+  late int _hizb;
+  int? _session;
   List<int> _sessions = const [];
+
+  /// Guards against a slower response from an earlier (level, hizb)
+  /// selection overwriting the sessions of a later one: only the response
+  /// whose generation matches the most recent request is applied.
+  int _requestGeneration = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadSessions(widget.value.level, widget.value.hizb);
+    _level = widget.value.level;
+    _hizb = widget.value.hizb;
+    _session = widget.value.session;
+    _loadSessions(_level, _hizb);
   }
 
+  /// Fetches the sessions that exist for ([level], [hizb]), keeps the
+  /// current session if it is still valid there (otherwise falls back to
+  /// the first available session, or to no session at all if there is
+  /// none), and reports the resulting position to the parent.
+  ///
+  /// Used both for the initial load and every subsequent level/hizb change
+  /// — there is exactly one path that fetches sessions and applies them.
   Future<void> _loadSessions(int level, int hizb) async {
+    final requestId = ++_requestGeneration;
     final sessions = await ref
         .read(curriculumRepositoryProvider)
         .getSessionNumbersForHizb(level: level, hizb: hizb);
-    if (mounted) setState(() => _sessions = sessions);
+    if (!mounted || requestId != _requestGeneration) return;
+
+    setState(() {
+      _sessions = sessions;
+      if (!sessions.contains(_session)) {
+        _session = sessions.isEmpty ? null : sessions.first;
+      }
+    });
+    _report();
   }
 
-  /// Moves the student to the first session that exists in [hizb] of [level].
-  Future<void> _selectHizb(int level, int hizb) async {
-    final sessions = await ref
-        .read(curriculumRepositoryProvider)
-        .getSessionNumbersForHizb(level: level, hizb: hizb);
-    if (!mounted) return;
-    setState(() => _sessions = sessions);
+  void _changeLevel(int level) {
+    final hizb = CurriculumOrder.firstHizbOfLevel(level);
+    setState(() {
+      _level = level;
+      _hizb = hizb;
+      _session = null;
+    });
+    _loadSessions(level, hizb);
+  }
+
+  void _changeHizb(int hizb) {
+    setState(() {
+      _hizb = hizb;
+      _session = null;
+    });
+    _loadSessions(_level, hizb);
+  }
+
+  void _changeSession(int session) {
+    setState(() => _session = session);
+    _report();
+  }
+
+  /// Tells the parent the current, validated position — or `null` while no
+  /// session in [_hizb] is selected, including when [_hizb] has none to
+  /// offer. The parent must treat `null` as "nothing to submit yet".
+  void _report() {
+    final session = _session;
     widget.onChanged(
-      CurriculumPosition.validated(
-        level: level,
-        hizb: hizb,
-        session: sessions.isEmpty ? 1 : sessions.first,
-      ),
+      session == null
+          ? null
+          : CurriculumPosition.validated(
+              level: _level,
+              hizb: _hizb,
+              session: session,
+            ),
     );
   }
 
@@ -70,7 +126,6 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
   @override
   Widget build(BuildContext context) {
     final levelsAsync = ref.watch(levelsProvider);
-    final position = widget.value;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,43 +145,48 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
               context,
             ).textTheme.bodySmall?.copyWith(color: AppColors.error),
           ),
-          data: (levels) => _buildDropdowns(context, levels, position),
+          data: (levels) => _buildDropdowns(context, levels),
         ),
         const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.info.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.info_outline, color: AppColors.info),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'سيبدأ الطالب من ${_sessionLabel(position.session)}، '
-                  'الحزب ${position.hizb}، المستوى ${position.level} — '
-                  'ويُعتبر ما قبلها من المنهج محفوظًا ومعتمدًا.',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: AppColors.info),
-                ),
-              ),
-            ],
-          ),
-        ),
+        _buildBanner(context),
       ],
     );
   }
 
-  Widget _buildDropdowns(
-    BuildContext context,
-    List<LevelModel> levels,
-    CurriculumPosition position,
-  ) {
-    final hizbs = CurriculumOrder.hizbsOfLevel(position.level);
+  Widget _buildBanner(BuildContext context) {
+    final session = _session;
+    final message = session == null
+        ? 'لا توجد حلقات لهذا الحزب في المنهج. اختر حزبًا آخر.'
+        : 'سيبدأ الطالب من ${_sessionLabel(session)}، '
+              'الحزب $_hizb، المستوى $_level — '
+              'ويُعتبر ما قبلها من المنهج محفوظًا ومعتمدًا.';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.info.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline, color: AppColors.info),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.info),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdowns(BuildContext context, List<LevelModel> levels) {
+    final hizbs = CurriculumOrder.hizbsOfLevel(_level);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,7 +197,7 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
           child: DropdownButton<int>(
             key: const Key('starting_point_level'),
             isExpanded: true,
-            value: position.level,
+            value: _level,
             items: levels
                 .map(
                   (level) => DropdownMenuItem(
@@ -148,7 +208,7 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
                 .toList(),
             onChanged: (level) {
               if (level == null) return;
-              _selectHizb(level, CurriculumOrder.firstHizbOfLevel(level));
+              _changeLevel(level);
             },
           ),
         ),
@@ -159,7 +219,7 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
           child: DropdownButton<int>(
             key: const Key('starting_point_hizb'),
             isExpanded: true,
-            value: position.hizb,
+            value: _hizb,
             items: hizbs
                 .map(
                   (hizb) => DropdownMenuItem(
@@ -172,7 +232,7 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
                 .toList(),
             onChanged: (hizb) {
               if (hizb == null) return;
-              _selectHizb(position.level, hizb);
+              _changeHizb(hizb);
             },
           ),
         ),
@@ -183,9 +243,7 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
           child: DropdownButton<int>(
             key: const Key('starting_point_session'),
             isExpanded: true,
-            value: _sessions.contains(position.session)
-                ? position.session
-                : null,
+            value: _sessions.contains(_session) ? _session : null,
             hint: const Text('اختر الحلقة'),
             items: _sessions
                 .map(
@@ -197,13 +255,7 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
                 .toList(),
             onChanged: (session) {
               if (session == null) return;
-              widget.onChanged(
-                CurriculumPosition.validated(
-                  level: position.level,
-                  hizb: position.hizb,
-                  session: session,
-                ),
-              );
+              _changeSession(session);
             },
           ),
         ),
