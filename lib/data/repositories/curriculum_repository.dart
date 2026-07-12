@@ -4,12 +4,13 @@ import '../models/level_model.dart';
 import '../models/session_model.dart';
 import '../services/firebase_service.dart';
 import '../../core/constants/app_constants.dart';
+import '../../domain/curriculum/curriculum_order.dart';
 
 class CurriculumRepository {
   final FirebaseFirestore _firestore;
 
   CurriculumRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _levelsCollection =>
       _firestore.collection(AppConstants.collectionLevels);
@@ -54,7 +55,8 @@ class CurriculumRepository {
     required int sessionNumber,
   }) async {
     // Try to find by constructed ID first
-    final sessionId = 'L${levelId}_J${juzNumber}_H${hizbNumber}_S$sessionNumber';
+    final sessionId =
+        'L${levelId}_J${juzNumber}_H${hizbNumber}_S$sessionNumber';
     final doc = await _sessionsCollection.doc(sessionId).get();
     if (doc.exists) {
       return SessionModel.fromFirestore(doc);
@@ -101,6 +103,36 @@ class CurriculumRepository {
         .get();
 
     return query.docs.map((doc) => SessionModel.fromFirestore(doc)).toList();
+  }
+
+  /// The session numbers that actually exist in a hizb, ascending.
+  ///
+  /// The curriculum is sparse: a hizb holds a subset of the numbers 1-36, so
+  /// callers must never assume `session + 1` exists. The seeded data also
+  /// carries extraction noise, tolerated here rather than fixed at the source:
+  /// sessions numbered 0, and sessions whose juz contradicts their hizb (a
+  /// stray hizb-59 pair filed under juz 29), are ignored.
+  Future<List<int>> getSessionNumbersForHizb({
+    required int level,
+    required int hizb,
+  }) async {
+    final query = await _sessionsCollection
+        .where('level_id', isEqualTo: level)
+        .where('hizb_number', isEqualTo: hizb)
+        .get();
+
+    final expectedJuz = CurriculumOrder.juzOfHizb(hizb);
+    final numbers = <int>{};
+    for (final doc in query.docs) {
+      final data = doc.data();
+      final sessionNumber = data['session_number'] as int? ?? 0;
+      final juzNumber = data['juz_number'] as int?;
+      if (sessionNumber < 1) continue;
+      if (juzNumber != expectedJuz) continue;
+      numbers.add(sessionNumber);
+    }
+
+    return numbers.toList()..sort();
   }
 
   /// Get all sessions for a level
@@ -150,9 +182,13 @@ class CurriculumRepository {
 
   /// Stream levels
   Stream<List<LevelModel>> streamLevels() {
-    return _levelsCollection.orderBy('order').snapshots().map(
-          (snapshot) =>
-              snapshot.docs.map((doc) => LevelModel.fromFirestore(doc)).toList(),
+    return _levelsCollection
+        .orderBy('order')
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => LevelModel.fromFirestore(doc))
+              .toList(),
         );
   }
 }
@@ -168,8 +204,10 @@ final levelsProvider = FutureProvider<List<LevelModel>>((ref) async {
 });
 
 /// Provider for specific level
-final levelProvider =
-    FutureProvider.family<LevelModel?, int>((ref, levelNumber) async {
+final levelProvider = FutureProvider.family<LevelModel?, int>((
+  ref,
+  levelNumber,
+) async {
   final repository = ref.watch(curriculumRepositoryProvider);
   return repository.getLevelByNumber(levelNumber);
 });
@@ -178,8 +216,10 @@ final levelProvider =
 ///
 /// Reuses [CurriculumRepository.getSessionsForLevel] — the same query the
 /// student/teacher flows use to load a level's predefined sessions.
-final levelSessionsProvider =
-    FutureProvider.family<List<SessionModel>, int>((ref, levelNumber) async {
+final levelSessionsProvider = FutureProvider.family<List<SessionModel>, int>((
+  ref,
+  levelNumber,
+) async {
   final repository = ref.watch(curriculumRepositoryProvider);
   return repository.getSessionsForLevel(levelNumber);
 });
