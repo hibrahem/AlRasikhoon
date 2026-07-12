@@ -16,6 +16,36 @@ class StudentWithUser {
   const StudentWithUser({required this.student, required this.user});
 }
 
+/// The outcome of walking forward to the next [CurriculumPosition]. Kept as
+/// a sealed type rather than a nullable position so "end of the curriculum"
+/// (a structural fact about the curriculum) can never be conflated with "no
+/// seeded data ahead" (a fixture/environment problem) — see
+/// [StudentRepository._nextPosition].
+sealed class _NextPositionOutcome {
+  const _NextPositionOutcome();
+}
+
+/// There is a later position in the curriculum; move to it.
+final class _Advanced extends _NextPositionOutcome {
+  final CurriculumPosition position;
+  const _Advanced(this.position);
+}
+
+/// The student's current hizb is structurally the last one in the
+/// curriculum (no seeded-session check can override this): no later
+/// session exists in it, and [CurriculumOrder.nextHizb] has no next hizb.
+final class _CurriculumCompleted extends _NextPositionOutcome {
+  const _CurriculumCompleted();
+}
+
+/// The walk ran out of seeded sessions before reaching a structurally
+/// terminal hizb. This is a data problem (an unseeded environment or test
+/// fixture), not the end of the curriculum, so the caller must not credit
+/// completion or move the student.
+final class _CurriculumDataMissing extends _NextPositionOutcome {
+  const _CurriculumDataMissing();
+}
+
 class StudentRepository {
   final FirebaseFirestore _firestore;
   final FirebaseService _firebaseService;
@@ -310,74 +340,133 @@ class StudentRepository {
   /// Follows the real teaching order (level 1 runs 59, 60, 57, 58, 55, 56) over
   /// the sessions that actually exist — the curriculum is sparse, so the next
   /// session is rarely `current + 1`. A level completes only after its last
-  /// hizb. At the end of the curriculum the student stays where they are.
+  /// hizb.
+  ///
+  /// Three outcomes:
+  /// - [_Advanced]: there is a later position — move to it, resetting the
+  ///   attempt, and crediting every level fully passed through.
+  /// - [_CurriculumCompleted]: the student's current hizb is structurally the
+  ///   last one in the curriculum and has no later session — credit their
+  ///   final level as completed, reset the attempt, and stay put (there is
+  ///   nowhere to advance to).
+  /// - [_CurriculumDataMissing]: the walk ran out of *seeded* sessions before
+  ///   it could tell whether the student had truly reached the end (a data
+  ///   problem, not the end of the curriculum) — leave the student exactly
+  ///   as they are and write nothing.
   Future<void> advanceStudentSession(String studentId) async {
     final student = await getStudentById(studentId);
     if (student == null) return;
 
-    final next = await _nextPosition(student.currentPosition);
-    if (next == null) {
-      await resetStudentAttempt(studentId);
-      return;
-    }
+    final outcome = await _nextPosition(student.currentPosition);
 
-    final completedLevels = List<int>.from(student.completedLevels);
-    final unlockedLevels = List<int>.from(student.unlockedLevels);
-    if (next.level > student.currentLevel) {
-      if (!completedLevels.contains(student.currentLevel)) {
-        completedLevels.add(student.currentLevel);
-      }
-      if (!unlockedLevels.contains(next.level)) {
-        unlockedLevels.add(next.level);
-      }
-    }
+    switch (outcome) {
+      case _CurriculumDataMissing():
+        return;
 
-    await _studentsCollection.doc(studentId).update({
-      'current_level': next.level,
-      'current_juz': next.juz,
-      'current_hizb': next.hizb,
-      'current_session': next.session,
-      'current_attempt': 1,
-      'completed_levels': completedLevels,
-      'unlocked_levels': unlockedLevels,
-      'updated_at': FieldValue.serverTimestamp(),
-    });
+      case _CurriculumCompleted():
+        final completedLevels = List<int>.from(student.completedLevels);
+        if (!completedLevels.contains(student.currentLevel)) {
+          completedLevels.add(student.currentLevel);
+        }
+        await _studentsCollection.doc(studentId).update({
+          'current_attempt': 1,
+          'completed_levels': completedLevels,
+          'updated_at': FieldValue.serverTimestamp(),
+        });
+        return;
+
+      case _Advanced(:final position):
+        final completedLevels = List<int>.from(student.completedLevels);
+        final unlockedLevels = List<int>.from(student.unlockedLevels);
+        if (position.level > student.currentLevel) {
+          // Every level strictly between the student's current level and
+          // the new one was walked through without stopping (e.g. an
+          // entirely unseeded level) and must still be credited complete.
+          for (
+            var level = student.currentLevel;
+            level < position.level;
+            level++
+          ) {
+            if (!completedLevels.contains(level)) {
+              completedLevels.add(level);
+            }
+          }
+          for (var level = 1; level <= position.level; level++) {
+            if (!unlockedLevels.contains(level)) {
+              unlockedLevels.add(level);
+            }
+          }
+        }
+
+        await _studentsCollection.doc(studentId).update({
+          'current_level': position.level,
+          'current_juz': position.juz,
+          'current_hizb': position.hizb,
+          'current_session': position.session,
+          'current_attempt': 1,
+          'completed_levels': completedLevels,
+          'unlocked_levels': unlockedLevels,
+          'updated_at': FieldValue.serverTimestamp(),
+        });
+        return;
+    }
   }
 
-  /// The next position after [from] in teaching order, or null at the end of
-  /// the curriculum. Hizbs with no seeded sessions are stepped over.
-  Future<CurriculumPosition?> _nextPosition(CurriculumPosition from) async {
+  /// The outcome of walking forward from a [CurriculumPosition]. `null` used
+  /// to conflate "end of the curriculum" with "no seeded data ahead" — this
+  /// distinguishes the two so a partially-seeded environment can never be
+  /// mistaken for a student finishing the curriculum.
+  ///
+  /// The walk is bounded to at most one lap of the curriculum's hizbs, so it
+  /// cannot loop unboundedly even if [CurriculumOrder.nextHizb] were ever
+  /// buggy again.
+  Future<_NextPositionOutcome> _nextPosition(CurriculumPosition from) async {
+    // The level is derived from the hizb, not read off the stored position,
+    // so a corrupted record (stored level disagreeing with its hizb) still
+    // finds the sessions that actually exist there.
+    final currentLevel = CurriculumOrder.levelOfHizb(from.hizb);
     final sessions = await _curriculumRepository.getSessionNumbersForHizb(
-      level: from.level,
+      level: currentLevel,
       hizb: from.hizb,
     );
     final laterInHizb = sessions.where((s) => s > from.session);
     if (laterInHizb.isNotEmpty) {
-      return CurriculumPosition(
-        level: from.level,
-        hizb: from.hizb,
-        session: laterInHizb.first,
+      return _Advanced(
+        CurriculumPosition(
+          level: currentLevel,
+          hizb: from.hizb,
+          session: laterInHizb.first,
+        ),
       );
     }
 
+    // Structural terminality: no later session in this hizb, and the
+    // curriculum has no next hizb at all. This is decided independently of
+    // what's seeded ahead, so it can never be confused with missing data.
+    if (CurriculumOrder.nextHizb(from.hizb) == null) {
+      return const _CurriculumCompleted();
+    }
+
     int? hizb = CurriculumOrder.nextHizb(from.hizb);
-    while (hizb != null) {
+    var steps = 0;
+    const maxSteps =
+        CurriculumOrder.totalLevels * CurriculumOrder.hizbsPerLevel;
+    while (hizb != null && steps < maxSteps) {
       final level = CurriculumOrder.levelOfHizb(hizb);
       final next = await _curriculumRepository.getSessionNumbersForHizb(
         level: level,
         hizb: hizb,
       );
       if (next.isNotEmpty) {
-        return CurriculumPosition(
-          level: level,
-          hizb: hizb,
-          session: next.first,
+        return _Advanced(
+          CurriculumPosition(level: level, hizb: hizb, session: next.first),
         );
       }
       hizb = CurriculumOrder.nextHizb(hizb);
+      steps++;
     }
 
-    return null;
+    return const _CurriculumDataMissing();
   }
 
   /// Increment attempt for failed session

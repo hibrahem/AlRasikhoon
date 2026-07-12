@@ -532,6 +532,118 @@ void main() {
         expect(student['current_hizb'], 2);
         expect(student['current_session'], 36);
         expect(student['current_attempt'], 1);
+        // Passing the final exam must credit level 10 as completed — there
+        // is no eleventh level to unlock into, so completion is the only
+        // signal that the curriculum was finished.
+        expect(
+          student['completed_levels'],
+          containsAll([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+        );
+      });
+
+      test(
+        'a repeat call after finishing the curriculum does not duplicate the level-10 credit',
+        () async {
+          await seedSession(level: 10, hizb: 2, session: 36);
+          await seedStudent(
+            level: 10,
+            hizb: 2,
+            session: 36,
+            attempt: 1,
+            completedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            unlockedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          );
+
+          await studentRepository.advanceStudentSession('s1');
+
+          final student = await readStudent();
+          final tens = (student['completed_levels'] as List).where(
+            (l) => l == 10,
+          );
+          expect(tens.length, 1);
+        },
+      );
+
+      test('missing curriculum data ahead leaves the student untouched, not '
+          'credited as having finished', () async {
+        // The student sits at hizb 60 of level 1 — not the last hizb of
+        // the curriculum — but nothing is seeded in hizb 60 or in any
+        // hizb ahead of it (a partially-seeded environment/fixture). This
+        // must not be conflated with reaching the real end of the
+        // curriculum: position, attempt, and credit must all stay exactly
+        // as they were, and nothing should be written.
+        await seedStudent(
+          level: 1,
+          hizb: 60,
+          session: 36,
+          attempt: 2,
+          completedLevels: const [],
+          unlockedLevels: const [1],
+        );
+
+        await studentRepository.advanceStudentSession('s1');
+
+        final student = await readStudent();
+        expect(student['current_level'], 1);
+        expect(student['current_hizb'], 60);
+        expect(student['current_session'], 36);
+        expect(student['current_attempt'], 2);
+        expect(student['completed_levels'], isEmpty);
+        expect(student['unlocked_levels'], [1]);
+      });
+
+      test(
+        'advancing across a fully-skipped level still credits and unlocks it',
+        () async {
+          // Level 2 has no seeded sessions anywhere, so the walk from the
+          // end of level 1 lands directly in level 3. Level 2 must still be
+          // marked completed and unlocked — not silently skipped.
+          await seedSession(level: 1, hizb: 56, session: 36); // last of L1
+          await seedSession(level: 3, hizb: 47, session: 1); // first of L3
+          await seedStudent(
+            level: 1,
+            hizb: 56,
+            session: 36,
+            completedLevels: const [],
+            unlockedLevels: const [1],
+          );
+
+          await studentRepository.advanceStudentSession('s1');
+
+          final student = await readStudent();
+          expect(student['current_level'], 3);
+          expect(student['current_hizb'], 47);
+          expect(student['current_session'], 1);
+          expect(student['completed_levels'], containsAll([1, 2]));
+          expect((student['completed_levels'] as List).length, 2);
+          expect(student['unlocked_levels'], containsAll([1, 2, 3]));
+          expect((student['unlocked_levels'] as List).length, 3);
+        },
+      );
+
+      test('derives the level from the hizb even when the stored level is '
+          'corrupted (disagrees with the hizb)', () async {
+        // Hizb 53 belongs to level 2, but this record's stored level
+        // still says 1 — the exact corruption the old advancement bug
+        // produced. The walk must find the sessions actually seeded
+        // under hizb 53's real level rather than silently skipping past
+        // them because it queried under the wrong level.
+        await seedSession(level: 2, hizb: 53, session: 5);
+        await seedSession(level: 2, hizb: 53, session: 10);
+        await seedStudent(
+          level: 1, // corrupted: hizb 53 actually belongs to level 2
+          hizb: 53,
+          session: 5,
+          completedLevels: const [1],
+          unlockedLevels: const [1, 2],
+        );
+
+        await studentRepository.advanceStudentSession('s1');
+
+        final student = await readStudent();
+        expect(student['current_level'], 2);
+        expect(student['current_hizb'], 53);
+        expect(student['current_session'], 10);
       });
 
       test('does nothing when the student does not exist', () async {

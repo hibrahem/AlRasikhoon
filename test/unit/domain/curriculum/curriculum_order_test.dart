@@ -57,6 +57,16 @@ void main() {
       expect(CurriculumOrder.nextHizb(2), isNull);
     });
 
+    test('nextHizb terminates instead of descending below the curriculum', () {
+      // The old buggy advancement code left legacy records at hizb -1
+      // after level 10. nextHizb must not treat that as a valid hizb to
+      // keep walking from (0 -> -3 -> -2 -> ... forever) — any hizb below
+      // 1 is out of range and has no next hizb.
+      expect(CurriculumOrder.nextHizb(0), isNull);
+      expect(CurriculumOrder.nextHizb(-1), isNull);
+      expect(CurriculumOrder.nextHizb(-3), isNull);
+    });
+
     test('walking nextHizb from the start visits all sixty hizbs in order', () {
       final visited = <int>[];
       int? hizb = CurriculumOrder.firstHizbOfLevel(1);

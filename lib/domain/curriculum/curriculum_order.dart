@@ -44,7 +44,13 @@ class CurriculumOrder {
   /// half (59 -> 60). Even hizbs end their juz, so the next hizb is the first
   /// half of the next (lower) juz (60 -> 57). This crosses level boundaries
   /// naturally: 56 -> 53.
+  ///
+  /// Hizbs below 1 are out of range and have no next hizb. This guards
+  /// against corrupted records (the old advancement bug left legacy records
+  /// at hizb -1 after level 10) that would otherwise descend forever:
+  /// 0 -> -3 -> -2 -> -5 -> ...
   static int? nextHizb(int hizb) {
+    if (hizb < 1) return null;
     if (hizb == lastHizbOfLevel(totalLevels)) return null;
     return hizb.isOdd ? hizb + 1 : hizb - 3;
   }
