@@ -378,7 +378,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                 // manages its own level/hizb/session state after that and
                 // reports every change through onChanged (including `null`
                 // while no valid session is selected).
-                value: CurriculumPosition.start,
+                initialValue: CurriculumPosition.start,
                 onChanged: (position) {
                   setState(() => _startingPosition = position);
                 },

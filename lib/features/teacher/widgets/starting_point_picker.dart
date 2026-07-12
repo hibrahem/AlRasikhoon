@@ -15,18 +15,21 @@ import '../../../domain/curriculum/curriculum_position.dart';
 /// a hizb may hold 18 sessions numbered between 2 and 36. Sard (35) and Exam (36)
 /// are valid starting points: a student may arrive ready to be assessed.
 ///
-/// [value] seeds the picker's initial level/hizb/session; from then on the
-/// picker owns the selection itself and reports every change through
-/// [onChanged]. Some hizbs hold no sessions at all (a gap in the seeded
-/// curriculum) — when that happens there is no valid starting point to
-/// report, so [onChanged] is called with `null` rather than inventing one.
+/// [initialValue] seeds the picker's initial level/hizb/session; from then
+/// on the picker owns the selection itself and reports every change through
+/// [onChanged]. There is no `didUpdateWidget` handling: changes to
+/// [initialValue] after the first build are not picked up, by design — it is
+/// a seed, not a controlled prop. Some hizbs hold no sessions at all (a gap
+/// in the seeded curriculum) — when that happens there is no valid starting
+/// point to report, so [onChanged] is called with `null` rather than
+/// inventing one.
 class StartingPointPicker extends ConsumerStatefulWidget {
-  final CurriculumPosition value;
+  final CurriculumPosition initialValue;
   final ValueChanged<CurriculumPosition?> onChanged;
 
   const StartingPointPicker({
     super.key,
-    required this.value,
+    required this.initialValue,
     required this.onChanged,
   });
 
@@ -49,9 +52,9 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
   @override
   void initState() {
     super.initState();
-    _level = widget.value.level;
-    _hizb = widget.value.hizb;
-    _session = widget.value.session;
+    _level = widget.initialValue.level;
+    _hizb = widget.initialValue.hizb;
+    _session = widget.initialValue.session;
     _loadSessions(_level, _hizb);
   }
 
@@ -85,6 +88,12 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
       _hizb = hizb;
       _session = null;
     });
+    // Tell the parent there is nothing valid to submit *before* dispatching
+    // the fetch for the new hizb — otherwise the parent keeps holding the
+    // previous hizb's position for the entire in-flight window, and a
+    // submit during that window would create the student at a hizb the
+    // picker is no longer even displaying.
+    _report();
     _loadSessions(level, hizb);
   }
 
@@ -93,6 +102,7 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
       _hizb = hizb;
       _session = null;
     });
+    _report();
     _loadSessions(_level, hizb);
   }
 

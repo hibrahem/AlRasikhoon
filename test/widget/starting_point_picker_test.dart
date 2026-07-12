@@ -97,7 +97,7 @@ Future<void> _pumpPicker(
         home: Scaffold(
           body: SingleChildScrollView(
             child: StartingPointPicker(
-              value: CurriculumPosition.start,
+              initialValue: CurriculumPosition.start,
               onChanged: onChanged,
             ),
           ),
@@ -267,6 +267,65 @@ void main() {
 
       expect(reported?.hizb, 54);
       expect(reported?.session, 2);
+    },
+  );
+
+  testWidgets(
+    'changing the hizb reports null immediately, before the new sessions '
+    'arrive, then reports the real position once they do',
+    (tester) async {
+      final firestore = await _seedCurriculum();
+      // Hizb 54's fetch is deliberately slow so the test can observe the
+      // picker's state while the fetch is still in flight.
+      final repo = _RacyCurriculumRepository(firestore, {
+        54: const Duration(milliseconds: 300),
+      });
+      final reports = <CurriculumPosition?>[];
+      await _pumpPicker(
+        tester,
+        firestore,
+        reports.add,
+        curriculumRepository: repo,
+      );
+
+      // Move to level 2 first (auto-selects hizb 53, fetch is not delayed)
+      // so there is a real, non-null previous position on record before the
+      // hizb change under test.
+      await tester.tap(find.byKey(const Key('starting_point_level')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.textContaining('المستوى الثاني').last);
+      await tester.pumpAndSettle();
+      expect(
+        reports.last,
+        const CurriculumPosition(level: 2, hizb: 53, session: 1),
+      );
+
+      // Switch to hizb 54, whose sessions take 300ms to arrive.
+      await tester.tap(find.byKey(const Key('starting_point_hizb')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.textContaining('الحزب 54').last);
+      // Advance just enough to process the tap/selection itself, well short
+      // of the 300ms fetch delay — the stale hizb-53 position must not still
+      // be reportable in this window.
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(
+        reports.last,
+        isNull,
+        reason:
+            'the parent must be told there is nothing valid to submit while '
+            "hizb 54's sessions are still loading, instead of being left "
+            "holding hizb 53's stale position",
+      );
+
+      // Let hizb 54's fetch resolve.
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
+
+      expect(
+        reports.last,
+        const CurriculumPosition(level: 2, hizb: 54, session: 2),
+      );
     },
   );
 }
