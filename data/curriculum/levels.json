@@ -9,11 +9,11 @@
       29,
       28
     ],
-    "session_count": 204,
+    "session_count": 210,
     "juz": [
       {
         "juz_number": 30,
-        "session_count": 68,
+        "session_count": 70,
         "unit_labels": [
           "سرد الحزب رقم 59 كاملًا على المحفظ المتابع",
           "سرد الحزب رقم 60 كاملًا على المحفظ المتابع"
@@ -33,7 +33,7 @@
       },
       {
         "juz_number": 29,
-        "session_count": 69,
+        "session_count": 71,
         "unit_labels": [
           "سرد الحزب رقم 57 كاملًا على المحفظ المتابع",
           "سرد الحزب رقم 58 كاملًا على المحفظ المتابع"
@@ -42,7 +42,7 @@
           57,
           58
         ],
-        "first_order_in_level": 69,
+        "first_order_in_level": 71,
         "source_files": [
           "منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx"
         ],
@@ -53,7 +53,7 @@
       },
       {
         "juz_number": 28,
-        "session_count": 67,
+        "session_count": 69,
         "unit_labels": [
           "سرد الحزب رقم 55 كاملًا على المحفظ المتابع",
           "سرد الحزب رقم 56 كاملًا على المحفظ المتابع"
@@ -62,7 +62,7 @@
           55,
           56
         ],
-        "first_order_in_level": 138,
+        "first_order_in_level": 142,
         "source_files": [
           "منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx"
         ],
@@ -83,11 +83,11 @@
       26,
       25
     ],
-    "session_count": 148,
+    "session_count": 154,
     "juz": [
       {
         "juz_number": 27,
-        "session_count": 51,
+        "session_count": 53,
         "unit_labels": [
           "سرد الحزب رقم 53 كاملًا على المحفظ المتابع",
           "سرد الحزب رقم 54 كاملًا على المحفظ المتابع"
@@ -108,7 +108,7 @@
       },
       {
         "juz_number": 26,
-        "session_count": 47,
+        "session_count": 49,
         "unit_labels": [
           "سرد الحزب رقم 51 كاملًا على المحفظ المتابع",
           "سرد الحزب رقم 52 كاملًا على المحفظ المتابع"
@@ -117,7 +117,7 @@
           51,
           52
         ],
-        "first_order_in_level": 52,
+        "first_order_in_level": 54,
         "source_files": [
           "منهج الراسخون المستوى الثاني الحزب الــ  52-.xlsx",
           "منهج الراسخون المستوى الثاني الحزب الــ  51.xlsx"
@@ -129,7 +129,7 @@
       },
       {
         "juz_number": 25,
-        "session_count": 50,
+        "session_count": 52,
         "unit_labels": [
           "سرد الحزب رقم 49 كاملًا على المحفظ المتابع",
           "سرد الحزب رقم 50 كاملًا على المحفظ المتابع"
@@ -138,7 +138,7 @@
           49,
           50
         ],
-        "first_order_in_level": 99,
+        "first_order_in_level": 103,
         "source_files": [
           "منهج الراسخون المستوى الثاني الجزء رقم 3 - الحزب الــ  50.xlsx",
           "منهج الراسخون المستوى الثاني الجزء رقم 3 الحزب الـــ  49.xlsx"
@@ -160,11 +160,11 @@
       23,
       22
     ],
-    "session_count": 93,
+    "session_count": 99,
     "juz": [
       {
         "juz_number": 24,
-        "session_count": 33,
+        "session_count": 35,
         "unit_labels": [
           "سرد سورتي غافر و فصلت على المحفظ المتابع",
           "سرد سورة الزمرعلى المحفظ المتابع"
@@ -182,13 +182,13 @@
       },
       {
         "juz_number": 23,
-        "session_count": 28,
+        "session_count": 30,
         "unit_labels": [
           "سرد سورتي الصافات وص على المحفظ المتابع",
           "سرد سورة يس على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 34,
+        "first_order_in_level": 36,
         "source_files": [
           "الحزب  45.xlsx",
           "الحزب  46.xlsx"
@@ -200,13 +200,13 @@
       },
       {
         "juz_number": 22,
-        "session_count": 32,
+        "session_count": 34,
         "unit_labels": [
           "سرد سورتي سبأ وفاطرعلى المحفظ المتابع",
           "سرد سورة الأحزاب على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 62,
+        "first_order_in_level": 66,
         "source_files": [
           "الحزب  43.xlsx",
           "الحزب  44.xlsx"
@@ -228,11 +228,11 @@
       20,
       19
     ],
-    "session_count": 87,
+    "session_count": 93,
     "juz": [
       {
         "juz_number": 21,
-        "session_count": 30,
+        "session_count": 32,
         "unit_labels": [
           "سرد سور الروم ولقمان والسجدة لى المحفظ المتابع",
           "سرد سورة العنكبوت على المحفظ المتابع"
@@ -250,13 +250,13 @@
       },
       {
         "juz_number": 20,
-        "session_count": 30,
+        "session_count": 32,
         "unit_labels": [
           "سرد سورة القصص كاملةَ على المحفظ المتابع",
           "سرد سورة النمل على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 31,
+        "first_order_in_level": 33,
         "source_files": [
           "الحزب 39.xlsx",
           "الحزب 40.xlsx"
@@ -268,13 +268,13 @@
       },
       {
         "juz_number": 19,
-        "session_count": 27,
+        "session_count": 29,
         "unit_labels": [
           "سرد سورة الشعراء على المحفظ المتابع",
           "سرد سورة الفرقان على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 61,
+        "first_order_in_level": 65,
         "source_files": [
           "الحزب 37.xlsx",
           "الحزب 38.xlsx"
@@ -296,11 +296,11 @@
       17,
       16
     ],
-    "session_count": 65,
+    "session_count": 71,
     "juz": [
       {
         "juz_number": 18,
-        "session_count": 20,
+        "session_count": 22,
         "unit_labels": [
           "سرد سورة النور كاملة على المحفظ المتابع",
           "سرد سورة المؤمنون على المحفظ المتابع"
@@ -318,13 +318,13 @@
       },
       {
         "juz_number": 17,
-        "session_count": 24,
+        "session_count": 26,
         "unit_labels": [
           "سرد سورة الحج كاملةَ على المحفظ المتابع",
           "سرد سورة الأنبياء على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 21,
+        "first_order_in_level": 23,
         "source_files": [
           "الحزب 33.xlsx",
           "الحزب 34.xlsx"
@@ -336,13 +336,13 @@
       },
       {
         "juz_number": 16,
-        "session_count": 21,
+        "session_count": 23,
         "unit_labels": [
           "سرد سورة طه كاملةً على المحفظ المتابع",
           "سرد سورة مريم على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 45,
+        "first_order_in_level": 49,
         "source_files": [
           "الحزب 31.xlsx",
           "الحزب 32.xlsx"
@@ -364,11 +364,11 @@
       14,
       13
     ],
-    "session_count": 76,
+    "session_count": 82,
     "juz": [
       {
         "juz_number": 15,
-        "session_count": 24,
+        "session_count": 26,
         "unit_labels": [
           "سرد سورة الكهف كاملةَ على المحفظ المتابع",
           "سرد سورة الإسراء كاملةَ على المحفظ المتابع"
@@ -386,13 +386,13 @@
       },
       {
         "juz_number": 14,
-        "session_count": 24,
+        "session_count": 26,
         "unit_labels": [
           "سرد المقرر من سورة النحل على المحفظ المتابع",
           "سرد المقرر من سورة النحل والحجر على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 25,
+        "first_order_in_level": 27,
         "source_files": [
           "الحزب 27-.xlsx",
           "الحزب 28.xlsx"
@@ -404,13 +404,13 @@
       },
       {
         "juz_number": 13,
-        "session_count": 28,
+        "session_count": 30,
         "unit_labels": [
           "سرد سورتي الرعد وإبراهيم على المحفظ المتابع",
           "سرد سورة يوسف على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 49,
+        "first_order_in_level": 53,
         "source_files": [
           "الحزب 25.xlsx",
           "الحزب 26.xlsx"
@@ -432,11 +432,11 @@
       11,
       10
     ],
-    "session_count": 54,
+    "session_count": 60,
     "juz": [
       {
         "juz_number": 12,
-        "session_count": 15,
+        "session_count": 17,
         "unit_labels": [
           "سرد المقرر من سورة هود على المحفظ المتابع",
           "سرد المقرر من سورة هود على المحفظ المتابع"
@@ -454,13 +454,13 @@
       },
       {
         "juz_number": 11,
-        "session_count": 17,
+        "session_count": 19,
         "unit_labels": [
           "سرد المقرر من سورة يونس على المحفظ المتابع",
           "سرد المقرر من سورة يونس على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 16,
+        "first_order_in_level": 18,
         "source_files": [
           "الحزب 21.xlsx",
           "الحزب 22.xlsx"
@@ -472,13 +472,13 @@
       },
       {
         "juz_number": 10,
-        "session_count": 22,
+        "session_count": 24,
         "unit_labels": [
           "سرد المقرر من سورة التوبة على المحفظ المتابع",
           "سرد المقرر من سورة التوبة على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 33,
+        "first_order_in_level": 37,
         "source_files": [
           "الحزب 19.xlsx",
           "الحزب 20.xlsx"
@@ -500,11 +500,11 @@
       8,
       7
     ],
-    "session_count": 61,
+    "session_count": 67,
     "juz": [
       {
         "juz_number": 9,
-        "session_count": 14,
+        "session_count": 16,
         "unit_labels": [
           "سرد المقرر من سورة الأنفال على المحفظ المتابع",
           "سرد المقرر من سورة الأنفال على المحفظ المتابع"
@@ -521,13 +521,13 @@
       },
       {
         "juz_number": 8,
-        "session_count": 24,
+        "session_count": 26,
         "unit_labels": [
           "سرد المقرر من سورة الأعراف على المحفظ المتابع",
           "سرد المقرر من سورة الأعراف على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 15,
+        "first_order_in_level": 17,
         "source_files": [
           "منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx"
         ],
@@ -538,13 +538,13 @@
       },
       {
         "juz_number": 7,
-        "session_count": 23,
+        "session_count": 25,
         "unit_labels": [
           "سرد المقرر من سورة الأنعام على المحفظ المتابع",
           "سرد المقرر من سورة الأنعام على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 39,
+        "first_order_in_level": 43,
         "source_files": [
           "منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx"
         ],
@@ -565,11 +565,11 @@
       5,
       4
     ],
-    "session_count": 61,
+    "session_count": 67,
     "juz": [
       {
         "juz_number": 6,
-        "session_count": 17,
+        "session_count": 19,
         "unit_labels": [
           "سرد المقرر من سورة المائدة على المحفظ المتابع",
           "سرد المقرر من سورة المائدة على المحفظ المتابع"
@@ -586,13 +586,13 @@
       },
       {
         "juz_number": 5,
-        "session_count": 22,
+        "session_count": 24,
         "unit_labels": [
           "سرد المقرر من سورة النساء على المحفظ المتابع",
           "سرد المقرر من سورة النساء على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 18,
+        "first_order_in_level": 20,
         "source_files": [
           "منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx"
         ],
@@ -603,13 +603,13 @@
       },
       {
         "juz_number": 4,
-        "session_count": 22,
+        "session_count": 24,
         "unit_labels": [
           "سرد المقرر من سورة آل عمران على المحفظ المتابع",
           "سرد المقرر من سورة آل عمران على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 40,
+        "first_order_in_level": 44,
         "source_files": [
           "منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx"
         ],
@@ -630,11 +630,11 @@
       2,
       3
     ],
-    "session_count": 44,
+    "session_count": 49,
     "juz": [
       {
         "juz_number": 1,
-        "session_count": 16,
+        "session_count": 18,
         "unit_labels": [
           "سرد المقرر من سورة البقرة على المحفظ المتابع",
           "سرد المقرر من سورة البقرة على المحفظ المتابع"
@@ -651,13 +651,13 @@
       },
       {
         "juz_number": 2,
-        "session_count": 19,
+        "session_count": 21,
         "unit_labels": [
           "سرد المقرر من سورة البقرة من 142 : 202 على المحفظ المتابع",
           "سرد المقرر من سورة البقرة 203 : 252 على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 17,
+        "first_order_in_level": 19,
         "source_files": [
           "منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx"
         ],
@@ -668,12 +668,12 @@
       },
       {
         "juz_number": 3,
-        "session_count": 9,
+        "session_count": 10,
         "unit_labels": [
           "سرد المقرر من سورة البقرة 253 : 286 على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 36,
+        "first_order_in_level": 40,
         "source_files": [
           "منهج الراسخون المستوى العاشر الجزء  ال  3 للمحفظين.xlsx"
         ],

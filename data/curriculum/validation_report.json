@@ -1,13 +1,13 @@
 {
   "generated_from": "/Users/hassanibrahim/Documents/Projects/AlRasikhoonProject/curriculum",
   "levels": 10,
-  "total_sessions": 893,
+  "total_sessions": 952,
   "per_level": {
     "1": {
-      "session_count": 204,
+      "session_count": 210,
       "juz": {
         "30": {
-          "session_count": 68,
+          "session_count": 70,
           "source_files": [
             "منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx"
           ],
@@ -21,7 +21,7 @@
           ]
         },
         "29": {
-          "session_count": 69,
+          "session_count": 71,
           "source_files": [
             "منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx"
           ],
@@ -35,7 +35,7 @@
           ]
         },
         "28": {
-          "session_count": 67,
+          "session_count": 69,
           "source_files": [
             "منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx"
           ],
@@ -51,10 +51,10 @@
       }
     },
     "2": {
-      "session_count": 148,
+      "session_count": 154,
       "juz": {
         "27": {
-          "session_count": 51,
+          "session_count": 53,
           "source_files": [
             "منهج الراسخون المستوى الثاني الجزء  رقم  1 الحزب  الــ 54.xlsx",
             "منهج الراسخون المستوى الثاني الجزء  رقم  1  الــ 53.xlsx"
@@ -69,7 +69,7 @@
           ]
         },
         "26": {
-          "session_count": 47,
+          "session_count": 49,
           "source_files": [
             "منهج الراسخون المستوى الثاني الحزب الــ  52-.xlsx",
             "منهج الراسخون المستوى الثاني الحزب الــ  51.xlsx"
@@ -84,7 +84,7 @@
           ]
         },
         "25": {
-          "session_count": 50,
+          "session_count": 52,
           "source_files": [
             "منهج الراسخون المستوى الثاني الجزء رقم 3 - الحزب الــ  50.xlsx",
             "منهج الراسخون المستوى الثاني الجزء رقم 3 الحزب الـــ  49.xlsx"
@@ -101,10 +101,10 @@
       }
     },
     "3": {
-      "session_count": 93,
+      "session_count": 99,
       "juz": {
         "24": {
-          "session_count": 33,
+          "session_count": 35,
           "source_files": [
             "الحزب  47.xlsx",
             "الحزب  48.xlsx"
@@ -116,7 +116,7 @@
           "hizb_numbers": null
         },
         "23": {
-          "session_count": 28,
+          "session_count": 30,
           "source_files": [
             "الحزب  45.xlsx",
             "الحزب  46.xlsx"
@@ -128,7 +128,7 @@
           "hizb_numbers": null
         },
         "22": {
-          "session_count": 32,
+          "session_count": 34,
           "source_files": [
             "الحزب  43.xlsx",
             "الحزب  44.xlsx"
@@ -142,10 +142,10 @@
       }
     },
     "4": {
-      "session_count": 87,
+      "session_count": 93,
       "juz": {
         "21": {
-          "session_count": 30,
+          "session_count": 32,
           "source_files": [
             "منهج الراسخون المستوى الرابع الجزء  الحزب 41.xlsx",
             "منهج الراسخون المستوى الرابع الجزء  الحزب 42.xlsx"
@@ -157,7 +157,7 @@
           "hizb_numbers": null
         },
         "20": {
-          "session_count": 30,
+          "session_count": 32,
           "source_files": [
             "الحزب 39.xlsx",
             "الحزب 40.xlsx"
@@ -169,7 +169,7 @@
           "hizb_numbers": null
         },
         "19": {
-          "session_count": 27,
+          "session_count": 29,
           "source_files": [
             "الحزب 37.xlsx",
             "الحزب 38.xlsx"
@@ -183,10 +183,10 @@
       }
     },
     "5": {
-      "session_count": 65,
+      "session_count": 71,
       "juz": {
         "18": {
-          "session_count": 20,
+          "session_count": 22,
           "source_files": [
             "الحزب 35.xlsx",
             "الحزب 36.xlsx"
@@ -198,7 +198,7 @@
           "hizb_numbers": null
         },
         "17": {
-          "session_count": 24,
+          "session_count": 26,
           "source_files": [
             "الحزب 33.xlsx",
             "الحزب 34.xlsx"
@@ -210,7 +210,7 @@
           "hizb_numbers": null
         },
         "16": {
-          "session_count": 21,
+          "session_count": 23,
           "source_files": [
             "الحزب 31.xlsx",
             "الحزب 32.xlsx"
@@ -224,10 +224,10 @@
       }
     },
     "6": {
-      "session_count": 76,
+      "session_count": 82,
       "juz": {
         "15": {
-          "session_count": 24,
+          "session_count": 26,
           "source_files": [
             "الحزب 29-.xlsx",
             "الحزب 30.xlsx"
@@ -239,7 +239,7 @@
           "hizb_numbers": null
         },
         "14": {
-          "session_count": 24,
+          "session_count": 26,
           "source_files": [
             "الحزب 27-.xlsx",
             "الحزب 28.xlsx"
@@ -251,7 +251,7 @@
           "hizb_numbers": null
         },
         "13": {
-          "session_count": 28,
+          "session_count": 30,
           "source_files": [
             "الحزب 25.xlsx",
             "الحزب 26.xlsx"
@@ -265,10 +265,10 @@
       }
     },
     "7": {
-      "session_count": 54,
+      "session_count": 60,
       "juz": {
         "12": {
-          "session_count": 15,
+          "session_count": 17,
           "source_files": [
             "الحزب 23.xlsx",
             "الحزب 24.xlsx"
@@ -280,7 +280,7 @@
           "hizb_numbers": null
         },
         "11": {
-          "session_count": 17,
+          "session_count": 19,
           "source_files": [
             "الحزب 21.xlsx",
             "الحزب 22.xlsx"
@@ -292,7 +292,7 @@
           "hizb_numbers": null
         },
         "10": {
-          "session_count": 22,
+          "session_count": 24,
           "source_files": [
             "الحزب 19.xlsx",
             "الحزب 20.xlsx"
@@ -306,10 +306,10 @@
       }
     },
     "8": {
-      "session_count": 61,
+      "session_count": 67,
       "juz": {
         "9": {
-          "session_count": 14,
+          "session_count": 16,
           "source_files": [
             "منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx"
           ],
@@ -320,7 +320,7 @@
           "hizb_numbers": null
         },
         "8": {
-          "session_count": 24,
+          "session_count": 26,
           "source_files": [
             "منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx"
           ],
@@ -331,7 +331,7 @@
           "hizb_numbers": null
         },
         "7": {
-          "session_count": 23,
+          "session_count": 25,
           "source_files": [
             "منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx"
           ],
@@ -344,10 +344,10 @@
       }
     },
     "9": {
-      "session_count": 61,
+      "session_count": 67,
       "juz": {
         "6": {
-          "session_count": 17,
+          "session_count": 19,
           "source_files": [
             "منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx"
           ],
@@ -358,7 +358,7 @@
           "hizb_numbers": null
         },
         "5": {
-          "session_count": 22,
+          "session_count": 24,
           "source_files": [
             "منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx"
           ],
@@ -369,7 +369,7 @@
           "hizb_numbers": null
         },
         "4": {
-          "session_count": 22,
+          "session_count": 24,
           "source_files": [
             "منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx"
           ],
@@ -382,10 +382,10 @@
       }
     },
     "10": {
-      "session_count": 44,
+      "session_count": 49,
       "juz": {
         "1": {
-          "session_count": 16,
+          "session_count": 18,
           "source_files": [
             "منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx"
           ],
@@ -396,7 +396,7 @@
           "hizb_numbers": null
         },
         "2": {
-          "session_count": 19,
+          "session_count": 21,
           "source_files": [
             "منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx"
           ],
@@ -407,7 +407,7 @@
           "hizb_numbers": null
         },
         "3": {
-          "session_count": 9,
+          "session_count": 10,
           "source_files": [
             "منهج الراسخون المستوى العاشر الجزء  ال  3 للمحفظين.xlsx"
           ],
