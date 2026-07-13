@@ -78,12 +78,9 @@ final studentCurrentSessionProvider =
       final student = studentAsync.student;
       final curriculumRepo = ref.watch(curriculumRepositoryProvider);
 
-      return curriculumRepo.getCurrentSessionForStudent(
-        levelId: student.currentLevel,
-        juzNumber: student.currentJuz,
-        hizbNumber: student.currentHizb,
-        sessionNumber: student.currentSession,
-      );
+      // The student carries the id of the session they stand on
+      // (`L{level}_J{juz}_S{n}`) — a direct read, no id rebuilding.
+      return curriculumRepo.getSessionById(student.currentSessionId);
     });
 
 /// Session state for recording a session
@@ -225,12 +222,13 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     final sessionRepo = ref.read(sessionRepositoryProvider);
     final studentRepo = ref.read(studentRepositoryProvider);
 
-    // Create session record
+    // Create session record. The curriculum session id is the student's own
+    // `current_session_id` — read from the curriculum on placement/advance,
+    // never rebuilt here (the old `..._H{hizb}_S{n}` form names no document).
     final record = await sessionRepo.createSessionRecord(
       studentId: student.id,
       teacherId: currentUser.id,
-      curriculumSessionId:
-          'L${student.currentLevel}_J${student.currentJuz}_H${student.currentHizb}_S${student.currentSession}',
+      curriculumSessionId: student.currentSessionId,
       levelId: student.currentLevel,
       hizbNumber: student.currentHizb,
       sessionNumber: student.currentSession,

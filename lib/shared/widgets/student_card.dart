@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_colors.dart';
+import '../../data/models/session_model.dart';
+import '../../data/repositories/curriculum_repository.dart';
 import '../../data/repositories/student_repository.dart';
 import 'progress_bar.dart';
 
-class StudentCard extends StatelessWidget {
+/// A student, as every list shows them.
+///
+/// What the student is standing on comes from `current_session_kind` — the
+/// curriculum's own word for the session — never from its number: the juz-30
+/// اختبار of level 1 is session 68, and session 35 is an ordinary lesson.
+/// Progress is measured against the level's real session count, read from the
+/// catalog.
+class StudentCard extends ConsumerWidget {
   final StudentWithUser studentWithUser;
   final VoidCallback? onTap;
   final bool showProgress;
@@ -26,9 +36,15 @@ class StudentCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final student = studentWithUser.student;
     final user = studentWithUser.user;
+    final level = ref.watch(levelProvider(student.currentLevel)).value;
+    final sessionCount = level?.sessionCount ?? 0;
+    final progress = sessionCount > 0
+        ? (student.currentOrderInLevel - 1).clamp(0, sessionCount) /
+              sessionCount
+        : 0.0;
 
     return Material(
       color: AppColors.surface,
@@ -68,9 +84,8 @@ class StudentCard extends StatelessWidget {
                         ),
                         Text(
                           'المستوى ${student.currentLevel}',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: AppColors.textSecondary),
                         ),
                         if (instituteName != null &&
                             instituteName!.isNotEmpty) ...[
@@ -80,7 +95,8 @@ class StudentCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Current session indicator
+                  // What the student is standing on — the curriculum's word for
+                  // it (kind), not an inference from the session number.
                   if (showSession)
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -88,19 +104,23 @@ class StudentCard extends StatelessWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: _getSessionColor(student.currentSession)
-                            .withValues(alpha: 0.1),
+                        color: _kindColor(
+                          student.currentSessionKind,
+                        ).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: _getSessionColor(student.currentSession),
+                          color: _kindColor(student.currentSessionKind),
                         ),
                       ),
                       child: Text(
-                        _getSessionLabel(student.currentSession),
+                        _kindLabel(
+                          student.currentSessionKind,
+                          student.currentSession,
+                        ),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: _getSessionColor(student.currentSession),
+                          color: _kindColor(student.currentSessionKind),
                         ),
                       ),
                     ),
@@ -109,7 +129,9 @@ class StudentCard extends StatelessWidget {
 
               if (showProgress) ...[
                 const SizedBox(height: 16),
-                // Progress info
+                // Progress info. The hizb is a LABEL and only levels 1-2 have
+                // one — it is shown when the curriculum gives one, and omitted
+                // (not faked) when it does not.
                 Row(
                   children: [
                     _InfoChip(
@@ -117,11 +139,13 @@ class StudentCard extends StatelessWidget {
                       label: 'الجزء ${student.currentJuz}',
                     ),
                     const SizedBox(width: 8),
-                    _InfoChip(
-                      icon: Icons.bookmark,
-                      label: 'الحزب ${student.currentHizb}',
-                    ),
-                    const SizedBox(width: 8),
+                    if (student.currentHizb != null) ...[
+                      _InfoChip(
+                        icon: Icons.bookmark,
+                        label: 'الحزب ${student.currentHizb}',
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     _InfoChip(
                       icon: Icons.school,
                       label: 'الحلقة ${student.currentSession}',
@@ -129,9 +153,10 @@ class StudentCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                // Progress bar
+                // Progress through the LEVEL: order_in_level over the level's
+                // real session count, from the catalog — never `/ 36`.
                 ProgressBar(
-                  progress: student.currentSession / 36,
+                  progress: progress,
                   height: 4,
                   showPercentage: false,
                 ),
@@ -166,16 +191,26 @@ class StudentCard extends StatelessWidget {
     );
   }
 
-  Color _getSessionColor(int session) {
-    if (session == 36) return AppColors.secondary; // Exam
-    if (session == 35) return AppColors.info; // Sard
-    return AppColors.primary; // Regular
+  Color _kindColor(SessionKind kind) {
+    switch (kind) {
+      case SessionKind.exam:
+        return AppColors.secondary;
+      case SessionKind.sard:
+        return AppColors.info;
+      case SessionKind.lesson:
+        return AppColors.primary;
+    }
   }
 
-  String _getSessionLabel(int session) {
-    if (session == 36) return 'اختبار';
-    if (session == 35) return 'سرد';
-    return 'حلقة $session';
+  String _kindLabel(SessionKind kind, int sessionNumber) {
+    switch (kind) {
+      case SessionKind.exam:
+        return 'اختبار';
+      case SessionKind.sard:
+        return 'سرد';
+      case SessionKind.lesson:
+        return 'حلقة $sessionNumber';
+    }
   }
 }
 
@@ -183,10 +218,7 @@ class _InfoChip extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const _InfoChip({
-    required this.icon,
-    required this.label,
-  });
+  const _InfoChip({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -199,11 +231,7 @@ class _InfoChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 14,
-            color: AppColors.textSecondary,
-          ),
+          Icon(icon, size: 14, color: AppColors.textSecondary),
           const SizedBox(width: 4),
           Text(
             label,
@@ -237,11 +265,7 @@ class _InstituteBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.account_balance,
-            size: 12,
-            color: AppColors.primary,
-          ),
+          const Icon(Icons.account_balance, size: 12, color: AppColors.primary),
           const SizedBox(width: 4),
           Flexible(
             child: Text(
@@ -295,11 +319,9 @@ class StudentListTile extends StatelessWidget {
         'المستوى ${student.currentLevel} - الحلقة ${student.currentSession}',
         style: Theme.of(context).textTheme.bodySmall,
       ),
-      trailing: trailing ??
-          const Icon(
-            Icons.chevron_left,
-            color: AppColors.textSecondary,
-          ),
+      trailing:
+          trailing ??
+          const Icon(Icons.chevron_left, color: AppColors.textSecondary),
     );
   }
 }

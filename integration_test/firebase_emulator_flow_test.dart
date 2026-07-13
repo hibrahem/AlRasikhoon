@@ -51,8 +51,7 @@ void main() {
         await env.addStudentRecord(
           userId: studentUser.id,
           instituteId: instituteId,
-          currentLevel: 1,
-          currentSession: 5,
+          sessionId: 'L1_J30_S5',
         );
 
         // Act — boot the app against the emulator-backed providers.

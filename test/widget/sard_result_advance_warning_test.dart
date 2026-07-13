@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/curriculum_repository.dart';
@@ -27,12 +28,33 @@ class _MockFirebaseService extends Mock implements FirebaseService {}
 /// when the student's position never actually moved — leaving the teacher
 /// unaware the student is stuck re-taking the same session forever. This
 /// drives the real save flow against a StudentRepository backed by
-/// FakeFirebaseFirestore with NO curriculum sessions seeded, so the walk
-/// forward is guaranteed to report `curriculumDataMissing`.
+/// FakeFirebaseFirestore in which the student's OWN سرد is the only session
+/// seeded and no levels catalog exists, so the walk forward finds nothing ahead
+/// and is guaranteed to report `curriculumDataMissing`.
 void main() {
   testWidgets('SardResultScreen warns instead of claiming plain success when the '
       'student cannot actually be advanced', (tester) async {
     final firestore = FakeFirebaseFirestore();
+
+    // The سرد the student stands on — the hizb-59 (unit-tier) سرد of juz 30,
+    // which is session 30, NOT 35. Its scope is what the record must carry.
+    await firestore.collection('sessions').doc('L1_J30_S30').set({
+      'level_id': 1,
+      'juz_number': 30,
+      'session_number': 30,
+      'order_in_level': 30,
+      'kind': 'sard',
+      'assessed_by': 'teacher',
+      'hizb_number': 59,
+      'scope': {
+        'tier': 'unit',
+        'label_ar': 'سرد الحزب رقم 59 كاملًا على المحفظ المتابع',
+        'hizb_number': 59,
+        'juz_numbers': [30],
+      },
+    });
+    // Nothing at order_in_level 31, and no `levels` catalog at all: the walk
+    // forward can find no session ahead and cannot conclude the level is over.
 
     await firestore.collection('students').doc('student1').set({
       'user_id': 'user1',
@@ -40,7 +62,12 @@ void main() {
       'current_level': 1,
       'current_juz': 30,
       'current_hizb': 59,
-      'current_session': 1,
+      'current_session': 30,
+      'current_order_in_level': 30,
+      'current_session_id': 'L1_J30_S30',
+      'current_session_kind': 'sard',
+      'current_session_tier': 'unit',
+      'current_session_label_ar': 'سرد الحزب رقم 59 كاملًا على المحفظ المتابع',
       'current_attempt': 1,
       'completed_levels': <int>[],
       'unlocked_levels': [1],
@@ -55,7 +82,12 @@ void main() {
       currentLevel: 1,
       currentJuz: 30,
       currentHizb: 59,
-      currentSession: 1,
+      currentSession: 30,
+      currentOrderInLevel: 30,
+      currentSessionId: 'L1_J30_S30',
+      currentSessionKind: SessionKind.sard,
+      currentSessionTier: AssessmentTier.unit,
+      currentSessionLabelAr: 'سرد الحزب رقم 59 كاملًا على المحفظ المتابع',
       createdAt: DateTime(2026, 1, 1),
     );
     final studentUser = UserModel(
@@ -109,6 +141,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          // The screen resolves the سرد's SCOPE from the curriculum itself, so
+          // the curriculum repository must read the same fake Firestore.
+          firestoreProvider.overrideWithValue(firestore),
           currentUserProvider.overrideWithValue(supervisor),
           studentRepositoryProvider.overrideWithValue(studentRepository),
           sessionRepositoryProvider.overrideWithValue(sessionRepository),

@@ -47,7 +47,9 @@ class ExamQueueScreen extends ConsumerWidget {
                     children: [
                       CircleAvatar(
                         radius: 24,
-                        backgroundColor: AppColors.secondary.withValues(alpha: 0.1),
+                        backgroundColor: AppColors.secondary.withValues(
+                          alpha: 0.1,
+                        ),
                         child: Text(
                           user.name.isNotEmpty ? user.name[0] : '?',
                           style: const TextStyle(
@@ -67,6 +69,10 @@ class ExamQueueScreen extends ConsumerWidget {
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
                             const SizedBox(height: 4),
+                            // WHAT the supervisor is about to examine — the
+                            // curriculum's own label for the اختبار the student
+                            // stands on (this hizb, this juz, or the level so
+                            // far), not a hizb the assessment may not even have.
                             Row(
                               children: [
                                 _InfoBadge(
@@ -74,9 +80,13 @@ class ExamQueueScreen extends ConsumerWidget {
                                   text: 'المستوى ${student.currentLevel}',
                                 ),
                                 const SizedBox(width: 8),
-                                _InfoBadge(
-                                  icon: Icons.bookmark,
-                                  text: 'الحزب ${student.currentHizb}',
+                                Expanded(
+                                  child: _InfoBadge(
+                                    icon: Icons.assignment,
+                                    text:
+                                        student.currentSessionLabelAr ??
+                                        'الجزء ${student.currentJuz}',
+                                  ),
                                 ),
                               ],
                             ),
@@ -164,11 +174,14 @@ class _InfoBadge extends StatelessWidget {
         children: [
           Icon(icon, size: 12, color: AppColors.textSecondary),
           const SizedBox(width: 4),
-          Text(
-            text,
-            style: const TextStyle(
-              fontSize: 11,
-              color: AppColors.textSecondary,
+          Flexible(
+            child: Text(
+              text,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 11,
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
         ],

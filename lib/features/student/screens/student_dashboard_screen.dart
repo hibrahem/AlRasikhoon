@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_constants.dart';
+import '../../../data/models/session_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/stat_card.dart';
-import '../../../shared/widgets/progress_bar.dart';
+import '../../../shared/widgets/student_level_progress.dart';
 import '../../../shared/widgets/level_progression_widget.dart';
 import '../providers/student_provider.dart';
 
@@ -231,7 +232,9 @@ class _StudentDashboardScreenState
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     Text(
-                      'الجزء ${stats.currentJuz} - الحزب ${stats.currentHizb}',
+                      stats.currentHizb != null
+                          ? 'الجزء ${stats.currentJuz} - الحزب ${stats.currentHizb}'
+                          : 'الجزء ${stats.currentJuz}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -259,26 +262,34 @@ class _StudentDashboardScreenState
             ],
           ),
           const SizedBox(height: 20),
-          LevelProgressBar(
-            currentSession: stats.currentSession,
-            totalSessions: 36,
+          // Progress through the level, against the level's real session count
+          // from the catalog (204 in level 1, 44 in level 10) — never `/ 36`.
+          StudentLevelProgress(
+            level: stats.currentLevel,
+            orderInLevel: stats.currentOrderInLevel,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCurrentSessionCard(dynamic session) {
+  /// The student's current session, as the curriculum describes it. What the
+  /// session IS comes from its `kind`, and an assessment is named by the
+  /// curriculum's own label — never `'سرد الحزب $hizb'`, which cannot name a
+  /// juz- or level-tier سرد at all.
+  Widget _buildCurrentSessionCard(SessionModel? session) {
     final studentAsync = ref.watch(currentStudentProvider);
 
     return studentAsync.when(
       data: (student) {
         if (student == null) return const SizedBox();
+        if (session == null) {
+          return const AppCard(
+            child: Center(child: Text('لا توجد بيانات للحلقة')),
+          );
+        }
 
-        final isSard = student.currentSession == AppConstants.sardSessionNumber;
-        final isExam = student.currentSession == AppConstants.examSessionNumber;
-
-        if (isExam) {
+        if (session.isExam) {
           return AppCard(
             backgroundColor: AppColors.secondary.withValues(alpha: 0.05),
             child: Row(
@@ -297,7 +308,7 @@ class _StudentDashboardScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'اختبار الحزب ${student.currentHizb}',
+                        session.titleAr,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       Text(
@@ -314,7 +325,7 @@ class _StudentDashboardScreenState
           );
         }
 
-        if (isSard) {
+        if (session.isSard) {
           return AppCard(
             backgroundColor: AppColors.info.withValues(alpha: 0.05),
             child: Row(
@@ -336,11 +347,11 @@ class _StudentDashboardScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'سرد الحزب ${student.currentHizb}',
+                        session.titleAr,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       Text(
-                        'راجع الحزب كاملاً استعداداً للسرد',
+                        session.assessmentInstructionAr,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -376,11 +387,13 @@ class _StudentDashboardScreenState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'الحلقة ${student.currentSession}',
+                          'الحلقة ${session.sessionNumber}',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         Text(
-                          'الحزب ${student.currentHizb}',
+                          session.hizbNumber != null
+                              ? 'الجزء ${session.juzNumber} - الحزب ${session.hizbNumber}'
+                              : 'الجزء ${session.juzNumber}',
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(color: AppColors.textSecondary),
                         ),
@@ -389,13 +402,11 @@ class _StudentDashboardScreenState
                   ),
                 ],
               ),
-              if (session != null) ...[
-                const SizedBox(height: 16),
-                _ContentRow(
-                  title: 'الحفظ الجديد',
-                  content: session.currentLevelContent.rangeAr,
-                ),
-              ],
+              const SizedBox(height: 16),
+              _ContentRow(
+                title: 'الحفظ الجديد',
+                content: session.currentLevelContent?.rangeAr ?? '',
+              ),
             ],
           ),
         );

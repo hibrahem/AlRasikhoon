@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:al_rasikhoon/data/models/exam_record_model.dart';
 import 'package:al_rasikhoon/data/models/institute_model.dart';
+import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/institute_repository.dart';
@@ -18,8 +19,8 @@ class MockInstituteRepository extends Mock implements InstituteRepository {}
 class MockSessionRepository extends Mock implements SessionRepository {}
 
 /// Tests for the supervisor-facing Riverpod providers (TEST_CASES.md §5.3):
-/// `examQueueProvider` (session-36 students aggregated across the
-/// supervisor's institutes) and `supervisorStatsProvider`
+/// `examQueueProvider` (students STANDING on an اختبار — whatever its number —
+/// aggregated across the supervisor's institutes) and `supervisorStatsProvider`
 /// (pending count + today's pass/fail stats).
 void main() {
   late MockStudentRepository mockStudentRepository;
@@ -67,11 +68,19 @@ void main() {
     String instituteId = 'institute-1',
   }) {
     return StudentWithUser(
+      // A student waiting for an اختبار is one STANDING on an exam session —
+      // the juz-30 اختبار of level 1 is session 68, not 36.
       student: StudentModel(
         id: studentId,
         userId: 'user-$studentId',
         instituteId: instituteId,
-        currentSession: 36,
+        currentSession: 68,
+        currentOrderInLevel: 68,
+        currentSessionId: 'L1_J30_S68',
+        currentSessionKind: SessionKind.exam,
+        currentSessionTier: AssessmentTier.juz,
+        currentSessionLabelAr:
+            'اختبار في الجزء رقم 30 كاملًا من قِبل إدارة الحلقات',
         createdAt: DateTime(2026, 1, 1),
       ),
       user: UserModel(
@@ -91,8 +100,11 @@ void main() {
       id: id,
       studentId: 'student-$id',
       supervisorId: 'supervisor-1',
+      curriculumSessionId: 'L1_J30_S31',
+      tier: AssessmentTier.unit,
+      juzNumbers: const [30],
       hizbNumber: 59,
-      juzNumber: 30,
+      scopeLabelAr: 'اختبار في الحزب رقم 59 كاملًا من قِبل إدارة الحلقات',
       levelId: 1,
       date: DateTime(2026, 1, 2),
       errorCount: passed ? 1 : 5,
@@ -118,7 +130,7 @@ void main() {
 
   group('examQueueProvider', () {
     test(
-      'aggregates session-36 students across all supervisor institutes',
+      'aggregates exam-standing students across all supervisor institutes',
       () async {
         when(
           () => mockInstituteRepository.getInstitutesForSupervisor(
@@ -169,9 +181,8 @@ void main() {
 
     test('returns empty list when supervisor has no institutes', () async {
       when(
-        () => mockInstituteRepository.getInstitutesForSupervisor(
-          'supervisor-1',
-        ),
+        () =>
+            mockInstituteRepository.getInstitutesForSupervisor('supervisor-1'),
       ).thenAnswer((_) async => []);
 
       final container = makeContainer(user: buildSupervisor());
@@ -179,9 +190,7 @@ void main() {
       final queue = await container.read(examQueueProvider.future);
 
       expect(queue, isEmpty);
-      verifyNever(
-        () => mockStudentRepository.getStudentsReadyForExam(any()),
-      );
+      verifyNever(() => mockStudentRepository.getStudentsReadyForExam(any()));
     });
   });
 
@@ -197,37 +206,33 @@ void main() {
       expect(stats.failedToday, 0);
     });
 
-    test(
-      'pendingExams equals the exam-queue length',
-      () async {
-        when(
-          () => mockInstituteRepository.getInstitutesForSupervisor(
-            'supervisor-1',
-          ),
-        ).thenAnswer((_) async => [buildInstitute(id: 'inst-a')]);
-        when(
-          () => mockStudentRepository.getStudentsReadyForExam('inst-a'),
-        ).thenAnswer(
-          (_) async => [
-            buildStudentWithUser(studentId: 's-1'),
-            buildStudentWithUser(studentId: 's-2'),
-          ],
-        );
-        when(
-          () => mockSessionRepository.getExamRecordsForSupervisor(
-            'supervisor-1',
-            startDate: any(named: 'startDate'),
-            endDate: any(named: 'endDate'),
-          ),
-        ).thenAnswer((_) async => []);
+    test('pendingExams equals the exam-queue length', () async {
+      when(
+        () =>
+            mockInstituteRepository.getInstitutesForSupervisor('supervisor-1'),
+      ).thenAnswer((_) async => [buildInstitute(id: 'inst-a')]);
+      when(
+        () => mockStudentRepository.getStudentsReadyForExam('inst-a'),
+      ).thenAnswer(
+        (_) async => [
+          buildStudentWithUser(studentId: 's-1'),
+          buildStudentWithUser(studentId: 's-2'),
+        ],
+      );
+      when(
+        () => mockSessionRepository.getExamRecordsForSupervisor(
+          'supervisor-1',
+          startDate: any(named: 'startDate'),
+          endDate: any(named: 'endDate'),
+        ),
+      ).thenAnswer((_) async => []);
 
-        final container = makeContainer(user: buildSupervisor());
+      final container = makeContainer(user: buildSupervisor());
 
-        final stats = await container.read(supervisorStatsProvider.future);
+      final stats = await container.read(supervisorStatsProvider.future);
 
-        expect(stats.pendingExams, 2);
-      },
-    );
+      expect(stats.pendingExams, 2);
+    });
 
     test(
       "today's stats split completed exams into passed and failed",
@@ -331,26 +336,23 @@ void main() {
       },
     );
 
-    test(
-      'queries the bound institute, never another institute',
-      () async {
-        when(
-          () => mockStudentRepository.getStudentsForInstitute('inst-a'),
-        ).thenAnswer((_) async => []);
+    test('queries the bound institute, never another institute', () async {
+      when(
+        () => mockStudentRepository.getStudentsForInstitute('inst-a'),
+      ).thenAnswer((_) async => []);
 
-        final container = makeContainer(
-          user: buildSupervisor(instituteId: 'inst-a'),
-        );
+      final container = makeContainer(
+        user: buildSupervisor(instituteId: 'inst-a'),
+      );
 
-        await container.read(supervisorStudentsProvider.future);
+      await container.read(supervisorStudentsProvider.future);
 
-        // A supervisor bound to inst-a can never trigger a read for inst-b —
-        // cross-institute access is impossible at the provider layer.
-        verifyNever(
-          () => mockStudentRepository.getStudentsForInstitute('inst-b'),
-        );
-      },
-    );
+      // A supervisor bound to inst-a can never trigger a read for inst-b —
+      // cross-institute access is impossible at the provider layer.
+      verifyNever(
+        () => mockStudentRepository.getStudentsForInstitute('inst-b'),
+      );
+    });
 
     test('returns empty when the supervisor has no institute bound', () async {
       final container = makeContainer(user: buildSupervisor());
@@ -393,30 +395,27 @@ void main() {
       expect(student!.student.id, 's-1');
     });
 
-    test(
-      'returns null for a student outside the institute scope '
-      '(cross-institute access denied, no leak)',
-      () async {
-        // The scoped listing for inst-a does NOT contain s-other (which lives
-        // in inst-b); resolving it must yield null rather than leak the record.
-        when(
-          () => mockStudentRepository.getStudentsForInstitute('inst-a'),
-        ).thenAnswer(
-          (_) async => [
-            buildStudentWithUser(studentId: 's-1', instituteId: 'inst-a'),
-          ],
-        );
+    test('returns null for a student outside the institute scope '
+        '(cross-institute access denied, no leak)', () async {
+      // The scoped listing for inst-a does NOT contain s-other (which lives
+      // in inst-b); resolving it must yield null rather than leak the record.
+      when(
+        () => mockStudentRepository.getStudentsForInstitute('inst-a'),
+      ).thenAnswer(
+        (_) async => [
+          buildStudentWithUser(studentId: 's-1', instituteId: 'inst-a'),
+        ],
+      );
 
-        final container = makeContainer(
-          user: buildSupervisor(instituteId: 'inst-a'),
-        );
+      final container = makeContainer(
+        user: buildSupervisor(instituteId: 'inst-a'),
+      );
 
-        final student = await container.read(
-          supervisorStudentProvider('s-other').future,
-        );
+      final student = await container.read(
+        supervisorStudentProvider('s-other').future,
+      );
 
-        expect(student, isNull);
-      },
-    );
+      expect(student, isNull);
+    });
   });
 }

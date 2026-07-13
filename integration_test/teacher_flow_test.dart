@@ -61,8 +61,14 @@ void main() {
       await env.assignTeacherToInstitute(teacher.id, instituteId);
 
       // Create a student user and student record
-      final studentUser = env.createStudent(id: 'student_user_1', name: 'محمد خالد');
-      await env.fakeFirestore.collection('users').doc(studentUser.id).set(studentUser.toFirestore());
+      final studentUser = env.createStudent(
+        id: 'student_user_1',
+        name: 'محمد خالد',
+      );
+      await env.fakeFirestore
+          .collection('users')
+          .doc(studentUser.id)
+          .set(studentUser.toFirestore());
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
@@ -80,20 +86,28 @@ void main() {
       await teacherRobot.verifySessionOverview();
     });
 
-    testWidgets('Teacher can conduct a session with passing grade', (tester) async {
+    testWidgets('Teacher can conduct a session with passing grade', (
+      tester,
+    ) async {
       // Arrange
       final teacher = env.createTeacher();
       await env.setUp(authenticatedUser: teacher);
       final instituteId = await env.addInstitute();
       await env.assignTeacherToInstitute(teacher.id, instituteId);
 
-      final studentUser = env.createStudent(id: 'student_user_2', name: 'علي محمد');
-      await env.fakeFirestore.collection('users').doc(studentUser.id).set(studentUser.toFirestore());
+      final studentUser = env.createStudent(
+        id: 'student_user_2',
+        name: 'علي محمد',
+      );
+      await env.fakeFirestore
+          .collection('users')
+          .doc(studentUser.id)
+          .set(studentUser.toFirestore());
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
         teacherId: teacher.id,
-        currentSession: 1,
+        sessionId: 'L1_J30_S1',
       );
 
       // Act
@@ -125,20 +139,28 @@ void main() {
       await teacherRobot.completeSession();
     });
 
-    testWidgets('Teacher can conduct a session with failing grade', (tester) async {
+    testWidgets('Teacher can conduct a session with failing grade', (
+      tester,
+    ) async {
       // Arrange
       final teacher = env.createTeacher();
       await env.setUp(authenticatedUser: teacher);
       final instituteId = await env.addInstitute();
       await env.assignTeacherToInstitute(teacher.id, instituteId);
 
-      final studentUser = env.createStudent(id: 'student_user_3', name: 'سعد عبدالله');
-      await env.fakeFirestore.collection('users').doc(studentUser.id).set(studentUser.toFirestore());
+      final studentUser = env.createStudent(
+        id: 'student_user_3',
+        name: 'سعد عبدالله',
+      );
+      await env.fakeFirestore
+          .collection('users')
+          .doc(studentUser.id)
+          .set(studentUser.toFirestore());
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
         teacherId: teacher.id,
-        currentSession: 1,
+        sessionId: 'L1_J30_S1',
       );
 
       // Act
@@ -177,7 +199,9 @@ void main() {
       await env.assignTeacherToInstitute(teacher.id, instituteId);
 
       final studentUser = env.createStudent(
-          id: 'student_retry', name: 'طالب الإعادة');
+        id: 'student_retry',
+        name: 'طالب الإعادة',
+      );
       await env.fakeFirestore
           .collection('users')
           .doc(studentUser.id)
@@ -186,7 +210,7 @@ void main() {
         userId: studentUser.id,
         instituteId: instituteId,
         teacherId: teacher.id,
-        currentSession: 1,
+        sessionId: 'L1_J30_S1',
       );
 
       // Act
@@ -217,8 +241,9 @@ void main() {
       await teacherRobot.completeSession();
     });
 
-    testWidgets('Teacher is blocked from Sard at a Sard session (#29 / #44)',
-        (tester) async {
+    testWidgets('Teacher is blocked from Sard at a Sard session (#29 / #44)', (
+      tester,
+    ) async {
       // Arrange — Sard became supervisor-only in #29. A teacher viewing a
       // student at a Sard session (35) must see the read-only notice and must
       // NOT see the "بدء السرد" action.
@@ -228,7 +253,9 @@ void main() {
       await env.assignTeacherToInstitute(teacher.id, instituteId);
 
       final studentUser = env.createStudent(
-          id: 'student_sard_blocked', name: 'طالب السرد');
+        id: 'student_sard_blocked',
+        name: 'طالب السرد',
+      );
       await env.fakeFirestore
           .collection('users')
           .doc(studentUser.id)
@@ -237,7 +264,8 @@ void main() {
         userId: studentUser.id,
         instituteId: instituteId,
         teacherId: teacher.id,
-        currentSession: 35, // Sard session
+        // The hizb-59 سرد — session 30, as the DATA says (never "35").
+        sessionId: 'L1_J30_S30',
       );
 
       // Act

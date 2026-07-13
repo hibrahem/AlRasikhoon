@@ -24,8 +24,7 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        currentSession: 5,
-        currentLevel: 1,
+        sessionId: 'L1_J30_S5',
       );
 
       // Act
@@ -42,10 +41,7 @@ void main() {
       final studentUser = env.createStudent(name: 'محمد علي');
       await env.setUp(authenticatedUser: studentUser);
       final instituteId = await env.addInstitute();
-      await env.addStudent(
-        userId: studentUser.id,
-        instituteId: instituteId,
-      );
+      await env.addStudent(userId: studentUser.id, instituteId: instituteId);
 
       // Act
       await tester.pumpWidget(TestApp(overrides: env.overrides));
@@ -136,7 +132,9 @@ void main() {
       await studentRobot.verifySessionDetail();
     });
 
-    testWidgets('Student sees current session info on dashboard', (tester) async {
+    testWidgets('Student sees current session info on dashboard', (
+      tester,
+    ) async {
       // Arrange
       final studentUser = env.createStudent(name: 'سعد محمد');
       await env.setUp(authenticatedUser: studentUser);
@@ -144,8 +142,7 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        currentSession: 10,
-        currentLevel: 1,
+        sessionId: 'L1_J30_S10',
       );
 
       // Act
@@ -158,7 +155,7 @@ void main() {
       expect(find.textContaining('الحلقة 10'), findsOneWidget);
     });
 
-    testWidgets('Student at session 35 sees Sard info', (tester) async {
+    testWidgets('Student standing on a سرد sees its Sard info', (tester) async {
       // Arrange
       final studentUser = env.createStudent(name: 'خالد عبدالله');
       await env.setUp(authenticatedUser: studentUser);
@@ -166,7 +163,8 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        currentSession: 35, // Sard session
+        // The hizb-59 سرد — session 30, as the DATA says (never "35").
+        sessionId: 'L1_J30_S30',
       );
 
       // Act
@@ -179,7 +177,9 @@ void main() {
       expect(find.textContaining('سرد'), findsWidgets);
     });
 
-    testWidgets('Student at session 36 sees Exam info', (tester) async {
+    testWidgets('Student standing on an اختبار sees its Exam info', (
+      tester,
+    ) async {
       // Arrange
       final studentUser = env.createStudent(name: 'علي فهد');
       await env.setUp(authenticatedUser: studentUser);
@@ -187,7 +187,8 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        currentSession: 36, // Exam session
+        // The juz-30 اختبار — session 68, as the DATA says (never "36").
+        sessionId: 'L1_J30_S68',
       );
 
       // Act
@@ -200,7 +201,9 @@ void main() {
       expect(find.textContaining('اختبار'), findsWidgets);
     });
 
-    testWidgets('Student with completed level 1 sees level 2 unlocked', (tester) async {
+    testWidgets('Student with completed level 1 sees level 2 unlocked', (
+      tester,
+    ) async {
       // Arrange
       final studentUser = env.createStudent(name: 'محمد سعد');
       await env.setUp(authenticatedUser: studentUser);
@@ -240,7 +243,7 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        currentSession: 5,
+        sessionId: 'L1_J30_S5',
       );
 
       // Act
@@ -262,7 +265,7 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        currentSession: 5,
+        sessionId: 'L1_J30_S5',
       );
 
       // Act

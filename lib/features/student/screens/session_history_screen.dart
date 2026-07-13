@@ -75,8 +75,13 @@ class SessionHistoryScreen extends ConsumerWidget {
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                             const SizedBox(height: 4),
+                            // The hizb is a LABEL that only levels 1-2 carry —
+                            // it is shown when there is one, and omitted rather
+                            // than printed as "null" when there is not.
                             Text(
-                              'المستوى ${record.levelId} - الحزب ${record.hizbNumber}',
+                              record.hizbNumber != null
+                                  ? 'المستوى ${record.levelId} - الحزب ${record.hizbNumber}'
+                                  : 'المستوى ${record.levelId}',
                               style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(color: AppColors.textSecondary),
                             ),

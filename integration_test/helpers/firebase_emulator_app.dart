@@ -29,6 +29,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:al_rasikhoon/core/theme/app_theme.dart';
+import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/auth_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
@@ -258,13 +259,20 @@ class EmulatorTestEnvironment {
     return id;
   }
 
+  /// Adds a student standing on the curriculum session [sessionId] — their
+  /// position is copied from that session document, exactly as production does.
   Future<String> addStudentRecord({
     String id = 'student_record_emu',
     required String userId,
     required String instituteId,
-    int currentSession = 1,
-    int currentLevel = 1,
+    String sessionId = 'L1_J30_S1',
   }) async {
+    final doc = await firestore.collection('sessions').doc(sessionId).get();
+    if (!doc.exists) {
+      throw StateError('No curriculum session "$sessionId" is seeded.');
+    }
+    final session = SessionModel.fromFirestore(doc);
+
     // Rules require `isTeacher()` to create student rows. The seed account
     // sits at role=super_admin so it can write institutes/levels/sessions;
     // flip to teacher just for this write, then flip back.
@@ -273,10 +281,15 @@ class EmulatorTestEnvironment {
         'user_id': userId,
         'institute_id': instituteId,
         'teacher_id': null,
-        'current_level': currentLevel,
-        'current_juz': 30,
-        'current_hizb': 59,
-        'current_session': currentSession,
+        'current_level': session.levelId,
+        'current_juz': session.juzNumber,
+        'current_session': session.sessionNumber,
+        'current_order_in_level': session.orderInLevel,
+        'current_hizb': session.hizbNumber,
+        'current_session_id': session.id,
+        'current_session_kind': session.kind.value,
+        'current_session_tier': session.scope?.tier.value,
+        'current_session_label_ar': session.scope?.labelAr,
         'current_attempt': 1,
         'unlocked_levels': [1],
         'completed_levels': [],
@@ -301,47 +314,44 @@ class EmulatorTestEnvironment {
     }
   }
 
-  /// Seeds the same minimal level / session docs that the fake-Firestore
-  /// `TestEnvironment.seedCurriculumData` does.
+  /// Seeds the same real-shaped level / session docs that the fake-Firestore
+  /// `TestEnvironment.seedCurriculumData` does: a session is identified by
+  /// `L{level}_J{juz}_S{n}` and its KIND is data.
   Future<void> _seedCurriculumData() async {
     await firestore.collection('levels').doc('level_1').set({
-      'name': 'المستوى الأول',
+      'id': 1,
+      'name_ar': 'المستوى الأول',
+      'name_en': 'Level 1',
+      'juz_numbers': [30, 29, 28],
+      'session_count': 204,
       'order': 1,
-      'hizbs': [59, 58, 57, 56, 55, 54],
-      'juzs': [30, 29, 28],
     });
 
-    await firestore.collection('sessions').doc('L1_J30_H59_S1').set({
-      'session_number': 1,
-      'level_id': 1,
-      'juz_number': 30,
-      'hizb_number': 59,
-      'session_type': 'regular',
-      'current_level_content': {
-        'from_surah': 'الناس',
-        'from_verse': 1,
-        'to_surah': 'الفلق',
-        'to_verse': 5,
-      },
-      'recent_review_content': {
-        'from_surah': '',
-        'from_verse': 0,
-        'to_surah': '',
-        'to_verse': 0,
-      },
-      'distant_review_content': {
-        'from_surah': '',
-        'from_verse': 0,
-        'to_surah': '',
-        'to_verse': 0,
-      },
-    });
+    Future<void> lesson(int session, int orderInLevel, String surah) {
+      return firestore.collection('sessions').doc('L1_J30_S$session').set({
+        'level_id': 1,
+        'juz_number': 30,
+        'session_number': session,
+        'order_in_level': orderInLevel,
+        'kind': 'lesson',
+        'hizb_number': 59,
+        'current_level_content': {
+          'from_surah': surah,
+          'from_verse': 1,
+          'to_surah': surah,
+          'to_verse': 5,
+        },
+      });
+    }
+
+    await lesson(1, 1, 'الناس');
+    await lesson(5, 5, 'النبأ');
   }
 }
 
 class _EmulatorFirebaseService extends FirebaseService {
   _EmulatorFirebaseService({required FirebaseFirestore firestore})
-      : super(auth: _MockFirebaseAuth(), firestore: firestore);
+    : super(auth: _MockFirebaseAuth(), firestore: firestore);
 }
 
 class _TestAuthRepository extends AuthRepository {
@@ -377,4 +387,3 @@ Future<bool> isEmulatorReachable() async {
     return false;
   }
 }
-

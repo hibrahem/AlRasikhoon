@@ -16,12 +16,15 @@ class HomePracticeRepository {
   CollectionReference<Map<String, dynamic>> get _collection =>
       _firestore.collection('home_practices');
 
-  /// Create a new home practice record
+  /// Create a new home practice record.
+  ///
+  /// [hizbNumber] is a LABEL, carried only by levels 1-2 and absent elsewhere —
+  /// it keys nothing (see [HomePracticeModel.hizbNumber]).
   Future<String> createHomePractice({
     required String studentId,
     required int levelId,
     required int juzNumber,
-    required int hizbNumber,
+    int? hizbNumber,
     required int sessionNumber,
     required int repetitions,
     String? notes,
@@ -52,7 +55,9 @@ class HomePracticeRepository {
         .limit(limit)
         .get();
 
-    return snapshot.docs.map((doc) => HomePracticeModel.fromFirestore(doc)).toList();
+    return snapshot.docs
+        .map((doc) => HomePracticeModel.fromFirestore(doc))
+        .toList();
   }
 
   /// Get home practice records for a student within a date range
@@ -63,12 +68,20 @@ class HomePracticeRepository {
   }) async {
     final snapshot = await _collection
         .where('student_id', isEqualTo: studentId)
-        .where('practice_date', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
-        .where('practice_date', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
+        .where(
+          'practice_date',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
+        )
+        .where(
+          'practice_date',
+          isLessThanOrEqualTo: Timestamp.fromDate(endDate),
+        )
         .orderBy('practice_date', descending: true)
         .get();
 
-    return snapshot.docs.map((doc) => HomePracticeModel.fromFirestore(doc)).toList();
+    return snapshot.docs
+        .map((doc) => HomePracticeModel.fromFirestore(doc))
+        .toList();
   }
 
   /// Get today's home practice for a student
@@ -85,10 +98,16 @@ class HomePracticeRepository {
   }
 
   /// Get this week's home practice for a student
-  Future<List<HomePracticeModel>> getThisWeeksPractices(String studentId) async {
+  Future<List<HomePracticeModel>> getThisWeeksPractices(
+    String studentId,
+  ) async {
     final now = DateTime.now();
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-    final startOfWeekDate = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+    final startOfWeekDate = DateTime(
+      startOfWeek.year,
+      startOfWeek.month,
+      startOfWeek.day,
+    );
 
     return getHomePracticesForStudentInRange(
       studentId,
@@ -100,7 +119,10 @@ class HomePracticeRepository {
   /// Get total repetitions count for a student
   Future<int> getTotalRepetitions(String studentId) async {
     final practices = await getHomePracticesForStudent(studentId, limit: 1000);
-    return practices.fold<int>(0, (total, practice) => total + practice.repetitions);
+    return practices.fold<int>(
+      0,
+      (total, practice) => total + practice.repetitions,
+    );
   }
 
   /// Get streak (consecutive days with practice)
@@ -160,7 +182,10 @@ class HomePracticeRepository {
         .orderBy('practice_date', descending: true)
         .limit(limit)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => HomePracticeModel.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => HomePracticeModel.fromFirestore(doc))
+              .toList(),
+        );
   }
 }

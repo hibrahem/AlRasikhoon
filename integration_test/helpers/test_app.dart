@@ -11,6 +11,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:al_rasikhoon/data/repositories/auth_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/data/services/local_storage_service.dart';
+import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -51,10 +52,7 @@ class _TestAppContent extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       locale: const Locale('ar'),
-      supportedLocales: const [
-        Locale('ar'),
-        Locale('en'),
-      ],
+      supportedLocales: const [Locale('ar'), Locale('en')],
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -63,10 +61,7 @@ class _TestAppContent extends ConsumerWidget {
       ],
       routerConfig: router,
       builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: child!,
-        );
+        return Directionality(textDirection: TextDirection.rtl, child: child!);
       },
     );
   }
@@ -87,9 +82,7 @@ class TestEnvironment {
     return '${prefix}_$_idSeq';
   }
 
-  Future<void> setUp({
-    UserModel? authenticatedUser,
-  }) async {
+  Future<void> setUp({UserModel? authenticatedUser}) async {
     fakeFirestore = FakeFirebaseFirestore();
     SharedPreferences.setMockInitialValues({});
     sharedPreferences = await SharedPreferences.getInstance();
@@ -124,7 +117,10 @@ class TestEnvironment {
 
   Future<void> _setupAuthenticatedUser(UserModel user) async {
     // Add user to fake Firestore
-    await fakeFirestore.collection('users').doc(user.id).set(user.toFirestore());
+    await fakeFirestore
+        .collection('users')
+        .doc(user.id)
+        .set(user.toFirestore());
 
     // Set user ID in shared preferences
     await sharedPreferences.setString('user_id', user.id);
@@ -132,7 +128,9 @@ class TestEnvironment {
 
     // Override all auth-dependent providers with test values
     overrides.addAll([
-      authRepositoryProvider.overrideWith(() => _TestAuthRepository(appUser: user)),
+      authRepositoryProvider.overrideWith(
+        () => _TestAuthRepository(appUser: user),
+      ),
       currentUserProvider.overrideWith((ref) => user),
       isAuthenticatedProvider.overrideWith((ref) => true),
       currentUserRoleProvider.overrideWith((ref) => user.role),
@@ -204,27 +202,48 @@ class TestEnvironment {
     return instituteId;
   }
 
-  /// Add a student record to fake Firestore
+  /// Add a student record to fake Firestore, standing on the curriculum session
+  /// [sessionId] (`L{level}_J{juz}_S{n}` — one of those seeded by
+  /// [seedCurriculumData]).
+  ///
+  /// The student's position is COPIED from that session document, exactly as
+  /// production does: what the student is standing on (`current_session_kind`,
+  /// its tier and its verbatim Arabic label) is the curriculum's word for it,
+  /// never an inference from the session number. A fixture that says
+  /// "session 35 ⇒ سرد" is the very bug this rework removes.
   Future<String> addStudent({
     String? id,
     required String userId,
     required String instituteId,
     String? teacherId,
-    int currentSession = 1,
-    int currentLevel = 1,
+    String sessionId = 'L1_J30_S1',
   }) async {
     final studentId = id ?? _nextId('student');
+    final doc = await fakeFirestore.collection('sessions').doc(sessionId).get();
+    if (!doc.exists) {
+      throw StateError(
+        'No curriculum session "$sessionId" is seeded — a student cannot stand '
+        'on a session the curriculum does not contain.',
+      );
+    }
+    final session = SessionModel.fromFirestore(doc);
+
     await fakeFirestore.collection('students').doc(studentId).set({
       'user_id': userId,
       'institute_id': instituteId,
       'teacher_id': teacherId,
-      'current_level': currentLevel,
-      'current_juz': 30,
-      'current_hizb': 59,
-      'current_session': currentSession,
+      'current_level': session.levelId,
+      'current_juz': session.juzNumber,
+      'current_session': session.sessionNumber,
+      'current_order_in_level': session.orderInLevel,
+      'current_hizb': session.hizbNumber,
+      'current_session_id': session.id,
+      'current_session_kind': session.kind.value,
+      'current_session_tier': session.scope?.tier.value,
+      'current_session_label_ar': session.scope?.labelAr,
       'current_attempt': 1,
-      'unlocked_levels': [1],
-      'completed_levels': [],
+      'unlocked_levels': [for (var l = 1; l <= session.levelId; l++) l],
+      'completed_levels': [for (var l = 1; l < session.levelId; l++) l],
       'is_active': true,
       'created_at': Timestamp.now(),
     });
@@ -232,7 +251,10 @@ class TestEnvironment {
   }
 
   /// Assign teacher to institute
-  Future<void> assignTeacherToInstitute(String teacherId, String instituteId) async {
+  Future<void> assignTeacherToInstitute(
+    String teacherId,
+    String instituteId,
+  ) async {
     await fakeFirestore.collection('teacher_institutes').add({
       'teacher_id': teacherId,
       'institute_id': instituteId,
@@ -241,100 +263,174 @@ class TestEnvironment {
     });
   }
 
-  /// Seed minimal curriculum data needed for session-related screens
+  /// Seed a small, REAL-shaped slice of the curriculum.
+  ///
+  /// The old fixtures WERE the old bug: they synthesized session ids of the form
+  /// `L1_J30_H59_S35` and declared `session 35 ⇒ سرد, 36 ⇒ اختبار`. In the real
+  /// curriculum a session's identity is `L{level}_J{juz}_S{n}`, its kind is DATA
+  /// (`kind`), session numbers run 1..N continuously across a whole juz (68 in
+  /// juz 30 of level 1), and assessments come at three tiers, each carrying the
+  /// source's verbatim Arabic label.
+  ///
+  /// Seeded (level 1, juz 30 unless noted):
+  /// - S1 / S5 / S10 — lessons;
+  /// - S30 — the hizb-59 سرد (unit tier), S31 its اختبار;
+  /// - S67 — the juz-30 سرد (juz tier), S68 its اختبار — the session the
+  ///   supervisor's exam queue really finds (never "36");
+  /// - juz 28: S66 the level's cumulative سرد (juz 28-29-30), S67 its اختبار.
   Future<void> seedCurriculumData() async {
-    // Add a level
     await fakeFirestore.collection('levels').doc('level_1').set({
-      'name': 'المستوى الأول',
+      'id': 1,
+      'name_ar': 'المستوى الأول',
+      'name_en': 'Level 1',
+      // Levels 1-9 teach their juz DESCENDING; the order is read, never
+      // computed (level 10 ascends).
+      'juz_numbers': [30, 29, 28],
+      'session_count': 204,
       'order': 1,
-      'hizbs': [59, 58, 57, 56, 55, 54],
-      'juzs': [30, 29, 28],
     });
 
-    // Add a regular session
-    await fakeFirestore.collection('sessions').doc('L1_J30_H59_S1').set({
-      'session_number': 1,
-      'level_id': 1,
-      'juz_number': 30,
-      'hizb_number': 59,
-      'session_type': 'regular',
-      'current_level_content': {
-        'from_surah': 'الناس',
-        'from_verse': 1,
-        'to_surah': 'الفلق',
-        'to_verse': 5,
-      },
-      'recent_review_content': {
-        'from_surah': '',
-        'from_verse': 0,
-        'to_surah': '',
-        'to_verse': 0,
-      },
-      'distant_review_content': {
-        'from_surah': '',
-        'from_verse': 0,
-        'to_surah': '',
-        'to_verse': 0,
-      },
-    });
+    Future<void> lesson({
+      required int juz,
+      required int session,
+      required int orderInLevel,
+      int? hizb,
+      String surah = 'النبأ',
+    }) {
+      return fakeFirestore
+          .collection('sessions')
+          .doc('L1_J${juz}_S$session')
+          .set({
+            'level_id': 1,
+            'juz_number': juz,
+            'session_number': session,
+            'order_in_level': orderInLevel,
+            'kind': 'lesson',
+            'hizb_number': hizb,
+            'current_level_content': {
+              'from_surah': surah,
+              'from_verse': 1,
+              'to_surah': surah,
+              'to_verse': 11,
+            },
+          });
+    }
 
-    // Add a sard session (session 35)
-    await fakeFirestore.collection('sessions').doc('L1_J30_H59_S35').set({
-      'session_number': 35,
-      'level_id': 1,
-      'juz_number': 30,
-      'hizb_number': 59,
-      'session_type': 'sard',
-      'current_level_content': {
-        'from_surah': '',
-        'from_verse': 0,
-        'to_surah': '',
-        'to_verse': 0,
-      },
-      'recent_review_content': {
-        'from_surah': '',
-        'from_verse': 0,
-        'to_surah': '',
-        'to_verse': 0,
-      },
-      'distant_review_content': {
-        'from_surah': '',
-        'from_verse': 0,
-        'to_surah': '',
-        'to_verse': 0,
-      },
-    });
+    Future<void> assessment({
+      required int juz,
+      required int session,
+      required int orderInLevel,
+      required String kind,
+      required String tier,
+      required String labelAr,
+      int? hizb,
+      required List<int> juzNumbers,
+    }) {
+      return fakeFirestore
+          .collection('sessions')
+          .doc('L1_J${juz}_S$session')
+          .set({
+            'level_id': 1,
+            'juz_number': juz,
+            'session_number': session,
+            'order_in_level': orderInLevel,
+            'kind': kind,
+            'assessed_by': kind == 'sard' ? 'teacher' : 'supervisor',
+            'hizb_number': hizb,
+            'scope': {
+              'tier': tier,
+              'label_ar': labelAr,
+              'hizb_number': hizb,
+              'juz_numbers': juzNumbers,
+            },
+          });
+    }
 
-    // Add an exam session (session 36)
-    await fakeFirestore.collection('sessions').doc('L1_J30_H59_S36').set({
-      'session_number': 36,
-      'level_id': 1,
-      'juz_number': 30,
-      'hizb_number': 59,
-      'session_type': 'exam',
-      'current_level_content': {
-        'from_surah': '',
-        'from_verse': 0,
-        'to_surah': '',
-        'to_verse': 0,
-      },
-      'recent_review_content': {
-        'from_surah': '',
-        'from_verse': 0,
-        'to_surah': '',
-        'to_verse': 0,
-      },
-      'distant_review_content': {
-        'from_surah': '',
-        'from_verse': 0,
-        'to_surah': '',
-        'to_verse': 0,
-      },
-    });
+    await lesson(juz: 30, session: 1, orderInLevel: 1, hizb: 59);
+    await lesson(juz: 30, session: 5, orderInLevel: 5, hizb: 59);
+    await lesson(juz: 30, session: 10, orderInLevel: 10, hizb: 59);
+
+    // The unit-tier pair for hizb 59 — سرد at session 30, اختبار at 31.
+    await assessment(
+      juz: 30,
+      session: 30,
+      orderInLevel: 30,
+      kind: 'sard',
+      tier: 'unit',
+      labelAr: 'سرد الحزب رقم 59 كاملًا على المحفظ المتابع',
+      hizb: 59,
+      juzNumbers: const [30],
+    );
+    await assessment(
+      juz: 30,
+      session: 31,
+      orderInLevel: 31,
+      kind: 'exam',
+      tier: 'unit',
+      labelAr: 'اختبار في الحزب رقم 59 كاملًا من قِبل إدارة الحلقات',
+      hizb: 59,
+      juzNumbers: const [30],
+    );
+
+    // The juz-tier pair — the last two sessions of juz 30. Neither has a hizb.
+    await assessment(
+      juz: 30,
+      session: 67,
+      orderInLevel: 67,
+      kind: 'sard',
+      tier: 'juz',
+      labelAr: 'سرد الجزء رقم 30 كاملًا على المحفظ المتابع',
+      juzNumbers: const [30],
+    );
+    await assessment(
+      juz: 30,
+      session: 68,
+      orderInLevel: 68,
+      kind: 'exam',
+      tier: 'juz',
+      labelAr: 'اختبار في الجزء رقم 30 كاملًا من قِبل إدارة الحلقات',
+      juzNumbers: const [30],
+    );
+
+    // The first session of juz 29 continues the level's ordering at 69 — a juz
+    // boundary crossed by `order_in_level` alone.
+    await lesson(
+      juz: 29,
+      session: 1,
+      orderInLevel: 69,
+      hizb: 57,
+      surah: 'الملك',
+    );
+
+    // The cumulative pair — the last two sessions of the LEVEL, covering all
+    // three of its juz.
+    await assessment(
+      juz: 28,
+      session: 66,
+      orderInLevel: 203,
+      kind: 'sard',
+      tier: 'cumulative',
+      labelAr:
+          'سرد المستوى كاملًا الأجزاء رقم 28 ــ  29 ــ 30 على المحفظ المتابع',
+      juzNumbers: const [28, 29, 30],
+    );
+    await assessment(
+      juz: 28,
+      session: 67,
+      orderInLevel: 204,
+      kind: 'exam',
+      tier: 'cumulative',
+      labelAr:
+          'اختبار في المستوى كاملًا  الأجزاء رقم 28 ــ  29 ــ 30 من قِبل إدارة الحلقات',
+      juzNumbers: const [28, 29, 30],
+    );
   }
 
   /// Assign supervisor to institute
-  Future<void> assignSupervisorToInstitute(String supervisorId, String instituteId) async {
+  Future<void> assignSupervisorToInstitute(
+    String supervisorId,
+    String instituteId,
+  ) async {
     await fakeFirestore.collection('supervisor_institutes').add({
       'supervisor_id': supervisorId,
       'institute_id': instituteId,
@@ -368,8 +464,8 @@ class _TestFirebaseService extends FirebaseService {
   _TestFirebaseService({
     required FirebaseFirestore firestore,
     User? authenticatedUser,
-  })  : _authenticatedUser = authenticatedUser,
-        super(auth: _MockFirebaseAuth(), firestore: firestore);
+  }) : _authenticatedUser = authenticatedUser,
+       super(auth: _MockFirebaseAuth(), firestore: firestore);
 
   final User? _authenticatedUser;
 

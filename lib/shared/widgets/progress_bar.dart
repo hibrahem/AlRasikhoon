@@ -33,17 +33,14 @@ class ProgressBar extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 if (label != null)
-                  Text(
-                    label!,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                  Text(label!, style: Theme.of(context).textTheme.bodySmall),
                 if (showPercentage)
                   Text(
                     '${(clampedProgress * 100).toInt()}%',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: progressColor ?? AppColors.primary,
-                        ),
+                      fontWeight: FontWeight.bold,
+                      color: progressColor ?? AppColors.primary,
+                    ),
                   ),
               ],
             ),
@@ -74,89 +71,61 @@ class ProgressBar extends StatelessWidget {
   }
 }
 
+/// How far a student has come through their LEVEL.
+///
+/// The denominator is the level's real session count, read from the levels
+/// catalog ([LevelModel.sessionCount]) — never `36`, and never `36 × hizbs`:
+/// session counts vary per juz (68 in juz 30 of level 1, 69 in juz 29) and per
+/// level (204 in level 1, 44 in level 10). The numerator is the session's
+/// `order_in_level`, the only key that orders sessions across a juz boundary.
+///
+/// There is no "hizbs" bar: a hizb is a nullable LABEL of levels 1-2, not a
+/// unit of progress, and levels 3-10 have none at all.
 class LevelProgressBar extends StatelessWidget {
-  final int currentSession;
-  final int totalSessions;
-  final int completedHizbs;
-  final int totalHizbs;
+  /// Where the student stands within the level (1..levelSessionCount).
+  final int currentOrderInLevel;
+
+  /// The level's total sessions, from the catalog. Zero when the catalog has
+  /// not resolved (or has no entry for the level): the bar then shows no
+  /// progress rather than inventing a denominator.
+  final int levelSessionCount;
 
   const LevelProgressBar({
     super.key,
-    required this.currentSession,
-    required this.totalSessions,
-    this.completedHizbs = 0,
-    this.totalHizbs = 6,
+    required this.currentOrderInLevel,
+    required this.levelSessionCount,
   });
 
   @override
   Widget build(BuildContext context) {
-    final sessionProgress = totalSessions > 0
-        ? currentSession / totalSessions
-        : 0.0;
-    final hizbProgress = totalHizbs > 0
-        ? completedHizbs / totalHizbs
-        : 0.0;
+    final known = levelSessionCount > 0;
+    // Sessions COMPLETED, which is the session before the one being worked on.
+    final done = known
+        ? (currentOrderInLevel - 1).clamp(0, levelSessionCount)
+        : 0;
+    final progress = known ? done / levelSessionCount : 0.0;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        // Session progress
-        Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'الحلقات',
-                    style: Theme.of(context).textTheme.labelMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  ProgressBar(
-                    progress: sessionProgress,
-                    height: 6,
-                  ),
-                ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'الحلقات في المستوى',
+                style: Theme.of(context).textTheme.labelMedium,
               ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '$currentSession/$totalSessions',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              ProgressBar(progress: progress, height: 6),
+            ],
+          ),
         ),
-        const SizedBox(height: 12),
-        // Hizb progress
-        Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'الأحزاب',
-                    style: Theme.of(context).textTheme.labelMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  ProgressBar(
-                    progress: hizbProgress,
-                    progressColor: AppColors.secondary,
-                    height: 6,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '$completedHizbs/$totalHizbs',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-          ],
+        const SizedBox(width: 8),
+        Text(
+          known ? '$currentOrderInLevel/$levelSessionCount' : '—',
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
         ),
       ],
     );

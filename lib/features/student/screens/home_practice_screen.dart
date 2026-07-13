@@ -235,7 +235,9 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                       Text(
-                        'المستوى ${student.currentLevel} - الحزب ${student.currentHizb}',
+                        student.currentHizb != null
+                            ? 'المستوى ${student.currentLevel} - الحزب ${student.currentHizb}'
+                            : 'المستوى ${student.currentLevel} - الجزء ${student.currentJuz}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textSecondary,
                         ),

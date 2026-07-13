@@ -3,15 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/repositories/curriculum_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/domain/curriculum/curriculum_position.dart';
 import 'package:al_rasikhoon/features/teacher/widgets/starting_point_picker.dart';
 
-/// Seeds three hizbs' worth of curriculum: level 1 hizb 59 (sessions 1, 2,
-/// 35, 36), level 2 hizb 53 (sessions 1, 35) and level 2 hizb 54 (session
-/// 2). Level 1 hizb 60 is deliberately left with no sessions at all — it
-/// exercises the "this hizb has nothing to start at" path.
+/// Seeds a small but REAL-shaped curriculum:
+///
+/// - level 1 (juz 30, 29, 28 — descending, as the catalog says): juz 30 holds a
+///   lesson (S1), the hizb-59 سرد (S30, unit tier), the juz-30 سرد (S67, juz
+///   tier) and the juz-30 اختبار (S68, juz tier). Juz 29 holds one lesson. Juz
+///   28 is deliberately left with NO sessions at all — it exercises the "this
+///   juz has nothing to start at" path.
+/// - level 10 (juz 1, 2, 3 — ASCENDING): one lesson in juz 1.
+///
+/// Note session 35 is not seeded as a سرد anywhere: the old `35 → سرد, 36 →
+/// اختبار` rule is dead, and a session's kind comes from the data.
 Future<FakeFirebaseFirestore> _seedCurriculum() async {
   final firestore = FakeFirebaseFirestore();
 
@@ -20,49 +28,118 @@ Future<FakeFirebaseFirestore> _seedCurriculum() async {
     'name_ar': 'المستوى الأول',
     'name_en': 'Level 1',
     'juz_numbers': [30, 29, 28],
-    'total_sessions': 219,
-    'hizb_count': 6,
+    'session_count': 204,
     'order': 1,
   });
-  await firestore.collection('levels').doc('level_2').set({
-    'id': 2,
-    'name_ar': 'المستوى الثاني',
-    'name_en': 'Level 2',
-    'juz_numbers': [27, 26, 25],
-    'total_sessions': 150,
-    'hizb_count': 6,
-    'order': 2,
+  await firestore.collection('levels').doc('level_10').set({
+    'id': 10,
+    'name_ar': 'المستوى العاشر',
+    'name_en': 'Level 10',
+    // Level 10 teaches its juz ASCENDING — the catalog says so, and nothing
+    // computes it.
+    'juz_numbers': [1, 2, 3],
+    'session_count': 44,
+    'order': 10,
   });
 
-  Future<void> session(int level, int hizb, int number, String type) {
-    final juz = (hizb + 1) ~/ 2;
+  Future<void> lesson(
+    int level,
+    int juz,
+    int number,
+    int orderInLevel, {
+    int? hizb,
+    String surah = 'النبأ',
+  }) {
     return firestore
         .collection('sessions')
-        .doc('L${level}_J${juz}_H${hizb}_S$number')
+        .doc('L${level}_J${juz}_S$number')
         .set({
-          'session_number': number,
           'level_id': level,
           'juz_number': juz,
+          'session_number': number,
+          'order_in_level': orderInLevel,
+          'kind': 'lesson',
           'hizb_number': hizb,
-          'session_type': type,
+          'current_level_content': {
+            'from_surah': surah,
+            'from_verse': 1,
+            'to_surah': surah,
+            'to_verse': 11,
+          },
         });
   }
 
-  await session(1, 59, 1, 'regular');
-  await session(1, 59, 2, 'regular');
-  await session(1, 59, 35, 'sard');
-  await session(1, 59, 36, 'exam');
-  await session(2, 53, 1, 'regular');
-  await session(2, 53, 35, 'sard');
-  await session(2, 54, 2, 'regular');
+  Future<void> assessment(
+    int level,
+    int juz,
+    int number,
+    int orderInLevel, {
+    required String kind,
+    required String tier,
+    required String labelAr,
+    int? hizb,
+    List<int> juzNumbers = const [],
+  }) {
+    return firestore
+        .collection('sessions')
+        .doc('L${level}_J${juz}_S$number')
+        .set({
+          'level_id': level,
+          'juz_number': juz,
+          'session_number': number,
+          'order_in_level': orderInLevel,
+          'kind': kind,
+          'hizb_number': hizb,
+          'scope': {
+            'tier': tier,
+            'label_ar': labelAr,
+            'hizb_number': hizb,
+            'juz_numbers': juzNumbers,
+          },
+        });
+  }
+
+  await lesson(1, 30, 1, 1, hizb: 59);
+  await assessment(
+    1,
+    30,
+    30,
+    30,
+    kind: 'sard',
+    tier: 'unit',
+    labelAr: 'سرد الحزب رقم 59 كاملًا على المحفظ المتابع',
+    hizb: 59,
+    juzNumbers: const [30],
+  );
+  await assessment(
+    1,
+    30,
+    67,
+    67,
+    kind: 'sard',
+    tier: 'juz',
+    labelAr: 'سرد الجزء رقم 30 كاملًا على المحفظ المتابع',
+    juzNumbers: const [30],
+  );
+  await assessment(
+    1,
+    30,
+    68,
+    68,
+    kind: 'exam',
+    tier: 'juz',
+    labelAr: 'اختبار في الجزء رقم 30 كاملًا من قِبل إدارة الحلقات',
+    juzNumbers: const [30],
+  );
+  await lesson(1, 29, 1, 69, hizb: 57, surah: 'الملك');
+  await lesson(10, 1, 1, 1, surah: 'البقرة');
 
   return firestore;
 }
 
-/// A [CurriculumRepository] that delays `getSessionNumbersForHizb` by a
-/// configurable amount per hizb, so tests can force one request to resolve
-/// after another that started later — the exact race the picker must guard
-/// against (finding 5).
+/// A [CurriculumRepository] that delays `getSessionsForJuz` by a configurable
+/// amount per juz, so tests can force one request to resolve after another that
+/// started later — the exact race the picker must guard against.
 class _RacyCurriculumRepository extends CurriculumRepository {
   _RacyCurriculumRepository(FakeFirebaseFirestore firestore, this._delays)
     : super(firestore: firestore);
@@ -70,13 +147,13 @@ class _RacyCurriculumRepository extends CurriculumRepository {
   final Map<int, Duration> _delays;
 
   @override
-  Future<List<int>> getSessionNumbersForHizb({
+  Future<List<SessionModel>> getSessionsForJuz({
     required int level,
-    required int hizb,
+    required int juz,
   }) async {
-    final delay = _delays[hizb];
+    final delay = _delays[juz];
     if (delay != null) await Future.delayed(delay);
-    return super.getSessionNumbersForHizb(level: level, hizb: hizb);
+    return super.getSessionsForJuz(level: level, juz: juz);
   }
 }
 
@@ -117,31 +194,103 @@ void main() {
     await _pumpPicker(tester, firestore, (position) => reported = position);
 
     expect(find.textContaining('المستوى الأول'), findsOneWidget);
-    expect(find.textContaining('الحزب 59'), findsWidgets);
-    // The default position must actually be reported to the parent, not
-    // just displayed — otherwise a parent that trusts onChanged would think
-    // no starting point had been chosen yet.
-    expect(reported, const CurriculumPosition(level: 1, hizb: 59, session: 1));
+    expect(find.textContaining('الجزء 30'), findsWidgets);
+    // The default position must actually be reported to the parent, not just
+    // displayed — otherwise a parent that trusts onChanged would think no
+    // starting point had been chosen yet.
+    expect(reported, const CurriculumPosition(level: 1, juz: 30, session: 1));
   });
 
-  testWidgets('lists the hizbs of a level in teaching order', (tester) async {
+  testWidgets('lists the juz of a level in TEACHING order', (tester) async {
     final firestore = await _seedCurriculum();
     await _pumpPicker(tester, firestore, (_) {});
 
-    // Read the dropdown's own item list straight from the widget tree,
-    // rather than scraping rendered Text — the closed dropdown button also
-    // renders its selected value as text, which would otherwise be
-    // mistaken for the first (and wrong) menu item if the item order were
-    // ever broken.
-    final hizbDropdown = tester.widget<DropdownButton<int>>(
-      find.byKey(const Key('starting_point_hizb')),
+    // Read the dropdown's own item list straight from the widget tree, rather
+    // than scraping rendered Text — the closed dropdown button also renders its
+    // selected value as text.
+    final juzDropdown = tester.widget<DropdownButton<int>>(
+      find.byKey(const Key('starting_point_juz')),
     );
-    final order = hizbDropdown.items!.map((item) => item.value).toList();
 
-    expect(order, [59, 60, 57, 58, 55, 56]);
+    expect(juzDropdown.items!.map((item) => item.value).toList(), [30, 29, 28]);
   });
 
-  testWidgets('choosing a session reports the position to the parent', (
+  testWidgets(
+    'level 10 lists its juz ASCENDING (1 → 2 → 3), as the catalog says',
+    (tester) async {
+      final firestore = await _seedCurriculum();
+      await _pumpPicker(tester, firestore, (_) {});
+
+      await tester.tap(find.byKey(const Key('starting_point_level')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.textContaining('المستوى العاشر').last);
+      await tester.pumpAndSettle();
+
+      final juzDropdown = tester.widget<DropdownButton<int>>(
+        find.byKey(const Key('starting_point_juz')),
+      );
+
+      // Any arithmetic rule (descend from the level's highest juz) gets this
+      // wrong. The order is DATA.
+      expect(juzDropdown.items!.map((item) => item.value).toList(), [1, 2, 3]);
+    },
+  );
+
+  testWidgets('a lesson is offered by its Quran range', (tester) async {
+    final firestore = await _seedCurriculum();
+    await _pumpPicker(tester, firestore, (_) {});
+
+    await tester.tap(find.byKey(const Key('starting_point_session')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('الحلقة 1 — النبأ'), findsWidgets);
+  });
+
+  testWidgets(
+    'a unit-tier سرد is offered under the curriculum\'s own verbatim label',
+    (tester) async {
+      final firestore = await _seedCurriculum();
+      CurriculumPosition? reported;
+      await _pumpPicker(tester, firestore, (position) => reported = position);
+
+      await tester.tap(find.byKey(const Key('starting_point_session')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text('سرد الحزب رقم 59 كاملًا على المحفظ المتابع').last,
+      );
+      await tester.pumpAndSettle();
+
+      // Session 30 — not 35. The number carries no meaning; the data does.
+      expect(
+        reported,
+        const CurriculumPosition(level: 1, juz: 30, session: 30),
+      );
+    },
+  );
+
+  testWidgets(
+    'a student may be placed directly onto a JUZ-tier سرد, which belongs to no '
+    'hizb at all',
+    (tester) async {
+      final firestore = await _seedCurriculum();
+      CurriculumPosition? reported;
+      await _pumpPicker(tester, firestore, (position) => reported = position);
+
+      await tester.tap(find.byKey(const Key('starting_point_session')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text('سرد الجزء رقم 30 كاملًا على المحفظ المتابع').last,
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        reported,
+        const CurriculumPosition(level: 1, juz: 30, session: 67),
+      );
+    },
+  );
+
+  testWidgets('a juz-tier اختبار is selectable as a starting point', (
     tester,
   ) async {
     final firestore = await _seedCurriculum();
@@ -150,37 +299,28 @@ void main() {
 
     await tester.tap(find.byKey(const Key('starting_point_session')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('السرد').last);
+    await tester.tap(
+      find.text('اختبار في الجزء رقم 30 كاملًا من قِبل إدارة الحلقات').last,
+    );
     await tester.pumpAndSettle();
 
-    expect(reported, const CurriculumPosition(level: 1, hizb: 59, session: 35));
+    // Session 68 — the juz-30 اختبار of level 1. The old model could not even
+    // name it (it insisted the exam was session 36).
+    expect(reported, const CurriculumPosition(level: 1, juz: 30, session: 68));
   });
 
-  testWidgets('Exam is selectable as a starting point', (tester) async {
-    final firestore = await _seedCurriculum();
-    CurriculumPosition? reported;
-    await _pumpPicker(tester, firestore, (position) => reported = position);
-
-    await tester.tap(find.byKey(const Key('starting_point_session')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('الاختبار').last);
-    await tester.pumpAndSettle();
-
-    expect(reported, const CurriculumPosition(level: 1, hizb: 59, session: 36));
-  });
-
-  testWidgets('changing the level resets the hizb and session', (tester) async {
+  testWidgets('changing the level resets the juz and session', (tester) async {
     final firestore = await _seedCurriculum();
     CurriculumPosition? reported;
     await _pumpPicker(tester, firestore, (position) => reported = position);
 
     await tester.tap(find.byKey(const Key('starting_point_level')));
     await tester.pumpAndSettle();
-    await tester.tap(find.textContaining('المستوى الثاني').last);
+    await tester.tap(find.textContaining('المستوى العاشر').last);
     await tester.pumpAndSettle();
 
-    expect(reported?.level, 2);
-    expect(reported?.hizb, 53); // first hizb of level 2 in teaching order
+    expect(reported?.level, 10);
+    expect(reported?.juz, 1); // the first juz level 10 TEACHES
     expect(reported?.session, 1); // its first existing session
   });
 
@@ -195,17 +335,17 @@ void main() {
   });
 
   testWidgets(
-    'a hizb with no sessions in the curriculum reports no valid position, '
+    'a juz with no sessions in the curriculum reports no valid position, '
     'not an invented one',
     (tester) async {
       final firestore = await _seedCurriculum();
       final reports = <CurriculumPosition?>[];
       await _pumpPicker(tester, firestore, reports.add);
 
-      // Hizb 60 (level 1) has no seeded sessions at all.
-      await tester.tap(find.byKey(const Key('starting_point_hizb')));
+      // Juz 28 (level 1) has no seeded sessions at all.
+      await tester.tap(find.byKey(const Key('starting_point_juz')));
       await tester.pumpAndSettle();
-      await tester.tap(find.textContaining('الحزب 60').last);
+      await tester.tap(find.text('الجزء 28').last);
       await tester.pumpAndSettle();
 
       expect(reports.last, isNull);
@@ -217,7 +357,7 @@ void main() {
       expect(find.text('اختر الحلقة'), findsOneWidget);
 
       expect(
-        find.textContaining('لا توجد حلقات لهذا الحزب في المنهج'),
+        find.textContaining('لا توجد حلقات لهذا الجزء في المنهج'),
         findsOneWidget,
       );
       // The banner must not claim a starting point when there isn't one.
@@ -229,17 +369,17 @@ void main() {
   );
 
   testWidgets(
-    'a slower response from an earlier hizb selection does not overwrite '
-    'a faster response from a later one',
+    'a slower response from an earlier juz selection does not overwrite a '
+    'faster response from a later one',
     (tester) async {
       final firestore = await _seedCurriculum();
-      // Selecting hizb 53 (auto-selected when level 2 is chosen) is slow;
-      // selecting hizb 54 right after it is fast. The fast, later request
-      // must win even though its response arrives first in wall-clock
-      // terms while the slow, earlier request is still in flight.
+      // Juz 30 (auto-selected for level 1) is slow; selecting juz 29 right after
+      // it is fast. The fast, later request must win even though its response
+      // arrives first in wall-clock terms while the slow, earlier request is
+      // still in flight.
       final repo = _RacyCurriculumRepository(firestore, {
-        53: const Duration(seconds: 2),
-        54: const Duration(milliseconds: 30),
+        30: const Duration(seconds: 2),
+        29: const Duration(milliseconds: 30),
       });
       CurriculumPosition? reported;
       await _pumpPicker(
@@ -249,36 +389,31 @@ void main() {
         curriculumRepository: repo,
       );
 
-      // Select level 2 -> auto-selects hizb 53, whose fetch is slow.
-      await tester.tap(find.byKey(const Key('starting_point_level')));
+      // Before juz 30's fetch resolves, switch to juz 29, whose fetch is fast
+      // and should resolve well before juz 30's does.
+      await tester.tap(find.byKey(const Key('starting_point_juz')));
       await tester.pumpAndSettle();
-      await tester.tap(find.textContaining('المستوى الثاني').last);
-      await tester.pump(const Duration(milliseconds: 20));
-
-      // Before hizb 53's fetch resolves, switch to hizb 54, whose fetch is
-      // fast and should resolve well before hizb 53's does.
-      await tester.tap(find.byKey(const Key('starting_point_hizb')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.textContaining('الحزب 54').last);
+      await tester.tap(find.text('الجزء 29').last);
       await tester.pump(const Duration(milliseconds: 100));
 
-      // Now let hizb 53's slow, stale response arrive.
+      // Now let juz 30's slow, stale response arrive.
       await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
 
-      expect(reported?.hizb, 54);
-      expect(reported?.session, 2);
+      expect(reported?.juz, 29);
+      expect(reported?.session, 1);
     },
   );
 
   testWidgets(
-    'changing the hizb reports null immediately, before the new sessions '
-    'arrive, then reports the real position once they do',
+    'changing the juz reports null immediately, before the new sessions arrive, '
+    'then reports the real position once they do',
     (tester) async {
       final firestore = await _seedCurriculum();
-      // Hizb 54's fetch is deliberately slow so the test can observe the
-      // picker's state while the fetch is still in flight.
+      // Juz 29's fetch is deliberately slow so the test can observe the picker's
+      // state while the fetch is still in flight.
       final repo = _RacyCurriculumRepository(firestore, {
-        54: const Duration(milliseconds: 300),
+        29: const Duration(milliseconds: 300),
       });
       final reports = <CurriculumPosition?>[];
       await _pumpPicker(
@@ -288,25 +423,18 @@ void main() {
         curriculumRepository: repo,
       );
 
-      // Move to level 2 first (auto-selects hizb 53, fetch is not delayed)
-      // so there is a real, non-null previous position on record before the
-      // hizb change under test.
-      await tester.tap(find.byKey(const Key('starting_point_level')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.textContaining('المستوى الثاني').last);
-      await tester.pumpAndSettle();
       expect(
         reports.last,
-        const CurriculumPosition(level: 2, hizb: 53, session: 1),
+        const CurriculumPosition(level: 1, juz: 30, session: 1),
       );
 
-      // Switch to hizb 54, whose sessions take 300ms to arrive.
-      await tester.tap(find.byKey(const Key('starting_point_hizb')));
+      // Switch to juz 29, whose sessions take 300ms to arrive.
+      await tester.tap(find.byKey(const Key('starting_point_juz')));
       await tester.pumpAndSettle();
-      await tester.tap(find.textContaining('الحزب 54').last);
-      // Advance just enough to process the tap/selection itself, well short
-      // of the 300ms fetch delay — the stale hizb-53 position must not still
-      // be reportable in this window.
+      await tester.tap(find.text('الجزء 29').last);
+      // Advance just enough to process the tap/selection itself, well short of
+      // the 300ms fetch delay — the stale juz-30 position must not still be
+      // reportable in this window.
       await tester.pump(const Duration(milliseconds: 50));
 
       expect(
@@ -314,17 +442,17 @@ void main() {
         isNull,
         reason:
             'the parent must be told there is nothing valid to submit while '
-            "hizb 54's sessions are still loading, instead of being left "
-            "holding hizb 53's stale position",
+            "juz 29's sessions are still loading, instead of being left holding "
+            "juz 30's stale position",
       );
 
-      // Let hizb 54's fetch resolve.
+      // Let juz 29's fetch resolve.
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle();
 
       expect(
         reports.last,
-        const CurriculumPosition(level: 2, hizb: 54, session: 2),
+        const CurriculumPosition(level: 1, juz: 29, session: 1),
       );
     },
   );

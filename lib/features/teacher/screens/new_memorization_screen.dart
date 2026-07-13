@@ -7,10 +7,7 @@ import '../providers/teacher_provider.dart';
 class NewMemorizationScreen extends ConsumerWidget {
   final String studentId;
 
-  const NewMemorizationScreen({
-    super.key,
-    required this.studentId,
-  });
+  const NewMemorizationScreen({super.key, required this.studentId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,7 +29,13 @@ class NewMemorizationScreen extends ConsumerWidget {
             return const Center(child: Text('لا توجد بيانات'));
           }
 
+          // Assessments carry no new memorization, and five review-only lessons
+          // carry none either: absence is data, and the screen says so instead
+          // of dereferencing null.
           final content = session.currentLevelContent;
+          if (content == null) {
+            return const Center(child: Text('لا يوجد حفظ جديد في هذه الحلقة'));
+          }
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -65,14 +68,13 @@ class NewMemorizationScreen extends ConsumerWidget {
                               children: [
                                 Text(
                                   'المقطع المطلوب حفظه',
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
                                 ),
                                 Text(
                                   'للحلقة القادمة',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
+                                  style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
                                         color: AppColors.textSecondary,
                                       ),
@@ -167,24 +169,20 @@ class _InfoRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(
-            icon,
-            size: 18,
-            color: AppColors.textSecondary,
-          ),
+          Icon(icon, size: 18, color: AppColors.textSecondary),
           const SizedBox(width: 12),
           Text(
             label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
           const Spacer(),
           Text(
             value,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -196,10 +194,7 @@ class _InstructionTile extends StatelessWidget {
   final int number;
   final String text;
 
-  const _InstructionTile({
-    required this.number,
-    required this.text,
-  });
+  const _InstructionTile({required this.number, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -228,10 +223,7 @@ class _InstructionTile extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              text,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
           ),
         ],
       ),

@@ -25,9 +25,9 @@ UserModel _teacher() => UserModel(
 
 /// Seeds one institute assigned to [_teacherId] (so AddStudentScreen's
 /// institute dropdown auto-selects it) and a curriculum whose only level has
-/// no sessions at all for its (auto-selected) first hizb — the picker
-/// therefore has nothing valid to report, exactly the "empty hizb" gap the
-/// submit guard exists for (finding 2 / AgDR review, fix pass 2).
+/// no sessions at all for its (auto-selected) first juz — the picker therefore
+/// has nothing valid to report, exactly the "empty juz" gap the submit guard
+/// exists for (finding 2 / AgDR review, fix pass 2).
 Future<FakeFirebaseFirestore> _seedNoSessionCurriculum() async {
   final firestore = FakeFirebaseFirestore();
 
@@ -44,15 +44,15 @@ Future<FakeFirebaseFirestore> _seedNoSessionCurriculum() async {
     'is_active': true,
   });
 
-  // Level 1 exists but no session documents are seeded for it at all, so
-  // hizb 59 (the picker's default) has none to offer.
+  // Level 1 exists but no session documents are seeded for it at all, so juz
+  // 30 (the first juz level 1 teaches, and the picker's default) has none to
+  // offer.
   await firestore.collection('levels').doc('level_1').set({
     'id': 1,
     'name_ar': 'المستوى الأول',
     'name_en': 'Level 1',
     'juz_numbers': [30, 29, 28],
-    'total_sessions': 219,
-    'hizb_count': 6,
+    'session_count': 204,
     'order': 1,
   });
 
@@ -84,16 +84,16 @@ void main() {
 
   testWidgets(
     'refuses to submit, and creates nothing, when the curriculum picker '
-    'has no valid starting position (empty hizb)',
+    'has no valid starting position (empty juz)',
     (tester) async {
       final firestore = await _seedNoSessionCurriculum();
       final firebaseService = _MockFirebaseService();
       await _pumpAddStudentScreen(tester, firestore, firebaseService);
 
-      // The picker has settled on hizb 59 with no sessions to offer — its
+      // The picker has settled on juz 30 with no sessions to offer — its
       // banner confirms there is nothing to start at.
       expect(
-        find.textContaining('لا توجد حلقات لهذا الحزب في المنهج'),
+        find.textContaining('لا توجد حلقات لهذا الجزء في المنهج'),
         findsOneWidget,
       );
 

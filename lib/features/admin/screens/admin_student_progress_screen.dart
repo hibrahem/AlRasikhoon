@@ -3,15 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
 import '../../../data/models/student_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/progress_bar.dart';
+import '../../../shared/widgets/student_level_progress.dart';
 import '../providers/admin_provider.dart';
 
 /// Read-only student progress view for admins. Mirrors what a teacher sees
@@ -78,22 +78,22 @@ class _ProgressBody extends ConsumerWidget {
         Text('الحلقة الحالية', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
         sessionAsync.when(
-          data: (session) =>
-              _CurrentSessionCard(student: student, session: session),
+          data: (session) => _CurrentSessionCard(session: session),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Text('Error: $e'),
         ),
 
         const SizedBox(height: 24),
 
-        Text('التقدم في الحزب', style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          'التقدم في المستوى',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         const SizedBox(height: 12),
         AppCard(
-          child: LevelProgressBar(
-            currentSession: student.currentSession,
-            totalSessions: 36,
-            completedHizbs: 0,
-            totalHizbs: 6,
+          child: StudentLevelProgress(
+            level: student.currentLevel,
+            orderInLevel: student.currentOrderInLevel,
           ),
         ),
 
@@ -168,35 +168,39 @@ class _StudentHeaderCard extends StatelessWidget {
   }
 }
 
+/// The session the student stands on, described by the CURRICULUM — the student
+/// record is not consulted at all, because the session document is the authority
+/// on what the session is.
 class _CurrentSessionCard extends StatelessWidget {
-  final StudentModel student;
   final SessionModel? session;
 
-  const _CurrentSessionCard({required this.student, required this.session});
+  const _CurrentSessionCard({required this.session});
 
   @override
   Widget build(BuildContext context) {
-    final isSard = student.currentSession == AppConstants.sardSessionNumber;
-    final isExam = student.currentSession == AppConstants.examSessionNumber;
+    final session = this.session;
+    if (session == null) {
+      return const AppCard(child: Center(child: Text('لا توجد بيانات للحلقة')));
+    }
 
-    if (isExam) {
+    // A session's kind is read from the curriculum, never inferred from its
+    // number; an assessment is named by the curriculum's own label and worded
+    // for its tier (this hizb / this juz / the level so far).
+    if (session.isExam) {
       return _SimpleSessionCard(
         icon: Icons.quiz,
         color: AppColors.secondary,
-        title: 'اختبار الحزب ${student.currentHizb}',
+        title: session.titleAr,
         subtitle: 'في انتظار المشرف لإجراء الاختبار',
       );
     }
-    if (isSard) {
+    if (session.isSard) {
       return _SimpleSessionCard(
         icon: Icons.record_voice_over,
         color: AppColors.info,
-        title: 'سرد الحزب ${student.currentHizb}',
-        subtitle: 'سرد كامل الحزب من الذاكرة',
+        title: session.titleAr,
+        subtitle: session.assessmentInstructionAr,
       );
-    }
-    if (session == null) {
-      return const AppCard(child: Center(child: Text('لا توجد بيانات للحلقة')));
     }
     return AppCard(
       child: Column(
@@ -218,11 +222,13 @@ class _CurrentSessionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'الحلقة ${student.currentSession}',
+                      'الحلقة ${session.sessionNumber}',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     Text(
-                      'الحزب ${student.currentHizb}',
+                      session.hizbNumber != null
+                          ? 'الجزء ${session.juzNumber} - الحزب ${session.hizbNumber}'
+                          : 'الجزء ${session.juzNumber}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -235,22 +241,24 @@ class _CurrentSessionCard extends StatelessWidget {
           const SizedBox(height: 16),
           const Divider(),
           const SizedBox(height: 12),
+          // A content block may legitimately be absent (review-only lessons
+          // carry no new memorization) — absence reads as '-'.
           _PartTile(
             number: 1,
             title: 'الحفظ الجديد',
-            content: session!.currentLevelContent.rangeAr,
+            content: session.currentLevelContent?.rangeAr ?? '',
           ),
           const SizedBox(height: 8),
           _PartTile(
             number: 2,
             title: 'المراجعة القريبة',
-            content: session!.recentReviewContent.rangeAr,
+            content: session.recentReviewContent?.rangeAr ?? '',
           ),
           const SizedBox(height: 8),
           _PartTile(
             number: 3,
             title: 'المراجعة البعيدة',
-            content: session!.distantReviewContent.rangeAr,
+            content: session.distantReviewContent?.rangeAr ?? '',
           ),
         ],
       ),
@@ -397,9 +405,7 @@ class _SessionHistoryList extends StatelessWidget {
         // Listing shows only binary pass/fail (نجح / رسب), never an average
         // of the three component grades (#24). The per-component breakdown
         // lives in the session detail view.
-        final passColor = record.passed
-            ? AppColors.success
-            : AppColors.error;
+        final passColor = record.passed ? AppColors.success : AppColors.error;
         return AppCard(
           margin: const EdgeInsets.only(bottom: 8),
           onTap: () => context.push(
@@ -429,7 +435,9 @@ class _SessionHistoryList extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     Text(
-                      'المستوى ${record.levelId} - الحزب ${record.hizbNumber}',
+                      record.hizbNumber != null
+                          ? 'المستوى ${record.levelId} - الحزب ${record.hizbNumber}'
+                          : 'المستوى ${record.levelId}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),

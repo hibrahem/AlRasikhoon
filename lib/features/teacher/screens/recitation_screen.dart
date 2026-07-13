@@ -40,7 +40,9 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final sessionAsync = ref.watch(studentCurrentSessionProvider(widget.studentId));
+    final sessionAsync = ref.watch(
+      studentCurrentSessionProvider(widget.studentId),
+    );
     // Distinct accent per memorization mode (hibrahem/AlRasikhoon#25).
     // The Arabic label (_partTitle) is always shown alongside, so the mode is
     // never communicated by color alone.
@@ -64,16 +66,18 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
             return const Center(child: Text('لا توجد بيانات'));
           }
 
+          // A content block is legitimately absent on review-only lessons —
+          // absence is data, and reads as an empty range, not a crash.
           String content;
           switch (widget.part) {
             case 1:
-              content = session.currentLevelContent.rangeAr;
+              content = session.currentLevelContent?.rangeAr ?? '';
               break;
             case 2:
-              content = session.recentReviewContent.rangeAr;
+              content = session.recentReviewContent?.rangeAr ?? '';
               break;
             case 3:
-              content = session.distantReviewContent.rangeAr;
+              content = session.distantReviewContent?.rangeAr ?? '';
               break;
             default:
               content = '';
@@ -123,10 +127,7 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
                       ),
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.menu_book,
-                            color: modeColor,
-                          ),
+                          Icon(Icons.menu_book, color: modeColor),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
@@ -231,9 +232,7 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
               Navigator.pop(context);
               context.go(AppRoutes.teacherStudents);
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('نعم، إلغاء'),
           ),
         ],
