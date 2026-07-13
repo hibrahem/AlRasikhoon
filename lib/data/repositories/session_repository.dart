@@ -25,6 +25,18 @@ class SessionRepository {
 
   // ==================== Session Records ====================
 
+  /// Allocates a fresh doc ref, builds the record from it via [build], and
+  /// persists it. Shared by [createSessionRecord] and [createTalqeenRecord] so
+  /// the doc-ref → construct → save sequence cannot drift between the two.
+  Future<SessionRecordModel> _writeSessionRecord(
+    SessionRecordModel Function(String id) build,
+  ) async {
+    final docRef = _sessionRecordsCollection.doc();
+    final record = build(docRef.id);
+    await docRef.set(record.toFirestore());
+    return record;
+  }
+
   /// Create session record
   ///
   /// [hizbNumber] is a LABEL, present only in levels 1-2. It keys nothing.
@@ -42,7 +54,7 @@ class SessionRepository {
     required int repetitionsWithTeacher,
     required int homeRepetitionsRequired,
     String? notes,
-  }) async {
+  }) {
     final grades = SessionGrades(
       newMemorizationErrors: newMemorizationErrors,
       recentReviewErrors: recentReviewErrors,
@@ -53,27 +65,25 @@ class SessionRepository {
     // (hibrahem/AlRasikhoon#24) — no averaging, no level-agnostic threshold.
     final passed = grades.passesForLevel(levelId);
 
-    final docRef = _sessionRecordsCollection.doc();
-    final record = SessionRecordModel(
-      id: docRef.id,
-      studentId: studentId,
-      teacherId: teacherId,
-      curriculumSessionId: curriculumSessionId,
-      levelId: levelId,
-      hizbNumber: hizbNumber,
-      sessionNumber: sessionNumber,
-      date: DateTime.now(),
-      attemptNumber: attemptNumber,
-      grades: grades,
-      passed: passed,
-      repetitionsWithTeacher: repetitionsWithTeacher,
-      homeRepetitionsRequired: homeRepetitionsRequired,
-      notes: notes,
-      createdAt: DateTime.now(),
+    return _writeSessionRecord(
+      (id) => SessionRecordModel(
+        id: id,
+        studentId: studentId,
+        teacherId: teacherId,
+        curriculumSessionId: curriculumSessionId,
+        levelId: levelId,
+        hizbNumber: hizbNumber,
+        sessionNumber: sessionNumber,
+        date: DateTime.now(),
+        attemptNumber: attemptNumber,
+        grades: grades,
+        passed: passed,
+        repetitionsWithTeacher: repetitionsWithTeacher,
+        homeRepetitionsRequired: homeRepetitionsRequired,
+        notes: notes,
+        createdAt: DateTime.now(),
+      ),
     );
-
-    await docRef.set(record.toFirestore());
-    return record;
   }
 
   /// Records that a تلقين happened.
@@ -92,40 +102,48 @@ class SessionRepository {
     required int repetitionsWithTeacher,
     required int homeRepetitionsRequired,
     String? notes,
-  }) async {
-    final docRef = _sessionRecordsCollection.doc();
-    final record = SessionRecordModel(
-      id: docRef.id,
-      studentId: studentId,
-      teacherId: teacherId,
-      curriculumSessionId: curriculumSessionId,
-      levelId: levelId,
-      hizbNumber: hizbNumber,
-      sessionNumber: sessionNumber,
-      date: DateTime.now(),
-      attemptNumber: 1,
-      grades: const SessionGrades(
-        newMemorizationErrors: 0,
-        recentReviewErrors: 0,
-        distantReviewErrors: 0,
+  }) {
+    return _writeSessionRecord(
+      (id) => SessionRecordModel(
+        id: id,
+        studentId: studentId,
+        teacherId: teacherId,
+        curriculumSessionId: curriculumSessionId,
+        levelId: levelId,
+        hizbNumber: hizbNumber,
+        sessionNumber: sessionNumber,
+        date: DateTime.now(),
+        attemptNumber: 1,
+        grades: const SessionGrades(
+          newMemorizationErrors: 0,
+          recentReviewErrors: 0,
+          distantReviewErrors: 0,
+        ),
+        passed: true,
+        repetitionsWithTeacher: repetitionsWithTeacher,
+        homeRepetitionsRequired: homeRepetitionsRequired,
+        notes: notes,
+        createdAt: DateTime.now(),
       ),
-      passed: true,
-      repetitionsWithTeacher: repetitionsWithTeacher,
-      homeRepetitionsRequired: homeRepetitionsRequired,
-      notes: notes,
-      createdAt: DateTime.now(),
     );
-
-    await docRef.set(record.toFirestore());
-    return record;
   }
 
   /// The student's most recent session record — the one carrying the home
   /// assignment they are currently working off.
+  ///
+  /// Ordered by `date` DESC, then `created_at` DESC as a tie-break. A teacher
+  /// completes one session at a time, so two records genuinely sharing a
+  /// `date` is not expected in practice — but this query must not silently
+  /// depend on that being true: without an explicit secondary order, which
+  /// doc Firestore hands back for a tied `date` is unspecified, and "the
+  /// latest record" would become nondeterministic (flaky home-assignment
+  /// reads) the moment a tie ever did occur (e.g. a backfill, or two writes
+  /// landing in the same clock tick).
   Future<SessionRecordModel?> getLatestSessionRecord(String studentId) async {
     final query = await _sessionRecordsCollection
         .where('student_id', isEqualTo: studentId)
         .orderBy('date', descending: true)
+        .orderBy('created_at', descending: true)
         .limit(1)
         .get();
 

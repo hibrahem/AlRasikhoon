@@ -188,6 +188,12 @@ void main() {
     });
 
     group('getLatestSessionRecord', () {
+      // No artificial delay between the two writes below: with the teacher
+      // completing one session at a time (never concurrently), two
+      // back-to-back `DateTime.now()` reads are already reliably ordered on
+      // a real clock — the delay wasn't load-bearing for THIS case, only a
+      // safety margin. What genuinely needs proving is the tie-break added
+      // below, for the case a real clock tick (or a backfill) does collide.
       test(
         'returns the most recent record, which carries the home assignment',
         () async {
@@ -200,7 +206,6 @@ void main() {
             repetitionsWithTeacher: 3,
             homeRepetitionsRequired: 7,
           );
-          await Future<void>.delayed(const Duration(milliseconds: 10));
           final newer = await sessionRepository.createTalqeenRecord(
             studentId: 'student1',
             teacherId: 'teacher1',
@@ -216,6 +221,56 @@ void main() {
           );
           expect(latest!.id, newer.id);
           expect(latest.curriculumSessionId, 'L1_J30_S2');
+          expect(latest.homeRepetitionsRequired, 12);
+        },
+      );
+
+      // The scenario the fix is actually for: two records sharing the exact
+      // same `date` (a real clock tie, or a backfill) — ordering by `date`
+      // alone leaves Firestore's tie-break unspecified. Both records are
+      // written directly (bypassing the repository's own `DateTime.now()`
+      // calls) so the tie is exact and the test carries no wall-clock
+      // dependency at all.
+      test(
+        'breaks a `date` tie deterministically using `created_at`',
+        () async {
+          final tiedDate = Timestamp.fromDate(DateTime(2026, 1, 1, 12));
+          await fakeFirestore.collection('session_records').doc('older').set({
+            'student_id': 'student1',
+            'teacher_id': 'teacher1',
+            'curriculum_session_id': 'L1_J30_S1',
+            'date': tiedDate,
+            'attempt_number': 1,
+            'grades': {
+              'new_memorization_errors': 0,
+              'recent_review_errors': 0,
+              'distant_review_errors': 0,
+            },
+            'passed': true,
+            'home_repetitions_required': 7,
+            'created_at': Timestamp.fromDate(DateTime(2026, 1, 1, 11)),
+          });
+          await fakeFirestore.collection('session_records').doc('newer').set({
+            'student_id': 'student1',
+            'teacher_id': 'teacher1',
+            'curriculum_session_id': 'L1_J30_S2',
+            'date': tiedDate,
+            'attempt_number': 1,
+            'grades': {
+              'new_memorization_errors': 0,
+              'recent_review_errors': 0,
+              'distant_review_errors': 0,
+            },
+            'passed': true,
+            'home_repetitions_required': 12,
+            'created_at': Timestamp.fromDate(DateTime(2026, 1, 1, 13)),
+          });
+
+          final latest = await sessionRepository.getLatestSessionRecord(
+            'student1',
+          );
+
+          expect(latest!.id, 'newer');
           expect(latest.homeRepetitionsRequired, 12);
         },
       );
