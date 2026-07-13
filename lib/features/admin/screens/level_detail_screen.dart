@@ -228,7 +228,10 @@ class _SessionKindChip extends StatelessWidget {
       case SessionKind.exam:
         color = AppColors.warning;
         break;
+      case SessionKind.talqeen:
       case SessionKind.lesson:
+        // A تلقين teaches new content like a lesson does and is never
+        // assessed, so it gets the same chip color.
         color = AppColors.primary;
         break;
     }

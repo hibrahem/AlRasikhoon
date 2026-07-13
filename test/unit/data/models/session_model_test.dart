@@ -297,6 +297,53 @@ void main() {
     });
   });
 
+  group('SessionKind.talqeen', () {
+    SessionModel talqeen() => SessionModel.fromJson('L1_J30_S1', {
+      'level_id': 1,
+      'juz_number': 30,
+      'session_number': 1,
+      'order_in_level': 1,
+      'kind': 'talqeen',
+      'assessed_by': null,
+      'unit_index': 1,
+      'hizb_number': 59,
+      'scope': null,
+      'current_level_content': {
+        'from_surah': 'النبأ',
+        'from_verse': 1,
+        'to_surah': 'النبأ',
+        'to_verse': 11,
+      },
+      'recent_review_content': null,
+      'distant_review_content': null,
+    });
+
+    test('a talqeen session is read from the curriculum, not guessed', () {
+      expect(SessionKindX.fromString('talqeen'), SessionKind.talqeen);
+      expect(SessionKind.talqeen.nameAr, 'تلقين');
+      expect(talqeen().kind, SessionKind.talqeen);
+      expect(talqeen().isTalqeen, isTrue);
+    });
+
+    test('a talqeen session is not an assessment', () {
+      final session = talqeen();
+      expect(session.isAssessment, isFalse);
+      expect(session.isSard, isFalse);
+      expect(session.isExam, isFalse);
+      expect(session.isLesson, isFalse);
+    });
+
+    test('a talqeen session teaches new content, as a lesson does', () {
+      expect(talqeen().teachesNewContent, isTrue);
+    });
+
+    test('a talqeen session round-trips through Firestore', () {
+      final json = talqeen().toFirestore();
+      expect(json['kind'], 'talqeen');
+      expect(SessionModel.fromJson('L1_J30_S1', json).isTalqeen, isTrue);
+    });
+  });
+
   group('QuranContent', () {
     test('an absent content block reads back as absent, not as empty', () {
       expect(QuranContent.maybeFromJson(null), isNull);

@@ -1,19 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// What a curriculum session IS. Read from the session's `kind` field, which the
-/// extractor took verbatim from the source spreadsheets.
+/// extractor took verbatim from the source spreadsheets — except [talqeen],
+/// which the extractor DERIVES at the start of every unit and marks as derived.
 ///
 /// A session's kind is NEVER inferred from its number. The curriculum used to be
 /// modelled as "36 sessions per hizb, 35 = sard, 36 = exam"; the real curriculum
-/// runs 1..N continuously across a whole juz (68 sessions in juz 30, 69 in juz
-/// 29, 67 in juz 28) and puts assessments wherever the source puts them.
-enum SessionKind { lesson, sard, exam }
+/// runs 1..N continuously across a whole juz and puts assessments wherever the
+/// source puts them.
+enum SessionKind { talqeen, lesson, sard, exam }
 
 extension SessionKindX on SessionKind {
   String get value => name;
 
   String get nameAr {
     switch (this) {
+      case SessionKind.talqeen:
+        return 'تلقين';
       case SessionKind.lesson:
         return 'حلقة';
       case SessionKind.sard:
@@ -25,6 +28,8 @@ extension SessionKindX on SessionKind {
 
   String get nameEn {
     switch (this) {
+      case SessionKind.talqeen:
+        return 'Talqeen';
       case SessionKind.lesson:
         return 'Lesson';
       case SessionKind.sard:
@@ -41,6 +46,8 @@ extension SessionKindX on SessionKind {
   /// ordinary session.
   static SessionKind fromString(String value) {
     switch (value) {
+      case 'talqeen':
+        return SessionKind.talqeen;
       case 'lesson':
         return SessionKind.lesson;
       case 'sard':
@@ -329,9 +336,21 @@ class SessionModel {
 
   bool get isLesson => kind == SessionKind.lesson;
 
+  /// A تلقين: the teacher recites the new passage to the student and repeats it
+  /// with him. Nothing is memorized, recited alone, or graded.
+  bool get isTalqeen => kind == SessionKind.talqeen;
+
   /// A سرد or an اختبار — the two kinds that are assessed and retried without
   /// limit.
-  bool get isAssessment => !isLesson;
+  ///
+  /// This is NOT `!isLesson`: a تلقين is neither a lesson nor an assessment, and
+  /// defining it by negation is how one would silently acquire an assessment's
+  /// unlimited retries and land in the supervisor's exam queue.
+  bool get isAssessment => kind == SessionKind.sard || kind == SessionKind.exam;
+
+  /// The sessions that teach new memorization content — a تلقين and a lesson.
+  /// These, and only these, carry the recitation counts.
+  bool get teachesNewContent => isTalqeen || isLesson;
 
   /// The tier of this assessment, or null for a lesson.
   AssessmentTier? get tier => scope?.tier;
@@ -349,6 +368,7 @@ class SessionModel {
 
   String get titleEn {
     if (isAssessment) return '${kind.nameEn} - Juz $juzNumber';
+    if (isTalqeen) return 'Talqeen - Juz $juzNumber';
     return 'Session $sessionNumber - Juz $juzNumber';
   }
 
