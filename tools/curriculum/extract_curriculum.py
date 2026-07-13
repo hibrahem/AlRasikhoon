@@ -42,7 +42,19 @@ OUTPUT_DIR = REPO_ROOT / "data" / "curriculum"
 # guess: juz 1 carries no cumulative pair, juz 2's cumulative covers
 # "البقرة 1 : 252" (= juz 1 + 2) and juz 3's covers "البقرة 1 : 286"
 # (= juz 1 + 2 + 3). Cumulative scope strictly grows in that order, so that is
-# the teaching order. The validator re-derives and re-checks this.
+# the teaching order.
+#
+# THIS IS NOT MACHINE-VERIFIED FOR EVERY LEVEL. build_juz_sessions() only
+# cross-checks a juz-/cumulative-tier label against the declared teaching
+# order when the label actually NAMES a juz (JUZ_WORD_RE: "الجزء" /
+# "الجزئين" / "الأجزاء") — true for levels 1-2 only, whose unit is a hizb.
+# Levels 3-10 label their juz- and cumulative-tier assessments by SURAH
+# ("من أول ... إلى أخر ...") or, for level 10, by verse number — never by juz
+# number — so that cross-check is silently skipped for them (see
+# test_level_3_cumulative_labels_name_no_juz). The derivation above for level
+# 10 (and the descending order asserted for 1-9) was verified BY HAND against
+# the source and is recorded here for whoever next touches this file; no code
+# in this module re-derives or re-checks it.
 LEVEL_NAMES_AR = {
     1: "المستوى الأول",
     2: "المستوى الثاني",

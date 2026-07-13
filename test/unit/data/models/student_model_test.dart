@@ -256,11 +256,46 @@ void main() {
         );
       });
 
+      test('a student stored before enrollment tracking reads back anchored at '
+          'the start, with its session id rebuilt from the position', () async {
+        final firestore = FakeFirebaseFirestore();
+        await firestore.collection('students').doc('old').set({
+          'user_id': 'u1',
+          'institute_id': 'i1',
+          'current_level': 1,
+          'current_juz': 30,
+          'current_session': 8,
+          // current_session_kind IS present — every real document carries
+          // it (see the "corrupted or unmigrated data" test below); this
+          // fixture is only missing the LATER-added enrollment/session-id
+          // fields, to lock in their own, unrelated fallbacks.
+          'current_session_kind': 'lesson',
+          'current_attempt': 1,
+          'completed_levels': <int>[],
+          'unlocked_levels': [1],
+          'is_active': true,
+          'created_at': Timestamp.fromDate(DateTime(2026, 1, 1)),
+        });
+
+        final doc = await firestore.collection('students').doc('old').get();
+        final student = StudentModel.fromFirestore(doc);
+
+        expect(student.enrollmentPosition, CurriculumPosition.start);
+        expect(student.currentSessionKind, SessionKind.lesson);
+        expect(student.currentSessionId, 'L1_J30_S8');
+      });
+
       test(
-        'a student stored before this model reads back on a lesson at the start',
+        'a document missing current_session_kind is corrupted or unmigrated '
+        'data, and must surface — not be silently treated as a lesson',
         () async {
+          // No production student document is missing this field: every
+          // write path (_writePosition) sets it alongside the rest of the
+          // position. Silently defaulting it to a lesson is exactly how a
+          // student standing on an اختبار would drop unnoticed out of the
+          // supervisor's exam queue.
           final firestore = FakeFirebaseFirestore();
-          await firestore.collection('students').doc('old').set({
+          await firestore.collection('students').doc('broken').set({
             'user_id': 'u1',
             'institute_id': 'i1',
             'current_level': 1,
@@ -273,12 +308,12 @@ void main() {
             'created_at': Timestamp.fromDate(DateTime(2026, 1, 1)),
           });
 
-          final doc = await firestore.collection('students').doc('old').get();
-          final student = StudentModel.fromFirestore(doc);
+          final doc = await firestore
+              .collection('students')
+              .doc('broken')
+              .get();
 
-          expect(student.enrollmentPosition, CurriculumPosition.start);
-          expect(student.currentSessionKind, SessionKind.lesson);
-          expect(student.currentSessionId, 'L1_J30_S8');
+          expect(() => StudentModel.fromFirestore(doc), throwsArgumentError);
         },
       );
 

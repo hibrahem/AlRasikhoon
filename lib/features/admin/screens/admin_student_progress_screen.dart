@@ -226,9 +226,10 @@ class _CurrentSessionCard extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     Text(
-                      session.hizbNumber != null
-                          ? 'الجزء ${session.juzNumber} - الحزب ${session.hizbNumber}'
-                          : 'الجزء ${session.juzNumber}',
+                      // Never an app-derived hizb — level 2's structural hizb
+                      // is known to disagree with the source text for the
+                      // same session. The juz is always consistent.
+                      'الجزء ${session.juzNumber}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -435,9 +436,10 @@ class _SessionHistoryList extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     Text(
-                      record.hizbNumber != null
-                          ? 'المستوى ${record.levelId} - الحزب ${record.hizbNumber}'
-                          : 'المستوى ${record.levelId}',
+                      // Never an app-derived hizb — `record.hizbNumber` is the
+                      // denormalized structural value, which can disagree
+                      // with a session's own verbatim label.
+                      'المستوى ${record.levelId}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),

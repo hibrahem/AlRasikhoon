@@ -209,3 +209,34 @@ def test_level_3_juz_22_cumulative_covers_the_whole_level(corpus):
     # juz 24 is taught first and therefore has no cumulative pair
     first = juz_sessions(corpus, 3, 24)
     assert not any(s["scope"] and s["scope"]["tier"] == "cumulative" for s in first)
+
+
+# ------------------------------------------------------------- documentation
+def test_level_3_cumulative_labels_name_no_juz(corpus):
+    """Levels 3-10 label their cumulative (and juz-tier) assessments by SURAH,
+    never by juz number — so `JUZ_WORD_RE` ("الجزء" / "الجزئين" / "الأجزاء")
+    never matches them, and the cumulative cross-check in
+    `build_juz_sessions()` (which only fires when a label names a juz) is
+    silently skipped for every level but 1-2. This is the concrete case that
+    made the old `juz_teaching_order()` comment's claim false.
+    """
+    s = by_number(juz_sessions(corpus, 3, 22))
+    cumulative = [s[29], s[30], s[31], s[32]]
+    for session in cumulative:
+        assert not ex.JUZ_WORD_RE.search(session["scope"]["label_ar"])
+
+
+def test_juz_teaching_order_comment_does_not_overstate_verification():
+    """`juz_teaching_order()`'s header comment must not claim a blanket
+    machine cross-check that does not exist: the automatic cumulative
+    cross-check only fires when a label names a juz (true for levels 1-2
+    only — see `test_level_3_cumulative_labels_name_no_juz`). The level-10
+    ascending order is a human derivation recorded in the comment, not
+    something `extract()` re-derives or re-checks. Reading the module's own
+    source (rather than duplicating the sentence here) means the comment
+    cannot silently drift back to overstating its guarantee.
+    """
+    import inspect
+
+    source = inspect.getsource(ex)
+    assert "The validator re-derives and re-checks this." not in source

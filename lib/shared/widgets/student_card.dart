@@ -129,9 +129,11 @@ class StudentCard extends ConsumerWidget {
 
               if (showProgress) ...[
                 const SizedBox(height: 16),
-                // Progress info. The hizb is a LABEL and only levels 1-2 have
-                // one — it is shown when the curriculum gives one, and omitted
-                // (not faked) when it does not.
+                // Progress info. `currentHizb` is never shown here: it is the
+                // denormalized STRUCTURAL value, which can disagree with the
+                // student's own assessment's verbatim label (level 2's source
+                // workbooks contradict themselves on which hizb is which). The
+                // juz is always consistent with the data.
                 Row(
                   children: [
                     _InfoChip(
@@ -139,13 +141,6 @@ class StudentCard extends ConsumerWidget {
                       label: 'الجزء ${student.currentJuz}',
                     ),
                     const SizedBox(width: 8),
-                    if (student.currentHizb != null) ...[
-                      _InfoChip(
-                        icon: Icons.bookmark,
-                        label: 'الحزب ${student.currentHizb}',
-                      ),
-                      const SizedBox(width: 8),
-                    ],
                     _InfoChip(
                       icon: Icons.school,
                       label: 'الحلقة ${student.currentSession}',

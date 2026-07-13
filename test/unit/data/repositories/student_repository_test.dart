@@ -843,6 +843,7 @@ void main() {
           'user_id': 'user1',
           'institute_id': 'i1',
           'teacher_id': 'teacher1',
+          'current_session_kind': 'lesson',
           'is_active': true,
           'created_at': Timestamp.now(),
         });
@@ -850,6 +851,7 @@ void main() {
           'user_id': 'user2',
           'institute_id': 'i1',
           'teacher_id': 'teacher1',
+          'current_session_kind': 'lesson',
           'is_active': false,
           'created_at': Timestamp.now(),
         });
@@ -941,6 +943,7 @@ void main() {
           'user_id': 'u1',
           'institute_id': 'i1',
           'guardian_id': 'guardian1',
+          'current_session_kind': 'lesson',
           'is_active': true,
           'created_at': Timestamp.now(),
         });
@@ -967,6 +970,7 @@ void main() {
           'user_id': 'u1',
           'institute_id': 'i1',
           'guardian_id': 'guardian1',
+          'current_session_kind': 'lesson',
           'is_active': true,
           'created_at': Timestamp.now(),
         });
@@ -996,12 +1000,14 @@ void main() {
           await fakeFirestore.collection('students').doc('s-in').set({
             'user_id': 'user-in',
             'institute_id': 'institute1',
+            'current_session_kind': 'lesson',
             'is_active': true,
             'created_at': Timestamp.now(),
           });
           await fakeFirestore.collection('students').doc('s-out').set({
             'user_id': 'user-out',
             'institute_id': 'institute2',
+            'current_session_kind': 'lesson',
             'is_active': true,
             'created_at': Timestamp.now(),
           });
@@ -1021,12 +1027,14 @@ void main() {
         await fakeFirestore.collection('students').doc('s-a1').set({
           'user_id': 'u-a1',
           'institute_id': 'institute1',
+          'current_session_kind': 'lesson',
           'is_active': true,
           'created_at': Timestamp.now(),
         });
         await fakeFirestore.collection('students').doc('s-b1').set({
           'user_id': 'u-b1',
           'institute_id': 'institute2',
+          'current_session_kind': 'lesson',
           'is_active': true,
           'created_at': Timestamp.now(),
         });
@@ -1041,25 +1049,64 @@ void main() {
     });
 
     group('updateStudent', () {
-      test('updates student fields', () async {
-        await seedStudent(level: 1, juz: 30, session: 5, order: 5);
+      // _writePosition is the ONLY writer of the denormalized `current_*`
+      // session facts (see its doc comment): the supervisor's exam queue is a
+      // single Firestore query on `current_session_kind`, so a second writer
+      // that lets these fields drift would silently drop a student out of the
+      // queue with no signal to anyone. updateStudent must be STRUCTURALLY
+      // unable to write them, however it is called.
+      test('cannot change the denormalized current_* session facts', () async {
+        await seedStudent(
+          level: 1,
+          juz: 30,
+          session: 5,
+          order: 5,
+          kind: 'exam',
+          tier: 'juz',
+          labelAr: 'اختبار في الجزء رقم 30 كاملًا من قِبل إدارة الحلقات',
+          hizb: 59,
+          attempt: 1,
+        );
 
+        // A StudentModel carrying a DIFFERENT, wrong position — e.g. built
+        // from stale in-memory state. Even so, updateStudent must not let
+        // any of it reach the `current_*` fields.
         final student = StudentModel(
           id: 's1',
           userId: 'u1',
           instituteId: 'i1',
-          currentSession: 10,
-          currentOrderInLevel: 10,
-          currentAttempt: 2,
+          teacherId: 'teacher-2',
+          currentLevel: 5,
+          currentJuz: 12,
+          currentSession: 99,
+          currentHizb: 1,
+          currentSessionId: 'L5_J12_S99',
+          currentSessionKind: SessionKind.lesson,
+          currentOrderInLevel: 99,
+          currentAttempt: 7,
           createdAt: DateTime.now(),
         );
 
         await studentRepository.updateStudent(student);
 
         final doc = await readStudent();
-        expect(doc['current_session'], 10);
-        expect(doc['current_order_in_level'], 10);
-        expect(doc['current_attempt'], 2);
+        // The exam-queue-critical facts are exactly as seeded.
+        expect(doc['current_level'], 1);
+        expect(doc['current_juz'], 30);
+        expect(doc['current_session'], 5);
+        expect(doc['current_order_in_level'], 5);
+        expect(doc['current_session_id'], 'L1_J30_S5');
+        expect(doc['current_session_kind'], 'exam');
+        expect(doc['current_session_tier'], 'juz');
+        expect(
+          doc['current_session_label_ar'],
+          'اختبار في الجزء رقم 30 كاملًا من قِبل إدارة الحلقات',
+        );
+        expect(doc['current_hizb'], 59);
+        expect(doc['current_attempt'], 1);
+
+        // A genuinely non-denormalized field still updates.
+        expect(doc['teacher_id'], 'teacher-2');
       });
     });
   });

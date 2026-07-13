@@ -232,9 +232,12 @@ class _StudentDashboardScreenState
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     Text(
-                      stats.currentHizb != null
-                          ? 'الجزء ${stats.currentJuz} - الحزب ${stats.currentHizb}'
-                          : 'الجزء ${stats.currentJuz}',
+                      // Never an app-derived hizb: it can disagree with the
+                      // assessment's own verbatim label for the very session
+                      // the student stands on (level 2's structural hizb is
+                      // known to contradict its source text). The juz is
+                      // always consistent with the data.
+                      'الجزء ${stats.currentJuz}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -391,9 +394,9 @@ class _StudentDashboardScreenState
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         Text(
-                          session.hizbNumber != null
-                              ? 'الجزء ${session.juzNumber} - الحزب ${session.hizbNumber}'
-                              : 'الجزء ${session.juzNumber}',
+                          // Never an app-derived hizb — see the comment on
+                          // the progress-card header above.
+                          'الجزء ${session.juzNumber}',
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(color: AppColors.textSecondary),
                         ),

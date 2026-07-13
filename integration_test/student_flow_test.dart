@@ -217,6 +217,9 @@ void main() {
         'current_juz': 29,
         'current_hizb': 57,
         'current_session': 1,
+        // Every real student document carries its kind — StudentModel now
+        // refuses to guess it (a missing field is corrupted/unmigrated data).
+        'current_session_kind': 'lesson',
         'current_attempt': 1,
         'unlocked_levels': [1, 2],
         'completed_levels': [1],

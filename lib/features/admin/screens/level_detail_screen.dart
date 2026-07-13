@@ -152,9 +152,11 @@ class _SessionCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            session.hizbNumber != null
-                ? 'الجزء ${session.juzNumber} • الحزب ${session.hizbNumber}'
-                : 'الجزء ${session.juzNumber}',
+            // Never an app-derived hizb: `session.titleAr` above may already
+            // be the assessment's own verbatim label, and level 2's
+            // structural hizb is known to disagree with it for the same
+            // session. The juz is always consistent with the data.
+            'الجزء ${session.juzNumber}',
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),

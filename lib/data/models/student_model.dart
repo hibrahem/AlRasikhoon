@@ -148,8 +148,20 @@ class StudentModel {
       currentSessionId:
           data['current_session_id'] as String? ??
           'L${level}_J${juz}_S$session',
+      // No production student document lacks this field: every write path
+      // (StudentRepository._writePosition) sets it alongside the rest of the
+      // position, atomically. Unlike an unknown non-null VALUE (which
+      // SessionKindX.fromString already refuses to guess), a document
+      // missing the field entirely is corrupted or unmigrated data — and
+      // silently treating it as an ordinary lesson is exactly how a student
+      // truly standing on an اختبار would drop, unnoticed, out of the
+      // supervisor's exam queue. It must surface, not be guessed away.
       currentSessionKind: kind == null
-          ? SessionKind.lesson
+          ? throw ArgumentError.value(
+              null,
+              'current_session_kind',
+              'Student document ${doc.id} is missing current_session_kind',
+            )
           : SessionKindX.fromString(kind as String),
       currentSessionTier: tier == null
           ? null

@@ -223,9 +223,10 @@ class SessionOverviewScreen extends ConsumerWidget {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     Text(
-                      session.hizbNumber != null
-                          ? 'الجزء ${session.juzNumber} - الحزب ${session.hizbNumber}'
-                          : 'الجزء ${session.juzNumber}',
+                      // Never an app-derived hizb — level 2's structural hizb
+                      // is known to disagree with the source text for the
+                      // same session. The juz is always consistent.
+                      'الجزء ${session.juzNumber}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),

@@ -421,10 +421,21 @@ class StudentRepository {
     return studentsWithUsers;
   }
 
-  /// Update student
+  /// Update student.
+  ///
+  /// [_writePosition] is the ONLY writer of the denormalized `current_*`
+  /// session facts — the supervisor's exam queue is a single Firestore query
+  /// on `current_session_kind`, so a second writer that lets these fields
+  /// drift from the curriculum session they name would silently drop a
+  /// student out of the queue with no signal to anyone. This method is
+  /// STRUCTURALLY unable to write them: every `current_*` key is stripped
+  /// from [StudentModel.toFirestore] before the write, however this is
+  /// called and whatever position the given [student] carries.
   Future<void> updateStudent(StudentModel student) async {
+    final data = student.toFirestore()
+      ..removeWhere((key, _) => key.startsWith('current_'));
     await _studentsCollection.doc(student.id).update({
-      ...student.toFirestore(),
+      ...data,
       'updated_at': FieldValue.serverTimestamp(),
     });
   }
