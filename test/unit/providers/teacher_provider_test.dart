@@ -258,7 +258,8 @@ void main() {
           newMemorizationErrors: any(named: 'newMemorizationErrors'),
           recentReviewErrors: any(named: 'recentReviewErrors'),
           distantReviewErrors: any(named: 'distantReviewErrors'),
-          repetitions: any(named: 'repetitions'),
+          repetitionsWithTeacher: any(named: 'repetitionsWithTeacher'),
+          homeRepetitionsRequired: any(named: 'homeRepetitionsRequired'),
           notes: any(named: 'notes'),
         ),
       ).thenAnswer((_) async => buildRecord(passed: true));
@@ -312,7 +313,8 @@ void main() {
             newMemorizationErrors: any(named: 'newMemorizationErrors'),
             recentReviewErrors: any(named: 'recentReviewErrors'),
             distantReviewErrors: any(named: 'distantReviewErrors'),
-            repetitions: any(named: 'repetitions'),
+            repetitionsWithTeacher: any(named: 'repetitionsWithTeacher'),
+            homeRepetitionsRequired: any(named: 'homeRepetitionsRequired'),
             notes: any(named: 'notes'),
           ),
         ).thenAnswer((_) async => buildRecord(passed: true));
@@ -358,7 +360,8 @@ void main() {
           newMemorizationErrors: any(named: 'newMemorizationErrors'),
           recentReviewErrors: any(named: 'recentReviewErrors'),
           distantReviewErrors: any(named: 'distantReviewErrors'),
-          repetitions: any(named: 'repetitions'),
+          repetitionsWithTeacher: any(named: 'repetitionsWithTeacher'),
+          homeRepetitionsRequired: any(named: 'homeRepetitionsRequired'),
           notes: any(named: 'notes'),
         ),
       ).thenAnswer((_) async => buildRecord(passed: false));

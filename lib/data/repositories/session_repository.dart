@@ -39,7 +39,8 @@ class SessionRepository {
     required int newMemorizationErrors,
     required int recentReviewErrors,
     required int distantReviewErrors,
-    int repetitions = 0,
+    required int repetitionsWithTeacher,
+    required int homeRepetitionsRequired,
     String? notes,
   }) async {
     final grades = SessionGrades(
@@ -65,13 +66,71 @@ class SessionRepository {
       attemptNumber: attemptNumber,
       grades: grades,
       passed: passed,
-      repetitions: repetitions,
+      repetitionsWithTeacher: repetitionsWithTeacher,
+      homeRepetitionsRequired: homeRepetitionsRequired,
       notes: notes,
       createdAt: DateTime.now(),
     );
 
     await docRef.set(record.toFirestore());
     return record;
+  }
+
+  /// Records that a تلقين happened.
+  ///
+  /// A تلقين is not graded: the teacher recites the new passage to the student
+  /// and repeats it with him. There are no errors to count and nothing to fail,
+  /// so the record carries zeroed grades and passes unconditionally — it exists
+  /// for history and attendance, and to carry the home assignment.
+  Future<SessionRecordModel> createTalqeenRecord({
+    required String studentId,
+    required String teacherId,
+    required String curriculumSessionId,
+    required int levelId,
+    int? hizbNumber,
+    required int sessionNumber,
+    required int repetitionsWithTeacher,
+    required int homeRepetitionsRequired,
+    String? notes,
+  }) async {
+    final docRef = _sessionRecordsCollection.doc();
+    final record = SessionRecordModel(
+      id: docRef.id,
+      studentId: studentId,
+      teacherId: teacherId,
+      curriculumSessionId: curriculumSessionId,
+      levelId: levelId,
+      hizbNumber: hizbNumber,
+      sessionNumber: sessionNumber,
+      date: DateTime.now(),
+      attemptNumber: 1,
+      grades: const SessionGrades(
+        newMemorizationErrors: 0,
+        recentReviewErrors: 0,
+        distantReviewErrors: 0,
+      ),
+      passed: true,
+      repetitionsWithTeacher: repetitionsWithTeacher,
+      homeRepetitionsRequired: homeRepetitionsRequired,
+      notes: notes,
+      createdAt: DateTime.now(),
+    );
+
+    await docRef.set(record.toFirestore());
+    return record;
+  }
+
+  /// The student's most recent session record — the one carrying the home
+  /// assignment they are currently working off.
+  Future<SessionRecordModel?> getLatestSessionRecord(String studentId) async {
+    final query = await _sessionRecordsCollection
+        .where('student_id', isEqualTo: studentId)
+        .orderBy('date', descending: true)
+        .limit(1)
+        .get();
+
+    if (query.docs.isEmpty) return null;
+    return SessionRecordModel.fromFirestore(query.docs.first);
   }
 
   /// Get a single session record by id.

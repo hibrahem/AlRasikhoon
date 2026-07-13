@@ -90,7 +90,12 @@ class ActiveSessionState {
   final int part1Errors;
   final int part2Errors;
   final int part3Errors;
-  final int repetitions;
+
+  /// How many times teacher and student recited the passage through together.
+  final int repetitionsWithTeacher;
+
+  /// How many repetitions the student owes at home before the next session.
+  final int homeRepetitionsRequired;
   final String? notes;
   final bool isComplete;
 
@@ -108,7 +113,8 @@ class ActiveSessionState {
     this.part1Errors = 0,
     this.part2Errors = 0,
     this.part3Errors = 0,
-    this.repetitions = 0,
+    this.repetitionsWithTeacher = 0,
+    this.homeRepetitionsRequired = 0,
     this.notes,
     this.isComplete = false,
     this.advanceOutcome,
@@ -120,7 +126,8 @@ class ActiveSessionState {
     int? part1Errors,
     int? part2Errors,
     int? part3Errors,
-    int? repetitions,
+    int? repetitionsWithTeacher,
+    int? homeRepetitionsRequired,
     String? notes,
     bool? isComplete,
     StudentAdvanceOutcome? advanceOutcome,
@@ -131,7 +138,10 @@ class ActiveSessionState {
       part1Errors: part1Errors ?? this.part1Errors,
       part2Errors: part2Errors ?? this.part2Errors,
       part3Errors: part3Errors ?? this.part3Errors,
-      repetitions: repetitions ?? this.repetitions,
+      repetitionsWithTeacher:
+          repetitionsWithTeacher ?? this.repetitionsWithTeacher,
+      homeRepetitionsRequired:
+          homeRepetitionsRequired ?? this.homeRepetitionsRequired,
       notes: notes ?? this.notes,
       isComplete: isComplete ?? this.isComplete,
       advanceOutcome: advanceOutcome ?? this.advanceOutcome,
@@ -201,9 +211,14 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     state = state!.copyWith(notes: notes);
   }
 
-  void setRepetitions(int repetitions) {
+  void setRepetitionsWithTeacher(int repetitions) {
     if (state == null) return;
-    state = state!.copyWith(repetitions: repetitions);
+    state = state!.copyWith(repetitionsWithTeacher: repetitions);
+  }
+
+  void setHomeRepetitionsRequired(int repetitions) {
+    if (state == null) return;
+    state = state!.copyWith(homeRepetitionsRequired: repetitions);
   }
 
   Future<SessionRecordModel?> completeSession() async {
@@ -236,7 +251,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
       newMemorizationErrors: state!.part1Errors,
       recentReviewErrors: state!.part2Errors,
       distantReviewErrors: state!.part3Errors,
-      repetitions: state!.repetitions,
+      repetitionsWithTeacher: state!.repetitionsWithTeacher,
+      homeRepetitionsRequired: state!.homeRepetitionsRequired,
       notes: state!.notes,
     );
 
@@ -252,6 +268,47 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     state = state!.copyWith(isComplete: true, advanceOutcome: advanceOutcome);
 
     // Invalidate providers
+    ref.invalidate(teacherStudentsProvider);
+    ref.invalidate(studentProvider(studentId));
+
+    return record;
+  }
+
+  /// Completes a تلقين session: the teacher read the new passage to the student
+  /// and repeated it with him.
+  ///
+  /// There is nothing to grade and nothing to fail, so the student ALWAYS
+  /// advances — a تلقين has no attempts to exhaust.
+  Future<SessionRecordModel?> completeTalqeenSession() async {
+    if (state == null) return null;
+
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) return null;
+
+    final studentId = state!.studentId;
+    final studentAsync = await ref.read(studentProvider(studentId).future);
+    if (studentAsync == null) return null;
+
+    final student = studentAsync.student;
+    final sessionRepo = ref.read(sessionRepositoryProvider);
+    final studentRepo = ref.read(studentRepositoryProvider);
+
+    final record = await sessionRepo.createTalqeenRecord(
+      studentId: student.id,
+      teacherId: currentUser.id,
+      curriculumSessionId: student.currentSessionId,
+      levelId: student.currentLevel,
+      hizbNumber: student.currentHizb,
+      sessionNumber: student.currentSession,
+      repetitionsWithTeacher: state!.repetitionsWithTeacher,
+      homeRepetitionsRequired: state!.homeRepetitionsRequired,
+      notes: state!.notes,
+    );
+
+    final advanceOutcome = await studentRepo.advanceStudentSession(student.id);
+
+    state = state!.copyWith(isComplete: true, advanceOutcome: advanceOutcome);
+
     ref.invalidate(teacherStudentsProvider);
     ref.invalidate(studentProvider(studentId));
 

@@ -27,6 +27,8 @@ void main() {
           newMemorizationErrors: 2,
           recentReviewErrors: 1,
           distantReviewErrors: 0,
+          repetitionsWithTeacher: 0,
+          homeRepetitionsRequired: 0,
         );
 
         expect(record.studentId, 'student1');
@@ -54,6 +56,8 @@ void main() {
             newMemorizationErrors: 4, // محب at level 1
             recentReviewErrors: 1,
             distantReviewErrors: 2,
+            repetitionsWithTeacher: 0,
+            homeRepetitionsRequired: 0,
           );
 
           expect(record.passed, false);
@@ -74,6 +78,8 @@ void main() {
             newMemorizationErrors: 3,
             recentReviewErrors: 3,
             distantReviewErrors: 3,
+            repetitionsWithTeacher: 0,
+            homeRepetitionsRequired: 0,
           );
 
           expect(record.passed, true);
@@ -96,6 +102,8 @@ void main() {
             newMemorizationErrors: 4,
             recentReviewErrors: 4,
             distantReviewErrors: 4,
+            repetitionsWithTeacher: 0,
+            homeRepetitionsRequired: 0,
           );
 
           expect(record.passed, true);
@@ -114,6 +122,8 @@ void main() {
           newMemorizationErrors: 0,
           recentReviewErrors: 0,
           distantReviewErrors: 0,
+          repetitionsWithTeacher: 0,
+          homeRepetitionsRequired: 0,
           notes: 'ممتاز',
         );
 
@@ -126,7 +136,7 @@ void main() {
         expect(doc.data()?['notes'], 'ممتاز');
       });
 
-      test('stores repetitions count', () async {
+      test('stores the recitation counts', () async {
         final record = await sessionRepository.createSessionRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
@@ -138,10 +148,83 @@ void main() {
           newMemorizationErrors: 0,
           recentReviewErrors: 0,
           distantReviewErrors: 0,
-          repetitions: 5,
+          repetitionsWithTeacher: 5,
+          homeRepetitionsRequired: 8,
         );
 
-        expect(record.repetitions, 5);
+        expect(record.repetitionsWithTeacher, 5);
+        expect(record.homeRepetitionsRequired, 8);
+      });
+    });
+
+    group('createTalqeenRecord', () {
+      test(
+        'records a talqeen as happened, with no errors and no failure',
+        () async {
+          final record = await sessionRepository.createTalqeenRecord(
+            studentId: 'student1',
+            teacherId: 'teacher1',
+            curriculumSessionId: 'L1_J30_S1',
+            levelId: 1,
+            hizbNumber: 59,
+            sessionNumber: 1,
+            repetitionsWithTeacher: 4,
+            homeRepetitionsRequired: 10,
+          );
+
+          expect(record.passed, isTrue);
+          expect(record.grades.totalErrors, 0);
+          expect(record.attemptNumber, 1);
+          expect(record.repetitionsWithTeacher, 4);
+          expect(record.homeRepetitionsRequired, 10);
+
+          final stored = await fakeFirestore
+              .collection('session_records')
+              .doc(record.id)
+              .get();
+          expect(stored.data()!['home_repetitions_required'], 10);
+        },
+      );
+    });
+
+    group('getLatestSessionRecord', () {
+      test(
+        'returns the most recent record, which carries the home assignment',
+        () async {
+          await sessionRepository.createTalqeenRecord(
+            studentId: 'student1',
+            teacherId: 'teacher1',
+            curriculumSessionId: 'L1_J30_S1',
+            levelId: 1,
+            sessionNumber: 1,
+            repetitionsWithTeacher: 3,
+            homeRepetitionsRequired: 7,
+          );
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          final newer = await sessionRepository.createTalqeenRecord(
+            studentId: 'student1',
+            teacherId: 'teacher1',
+            curriculumSessionId: 'L1_J30_S2',
+            levelId: 1,
+            sessionNumber: 2,
+            repetitionsWithTeacher: 2,
+            homeRepetitionsRequired: 12,
+          );
+
+          final latest = await sessionRepository.getLatestSessionRecord(
+            'student1',
+          );
+          expect(latest!.id, newer.id);
+          expect(latest.curriculumSessionId, 'L1_J30_S2');
+          expect(latest.homeRepetitionsRequired, 12);
+        },
+      );
+
+      test('returns null for a student with no records', () async {
+        expect(
+          await sessionRepository.getLatestSessionRecord('nobody'),
+          isNull,
+        );
       });
     });
 

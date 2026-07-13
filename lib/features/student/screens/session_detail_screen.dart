@@ -77,10 +77,10 @@ class SessionDetailScreen extends ConsumerWidget {
                         label: 'المحاولة',
                         value: '${record.attemptNumber}',
                       ),
-                      if (record.repetitions > 0)
+                      if (record.repetitionsWithTeacher > 0)
                         _InfoRow(
                           label: 'التكرارات',
-                          value: '${record.repetitions}',
+                          value: '${record.repetitionsWithTeacher}',
                         ),
                     ],
                   ),

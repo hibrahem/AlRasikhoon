@@ -67,7 +67,16 @@ class SessionRecordModel {
   final int attemptNumber;
   final SessionGrades grades;
   final bool passed;
-  final int repetitions;
+
+  /// How many times teacher and student recited the passage through TOGETHER in
+  /// the session. Carried by the sessions that teach new content — a تلقين and
+  /// a lesson.
+  final int repetitionsWithTeacher;
+
+  /// How many repetitions the student owes at home before the next session. An
+  /// assignment, not a note: the student sees it and their home practice counts
+  /// against it.
+  final int homeRepetitionsRequired;
   final String? notes;
   final DateTime createdAt;
 
@@ -83,7 +92,8 @@ class SessionRecordModel {
     required this.attemptNumber,
     required this.grades,
     required this.passed,
-    this.repetitions = 0,
+    this.repetitionsWithTeacher = 0,
+    this.homeRepetitionsRequired = 0,
     this.notes,
     required this.createdAt,
   });
@@ -102,7 +112,8 @@ class SessionRecordModel {
       attemptNumber: data['attempt_number'] ?? 1,
       grades: SessionGrades.fromJson(data['grades']),
       passed: data['passed'] ?? false,
-      repetitions: data['repetitions'] ?? 0,
+      repetitionsWithTeacher: data['repetitions_with_teacher'] ?? 0,
+      homeRepetitionsRequired: data['home_repetitions_required'] ?? 0,
       notes: data['notes'],
       createdAt: (data['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -120,7 +131,8 @@ class SessionRecordModel {
       'attempt_number': attemptNumber,
       'grades': grades.toJson(),
       'passed': passed,
-      'repetitions': repetitions,
+      'repetitions_with_teacher': repetitionsWithTeacher,
+      'home_repetitions_required': homeRepetitionsRequired,
       'notes': notes,
       'created_at': Timestamp.fromDate(createdAt),
     };
@@ -138,7 +150,8 @@ class SessionRecordModel {
     int? attemptNumber,
     SessionGrades? grades,
     bool? passed,
-    int? repetitions,
+    int? repetitionsWithTeacher,
+    int? homeRepetitionsRequired,
     String? notes,
     DateTime? createdAt,
   }) {
@@ -154,7 +167,10 @@ class SessionRecordModel {
       attemptNumber: attemptNumber ?? this.attemptNumber,
       grades: grades ?? this.grades,
       passed: passed ?? this.passed,
-      repetitions: repetitions ?? this.repetitions,
+      repetitionsWithTeacher:
+          repetitionsWithTeacher ?? this.repetitionsWithTeacher,
+      homeRepetitionsRequired:
+          homeRepetitionsRequired ?? this.homeRepetitionsRequired,
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
     );

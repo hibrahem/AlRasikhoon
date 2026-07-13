@@ -52,16 +52,18 @@ void main() {
         expect(grades.passesForLevel(1), true);
       });
 
-      test('passes at level 1 when worst part is مجتهد (3 errors, not محب)',
-          () {
-        const grades = SessionGrades(
-          newMemorizationErrors: 3,
-          recentReviewErrors: 3,
-          distantReviewErrors: 3,
-        );
+      test(
+        'passes at level 1 when worst part is مجتهد (3 errors, not محب)',
+        () {
+          const grades = SessionGrades(
+            newMemorizationErrors: 3,
+            recentReviewErrors: 3,
+            distantReviewErrors: 3,
+          );
 
-        expect(grades.passesForLevel(1), true);
-      });
+          expect(grades.passesForLevel(1), true);
+        },
+      );
 
       test('fails when newMemorization is محب (4 errors at level 1)', () {
         const grades = SessionGrades(
@@ -103,8 +105,7 @@ void main() {
         expect(grades.passesForLevel(1), false);
       });
 
-      test('higher level is more lenient — 4 errors is not محب at level 9',
-          () {
+      test('higher level is more lenient — 4 errors is not محب at level 9', () {
         // Level 9: B = (9 - 1) ~/ 2 = 4, so محب starts at >= B + 4 = 8.
         // 4 errors → مجتهد? Actually 4 == B → راسخ; محب only at 8+.
         const grades = SessionGrades(
@@ -189,13 +190,16 @@ void main() {
             'distant_review_errors': 0,
           },
           'passed': true,
-          'repetitions': 3,
+          'repetitions_with_teacher': 3,
+          'home_repetitions_required': 6,
           'notes': 'ممتاز',
           'created_at': Timestamp.fromDate(date),
         });
 
-        final doc =
-            await fakeFirestore.collection('session_records').doc('sr1').get();
+        final doc = await fakeFirestore
+            .collection('session_records')
+            .doc('sr1')
+            .get();
         final record = SessionRecordModel.fromFirestore(doc);
 
         expect(record.id, 'sr1');
@@ -209,7 +213,8 @@ void main() {
         expect(record.grades.recentReviewErrors, 2);
         expect(record.grades.distantReviewErrors, 0);
         expect(record.passed, true);
-        expect(record.repetitions, 3);
+        expect(record.repetitionsWithTeacher, 3);
+        expect(record.homeRepetitionsRequired, 6);
         expect(record.notes, 'ممتاز');
       });
 
@@ -224,12 +229,15 @@ void main() {
           'created_at': Timestamp.now(),
         });
 
-        final doc =
-            await fakeFirestore.collection('session_records').doc('sr1').get();
+        final doc = await fakeFirestore
+            .collection('session_records')
+            .doc('sr1')
+            .get();
         final record = SessionRecordModel.fromFirestore(doc);
 
         expect(record.notes, isNull);
-        expect(record.repetitions, 0);
+        expect(record.repetitionsWithTeacher, 0);
+        expect(record.homeRepetitionsRequired, 0);
         expect(record.grades.totalErrors, 0);
       });
     });
@@ -253,7 +261,8 @@ void main() {
             distantReviewErrors: 3,
           ),
           passed: true,
-          repetitions: 5,
+          repetitionsWithTeacher: 5,
+          homeRepetitionsRequired: 8,
           notes: 'test',
           createdAt: now,
         );
@@ -267,10 +276,42 @@ void main() {
         expect(map['session_number'], 5);
         expect(map['attempt_number'], 1);
         expect(map['passed'], true);
-        expect(map['repetitions'], 5);
+        expect(map['repetitions_with_teacher'], 5);
+        expect(map['home_repetitions_required'], 8);
         expect(map['notes'], 'test');
         expect((map['grades'] as Map)['new_memorization_errors'], 1);
       });
+    });
+
+    group('recitation counts', () {
+      test(
+        'a record carries what was recited together and what is owed at home',
+        () {
+          final record = SessionRecordModel(
+            id: 'r1',
+            studentId: 's1',
+            teacherId: 't1',
+            curriculumSessionId: 'L1_J30_S2',
+            levelId: 1,
+            sessionNumber: 2,
+            date: DateTime(2026, 7, 14),
+            attemptNumber: 1,
+            grades: const SessionGrades(
+              newMemorizationErrors: 0,
+              recentReviewErrors: 0,
+              distantReviewErrors: 0,
+            ),
+            passed: true,
+            repetitionsWithTeacher: 5,
+            homeRepetitionsRequired: 10,
+            createdAt: DateTime(2026, 7, 14),
+          );
+
+          final json = record.toFirestore();
+          expect(json['repetitions_with_teacher'], 5);
+          expect(json['home_repetitions_required'], 10);
+        },
+      );
     });
 
     group('equality', () {
@@ -283,9 +324,10 @@ void main() {
           date: DateTime.now(),
           attemptNumber: 1,
           grades: const SessionGrades(
-              newMemorizationErrors: 0,
-              recentReviewErrors: 0,
-              distantReviewErrors: 0),
+            newMemorizationErrors: 0,
+            recentReviewErrors: 0,
+            distantReviewErrors: 0,
+          ),
           passed: true,
           createdAt: DateTime.now(),
         );
@@ -297,9 +339,10 @@ void main() {
           date: DateTime.now(),
           attemptNumber: 2,
           grades: const SessionGrades(
-              newMemorizationErrors: 5,
-              recentReviewErrors: 5,
-              distantReviewErrors: 5),
+            newMemorizationErrors: 5,
+            recentReviewErrors: 5,
+            distantReviewErrors: 5,
+          ),
           passed: false,
           createdAt: DateTime.now(),
         );
