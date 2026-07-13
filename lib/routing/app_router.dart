@@ -32,6 +32,7 @@ import '../features/teacher/screens/recitation_screen.dart';
 import '../features/teacher/screens/recitation_result_screen.dart';
 import '../features/teacher/screens/new_memorization_screen.dart';
 import '../features/teacher/screens/session_summary_screen.dart';
+import '../features/teacher/screens/talqeen_session_screen.dart';
 import '../features/teacher/screens/add_student_screen.dart';
 import '../features/student/screens/student_dashboard_screen.dart';
 import '../features/student/screens/session_history_screen.dart';
@@ -90,6 +91,7 @@ class AppRoutes {
       '/teacher/session/:studentId/recitation/:part/result';
   static const String newMemorization = '/teacher/session/:studentId/new';
   static const String sessionSummary = '/teacher/session/:studentId/summary';
+  static const String talqeenSession = '/teacher/session/:studentId/talqeen';
 
   // Student
   static const String studentDashboard = '/student';
@@ -230,8 +232,9 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoutes.levelDetail,
                 builder: (context, state) {
-                  final levelNumber =
-                      int.parse(state.pathParameters['levelNumber']!);
+                  final levelNumber = int.parse(
+                    state.pathParameters['levelNumber']!,
+                  );
                   return LevelDetailScreen(levelNumber: levelNumber);
                 },
               ),
@@ -392,6 +395,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) {
                   final studentId = state.pathParameters['studentId']!;
                   return SessionSummaryScreen(studentId: studentId);
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.talqeenSession,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  return TalqeenSessionScreen(studentId: studentId);
                 },
               ),
             ],

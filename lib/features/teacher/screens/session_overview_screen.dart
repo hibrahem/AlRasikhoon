@@ -135,6 +135,20 @@ class SessionOverviewScreen extends ConsumerWidget {
                     // What this session IS comes from the curriculum's own
                     // `kind`, never from its number: session 35 of juz 30 is
                     // an ordinary lesson, and the juz-30 اختبار is session 68.
+                    //
+                    // The تلقين branch MUST come before isExam/isSard and the
+                    // regular-lesson fallthrough: a تلقين is neither an
+                    // assessment nor a graded lesson, and falling through would
+                    // start it as one.
+                    if (session.isTalqeen) {
+                      return _buildTalqeenCard(
+                        context,
+                        session,
+                        studentId,
+                        ref,
+                      );
+                    }
+
                     if (session.isExam) {
                       return _buildExamCard(context, session);
                     }
@@ -290,6 +304,90 @@ class SessionOverviewScreen extends ConsumerWidget {
               isFullWidth: true,
               icon: Icons.play_arrow,
             ),
+        ],
+      ),
+    );
+  }
+
+  /// The تلقين card. No error counters, no grade, no pass/fail — a تلقين
+  /// cannot be failed, so there is no attempt cap to gate the start button on
+  /// either: it cannot be exhausted.
+  Widget _buildTalqeenCard(
+    BuildContext context,
+    SessionModel session,
+    String studentId,
+    WidgetRef ref,
+  ) {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.record_voice_over,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'تلقين',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text(
+                      'الجزء ${session.juzNumber}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Divider(),
+          const SizedBox(height: 12),
+          Text(
+            'المقطع الجديد',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            session.currentLevelContent?.rangeAr ?? '',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'يقرأ المعلّم المقطع على الطالب ويردده معه. لا تسميع ولا تقييم في '
+            'هذه الحلقة.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 20),
+          // No attempt cap: a تلقين cannot be failed, so it cannot be exhausted.
+          AppButton(
+            text: 'بدء التلقين',
+            onPressed: () {
+              ref.read(activeSessionProvider.notifier).startSession(studentId);
+              context.push(
+                AppRoutes.talqeenSession.replaceFirst(':studentId', studentId),
+              );
+            },
+            isFullWidth: true,
+            icon: Icons.play_arrow,
+          ),
         ],
       ),
     );
