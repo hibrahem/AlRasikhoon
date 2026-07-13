@@ -182,6 +182,7 @@ void main() {
           'level_id': 2,
           'hizb_number': 57,
           'session_number': 10,
+          'order_in_level': 12,
           'date': Timestamp.fromDate(date),
           'attempt_number': 2,
           'grades': {
@@ -208,6 +209,7 @@ void main() {
         expect(record.levelId, 2);
         expect(record.hizbNumber, 57);
         expect(record.sessionNumber, 10);
+        expect(record.orderInLevel, 12);
         expect(record.attemptNumber, 2);
         expect(record.grades.newMemorizationErrors, 1);
         expect(record.grades.recentReviewErrors, 2);
@@ -239,6 +241,9 @@ void main() {
         expect(record.repetitionsWithTeacher, 0);
         expect(record.homeRepetitionsRequired, 0);
         expect(record.grades.totalErrors, 0);
+        // A record written before `order_in_level` existed falls back to 1 —
+        // never recomputed from sessionNumber.
+        expect(record.orderInLevel, 1);
       });
     });
 
@@ -253,6 +258,7 @@ void main() {
           levelId: 1,
           hizbNumber: 59,
           sessionNumber: 5,
+          orderInLevel: 5,
           date: now,
           attemptNumber: 1,
           grades: const SessionGrades(
@@ -274,6 +280,7 @@ void main() {
         expect(map['level_id'], 1);
         expect(map['hizb_number'], 59);
         expect(map['session_number'], 5);
+        expect(map['order_in_level'], 5);
         expect(map['attempt_number'], 1);
         expect(map['passed'], true);
         expect(map['repetitions_with_teacher'], 5);
@@ -294,6 +301,7 @@ void main() {
             curriculumSessionId: 'L1_J30_S2',
             levelId: 1,
             sessionNumber: 2,
+            orderInLevel: 2,
             date: DateTime(2026, 7, 14),
             attemptNumber: 1,
             grades: const SessionGrades(
@@ -321,6 +329,7 @@ void main() {
           studentId: 'a',
           teacherId: 'b',
           curriculumSessionId: 'c',
+          orderInLevel: 1,
           date: DateTime.now(),
           attemptNumber: 1,
           grades: const SessionGrades(
@@ -336,6 +345,7 @@ void main() {
           studentId: 'x',
           teacherId: 'y',
           curriculumSessionId: 'z',
+          orderInLevel: 9,
           date: DateTime.now(),
           attemptNumber: 2,
           grades: const SessionGrades(

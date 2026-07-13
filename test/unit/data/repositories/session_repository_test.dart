@@ -23,6 +23,7 @@ void main() {
           levelId: 1,
           hizbNumber: 59,
           sessionNumber: 5,
+          orderInLevel: 5,
           attemptNumber: 1,
           newMemorizationErrors: 2,
           recentReviewErrors: 1,
@@ -52,6 +53,7 @@ void main() {
             levelId: 1,
             hizbNumber: 59,
             sessionNumber: 5,
+            orderInLevel: 5,
             attemptNumber: 1,
             newMemorizationErrors: 4, // محب at level 1
             recentReviewErrors: 1,
@@ -74,6 +76,7 @@ void main() {
             levelId: 1,
             hizbNumber: 59,
             sessionNumber: 5,
+            orderInLevel: 5,
             attemptNumber: 1,
             newMemorizationErrors: 3,
             recentReviewErrors: 3,
@@ -98,6 +101,7 @@ void main() {
             levelId: 9,
             hizbNumber: 59,
             sessionNumber: 5,
+            orderInLevel: 5,
             attemptNumber: 1,
             newMemorizationErrors: 4,
             recentReviewErrors: 4,
@@ -118,6 +122,7 @@ void main() {
           levelId: 1,
           hizbNumber: 59,
           sessionNumber: 5,
+          orderInLevel: 5,
           attemptNumber: 1,
           newMemorizationErrors: 0,
           recentReviewErrors: 0,
@@ -144,6 +149,7 @@ void main() {
           levelId: 1,
           hizbNumber: 59,
           sessionNumber: 5,
+          orderInLevel: 5,
           attemptNumber: 1,
           newMemorizationErrors: 0,
           recentReviewErrors: 0,
@@ -168,6 +174,7 @@ void main() {
             levelId: 1,
             hizbNumber: 59,
             sessionNumber: 1,
+            orderInLevel: 1,
             repetitionsWithTeacher: 4,
             homeRepetitionsRequired: 10,
           );
@@ -188,12 +195,10 @@ void main() {
     });
 
     group('getLatestSessionRecord', () {
-      // No artificial delay between the two writes below: with the teacher
-      // completing one session at a time (never concurrently), two
-      // back-to-back `DateTime.now()` reads are already reliably ordered on
-      // a real clock — the delay wasn't load-bearing for THIS case, only a
-      // safety margin. What genuinely needs proving is the tie-break added
-      // below, for the case a real clock tick (or a backfill) does collide.
+      // Determinism comes from the `now` seam on `createTalqeenRecord` (see
+      // `_writeSessionRecord`), not a sleep: the two records get explicit,
+      // distinct instants, so which one is "later" is fixed by the test
+      // rather than by how fast the machine running it happens to be.
       test(
         'returns the most recent record, which carries the home assignment',
         () async {
@@ -203,8 +208,10 @@ void main() {
             curriculumSessionId: 'L1_J30_S1',
             levelId: 1,
             sessionNumber: 1,
+            orderInLevel: 1,
             repetitionsWithTeacher: 3,
             homeRepetitionsRequired: 7,
+            now: DateTime(2026, 1, 1, 10, 0, 0),
           );
           final newer = await sessionRepository.createTalqeenRecord(
             studentId: 'student1',
@@ -212,8 +219,10 @@ void main() {
             curriculumSessionId: 'L1_J30_S2',
             levelId: 1,
             sessionNumber: 2,
+            orderInLevel: 2,
             repetitionsWithTeacher: 2,
             homeRepetitionsRequired: 12,
+            now: DateTime(2026, 1, 1, 10, 0, 1),
           );
 
           final latest = await sessionRepository.getLatestSessionRecord(
@@ -226,54 +235,62 @@ void main() {
       );
 
       // The scenario the fix is actually for: two records sharing the exact
-      // same `date` (a real clock tie, or a backfill) — ordering by `date`
-      // alone leaves Firestore's tie-break unspecified. Both records are
-      // written directly (bypassing the repository's own `DateTime.now()`
-      // calls) so the tie is exact and the test carries no wall-clock
-      // dependency at all.
-      test(
-        'breaks a `date` tie deterministically using `created_at`',
-        () async {
-          final tiedDate = Timestamp.fromDate(DateTime(2026, 1, 1, 12));
-          await fakeFirestore.collection('session_records').doc('older').set({
-            'student_id': 'student1',
-            'teacher_id': 'teacher1',
-            'curriculum_session_id': 'L1_J30_S1',
-            'date': tiedDate,
-            'attempt_number': 1,
-            'grades': {
-              'new_memorization_errors': 0,
-              'recent_review_errors': 0,
-              'distant_review_errors': 0,
-            },
-            'passed': true,
-            'home_repetitions_required': 7,
-            'created_at': Timestamp.fromDate(DateTime(2026, 1, 1, 11)),
-          });
-          await fakeFirestore.collection('session_records').doc('newer').set({
-            'student_id': 'student1',
-            'teacher_id': 'teacher1',
-            'curriculum_session_id': 'L1_J30_S2',
-            'date': tiedDate,
-            'attempt_number': 1,
-            'grades': {
-              'new_memorization_errors': 0,
-              'recent_review_errors': 0,
-              'distant_review_errors': 0,
-            },
-            'passed': true,
-            'home_repetitions_required': 12,
-            'created_at': Timestamp.fromDate(DateTime(2026, 1, 1, 13)),
-          });
+      // same `date` (a real clock tick, or a backfill). Ordering by `date`
+      // alone leaves Firestore's tie-break unspecified — and `created_at`
+      // cannot help, because it is stamped from the SAME `DateTime.now()`
+      // call as `date` (see `_writeSessionRecord`), so it ties right along
+      // with it.
+      //
+      // Both records go through the REAL write path (`createTalqeenRecord`),
+      // using the `now` seam to force the tie, rather than hand-writing a
+      // Firestore document with divergent `created_at` values that the app
+      // itself could never produce.
+      //
+      // The write order is deliberately adversarial: the EARLIER-curriculum
+      // record (`orderInLevel: 1`) is written FIRST, and the record further
+      // along (`orderInLevel: 3`) is written SECOND. `fake_cloud_firestore`
+      // resolves a tie on `date` alone by falling back to insertion order —
+      // i.e. without the `order_in_level` tie-break, this query would hand
+      // back whichever doc was written first, which here is the WRONG
+      // (earlier-curriculum) record. Only an explicit `order_in_level` DESC
+      // clause gets this right regardless of write order — proven by
+      // sabotage: deleting that `.orderBy` call makes this test return the
+      // first-written, lower-`orderInLevel` record and fail.
+      test('breaks a `date` tie deterministically using `order_in_level`, not '
+          'write order', () async {
+        final tiedInstant = DateTime(2026, 1, 1, 12);
 
-          final latest = await sessionRepository.getLatestSessionRecord(
-            'student1',
-          );
+        await sessionRepository.createTalqeenRecord(
+          studentId: 'student1',
+          teacherId: 'teacher1',
+          curriculumSessionId: 'L1_J30_S1',
+          levelId: 1,
+          sessionNumber: 1,
+          orderInLevel: 1,
+          repetitionsWithTeacher: 1,
+          homeRepetitionsRequired: 7,
+          now: tiedInstant,
+        );
+        final furtherAlong = await sessionRepository.createTalqeenRecord(
+          studentId: 'student1',
+          teacherId: 'teacher1',
+          curriculumSessionId: 'L1_J30_S3',
+          levelId: 1,
+          sessionNumber: 3,
+          orderInLevel: 3,
+          repetitionsWithTeacher: 1,
+          homeRepetitionsRequired: 12,
+          now: tiedInstant,
+        );
 
-          expect(latest!.id, 'newer');
-          expect(latest.homeRepetitionsRequired, 12);
-        },
-      );
+        final latest = await sessionRepository.getLatestSessionRecord(
+          'student1',
+        );
+
+        expect(latest!.id, furtherAlong.id);
+        expect(latest.orderInLevel, 3);
+        expect(latest.homeRepetitionsRequired, 12);
+      });
 
       test('returns null for a student with no records', () async {
         expect(

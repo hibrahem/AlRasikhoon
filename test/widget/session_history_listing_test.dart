@@ -26,6 +26,7 @@ SessionRecordModel _record({
     levelId: 1,
     hizbNumber: 59,
     sessionNumber: 1,
+    orderInLevel: 1,
     date: now,
     attemptNumber: 1,
     grades: grades,
@@ -40,12 +41,8 @@ Future<void> _pumpHistory(
 ) async {
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [
-        studentHistoryProvider.overrideWith((ref) async => records),
-      ],
-      child: const MaterialApp(
-        home: SessionHistoryScreen(),
-      ),
+      overrides: [studentHistoryProvider.overrideWith((ref) async => records)],
+      child: const MaterialApp(home: SessionHistoryScreen()),
     ),
   );
   await tester.pumpAndSettle();
@@ -58,8 +55,9 @@ void main() {
   });
 
   group('SessionHistoryScreen listing (#24)', () {
-    testWidgets('failed session row shows رسب (binary), not a grade name',
-        (tester) async {
+    testWidgets('failed session row shows رسب (binary), not a grade name', (
+      tester,
+    ) async {
       // far = محب (4 errors @ level 1) ⇒ failed. The other two are good, but
       // the listing must not surface an averaged grade — only رسب.
       await _pumpHistory(tester, [
@@ -85,8 +83,9 @@ void main() {
       expect(find.textContaining('أخطاء'), findsNothing);
     });
 
-    testWidgets('passed session row shows نجح (binary), not a grade name',
-        (tester) async {
+    testWidgets('passed session row shows نجح (binary), not a grade name', (
+      tester,
+    ) async {
       await _pumpHistory(tester, [
         _record(
           id: 'r2',

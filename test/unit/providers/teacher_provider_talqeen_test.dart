@@ -53,6 +53,10 @@ void main() {
     // verbatim" apart from "reconstructed it".
     String currentSessionId = 'CUSTOM_SESSION_ID_NOT_REBUILT',
     int currentAttempt = 1,
+    // A distinctive non-default value (StudentModel defaults to 1) so a
+    // record carrying the DEFAULT instead of the student's own value is
+    // caught, not masked by a coincidental match.
+    int currentOrderInLevel = 7,
   }) {
     return StudentModel(
       id: id,
@@ -65,6 +69,7 @@ void main() {
       currentSession: 1,
       currentAttempt: currentAttempt,
       currentSessionId: currentSessionId,
+      currentOrderInLevel: currentOrderInLevel,
       createdAt: DateTime(2026, 1, 1),
     );
   }
@@ -73,12 +78,14 @@ void main() {
     String studentId = 'student-1',
     String currentSessionId = 'CUSTOM_SESSION_ID_NOT_REBUILT',
     int currentAttempt = 1,
+    int currentOrderInLevel = 7,
   }) {
     return StudentWithUser(
       student: buildStudent(
         id: studentId,
         currentSessionId: currentSessionId,
         currentAttempt: currentAttempt,
+        currentOrderInLevel: currentOrderInLevel,
       ),
       user: UserModel(
         id: 'user-1',
@@ -132,6 +139,9 @@ void main() {
         expect(record.grades.distantReviewErrors, 0);
         expect(record.repetitionsWithTeacher, 6);
         expect(record.homeRepetitionsRequired, 15);
+        // The student's OWN currentOrderInLevel (7, set by buildStudent) —
+        // never a hardcoded or recomputed value.
+        expect(record.orderInLevel, 7);
 
         // Not just the returned value — a real document, fetched back through
         // the (real, fake-Firestore-backed) repository.
@@ -142,6 +152,7 @@ void main() {
         expect(stored.grades.totalErrors, 0);
         expect(stored.repetitionsWithTeacher, 6);
         expect(stored.homeRepetitionsRequired, 15);
+        expect(stored.orderInLevel, 7);
       },
     );
 

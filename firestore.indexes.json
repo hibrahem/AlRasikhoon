@@ -74,7 +74,7 @@
       "fields": [
         { "fieldPath": "student_id", "order": "ASCENDING" },
         { "fieldPath": "date", "order": "DESCENDING" },
-        { "fieldPath": "created_at", "order": "DESCENDING" }
+        { "fieldPath": "order_in_level", "order": "DESCENDING" }
       ]
     },
     {

@@ -28,11 +28,18 @@ class SessionRepository {
   /// Allocates a fresh doc ref, builds the record from it via [build], and
   /// persists it. Shared by [createSessionRecord] and [createTalqeenRecord] so
   /// the doc-ref → construct → save sequence cannot drift between the two.
+  ///
+  /// [build] receives a single `writtenAt` instant used for BOTH `date` and
+  /// `created_at` — one `DateTime.now()` call, not two, so the fields cannot
+  /// silently disagree. [now] is a narrow test seam (defaults to
+  /// `DateTime.now()`) letting tests give a record an exact, explicit instant
+  /// instead of writing raw documents the app itself could never produce.
   Future<SessionRecordModel> _writeSessionRecord(
-    SessionRecordModel Function(String id) build,
-  ) async {
+    SessionRecordModel Function(String id, DateTime writtenAt) build, {
+    DateTime? now,
+  }) async {
     final docRef = _sessionRecordsCollection.doc();
-    final record = build(docRef.id);
+    final record = build(docRef.id, now ?? DateTime.now());
     await docRef.set(record.toFirestore());
     return record;
   }
@@ -40,6 +47,9 @@ class SessionRepository {
   /// Create session record
   ///
   /// [hizbNumber] is a LABEL, present only in levels 1-2. It keys nothing.
+  /// [orderInLevel] is the curriculum's ordering key — copied verbatim from
+  /// the session this record is FOR (never recomputed from [sessionNumber]).
+  /// [now] is a test seam; see [_writeSessionRecord].
   Future<SessionRecordModel> createSessionRecord({
     required String studentId,
     required String teacherId,
@@ -47,6 +57,7 @@ class SessionRepository {
     required int levelId,
     int? hizbNumber,
     required int sessionNumber,
+    required int orderInLevel,
     required int attemptNumber,
     required int newMemorizationErrors,
     required int recentReviewErrors,
@@ -54,6 +65,7 @@ class SessionRepository {
     required int repetitionsWithTeacher,
     required int homeRepetitionsRequired,
     String? notes,
+    DateTime? now,
   }) {
     final grades = SessionGrades(
       newMemorizationErrors: newMemorizationErrors,
@@ -66,7 +78,7 @@ class SessionRepository {
     final passed = grades.passesForLevel(levelId);
 
     return _writeSessionRecord(
-      (id) => SessionRecordModel(
+      (id, writtenAt) => SessionRecordModel(
         id: id,
         studentId: studentId,
         teacherId: teacherId,
@@ -74,15 +86,17 @@ class SessionRepository {
         levelId: levelId,
         hizbNumber: hizbNumber,
         sessionNumber: sessionNumber,
-        date: DateTime.now(),
+        orderInLevel: orderInLevel,
+        date: writtenAt,
         attemptNumber: attemptNumber,
         grades: grades,
         passed: passed,
         repetitionsWithTeacher: repetitionsWithTeacher,
         homeRepetitionsRequired: homeRepetitionsRequired,
         notes: notes,
-        createdAt: DateTime.now(),
+        createdAt: writtenAt,
       ),
+      now: now,
     );
   }
 
@@ -92,6 +106,10 @@ class SessionRepository {
   /// and repeats it with him. There are no errors to count and nothing to fail,
   /// so the record carries zeroed grades and passes unconditionally — it exists
   /// for history and attendance, and to carry the home assignment.
+  ///
+  /// [orderInLevel] is the curriculum's ordering key — copied verbatim from
+  /// the session this record is FOR (never recomputed from [sessionNumber]).
+  /// [now] is a test seam; see [_writeSessionRecord].
   Future<SessionRecordModel> createTalqeenRecord({
     required String studentId,
     required String teacherId,
@@ -99,12 +117,14 @@ class SessionRepository {
     required int levelId,
     int? hizbNumber,
     required int sessionNumber,
+    required int orderInLevel,
     required int repetitionsWithTeacher,
     required int homeRepetitionsRequired,
     String? notes,
+    DateTime? now,
   }) {
     return _writeSessionRecord(
-      (id) => SessionRecordModel(
+      (id, writtenAt) => SessionRecordModel(
         id: id,
         studentId: studentId,
         teacherId: teacherId,
@@ -112,7 +132,8 @@ class SessionRepository {
         levelId: levelId,
         hizbNumber: hizbNumber,
         sessionNumber: sessionNumber,
-        date: DateTime.now(),
+        orderInLevel: orderInLevel,
+        date: writtenAt,
         attemptNumber: 1,
         grades: const SessionGrades(
           newMemorizationErrors: 0,
@@ -123,27 +144,29 @@ class SessionRepository {
         repetitionsWithTeacher: repetitionsWithTeacher,
         homeRepetitionsRequired: homeRepetitionsRequired,
         notes: notes,
-        createdAt: DateTime.now(),
+        createdAt: writtenAt,
       ),
+      now: now,
     );
   }
 
   /// The student's most recent session record — the one carrying the home
   /// assignment they are currently working off.
   ///
-  /// Ordered by `date` DESC, then `created_at` DESC as a tie-break. A teacher
-  /// completes one session at a time, so two records genuinely sharing a
-  /// `date` is not expected in practice — but this query must not silently
-  /// depend on that being true: without an explicit secondary order, which
-  /// doc Firestore hands back for a tied `date` is unspecified, and "the
-  /// latest record" would become nondeterministic (flaky home-assignment
-  /// reads) the moment a tie ever did occur (e.g. a backfill, or two writes
-  /// landing in the same clock tick).
+  /// Ordered by `date` DESC, then `order_in_level` DESC as a tie-break.
+  /// `order_in_level` — not `created_at` — because `date` and `created_at` are
+  /// both stamped from the SAME `DateTime.now()` call (see
+  /// `_writeSessionRecord`), so anything that ties `date` ties `created_at`
+  /// too; that pairing can never break a tie. `order_in_level` can: a
+  /// student's records are written one per completed session, and a later
+  /// session always carries a strictly greater `order_in_level` within a
+  /// level, so on a same-instant tie the record further along the curriculum
+  /// is the genuinely later one.
   Future<SessionRecordModel?> getLatestSessionRecord(String studentId) async {
     final query = await _sessionRecordsCollection
         .where('student_id', isEqualTo: studentId)
         .orderBy('date', descending: true)
-        .orderBy('created_at', descending: true)
+        .orderBy('order_in_level', descending: true)
         .limit(1)
         .get();
 

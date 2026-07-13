@@ -48,6 +48,10 @@ void main() {
     int currentHizb = 59,
     int currentSession = 5,
     int currentAttempt = 1,
+    // A distinctive non-default value (StudentModel defaults to 1) so a
+    // record carrying the DEFAULT instead of the student's own value would
+    // be caught, not masked by a coincidental match.
+    int currentOrderInLevel = 8,
   }) {
     return StudentModel(
       id: id,
@@ -59,6 +63,7 @@ void main() {
       currentHizb: currentHizb,
       currentSession: currentSession,
       currentAttempt: currentAttempt,
+      currentOrderInLevel: currentOrderInLevel,
       createdAt: DateTime(2026, 1, 1),
     );
   }
@@ -84,6 +89,7 @@ void main() {
       studentId: 'student-1',
       teacherId: 'teacher-1',
       curriculumSessionId: 'L1_J30_H59_S5',
+      orderInLevel: 5,
       date: DateTime(2026, 1, 2),
       attemptNumber: 1,
       grades: SessionGrades(
@@ -254,6 +260,7 @@ void main() {
           levelId: any(named: 'levelId'),
           hizbNumber: any(named: 'hizbNumber'),
           sessionNumber: any(named: 'sessionNumber'),
+          orderInLevel: any(named: 'orderInLevel'),
           attemptNumber: any(named: 'attemptNumber'),
           newMemorizationErrors: any(named: 'newMemorizationErrors'),
           recentReviewErrors: any(named: 'recentReviewErrors'),
@@ -287,6 +294,29 @@ void main() {
         container.read(activeSessionProvider)!.advanceOutcome,
         StudentAdvanceOutcome.advanced,
       );
+
+      // The student's OWN currentOrderInLevel (8, set by buildStudent) must
+      // reach the repository call verbatim — never a hardcoded or
+      // recomputed value.
+      final capturedOrderInLevel = verify(
+        () => mockSessionRepository.createSessionRecord(
+          studentId: any(named: 'studentId'),
+          teacherId: any(named: 'teacherId'),
+          curriculumSessionId: any(named: 'curriculumSessionId'),
+          levelId: any(named: 'levelId'),
+          hizbNumber: any(named: 'hizbNumber'),
+          sessionNumber: any(named: 'sessionNumber'),
+          orderInLevel: captureAny(named: 'orderInLevel'),
+          attemptNumber: any(named: 'attemptNumber'),
+          newMemorizationErrors: any(named: 'newMemorizationErrors'),
+          recentReviewErrors: any(named: 'recentReviewErrors'),
+          distantReviewErrors: any(named: 'distantReviewErrors'),
+          repetitionsWithTeacher: any(named: 'repetitionsWithTeacher'),
+          homeRepetitionsRequired: any(named: 'homeRepetitionsRequired'),
+          notes: any(named: 'notes'),
+        ),
+      ).captured;
+      expect(capturedOrderInLevel.single, 8);
     });
 
     // hibrahem/AlRasikhoon final-review finding #2: advanceStudentSession can
@@ -309,6 +339,7 @@ void main() {
             levelId: any(named: 'levelId'),
             hizbNumber: any(named: 'hizbNumber'),
             sessionNumber: any(named: 'sessionNumber'),
+            orderInLevel: any(named: 'orderInLevel'),
             attemptNumber: any(named: 'attemptNumber'),
             newMemorizationErrors: any(named: 'newMemorizationErrors'),
             recentReviewErrors: any(named: 'recentReviewErrors'),
@@ -356,6 +387,7 @@ void main() {
           levelId: any(named: 'levelId'),
           hizbNumber: any(named: 'hizbNumber'),
           sessionNumber: any(named: 'sessionNumber'),
+          orderInLevel: any(named: 'orderInLevel'),
           attemptNumber: any(named: 'attemptNumber'),
           newMemorizationErrors: any(named: 'newMemorizationErrors'),
           recentReviewErrors: any(named: 'recentReviewErrors'),

@@ -63,6 +63,14 @@ class SessionRecordModel {
   /// record of the curriculum under the first hizb of level 1.
   final int? hizbNumber;
   final int sessionNumber;
+
+  /// The curriculum's ordering key (1..M within [levelId]), copied verbatim
+  /// from the session this record is FOR — never recomputed, never inferred
+  /// from [sessionNumber]. It is the only thing that orders session records
+  /// within a level: juz numbers cannot (level 10 teaches juz 1 → 2 → 3), and
+  /// [date]/[createdAt] cannot either, since both come from the same
+  /// `DateTime.now()` at write time and can tie.
+  final int orderInLevel;
   final DateTime date;
   final int attemptNumber;
   final SessionGrades grades;
@@ -88,6 +96,7 @@ class SessionRecordModel {
     this.levelId = 1,
     this.hizbNumber,
     this.sessionNumber = 1,
+    required this.orderInLevel,
     required this.date,
     required this.attemptNumber,
     required this.grades,
@@ -108,6 +117,9 @@ class SessionRecordModel {
       levelId: data['level_id'] ?? 1,
       hizbNumber: data['hizb_number'] as int?,
       sessionNumber: data['session_number'] ?? 1,
+      // Falls back to 1 only for records written before this field existed —
+      // never recomputed from sessionNumber for records that do carry it.
+      orderInLevel: data['order_in_level'] as int? ?? 1,
       date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       attemptNumber: data['attempt_number'] ?? 1,
       grades: SessionGrades.fromJson(data['grades']),
@@ -127,6 +139,7 @@ class SessionRecordModel {
       'level_id': levelId,
       'hizb_number': hizbNumber,
       'session_number': sessionNumber,
+      'order_in_level': orderInLevel,
       'date': Timestamp.fromDate(date),
       'attempt_number': attemptNumber,
       'grades': grades.toJson(),
@@ -146,6 +159,7 @@ class SessionRecordModel {
     int? levelId,
     int? hizbNumber,
     int? sessionNumber,
+    int? orderInLevel,
     DateTime? date,
     int? attemptNumber,
     SessionGrades? grades,
@@ -163,6 +177,7 @@ class SessionRecordModel {
       levelId: levelId ?? this.levelId,
       hizbNumber: hizbNumber ?? this.hizbNumber,
       sessionNumber: sessionNumber ?? this.sessionNumber,
+      orderInLevel: orderInLevel ?? this.orderInLevel,
       date: date ?? this.date,
       attemptNumber: attemptNumber ?? this.attemptNumber,
       grades: grades ?? this.grades,
