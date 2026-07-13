@@ -27,6 +27,7 @@ import '../features/supervisor/screens/supervisor_students_screen.dart';
 import '../features/supervisor/screens/sard_session_screen.dart';
 import '../features/supervisor/screens/sard_result_screen.dart';
 import '../features/teacher/screens/teacher_students_screen.dart';
+import '../features/teacher/screens/teacher_history_screen.dart';
 import '../features/teacher/screens/session_overview_screen.dart';
 import '../features/teacher/screens/recitation_screen.dart';
 import '../features/teacher/screens/recitation_result_screen.dart';
@@ -342,11 +343,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // Teacher shell — single Students branch (Session/History/Settings stubs)
+      // Teacher shell — Students / History / Settings
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             RoleShell(navigationShell: navigationShell, role: UserRole.teacher),
         branches: [
+          // Branch 0: Students
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -398,6 +400,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                   final studentId = state.pathParameters['studentId']!;
                   return SessionSummaryScreen(studentId: studentId);
                 },
+              ),
+            ],
+          ),
+          // Branch 1: History
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.teacherHistory,
+                builder: (context, state) => const TeacherHistoryScreen(),
               ),
             ],
           ),

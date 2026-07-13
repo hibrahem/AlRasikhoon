@@ -4,50 +4,55 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/session_record_row.dart';
-import '../providers/student_provider.dart';
+import '../providers/teacher_provider.dart';
 
-class SessionHistoryScreen extends ConsumerWidget {
-  const SessionHistoryScreen({super.key});
+/// The teacher's recitation history, newest first: "who did I hear?" — so
+/// each row is keyed by student, and tapping opens that student's session
+/// overview (unlike the student's own history, which is keyed by session and
+/// opens the session detail).
+class TeacherHistoryScreen extends ConsumerWidget {
+  const TeacherHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final historyAsync = ref.watch(studentHistoryProvider);
+    final historyAsync = ref.watch(teacherHistoryProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('سجل الحلقات')),
+      appBar: AppBar(title: const Text('السجل')),
       body: historyAsync.when(
-        data: (records) {
-          if (records.isEmpty) {
+        data: (entries) {
+          if (entries.isEmpty) {
             return _buildEmptyState(context);
           }
 
           return RefreshIndicator(
             onRefresh: () async {
-              ref.invalidate(studentHistoryProvider);
+              ref.invalidate(teacherHistoryProvider);
             },
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: records.length,
+              itemCount: entries.length,
               itemBuilder: (context, index) {
-                final record = records[index];
+                final entry = entries[index];
+                final record = entry.record;
                 // Listing shows only binary pass/fail (نجح / رسب), never an
                 // average of the three component grades (#24). The
                 // per-component breakdown lives in the session detail view.
-                // Enforced by SessionRecordRow, shared with the teacher's
+                // Enforced by SessionRecordRow, shared with the student's
                 // history listing.
                 return SessionRecordRow(
-                  title: 'الحلقة ${record.sessionNumber}',
-                  // Never an app-derived hizb — `record.hizbNumber` is the
-                  // denormalized structural value, which can disagree with a
-                  // session's own verbatim label.
-                  subtitleLines: ['المستوى ${record.levelId}'],
+                  title: entry.studentName,
+                  subtitleLines: [
+                    'الحلقة ${record.sessionNumber}',
+                    'المستوى ${record.levelId}',
+                  ],
                   passed: record.passed,
                   date: record.date,
                   onTap: () {
                     context.push(
-                      AppRoutes.sessionDetail.replaceFirst(
-                        ':recordId',
-                        record.id,
+                      AppRoutes.sessionOverview.replaceFirst(
+                        ':studentId',
+                        record.studentId,
                       ),
                     );
                   },
@@ -81,7 +86,7 @@ class SessionHistoryScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'ستظهر هنا سجلات الحلقات السابقة',
+            'ستظهر هنا الحلقات التي سمعتها',
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
