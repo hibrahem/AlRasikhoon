@@ -46,6 +46,27 @@ final class _CurriculumDataMissing extends _NextPositionOutcome {
   const _CurriculumDataMissing();
 }
 
+/// The outcome of [StudentRepository.advanceStudentSession], as seen by
+/// callers outside this repository. A silent no-op must never be
+/// indistinguishable from a real advance: a caller that ignores this and
+/// shows an unqualified "saved successfully" message would tell a teacher or
+/// supervisor a student progressed when they in fact did not (e.g. no seeded
+/// sessions exist ahead of them), leaving the student re-taught the same
+/// session forever with no signal to anyone.
+enum StudentAdvanceOutcome {
+  /// The student moved to a later position in the curriculum (or completed
+  /// it, crediting the final level).
+  advanced,
+
+  /// The walk ran out of seeded curriculum data before it could tell whether
+  /// the student had truly reached the end. The student was left exactly as
+  /// they were; nothing was written.
+  curriculumDataMissing,
+
+  /// No student exists with the given id.
+  studentNotFound,
+}
+
 class StudentRepository {
   final FirebaseFirestore _firestore;
   final FirebaseService _firebaseService;
@@ -358,26 +379,33 @@ class StudentRepository {
   /// session is rarely `current + 1`. A level completes only after its last
   /// hizb.
   ///
-  /// Three outcomes:
+  /// Three internal outcomes, reported back to the caller as a
+  /// [StudentAdvanceOutcome] so a silent no-op can never be mistaken for
+  /// success:
   /// - [_Advanced]: there is a later position — move to it, resetting the
-  ///   attempt, and crediting every level fully passed through.
+  ///   attempt, and crediting every level fully passed through. Reported as
+  ///   [StudentAdvanceOutcome.advanced].
   /// - [_CurriculumCompleted]: the student's current hizb is structurally the
   ///   last one in the curriculum and has no later session — credit their
   ///   final level as completed, reset the attempt, and stay put (there is
-  ///   nowhere to advance to).
+  ///   nowhere to advance to). Also reported as
+  ///   [StudentAdvanceOutcome.advanced] — the student's bookkeeping did
+  ///   change, just not their position.
   /// - [_CurriculumDataMissing]: the walk ran out of *seeded* sessions before
   ///   it could tell whether the student had truly reached the end (a data
   ///   problem, not the end of the curriculum) — leave the student exactly
-  ///   as they are and write nothing.
-  Future<void> advanceStudentSession(String studentId) async {
+  ///   as they are and write nothing. Reported as
+  ///   [StudentAdvanceOutcome.curriculumDataMissing] so callers can warn
+  ///   instead of silently claiming success.
+  Future<StudentAdvanceOutcome> advanceStudentSession(String studentId) async {
     final student = await getStudentById(studentId);
-    if (student == null) return;
+    if (student == null) return StudentAdvanceOutcome.studentNotFound;
 
     final outcome = await _nextPosition(student.currentPosition);
 
     switch (outcome) {
       case _CurriculumDataMissing():
-        return;
+        return StudentAdvanceOutcome.curriculumDataMissing;
 
       case _CurriculumCompleted():
         // Bookkeeping is keyed off the level derived from the hizb, not
@@ -403,7 +431,7 @@ class StudentRepository {
           'unlocked_levels': unlockedLevels,
           'updated_at': FieldValue.serverTimestamp(),
         });
-        return;
+        return StudentAdvanceOutcome.advanced;
 
       case _Advanced(:final position):
         // Bookkeeping is keyed off the level derived from the hizb, not
@@ -437,7 +465,7 @@ class StudentRepository {
           'unlocked_levels': unlockedLevels,
           'updated_at': FieldValue.serverTimestamp(),
         });
-        return;
+        return StudentAdvanceOutcome.advanced;
     }
   }
 
@@ -455,7 +483,7 @@ class StudentRepository {
     // returning null for such a hizb would be indistinguishable from
     // "structurally the last hizb of the curriculum" below, misclassifying
     // garbage data as curriculum completion.
-    if (from.hizb < 1 || from.hizb > 60) {
+    if (!CurriculumOrder.isValidHizb(from.hizb)) {
       return const _CurriculumDataMissing();
     }
 

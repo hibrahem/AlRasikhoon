@@ -43,6 +43,27 @@ void main() {
       );
     });
 
+    test('a position rejects a hizb outside the curriculum\'s valid range '
+        '(1-60), even when it happens to satisfy levelOfHizb', () {
+      // Dart's ~/ truncates toward zero, so a naive levelOfHizb(61) reports
+      // level 1 — the same level as hizb 1-6. Without an explicit range
+      // check, validated(level: 1, hizb: 61, session: 1) would pass every
+      // check and brick the student (no session documents exist for hizb
+      // 61, so advanceStudentSession would no-op forever).
+      expect(
+        () => CurriculumPosition.validated(level: 1, hizb: 0, session: 1),
+        throwsArgumentError,
+      );
+      expect(
+        () => CurriculumPosition.validated(level: 1, hizb: 61, session: 1),
+        throwsArgumentError,
+      );
+      expect(
+        () => CurriculumPosition.validated(level: 1, hizb: 65, session: 1),
+        throwsArgumentError,
+      );
+    });
+
     test('an earlier session in the same hizb comes before a later one', () {
       const earlier = CurriculumPosition(level: 1, hizb: 59, session: 5);
       const later = CurriculumPosition(level: 1, hizb: 59, session: 35);

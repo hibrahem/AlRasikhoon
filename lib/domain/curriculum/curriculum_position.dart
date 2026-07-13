@@ -34,6 +34,13 @@ class CurriculumPosition {
     if (level < 1 || level > CurriculumOrder.totalLevels) {
       throw ArgumentError.value(level, 'level', 'Level must be 1-10');
     }
+    // Must be checked before levelOfHizb: that derivation truncates toward
+    // zero and is only meaningful for a valid hizb, so an out-of-range hizb
+    // (e.g. 61) can alias into a real level's range and slip past the
+    // membership check below undetected.
+    if (!CurriculumOrder.isValidHizb(hizb)) {
+      throw ArgumentError.value(hizb, 'hizb', 'Hizb must be 1-60');
+    }
     if (CurriculumOrder.levelOfHizb(hizb) != level) {
       throw ArgumentError.value(
         hizb,

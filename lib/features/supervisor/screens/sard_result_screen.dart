@@ -45,8 +45,9 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
       // Resolve through the supervisor's institute scope (AgDR-0003) — Sard is
       // supervisor-only (#29), and supervisor-created students have
       // teacher_id: null, so the teacher-scoped lookup would fail (#45).
-      final studentAsync =
-          await ref.read(supervisorStudentProvider(widget.studentId).future);
+      final studentAsync = await ref.read(
+        supervisorStudentProvider(widget.studentId).future,
+      );
       if (studentAsync == null) throw Exception('Student not found');
 
       final student = studentAsync.student;
@@ -74,11 +75,20 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
       );
 
       // Update student progress
+      StudentAdvanceOutcome? advanceOutcome;
       if (record.passed) {
-        await studentRepo.advanceStudentSession(student.id);
+        advanceOutcome = await studentRepo.advanceStudentSession(student.id);
       } else {
         await studentRepo.incrementStudentAttempt(student.id);
       }
+
+      // A pass that could not actually move the student (e.g. no seeded
+      // curriculum data ahead) must never be reported as an unqualified
+      // success — the teacher/supervisor needs to know the student is stuck.
+      final progressNotAdvanced =
+          record.passed &&
+          (advanceOutcome == StudentAdvanceOutcome.curriculumDataMissing ||
+              advanceOutcome == StudentAdvanceOutcome.studentNotFound);
 
       // Invalidate the supervisor's institute-scoped providers so the students
       // list and the resolved student reflect the advanced/incremented state.
@@ -89,10 +99,16 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              record.passed ? 'تم حفظ السرد - ناجح' : 'تم حفظ السرد - راسب',
+              progressNotAdvanced
+                  ? 'تم حفظ النتيجة، لكن تعذر تحديث تقدم الطالب: لا توجد حلقات '
+                        'تالية في المنهج.'
+                  : (record.passed
+                        ? 'تم حفظ السرد - ناجح'
+                        : 'تم حفظ السرد - راسب'),
             ),
-            backgroundColor:
-                record.passed ? AppColors.success : AppColors.warning,
+            backgroundColor: progressNotAdvanced
+                ? AppColors.error
+                : (record.passed ? AppColors.success : AppColors.warning),
           ),
         );
 
@@ -119,8 +135,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final studentAsync =
-        ref.watch(supervisorStudentProvider(widget.studentId));
+    final studentAsync = ref.watch(supervisorStudentProvider(widget.studentId));
     // Grade is level-based (hibrahem/AlRasikhoon#22). The level-based grade is
     // only computed once the student value resolves — never from a default
     // level=1 while loading, which would flash a harsher grade (#36).
@@ -222,8 +237,10 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
                   text: 'إعادة السرد',
                   onPressed: () {
                     context.pushReplacement(
-                      AppRoutes.sardSession
-                          .replaceFirst(':studentId', widget.studentId),
+                      AppRoutes.sardSession.replaceFirst(
+                        ':studentId',
+                        widget.studentId,
+                      ),
                     );
                   },
                   type: AppButtonType.outline,

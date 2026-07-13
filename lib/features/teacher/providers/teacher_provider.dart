@@ -97,6 +97,14 @@ class ActiveSessionState {
   final String? notes;
   final bool isComplete;
 
+  /// The outcome of the student-progress update triggered by
+  /// [ActiveSessionNotifier.completeSession] on a pass. Null until
+  /// `completeSession` runs (or when the record failed, since progress is
+  /// never advanced on a fail). Screens read this to tell a real advance
+  /// apart from a silent no-op (e.g. no seeded curriculum data ahead) so
+  /// they never show an unqualified success message for the latter.
+  final StudentAdvanceOutcome? advanceOutcome;
+
   const ActiveSessionState({
     required this.studentId,
     this.currentPart = 1,
@@ -106,6 +114,7 @@ class ActiveSessionState {
     this.repetitions = 0,
     this.notes,
     this.isComplete = false,
+    this.advanceOutcome,
   });
 
   ActiveSessionState copyWith({
@@ -117,6 +126,7 @@ class ActiveSessionState {
     int? repetitions,
     String? notes,
     bool? isComplete,
+    StudentAdvanceOutcome? advanceOutcome,
   }) {
     return ActiveSessionState(
       studentId: studentId ?? this.studentId,
@@ -127,6 +137,7 @@ class ActiveSessionState {
       repetitions: repetitions ?? this.repetitions,
       notes: notes ?? this.notes,
       isComplete: isComplete ?? this.isComplete,
+      advanceOutcome: advanceOutcome ?? this.advanceOutcome,
     );
   }
 
@@ -232,14 +243,15 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     );
 
     // Update student progress
+    StudentAdvanceOutcome? advanceOutcome;
     if (record.passed) {
-      await studentRepo.advanceStudentSession(student.id);
+      advanceOutcome = await studentRepo.advanceStudentSession(student.id);
     } else {
       await studentRepo.incrementStudentAttempt(student.id);
     }
 
     // Clear state
-    state = state!.copyWith(isComplete: true);
+    state = state!.copyWith(isComplete: true, advanceOutcome: advanceOutcome);
 
     // Invalidate providers
     ref.invalidate(teacherStudentsProvider);

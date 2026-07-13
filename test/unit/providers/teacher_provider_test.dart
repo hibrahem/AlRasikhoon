@@ -198,18 +198,23 @@ void main() {
       expect(container.read(activeSessionProvider)!.passesForLevel(1), isTrue);
     });
 
-    test('passesForLevel is false when any part is محب (4 errors at level 1)',
-        () {
-      final container = makeContainer(user: buildTeacher());
-      final notifier = container.read(activeSessionProvider.notifier);
+    test(
+      'passesForLevel is false when any part is محب (4 errors at level 1)',
+      () {
+        final container = makeContainer(user: buildTeacher());
+        final notifier = container.read(activeSessionProvider.notifier);
 
-      notifier.startSession('student-1');
-      notifier.setPartErrors(1, 3);
-      notifier.setPartErrors(2, 4);
-      notifier.setPartErrors(3, 0);
+        notifier.startSession('student-1');
+        notifier.setPartErrors(1, 3);
+        notifier.setPartErrors(2, 4);
+        notifier.setPartErrors(3, 0);
 
-      expect(container.read(activeSessionProvider)!.passesForLevel(1), isFalse);
-    });
+        expect(
+          container.read(activeSessionProvider)!.passesForLevel(1),
+          isFalse,
+        );
+      },
+    );
 
     test('nextPart caps at part 3', () {
       final container = makeContainer(user: buildTeacher());
@@ -259,7 +264,7 @@ void main() {
       ).thenAnswer((_) async => buildRecord(passed: true));
       when(
         () => mockStudentRepository.advanceStudentSession('student-1'),
-      ).thenAnswer((_) async {});
+      ).thenAnswer((_) async => StudentAdvanceOutcome.advanced);
 
       final container = makeContainer(user: buildTeacher());
       final notifier = container.read(activeSessionProvider.notifier);
@@ -275,11 +280,67 @@ void main() {
       verify(
         () => mockStudentRepository.advanceStudentSession('student-1'),
       ).called(1);
-      verifyNever(
-        () => mockStudentRepository.incrementStudentAttempt(any()),
-      );
+      verifyNever(() => mockStudentRepository.incrementStudentAttempt(any()));
       expect(container.read(activeSessionProvider)!.isComplete, isTrue);
+      expect(
+        container.read(activeSessionProvider)!.advanceOutcome,
+        StudentAdvanceOutcome.advanced,
+      );
     });
+
+    // hibrahem/AlRasikhoon final-review finding #2: advanceStudentSession can
+    // silently no-op (no seeded curriculum data ahead of the student). The
+    // caller must be able to tell that apart from a real advance instead of
+    // reporting an unqualified success — this is the signal
+    // session_summary_screen.dart reads to decide between the plain "تم حفظ"
+    // success SnackBar and the "تعذر تحديث تقدم الطالب" warning.
+    test(
+      'surfaces curriculumDataMissing instead of silently reporting success',
+      () async {
+        when(
+          () => mockStudentRepository.getStudentsForTeacher('teacher-1'),
+        ).thenAnswer((_) async => [buildStudentWithUser()]);
+        when(
+          () => mockSessionRepository.createSessionRecord(
+            studentId: any(named: 'studentId'),
+            teacherId: any(named: 'teacherId'),
+            curriculumSessionId: any(named: 'curriculumSessionId'),
+            levelId: any(named: 'levelId'),
+            hizbNumber: any(named: 'hizbNumber'),
+            sessionNumber: any(named: 'sessionNumber'),
+            attemptNumber: any(named: 'attemptNumber'),
+            newMemorizationErrors: any(named: 'newMemorizationErrors'),
+            recentReviewErrors: any(named: 'recentReviewErrors'),
+            distantReviewErrors: any(named: 'distantReviewErrors'),
+            repetitions: any(named: 'repetitions'),
+            notes: any(named: 'notes'),
+          ),
+        ).thenAnswer((_) async => buildRecord(passed: true));
+        when(
+          () => mockStudentRepository.advanceStudentSession('student-1'),
+        ).thenAnswer((_) async => StudentAdvanceOutcome.curriculumDataMissing);
+
+        final container = makeContainer(user: buildTeacher());
+        final notifier = container.read(activeSessionProvider.notifier);
+        notifier.startSession('student-1');
+        notifier.setPartErrors(1, 1);
+        notifier.setPartErrors(2, 0);
+        notifier.setPartErrors(3, 0);
+
+        final record = await notifier.completeSession();
+
+        // The record itself still reports a pass — the session was graded
+        // correctly and saved. Only the progress update failed.
+        expect(record, isNotNull);
+        expect(record!.passed, isTrue);
+        // This is the flag a screen must branch on to avoid telling the user
+        // an unqualified "تم حفظ - ناجح" when the student didn't actually move.
+        expect(
+          container.read(activeSessionProvider)!.advanceOutcome,
+          StudentAdvanceOutcome.curriculumDataMissing,
+        );
+      },
+    );
 
     test('increments the attempt when the record fails', () async {
       when(
@@ -317,9 +378,7 @@ void main() {
       verify(
         () => mockStudentRepository.incrementStudentAttempt('student-1'),
       ).called(1);
-      verifyNever(
-        () => mockStudentRepository.advanceStudentSession(any()),
-      );
+      verifyNever(() => mockStudentRepository.advanceStudentSession(any()));
     });
 
     test('returns null when there is no active session state', () async {
@@ -339,9 +398,7 @@ void main() {
       final record = await notifier.completeSession();
 
       expect(record, isNull);
-      verifyNever(
-        () => mockStudentRepository.advanceStudentSession(any()),
-      );
+      verifyNever(() => mockStudentRepository.advanceStudentSession(any()));
     });
   });
 }

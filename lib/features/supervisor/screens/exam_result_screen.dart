@@ -42,8 +42,9 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
       final currentUser = ref.read(currentUserProvider);
       if (currentUser == null) throw Exception('User not authenticated');
 
-      final studentAsync =
-          await ref.read(examStudentProvider(widget.studentId).future);
+      final studentAsync = await ref.read(
+        examStudentProvider(widget.studentId).future,
+      );
       if (studentAsync == null) throw Exception('Student not found');
 
       final student = studentAsync.student;
@@ -71,11 +72,20 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
       );
 
       // Update student progress
+      StudentAdvanceOutcome? advanceOutcome;
       if (record.passed) {
-        await studentRepo.advanceStudentSession(student.id);
+        advanceOutcome = await studentRepo.advanceStudentSession(student.id);
       } else {
         await studentRepo.incrementStudentAttempt(student.id);
       }
+
+      // A pass that could not actually move the student (e.g. no seeded
+      // curriculum data ahead) must never be reported as an unqualified
+      // success — the supervisor needs to know the student is stuck.
+      final progressNotAdvanced =
+          record.passed &&
+          (advanceOutcome == StudentAdvanceOutcome.curriculumDataMissing ||
+              advanceOutcome == StudentAdvanceOutcome.studentNotFound);
 
       // Invalidate providers
       ref.invalidate(examQueueProvider);
@@ -85,12 +95,16 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              record.passed
-                  ? 'تم حفظ الاختبار - ناجح'
-                  : 'تم حفظ الاختبار - راسب',
+              progressNotAdvanced
+                  ? 'تم حفظ النتيجة، لكن تعذر تحديث تقدم الطالب: لا توجد حلقات '
+                        'تالية في المنهج.'
+                  : (record.passed
+                        ? 'تم حفظ الاختبار - ناجح'
+                        : 'تم حفظ الاختبار - راسب'),
             ),
-            backgroundColor:
-                record.passed ? AppColors.success : AppColors.warning,
+            backgroundColor: progressNotAdvanced
+                ? AppColors.error
+                : (record.passed ? AppColors.success : AppColors.warning),
           ),
         );
 
@@ -218,8 +232,10 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
                   text: 'إعادة الاختبار',
                   onPressed: () {
                     context.pushReplacement(
-                      AppRoutes.examSession
-                          .replaceFirst(':studentId', widget.studentId),
+                      AppRoutes.examSession.replaceFirst(
+                        ':studentId',
+                        widget.studentId,
+                      ),
                     );
                   },
                   type: AppButtonType.outline,

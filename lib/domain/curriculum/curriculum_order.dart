@@ -35,7 +35,21 @@ class CurriculumOrder {
   /// after this hizb — not after its first, which was the historical bug.
   static int lastHizbOfLevel(int level) => 62 - 6 * level;
 
-  /// The level a hizb belongs to. Level 1 owns hizbs 55-60, level 2 owns 49-54.
+  /// Whether [hizb] is a real hizb of this curriculum (1-60). Every other
+  /// method here that takes a hizb assumes it satisfies this — callers
+  /// receiving hizbs from outside the domain (Firestore, UI input) must
+  /// check this first.
+  static bool isValidHizb(int hizb) =>
+      hizb >= 1 && hizb <= totalLevels * hizbsPerLevel;
+
+  /// The level a hizb belongs to. Level 1 owns hizbs 55-60, level 2 owns
+  /// 49-54.
+  ///
+  /// Only meaningful for a valid hizb ([isValidHizb]). Dart's `~/` truncates
+  /// toward zero, so out-of-range hizbs above 60 alias back into level 1's
+  /// range (e.g. `levelOfHizb(61) == 1`, same as hizb 1-6) instead of
+  /// signalling invalidity — callers MUST check [isValidHizb] first rather
+  /// than relying on this to reject out-of-range input.
   static int levelOfHizb(int hizb) => ((60 - hizb) ~/ 6) + 1;
 
   /// The next hizb in teaching order, or null at the end of the curriculum.
@@ -45,12 +59,14 @@ class CurriculumOrder {
   /// half of the next (lower) juz (60 -> 57). This crosses level boundaries
   /// naturally: 56 -> 53.
   ///
-  /// Hizbs below 1 are out of range and have no next hizb. This guards
+  /// Any hizb outside 1-60 is out of range and has no next hizb. This guards
   /// against corrupted records (the old advancement bug left legacy records
   /// at hizb -1 after level 10) that would otherwise descend forever:
-  /// 0 -> -3 -> -2 -> -5 -> ...
+  /// 0 -> -3 -> -2 -> -5 -> ... It also guards the top end: without it,
+  /// `levelOfHizb(61) == 1` would make `nextHizb(61)` compute 62 and wander
+  /// back into the curriculum instead of terminating.
   static int? nextHizb(int hizb) {
-    if (hizb < 1) return null;
+    if (!isValidHizb(hizb)) return null;
     if (hizb == lastHizbOfLevel(totalLevels)) return null;
     return hizb.isOdd ? hizb + 1 : hizb - 3;
   }

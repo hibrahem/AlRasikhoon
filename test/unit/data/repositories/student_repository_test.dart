@@ -522,12 +522,38 @@ void main() {
         await seedSession(level: 1, hizb: 59, session: 6);
         await seedStudent(level: 1, hizb: 59, session: 5, attempt: 2);
 
-        await studentRepository.advanceStudentSession('s1');
+        final outcome = await studentRepository.advanceStudentSession('s1');
 
+        expect(outcome, StudentAdvanceOutcome.advanced);
         final student = await readStudent();
         expect(student['current_session'], 6);
         expect(student['current_hizb'], 59);
         expect(student['current_attempt'], 1);
+      });
+
+      // A silent no-op must never be indistinguishable from a real advance to
+      // the caller: a teacher/supervisor screen relies on this return value to
+      // decide whether to show an unqualified success message or a warning
+      // that the student's progress could not actually be updated.
+      test('reports curriculumDataMissing, not success, when no next session '
+          'exists for a data-missing walk', () async {
+        // The student sits at hizb 60 of level 1 — not the last hizb of the
+        // curriculum — but nothing is seeded in hizb 60 or in any hizb ahead
+        // of it. See "missing curriculum data ahead leaves the student
+        // untouched" below for the full no-op assertion; this test is
+        // specifically about what advanceStudentSession reports back.
+        await seedStudent(
+          level: 1,
+          hizb: 60,
+          session: 36,
+          attempt: 2,
+          completedLevels: const [],
+          unlockedLevels: const [1],
+        );
+
+        final outcome = await studentRepository.advanceStudentSession('s1');
+
+        expect(outcome, StudentAdvanceOutcome.curriculumDataMissing);
       });
 
       test('skips session numbers the curriculum does not contain', () async {
@@ -829,7 +855,10 @@ void main() {
       );
 
       test('does nothing when the student does not exist', () async {
-        await studentRepository.advanceStudentSession('nonexistent');
+        final outcome = await studentRepository.advanceStudentSession(
+          'nonexistent',
+        );
+        expect(outcome, StudentAdvanceOutcome.studentNotFound);
       });
     });
 

@@ -81,6 +81,26 @@ void main() {
       expect(visited.last, 2);
     });
 
+    test('isValidHizb accepts only 1-60', () {
+      expect(CurriculumOrder.isValidHizb(1), isTrue);
+      expect(CurriculumOrder.isValidHizb(60), isTrue);
+      expect(CurriculumOrder.isValidHizb(30), isTrue);
+      expect(CurriculumOrder.isValidHizb(0), isFalse);
+      expect(CurriculumOrder.isValidHizb(61), isFalse);
+      expect(CurriculumOrder.isValidHizb(65), isFalse);
+      expect(CurriculumOrder.isValidHizb(-1), isFalse);
+    });
+
+    test('nextHizb terminates instead of wandering back into the curriculum '
+        'above the valid range', () {
+      // Dart's ~/ truncates toward zero, so a naive levelOfHizb(61) would
+      // report level 1 and nextHizb(61) would wander back to 62 instead of
+      // stopping. Any hizb above 60 is out of range and has no next hizb.
+      expect(CurriculumOrder.nextHizb(61), isNull);
+      expect(CurriculumOrder.nextHizb(62), isNull);
+      expect(CurriculumOrder.nextHizb(65), isNull);
+    });
+
     test('order index increases monotonically along the teaching order', () {
       expect(
         CurriculumOrder.hizbOrderIndex(59) < CurriculumOrder.hizbOrderIndex(60),
