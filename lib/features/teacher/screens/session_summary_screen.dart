@@ -9,6 +9,7 @@ import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/grade_display.dart';
 import '../providers/teacher_provider.dart';
+import '../widgets/recitation_counts_card.dart';
 
 class SessionSummaryScreen extends ConsumerStatefulWidget {
   final String studentId;
@@ -234,6 +235,23 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                   child: Text('تعذّر تحميل النتيجة'),
                 ),
               ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // The two counts. Recorded before the session is ended, on every
+            // session that teaches new content.
+            Text('التكرار', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 12),
+            RecitationCountsCard(
+              repetitionsWithTeacher: activeSession.repetitionsWithTeacher,
+              homeRepetitionsRequired: activeSession.homeRepetitionsRequired,
+              onRepetitionsWithTeacherChanged: ref
+                  .read(activeSessionProvider.notifier)
+                  .setRepetitionsWithTeacher,
+              onHomeRepetitionsRequiredChanged: ref
+                  .read(activeSessionProvider.notifier)
+                  .setHomeRepetitionsRequired,
             ),
 
             const SizedBox(height: 24),
