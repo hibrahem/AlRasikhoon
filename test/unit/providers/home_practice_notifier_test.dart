@@ -125,4 +125,75 @@ void main() {
       expect(captured[1], 2);
     },
   );
+
+  test('addPractice falls back to the student\'s OWN currentSessionId — never '
+      "'' — when there is no session record yet", () async {
+    final student = StudentModel(
+      id: 'student-1',
+      userId: 'user-1',
+      instituteId: 'institute-1',
+      currentLevel: 1,
+      currentJuz: 30,
+      currentSession: 1,
+      currentHizb: 59,
+      currentSessionId: 'L1_J30_S1',
+      createdAt: DateTime(2026, 1, 1),
+    );
+
+    // No session record yet — a brand-new student who hasn't had a single
+    // session with their teacher.
+    when(
+      () => mockSessionRepository.getLatestSessionRecord('student-1'),
+    ).thenAnswer((_) async => null);
+
+    when(
+      () => mockHomePracticeRepository.createHomePractice(
+        studentId: any(named: 'studentId'),
+        curriculumSessionId: any(named: 'curriculumSessionId'),
+        levelId: any(named: 'levelId'),
+        juzNumber: any(named: 'juzNumber'),
+        hizbNumber: any(named: 'hizbNumber'),
+        sessionNumber: any(named: 'sessionNumber'),
+        repetitions: any(named: 'repetitions'),
+        notes: any(named: 'notes'),
+      ),
+    ).thenAnswer((_) async => 'practice-1');
+
+    final container = ProviderContainer(
+      overrides: [
+        currentStudentProvider.overrideWith((ref) async => student),
+        sessionRepositoryProvider.overrideWithValue(mockSessionRepository),
+        homePracticeRepositoryProvider.overrideWithValue(
+          mockHomePracticeRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final ok = await container
+        .read(homePracticeNotifierProvider.notifier)
+        .addPractice(repetitions: 4);
+
+    expect(ok, isTrue);
+
+    // Every field must come from the student's CURRENT position, and the
+    // session id must be the student's real `currentSessionId` — not ''.
+    // An empty id would make the document internally inconsistent (level,
+    // hizb and session number would say 'L1_J30_S1' while the id said
+    // nothing) and could never match `homeAssignmentProvider`'s equality
+    // filter, silently hiding the practice from the student's own
+    // assignment view.
+    verify(
+      () => mockHomePracticeRepository.createHomePractice(
+        studentId: 'student-1',
+        curriculumSessionId: 'L1_J30_S1',
+        levelId: 1,
+        juzNumber: 30,
+        hizbNumber: 59,
+        sessionNumber: 1,
+        repetitions: 4,
+        notes: any(named: 'notes'),
+      ),
+    ).called(1);
+  });
 }

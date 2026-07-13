@@ -274,7 +274,15 @@ class HomePracticeNotifier extends Notifier<AsyncValue<void>> {
       final repo = ref.read(homePracticeRepositoryProvider);
       await repo.createHomePractice(
         studentId: student.id,
-        curriculumSessionId: lastRecord?.curriculumSessionId ?? '',
+        // Falls back to the student's OWN current_session_id — never ''.
+        // With no session record yet, the student's current position is the
+        // closest thing to an assignment there is, and every other field
+        // below already falls back to that same position: an empty id would
+        // make the document internally inconsistent (level/hizb/session say
+        // one thing, the id says nothing) and could never match
+        // `homeAssignmentProvider`'s equality filter.
+        curriculumSessionId:
+            lastRecord?.curriculumSessionId ?? student.currentSessionId,
         levelId: lastRecord?.levelId ?? student.currentLevel,
         juzNumber: student.currentJuz,
         hizbNumber: lastRecord?.hizbNumber ?? student.currentHizb,
