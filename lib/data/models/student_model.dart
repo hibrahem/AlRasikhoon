@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:al_rasikhoon/core/constants/app_constants.dart';
 import '../../domain/curriculum/curriculum_position.dart';
+import 'session_model.dart';
 
 class StudentModel {
   final String id;
@@ -8,11 +9,41 @@ class StudentModel {
   final String instituteId;
   final String? teacherId;
   final String? guardianId;
+
+  /// Where the student stands: `(level, juz, session)` — the identity of a
+  /// curriculum session document.
   final int currentLevel;
   final int currentJuz;
-  final int currentHizb;
   final int currentSession;
+
+  /// A LABEL, only meaningful in levels 1-2. Never identity, never ordering.
+  final int? currentHizb;
+
   final int currentAttempt;
+
+  // --- The current session, denormalized ------------------------------------
+  // Firestore cannot join, and the supervisor's exam queue must stay ONE query
+  // ("every student of my institute standing on an exam"). So the facts the
+  // queue and the dashboards filter on are copied onto the student and kept in
+  // step whenever the student advances.
+
+  /// The doc id of the session the student stands on (`L{level}_J{juz}_S{n}`).
+  final String currentSessionId;
+
+  /// What that session IS — read from the curriculum, never from its number.
+  final SessionKind currentSessionKind;
+
+  /// The tier of that session if it is an assessment; null for a lesson.
+  final AssessmentTier? currentSessionTier;
+
+  /// The assessment's verbatim Arabic label from the source; null for a lesson.
+  final String? currentSessionLabelAr;
+
+  /// The session's position within the level — THE ordering key for advancement
+  /// and the numerator of the level progress bar.
+  final int currentOrderInLevel;
+  // --------------------------------------------------------------------------
+
   final List<int> completedLevels;
   final List<int> unlockedLevels;
   final DateTime createdAt;
@@ -33,9 +64,14 @@ class StudentModel {
     this.guardianId,
     this.currentLevel = 1,
     this.currentJuz = 30,
-    this.currentHizb = 59,
     this.currentSession = 1,
+    this.currentHizb,
     this.currentAttempt = 1,
+    this.currentSessionId = 'L1_J30_S1',
+    this.currentSessionKind = SessionKind.lesson,
+    this.currentSessionTier,
+    this.currentSessionLabelAr,
+    this.currentOrderInLevel = 1,
     this.completedLevels = const [],
     this.unlockedLevels = const [1],
     required this.createdAt,
@@ -44,24 +80,25 @@ class StudentModel {
     this.enrollmentPosition = CurriculumPosition.start,
   });
 
-  /// Enrolls a student at [position], crediting every level before it as
+  /// Enrolls a student onto [session], crediting every level before it as
   /// already memorized. The student's current position *is* the anchor: they
-  /// start work at the session they were placed on.
+  /// start work at the session they were placed on — which may be a lesson, a
+  /// سرد or an اختبار at any tier.
+  ///
+  /// Takes the [SessionModel] itself so the denormalized facts cannot contradict
+  /// the curriculum: they are copied from it, not guessed.
   factory StudentModel.enrolledAt({
     required String id,
     required String userId,
     required String instituteId,
     String? teacherId,
     String? guardianId,
-    required CurriculumPosition position,
+    required SessionModel session,
     required DateTime createdAt,
   }) {
-    final completedLevels = [
-      for (var level = 1; level < position.level; level++) level,
-    ];
-    final unlockedLevels = [
-      for (var level = 1; level <= position.level; level++) level,
-    ];
+    final level = session.levelId;
+    final completedLevels = [for (var l = 1; l < level; l++) l];
+    final unlockedLevels = [for (var l = 1; l <= level; l++) l];
 
     return StudentModel(
       id: id,
@@ -69,30 +106,56 @@ class StudentModel {
       instituteId: instituteId,
       teacherId: teacherId,
       guardianId: guardianId,
-      currentLevel: position.level,
-      currentJuz: position.juz,
-      currentHizb: position.hizb,
-      currentSession: position.session,
+      currentLevel: level,
+      currentJuz: session.juzNumber,
+      currentSession: session.sessionNumber,
+      currentHizb: session.hizbNumber,
+      currentSessionId: session.id,
+      currentSessionKind: session.kind,
+      currentSessionTier: session.scope?.tier,
+      currentSessionLabelAr: session.scope?.labelAr,
+      currentOrderInLevel: session.orderInLevel,
       completedLevels: completedLevels,
       unlockedLevels: unlockedLevels,
-      enrollmentPosition: position,
+      enrollmentPosition: CurriculumPosition(
+        level: level,
+        juz: session.juzNumber,
+        session: session.sessionNumber,
+      ),
       createdAt: createdAt,
     );
   }
 
   factory StudentModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    final level = data['current_level'] as int? ?? 1;
+    final juz = data['current_juz'] as int? ?? 30;
+    final session = data['current_session'] as int? ?? 1;
+    final kind = data['current_session_kind'];
+    final tier = data['current_session_tier'];
+
     return StudentModel(
       id: doc.id,
       userId: data['user_id'] ?? '',
       instituteId: data['institute_id'] ?? '',
       teacherId: data['teacher_id'],
       guardianId: data['guardian_id'],
-      currentLevel: data['current_level'] ?? 1,
-      currentJuz: data['current_juz'] ?? 30,
-      currentHizb: data['current_hizb'] ?? 59,
-      currentSession: data['current_session'] ?? 1,
-      currentAttempt: data['current_attempt'] ?? 1,
+      currentLevel: level,
+      currentJuz: juz,
+      currentSession: session,
+      currentHizb: data['current_hizb'] as int?,
+      currentAttempt: data['current_attempt'] as int? ?? 1,
+      currentSessionId:
+          data['current_session_id'] as String? ??
+          'L${level}_J${juz}_S$session',
+      currentSessionKind: kind == null
+          ? SessionKind.lesson
+          : SessionKindX.fromString(kind as String),
+      currentSessionTier: tier == null
+          ? null
+          : AssessmentTierX.fromString(tier as String),
+      currentSessionLabelAr: data['current_session_label_ar'] as String?,
+      currentOrderInLevel: data['current_order_in_level'] as int? ?? 1,
       completedLevels: List<int>.from(data['completed_levels'] ?? []),
       unlockedLevels: List<int>.from(data['unlocked_levels'] ?? [1]),
       createdAt: (data['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -114,9 +177,14 @@ class StudentModel {
       'guardian_id': guardianId,
       'current_level': currentLevel,
       'current_juz': currentJuz,
-      'current_hizb': currentHizb,
       'current_session': currentSession,
+      'current_hizb': currentHizb,
       'current_attempt': currentAttempt,
+      'current_session_id': currentSessionId,
+      'current_session_kind': currentSessionKind.value,
+      'current_session_tier': currentSessionTier?.value,
+      'current_session_label_ar': currentSessionLabelAr,
+      'current_order_in_level': currentOrderInLevel,
       'completed_levels': completedLevels,
       'unlocked_levels': unlockedLevels,
       'created_at': Timestamp.fromDate(createdAt),
@@ -134,9 +202,14 @@ class StudentModel {
     String? guardianId,
     int? currentLevel,
     int? currentJuz,
-    int? currentHizb,
     int? currentSession,
+    int? currentHizb,
     int? currentAttempt,
+    String? currentSessionId,
+    SessionKind? currentSessionKind,
+    AssessmentTier? currentSessionTier,
+    String? currentSessionLabelAr,
+    int? currentOrderInLevel,
     List<int>? completedLevels,
     List<int>? unlockedLevels,
     DateTime? createdAt,
@@ -152,9 +225,15 @@ class StudentModel {
       guardianId: guardianId ?? this.guardianId,
       currentLevel: currentLevel ?? this.currentLevel,
       currentJuz: currentJuz ?? this.currentJuz,
-      currentHizb: currentHizb ?? this.currentHizb,
       currentSession: currentSession ?? this.currentSession,
+      currentHizb: currentHizb ?? this.currentHizb,
       currentAttempt: currentAttempt ?? this.currentAttempt,
+      currentSessionId: currentSessionId ?? this.currentSessionId,
+      currentSessionKind: currentSessionKind ?? this.currentSessionKind,
+      currentSessionTier: currentSessionTier ?? this.currentSessionTier,
+      currentSessionLabelAr:
+          currentSessionLabelAr ?? this.currentSessionLabelAr,
+      currentOrderInLevel: currentOrderInLevel ?? this.currentOrderInLevel,
       completedLevels: completedLevels ?? this.completedLevels,
       unlockedLevels: unlockedLevels ?? this.unlockedLevels,
       createdAt: createdAt ?? this.createdAt,
@@ -164,46 +243,52 @@ class StudentModel {
     );
   }
 
+  /// Moves the student onto [session], keeping the denormalized facts in step
+  /// with the curriculum. The attempt counter resets: a new session is a fresh
+  /// first attempt.
+  StudentModel movedTo(SessionModel session) {
+    return copyWith(
+      currentLevel: session.levelId,
+      currentJuz: session.juzNumber,
+      currentSession: session.sessionNumber,
+      currentHizb: session.hizbNumber,
+      currentSessionId: session.id,
+      currentSessionKind: session.kind,
+      currentSessionTier: session.scope?.tier,
+      currentSessionLabelAr: session.scope?.labelAr,
+      currentOrderInLevel: session.orderInLevel,
+      currentAttempt: 1,
+    );
+  }
+
   /// Where the student is now, as a curriculum position.
   CurriculumPosition get currentPosition => CurriculumPosition(
     level: currentLevel,
-    hizb: currentHizb,
+    juz: currentJuz,
     session: currentSession,
   );
 
-  /// Get progress percentage for current level
-  double get levelProgressPercentage {
-    // Assuming 36 sessions per hizb and 6 hizbs per level = 216 sessions per level
-    // But actual session count varies by level
-    final sessionInLevel = (currentSession - 1) % 36; // Simplified
-    return sessionInLevel / 36 * 100;
-  }
+  /// Whether the student stands on a سرد, assessed by their teacher.
+  bool get canTakeSard => currentSessionKind == SessionKind.sard;
 
-  /// Check if student can take Sard test
-  bool get canTakeSard => currentSession == 35;
+  /// Whether the student stands on an اختبار, assessed by the supervisor.
+  bool get canTakeExam => currentSessionKind == SessionKind.exam;
 
-  /// Check if student can take Exam
-  bool get canTakeExam => currentSession == 36;
+  /// Whether the student stands on an assessment of any tier.
+  bool get isOnAssessment => canTakeSard || canTakeExam;
 
-  /// Check if student has reached max attempts for current session
+  /// Assessments — سرد and اختبار alike, at every tier — may be retried without
+  /// limit: a student who cannot yet recite a juz keeps working at it. The
+  /// 3-attempt cap belongs to ordinary lessons alone.
   bool get hasReachedMaxAttempts =>
-      currentAttempt > AppConstants.maxSessionAttempts;
+      !isOnAssessment && currentAttempt > AppConstants.maxSessionAttempts;
 
-  /// Check if student can start a new session attempt
-  /// Returns false if max attempts (3) have been exhausted
-  bool get canStartSession => currentAttempt <= AppConstants.maxSessionAttempts;
-
-  /// Check if student has reached max attempts for Sard
-  bool get hasReachedMaxSardAttempts =>
-      canTakeSard && currentAttempt > AppConstants.maxSardAttempts;
-
-  /// Check if student has reached max attempts for Exam
-  bool get hasReachedMaxExamAttempts =>
-      canTakeExam && currentAttempt > AppConstants.maxExamAttempts;
+  /// Whether the student may start another attempt at their current session.
+  bool get canStartSession => !hasReachedMaxAttempts;
 
   @override
   String toString() {
-    return 'StudentModel(id: $id, userId: $userId, level: $currentLevel, session: $currentSession)';
+    return 'StudentModel(id: $id, userId: $userId, level: $currentLevel, session: $currentSessionId)';
   }
 
   @override

@@ -3,109 +3,108 @@ import 'package:al_rasikhoon/domain/curriculum/curriculum_position.dart';
 
 void main() {
   group('CurriculumPosition', () {
-    test('the default start is the first session of the curriculum', () {
+    test('the curriculum starts at level 1, juz 30, session 1', () {
       expect(CurriculumPosition.start.level, 1);
       expect(CurriculumPosition.start.juz, 30);
-      expect(CurriculumPosition.start.hizb, 59);
       expect(CurriculumPosition.start.session, 1);
     });
 
-    test('the juz is derived from the hizb', () {
-      const position = CurriculumPosition(level: 2, hizb: 53, session: 12);
-      expect(position.juz, 27);
+    test('a position names the curriculum session document it stands on', () {
+      const position = CurriculumPosition(level: 1, juz: 30, session: 67);
+      expect(position.sessionId, 'L1_J30_S67');
     });
 
-    // Validation lives in the named `validated` constructor: a const
-    // constructor cannot throw, and positions from the UI or from Firestore
-    // must be checked at that boundary.
-    test('a position rejects a hizb that does not belong to its level', () {
-      expect(
-        () => CurriculumPosition.validated(level: 1, hizb: 53, session: 1),
-        throwsArgumentError,
-      );
-    });
+    test('a position is identified by its level, juz and session', () {
+      const a = CurriculumPosition(level: 1, juz: 30, session: 30);
+      const b = CurriculumPosition(level: 1, juz: 30, session: 30);
+      const differentJuz = CurriculumPosition(level: 1, juz: 29, session: 30);
 
-    test('a position rejects a session outside the hizb', () {
-      expect(
-        () => CurriculumPosition.validated(level: 1, hizb: 59, session: 0),
-        throwsArgumentError,
-      );
-      expect(
-        () => CurriculumPosition.validated(level: 1, hizb: 59, session: 37),
-        throwsArgumentError,
-      );
-    });
-
-    test('a position rejects a level outside the curriculum', () {
-      expect(
-        () => CurriculumPosition.validated(level: 11, hizb: 1, session: 1),
-        throwsArgumentError,
-      );
-    });
-
-    test('a position rejects a hizb outside the curriculum\'s valid range '
-        '(1-60), even when it happens to satisfy levelOfHizb', () {
-      // Dart's ~/ truncates toward zero, so a naive levelOfHizb(61) reports
-      // level 1 — the same level as hizb 1-6. Without an explicit range
-      // check, validated(level: 1, hizb: 61, session: 1) would pass every
-      // check and brick the student (no session documents exist for hizb
-      // 61, so advanceStudentSession would no-op forever).
-      expect(
-        () => CurriculumPosition.validated(level: 1, hizb: 0, session: 1),
-        throwsArgumentError,
-      );
-      expect(
-        () => CurriculumPosition.validated(level: 1, hizb: 61, session: 1),
-        throwsArgumentError,
-      );
-      expect(
-        () => CurriculumPosition.validated(level: 1, hizb: 65, session: 1),
-        throwsArgumentError,
-      );
-    });
-
-    test('an earlier session in the same hizb comes before a later one', () {
-      const earlier = CurriculumPosition(level: 1, hizb: 59, session: 5);
-      const later = CurriculumPosition(level: 1, hizb: 59, session: 35);
-      expect(earlier.isBefore(later), isTrue);
-      expect(later.isBefore(earlier), isFalse);
-    });
-
-    test('ordering follows the teaching order, not the hizb number', () {
-      // Hizb 60 is taught after hizb 59, and hizb 57 after both.
-      const inHizb59 = CurriculumPosition(level: 1, hizb: 59, session: 36);
-      const inHizb60 = CurriculumPosition(level: 1, hizb: 60, session: 1);
-      const inHizb57 = CurriculumPosition(level: 1, hizb: 57, session: 1);
-
-      expect(inHizb59.isBefore(inHizb60), isTrue);
-      expect(inHizb60.isBefore(inHizb57), isTrue);
-      expect(inHizb57.isBefore(inHizb59), isFalse);
-    });
-
-    test('an earlier level comes before a later one', () {
-      const inLevel1 = CurriculumPosition(level: 1, hizb: 56, session: 36);
-      const inLevel2 = CurriculumPosition(level: 2, hizb: 53, session: 1);
-      expect(inLevel1.isBefore(inLevel2), isTrue);
-    });
-
-    test('a position is not before itself', () {
-      const position = CurriculumPosition(level: 3, hizb: 47, session: 10);
-      expect(position.isBefore(position), isFalse);
-    });
-
-    test('a position round-trips through a map', () {
-      const position = CurriculumPosition(level: 2, hizb: 53, session: 35);
-      final map = position.toMap();
-
-      expect(map, {'level': 2, 'juz': 27, 'hizb': 53, 'session': 35});
-      expect(CurriculumPosition.fromMap(map), position);
-    });
-
-    test('positions with the same coordinates are equal', () {
-      const a = CurriculumPosition(level: 1, hizb: 59, session: 1);
-      const b = CurriculumPosition(level: 1, hizb: 59, session: 1);
-      expect(a, b);
+      expect(a, equals(b));
       expect(a.hashCode, b.hashCode);
+      expect(a, isNot(equals(differentJuz)));
+    });
+
+    test('a position round-trips through its persisted map', () {
+      const position = CurriculumPosition(level: 10, juz: 2, session: 12);
+
+      expect(position.toMap(), {'level': 10, 'juz': 2, 'session': 12});
+      expect(CurriculumPosition.fromMap(position.toMap()), position);
+    });
+
+    test('level 10 ascends through juz 1, 2, 3 and is a valid position', () {
+      // سورة البقرة spans juz 1-3 and is memorized front to back, so the last
+      // level ASCENDS. Any arithmetic deriving the juz from the level would
+      // reject this — which is why the domain derives nothing.
+      expect(
+        CurriculumPosition.validated(level: 10, juz: 1, session: 1).juz,
+        1,
+      );
+      expect(
+        CurriculumPosition.validated(level: 10, juz: 3, session: 9).juz,
+        3,
+      );
+    });
+
+    test('a session beyond the old 36-session ceiling is a real position', () {
+      // Juz 30 holds 68 sessions, juz 29 holds 69. The old domain rejected
+      // anything above 36 and would have refused every juz-tier assessment.
+      expect(
+        CurriculumPosition.validated(level: 1, juz: 30, session: 68).sessionId,
+        'L1_J30_S68',
+      );
+      expect(
+        CurriculumPosition.validated(level: 1, juz: 29, session: 69).sessionId,
+        'L1_J29_S69',
+      );
+    });
+
+    group('validated', () {
+      test('rejects a level outside the ten levels of the curriculum', () {
+        expect(
+          () => CurriculumPosition.validated(level: 0, juz: 30, session: 1),
+          throwsArgumentError,
+        );
+        expect(
+          () => CurriculumPosition.validated(level: 11, juz: 30, session: 1),
+          throwsArgumentError,
+        );
+      });
+
+      test("rejects a juz outside the thirty juz of the Qur'an", () {
+        expect(
+          () => CurriculumPosition.validated(level: 1, juz: 0, session: 1),
+          throwsArgumentError,
+        );
+        expect(
+          () => CurriculumPosition.validated(level: 1, juz: 31, session: 1),
+          throwsArgumentError,
+        );
+      });
+
+      test('rejects a session number below the first session', () {
+        expect(
+          () => CurriculumPosition.validated(level: 1, juz: 30, session: 0),
+          throwsArgumentError,
+        );
+      });
+
+      test(
+        'does not judge whether a session exists — that is a data question',
+        () {
+          // Session counts vary per juz (68, 69, 67 in level 1). Whether juz 30
+          // has a session 500 is answered by the curriculum data, not by
+          // arithmetic here; the domain refuses only what could never be a
+          // session at all.
+          expect(
+            CurriculumPosition.validated(
+              level: 1,
+              juz: 30,
+              session: 500,
+            ).session,
+            500,
+          );
+        },
+      );
     });
   });
 }

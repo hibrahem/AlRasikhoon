@@ -3,319 +3,323 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
 
+/// The real level-1 rows, as `data/curriculum/sessions_level_1.json` carries
+/// them. L1_J30_S30 is the hizb-59 سرد, S67 the juz-30 سرد, S68 its اختبار.
+Map<String, dynamic> lessonJson({
+  int sessionNumber = 1,
+  int orderInLevel = 1,
+  String kind = 'lesson',
+}) => {
+  'level_id': 1,
+  'juz_number': 30,
+  'session_number': sessionNumber,
+  'order_in_level': orderInLevel,
+  'kind': kind,
+  'assessed_by': null,
+  'unit_index': 1,
+  'hizb_number': 59,
+  'scope': null,
+  'current_level_content': {
+    'from_surah': 'النبأ',
+    'from_verse': 1,
+    'to_surah': 'النبأ',
+    'to_verse': 11,
+  },
+  'recent_review_content': null,
+  'distant_review_content': null,
+};
+
+final unitSardJson = <String, dynamic>{
+  'level_id': 1,
+  'juz_number': 30,
+  'session_number': 30,
+  'order_in_level': 30,
+  'kind': 'sard',
+  'assessed_by': 'teacher',
+  'unit_index': 1,
+  'hizb_number': 59,
+  'scope': {
+    'tier': 'unit',
+    'label_ar': 'سرد الحزب رقم 59 كاملًا على المحفظ المتابع',
+    'hizb_number': 59,
+    'juz_numbers': [30],
+  },
+  'current_level_content': null,
+  'recent_review_content': {
+    'from_surah': 'الطارق',
+    'from_verse': 1,
+    'to_surah': 'الطارق',
+    'to_verse': 17,
+  },
+  'distant_review_content': null,
+};
+
+final juzSardJson = <String, dynamic>{
+  'level_id': 1,
+  'juz_number': 30,
+  'session_number': 67,
+  'order_in_level': 67,
+  'kind': 'sard',
+  'assessed_by': 'teacher',
+  'unit_index': null,
+  'hizb_number': null,
+  'scope': {
+    'tier': 'juz',
+    'label_ar': 'سرد الجزء رقم 30 كاملًا على المحفظ المتابع',
+    'hizb_number': null,
+    'juz_numbers': [30],
+  },
+  'current_level_content': null,
+  'recent_review_content': null,
+  'distant_review_content': null,
+};
+
+final juzExamJson = <String, dynamic>{
+  'level_id': 1,
+  'juz_number': 30,
+  'session_number': 68,
+  'order_in_level': 68,
+  'kind': 'exam',
+  'assessed_by': 'supervisor',
+  'unit_index': null,
+  'hizb_number': null,
+  'scope': {
+    'tier': 'juz',
+    'label_ar': 'اختبار في الجزء رقم 30 كاملًا من قِبل إدارة الحلقات',
+    'hizb_number': null,
+    'juz_numbers': [30],
+  },
+  'current_level_content': null,
+  'recent_review_content': null,
+  'distant_review_content': null,
+};
+
+final cumulativeSardJson = <String, dynamic>{
+  'level_id': 1,
+  'juz_number': 28,
+  'session_number': 66,
+  'order_in_level': 203,
+  'kind': 'sard',
+  'assessed_by': 'teacher',
+  'unit_index': null,
+  'hizb_number': null,
+  'scope': {
+    'tier': 'cumulative',
+    'label_ar':
+        'سرد المستوى كاملًا الأجزاء رقم 28 ــ  29 ــ 30 على المحفظ المتابع',
+    'hizb_number': null,
+    'juz_numbers': [28, 29, 30],
+  },
+  'current_level_content': null,
+  'recent_review_content': null,
+  'distant_review_content': null,
+};
+
 void main() {
-  group('SessionType', () {
-    group('value', () {
-      test('regular returns regular', () {
-        expect(SessionType.regular.value, 'regular');
-      });
-
-      test('sard returns sard', () {
-        expect(SessionType.sard.value, 'sard');
-      });
-
-      test('exam returns exam', () {
-        expect(SessionType.exam.value, 'exam');
-      });
+  group('SessionKind', () {
+    test('a kind is read from the curriculum data', () {
+      expect(SessionKindX.fromString('lesson'), SessionKind.lesson);
+      expect(SessionKindX.fromString('sard'), SessionKind.sard);
+      expect(SessionKindX.fromString('exam'), SessionKind.exam);
     });
 
-    group('nameAr', () {
-      test('regular returns حلقة عادية', () {
-        expect(SessionType.regular.nameAr, 'حلقة عادية');
-      });
-
-      test('sard returns سرد', () {
-        expect(SessionType.sard.nameAr, 'سرد');
-      });
-
-      test('exam returns اختبار', () {
-        expect(SessionType.exam.nameAr, 'اختبار');
-      });
+    test('an unknown kind is refused, never silently taught as a lesson', () {
+      // Defaulting to a lesson is how a supervisor's اختبار disappears.
+      expect(() => SessionKindX.fromString('garbage'), throwsArgumentError);
+      expect(() => SessionKindX.fromString(''), throwsArgumentError);
     });
 
-    group('nameEn', () {
-      test('regular returns Regular Session', () {
-        expect(SessionType.regular.nameEn, 'Regular Session');
-      });
-
-      test('sard returns Sard', () {
-        expect(SessionType.sard.nameEn, 'Sard');
-      });
-
-      test('exam returns Exam', () {
-        expect(SessionType.exam.nameEn, 'Exam');
-      });
-    });
-
-    group('fromString', () {
-      test('"sard" returns SessionType.sard', () {
-        expect(SessionTypeExtension.fromString('sard'), SessionType.sard);
-      });
-
-      test('"exam" returns SessionType.exam', () {
-        expect(SessionTypeExtension.fromString('exam'), SessionType.exam);
-      });
-
-      test('"regular" returns SessionType.regular', () {
-        expect(SessionTypeExtension.fromString('regular'), SessionType.regular);
-      });
-
-      test('unknown string defaults to SessionType.regular', () {
-        expect(SessionTypeExtension.fromString('garbage'), SessionType.regular);
-      });
-
-      test('empty string defaults to SessionType.regular', () {
-        expect(SessionTypeExtension.fromString(''), SessionType.regular);
-      });
+    test('kinds are named in Arabic', () {
+      expect(SessionKind.lesson.nameAr, 'حلقة');
+      expect(SessionKind.sard.nameAr, 'سرد');
+      expect(SessionKind.exam.nameAr, 'اختبار');
     });
   });
 
-  group('QuranContent', () {
-    test('isEmpty true when fromSurah is empty', () {
-      const content = QuranContent(
-        fromSurah: '',
-        fromVerse: 0,
-        toSurah: '',
-        toVerse: 0,
-      );
-      expect(content.isEmpty, isTrue);
-      expect(content.rangeAr, '');
-      expect(content.rangeEn, '');
-    });
-
-    test('isEmpty false when fromSurah has content', () {
-      const content = QuranContent(
-        fromSurah: 'الفاتحة',
-        fromVerse: 1,
-        toSurah: 'الفاتحة',
-        toVerse: 7,
-      );
-      expect(content.isEmpty, isFalse);
-    });
-
-    test('rangeAr formats single-verse range', () {
-      const content = QuranContent(
-        fromSurah: 'الفاتحة',
-        fromVerse: 1,
-        toSurah: 'الفاتحة',
-        toVerse: 1,
-      );
-      expect(content.rangeAr, 'الفاتحة: 1');
-    });
-
-    test('rangeAr formats same-surah verse range', () {
-      const content = QuranContent(
-        fromSurah: 'الفاتحة',
-        fromVerse: 1,
-        toSurah: 'الفاتحة',
-        toVerse: 7,
-      );
-      expect(content.rangeAr, 'الفاتحة: 1 - 7');
-    });
-
-    test('rangeAr formats cross-surah range', () {
-      const content = QuranContent(
-        fromSurah: 'البقرة',
-        fromVerse: 1,
-        toSurah: 'آل عمران',
-        toVerse: 10,
-      );
-      expect(content.rangeAr, 'البقرة: 1 إلى آل عمران: 10');
-    });
-
-    test('rangeEn formats cross-surah range', () {
-      const content = QuranContent(
-        fromSurah: 'Al-Baqarah',
-        fromVerse: 1,
-        toSurah: 'Al-Imran',
-        toVerse: 10,
-      );
-      expect(content.rangeEn, 'Al-Baqarah: 1 to Al-Imran: 10');
-    });
-
-    test('fromJson handles null map by returning empty content', () {
-      final content = QuranContent.fromJson(null);
-      expect(content.isEmpty, isTrue);
-      expect(content.fromVerse, 0);
-      expect(content.toVerse, 0);
-    });
-
-    test('fromJson handles missing fields with defaults', () {
-      final content = QuranContent.fromJson(<String, dynamic>{});
-      expect(content.fromSurah, '');
-      expect(content.fromVerse, 0);
-      expect(content.toSurah, '');
-      expect(content.toVerse, 0);
-    });
-
-    test('toJson round-trips through fromJson', () {
-      const original = QuranContent(
-        fromSurah: 'البقرة',
-        fromVerse: 1,
-        toSurah: 'البقرة',
-        toVerse: 5,
-      );
-      final round = QuranContent.fromJson(original.toJson());
-      expect(round.fromSurah, original.fromSurah);
-      expect(round.fromVerse, original.fromVerse);
-      expect(round.toSurah, original.toSurah);
-      expect(round.toVerse, original.toVerse);
-    });
-  });
-
-  group('SessionModel', () {
-    SessionModel buildSession({
-      String id = 'L1_J30_H59_S1',
-      int sessionNumber = 1,
-      int hizbNumber = 59,
-      SessionType type = SessionType.regular,
-    }) {
-      return SessionModel(
-        id: id,
-        sessionNumber: sessionNumber,
-        levelId: 1,
-        juzNumber: 30,
-        hizbNumber: hizbNumber,
-        sessionType: type,
-        currentLevelContent: const QuranContent(
-          fromSurah: 'الناس',
-          fromVerse: 1,
-          toSurah: 'الفلق',
-          toVerse: 5,
-        ),
-        recentReviewContent: const QuranContent(
-          fromSurah: '',
-          fromVerse: 0,
-          toSurah: '',
-          toVerse: 0,
-        ),
-        distantReviewContent: const QuranContent(
-          fromSurah: '',
-          fromVerse: 0,
-          toSurah: '',
-          toVerse: 0,
-        ),
-      );
-    }
-
-    test('isSard true only for sard type', () {
-      expect(buildSession(type: SessionType.sard).isSard, isTrue);
-      expect(buildSession(type: SessionType.exam).isSard, isFalse);
-      expect(buildSession(type: SessionType.regular).isSard, isFalse);
-    });
-
-    test('isExam true only for exam type', () {
-      expect(buildSession(type: SessionType.exam).isExam, isTrue);
-      expect(buildSession(type: SessionType.sard).isExam, isFalse);
-      expect(buildSession(type: SessionType.regular).isExam, isFalse);
-    });
-
-    test('isRegular true only for regular type', () {
-      expect(buildSession(type: SessionType.regular).isRegular, isTrue);
-      expect(buildSession(type: SessionType.sard).isRegular, isFalse);
-      expect(buildSession(type: SessionType.exam).isRegular, isFalse);
-    });
-
-    test('titleAr for sard session includes hizb', () {
-      final s = buildSession(type: SessionType.sard, hizbNumber: 59);
-      expect(s.titleAr, 'سرد الحزب 59');
-    });
-
-    test('titleAr for exam session includes hizb', () {
-      final s = buildSession(type: SessionType.exam, hizbNumber: 59);
-      expect(s.titleAr, 'اختبار الحزب 59');
-    });
-
-    test('titleAr for regular session includes session number and hizb', () {
-      final s = buildSession(sessionNumber: 5, hizbNumber: 59);
-      expect(s.titleAr, 'الحلقة 5 - الحزب 59');
-    });
-
-    test('titleEn for sard session includes hizb', () {
-      final s = buildSession(type: SessionType.sard, hizbNumber: 59);
-      expect(s.titleEn, 'Sard - Hizb 59');
-    });
-
-    test('titleEn for exam session includes hizb', () {
-      final s = buildSession(type: SessionType.exam, hizbNumber: 59);
-      expect(s.titleEn, 'Exam - Hizb 59');
-    });
-
-    test('equality based on id only, not other fields', () {
-      final a = buildSession(id: 'X', sessionNumber: 1);
-      final b = buildSession(id: 'X', sessionNumber: 99);
-      final c = buildSession(id: 'Y', sessionNumber: 1);
-      expect(a, equals(b));
-      expect(a, isNot(equals(c)));
-      expect(a.hashCode, b.hashCode);
-    });
-
-    test('toFirestore + fromJson round-trip preserves all fields', () {
-      final original = buildSession(
-        id: 'L1_J30_H59_S35',
-        sessionNumber: 35,
-        type: SessionType.sard,
-      );
-      final json = original.toFirestore();
-      final round = SessionModel.fromJson(original.id, json);
-      expect(round.id, original.id);
-      expect(round.sessionNumber, original.sessionNumber);
-      expect(round.levelId, original.levelId);
-      expect(round.juzNumber, original.juzNumber);
-      expect(round.hizbNumber, original.hizbNumber);
-      expect(round.sessionType, original.sessionType);
+  group('AssessmentTier', () {
+    test('an assessment is scoped to a unit, a juz, or the level so far', () {
+      expect(AssessmentTierX.fromString('unit'), AssessmentTier.unit);
+      expect(AssessmentTierX.fromString('juz'), AssessmentTier.juz);
       expect(
-        round.currentLevelContent.fromSurah,
-        original.currentLevelContent.fromSurah,
+        AssessmentTierX.fromString('cumulative'),
+        AssessmentTier.cumulative,
       );
     });
 
-    test('fromJson defaults missing fields to safe values', () {
-      final s = SessionModel.fromJson('id_only', <String, dynamic>{});
-      expect(s.sessionNumber, 0);
-      expect(s.levelId, 1);
-      expect(s.juzNumber, 30);
-      expect(s.hizbNumber, 59);
-      expect(s.sessionType, SessionType.regular);
-      expect(s.currentLevelContent.isEmpty, isTrue);
+    test('an unknown tier is refused', () {
+      expect(() => AssessmentTierX.fromString('hizb'), throwsArgumentError);
+    });
+  });
+
+  group('a session read from the curriculum', () {
+    test('a lesson carries its content and no scope', () {
+      final session = SessionModel.fromJson('L1_J30_S1', lessonJson());
+
+      expect(session.isLesson, isTrue);
+      expect(session.isAssessment, isFalse);
+      expect(session.scope, isNull);
+      expect(session.assessedBy, isNull);
+      expect(session.currentLevelContent!.fromSurah, 'النبأ');
+      expect(session.recentReviewContent, isNull);
     });
 
-    test('fromFirestore deserializes from a real DocumentSnapshot', () async {
+    test(
+      'a review-only lesson has no current content and that is not an error',
+      () {
+        // Five legitimate lessons in the curriculum teach nothing new.
+        final json = lessonJson()..['current_level_content'] = null;
+        final session = SessionModel.fromJson('L1_J30_S40', json);
+
+        expect(session.isLesson, isTrue);
+        expect(session.currentLevelContent, isNull);
+      },
+    );
+
+    test('a session numbered 35 that is a lesson stays a lesson', () {
+      // The old model hard-coded 35 = سرد and 36 = اختبار. Session numbers now
+      // run 1..N across a whole juz and say NOTHING about what a session is.
+      final session = SessionModel.fromJson(
+        'L1_J30_S35',
+        lessonJson(sessionNumber: 35, orderInLevel: 35),
+      );
+
+      expect(session.kind, SessionKind.lesson);
+      expect(session.isSard, isFalse);
+      expect(session.isExam, isFalse);
+    });
+
+    test('the hizb سرد is a unit-tier سرد assessed by the teacher', () {
+      final session = SessionModel.fromJson('L1_J30_S30', unitSardJson);
+
+      expect(session.isSard, isTrue);
+      expect(session.assessedBy, AssessedBy.teacher);
+      expect(session.tier, AssessmentTier.unit);
+      expect(session.scope!.hizbNumber, 59);
+      expect(session.scope!.juzNumbers, [30]);
+    });
+
+    test('the juz سرد belongs to no hizb', () {
+      final session = SessionModel.fromJson('L1_J30_S67', juzSardJson);
+
+      expect(session.isSard, isTrue);
+      expect(session.tier, AssessmentTier.juz);
+      expect(session.hizbNumber, isNull);
+      expect(session.scope!.hizbNumber, isNull);
+      expect(session.unitIndex, isNull);
+    });
+
+    test('the juz اختبار is sat with the supervisor', () {
+      final session = SessionModel.fromJson('L1_J30_S68', juzExamJson);
+
+      expect(session.isExam, isTrue);
+      expect(session.assessedBy, AssessedBy.supervisor);
+      expect(session.tier, AssessmentTier.juz);
+    });
+
+    test('a cumulative سرد covers every juz taught so far in the level', () {
+      final session = SessionModel.fromJson('L1_J28_S66', cumulativeSardJson);
+
+      expect(session.tier, AssessmentTier.cumulative);
+      expect(session.scope!.juzNumbers, [28, 29, 30]);
+      expect(session.orderInLevel, 203);
+    });
+  });
+
+  group('titleAr', () {
+    test('an assessment is titled with the curriculum\'s own words', () {
+      expect(
+        SessionModel.fromJson('L1_J30_S67', juzSardJson).titleAr,
+        'سرد الجزء رقم 30 كاملًا على المحفظ المتابع',
+      );
+      expect(
+        SessionModel.fromJson('L1_J30_S68', juzExamJson).titleAr,
+        'اختبار في الجزء رقم 30 كاملًا من قِبل إدارة الحلقات',
+      );
+      expect(
+        SessionModel.fromJson('L1_J30_S30', unitSardJson).titleAr,
+        'سرد الحزب رقم 59 كاملًا على المحفظ المتابع',
+      );
+      expect(
+        SessionModel.fromJson('L1_J28_S66', cumulativeSardJson).titleAr,
+        'سرد المستوى كاملًا الأجزاء رقم 28 ــ  29 ــ 30 على المحفظ المتابع',
+      );
+    });
+
+    test('a lesson is titled by its session number and juz', () {
+      final session = SessionModel.fromJson(
+        'L1_J30_S5',
+        lessonJson(sessionNumber: 5, orderInLevel: 5),
+      );
+      expect(session.titleAr, 'الحلقة 5 - الجزء 30');
+    });
+  });
+
+  group('ordering', () {
+    test('order_in_level runs continuously across the juz of the level', () {
+      // Juz 30 ends at 68 and juz 29's first assessment lands at 100 — the
+      // session number restarts per juz, the order in level does not.
+      final juz30Exam = SessionModel.fromJson('L1_J30_S68', juzExamJson);
+      final juz28Sard = SessionModel.fromJson('L1_J28_S66', cumulativeSardJson);
+
+      expect(juz30Exam.orderInLevel, lessThan(juz28Sard.orderInLevel));
+    });
+  });
+
+  group('persistence', () {
+    test('a session round-trips through Firestore', () async {
       final fake = FakeFirebaseFirestore();
-      final ref = fake.collection('sessions').doc('L1_J30_H59_S1');
-      await ref.set({
-        'session_number': 1,
-        'level_id': 1,
-        'juz_number': 30,
-        'hizb_number': 59,
-        'session_type': 'regular',
-        'current_level_content': {
-          'from_surah': 'الناس',
-          'from_verse': 1,
-          'to_surah': 'الفلق',
-          'to_verse': 5,
-        },
-        'recent_review_content': {
-          'from_surah': '',
-          'from_verse': 0,
-          'to_surah': '',
-          'to_verse': 0,
-        },
-        'distant_review_content': {
-          'from_surah': '',
-          'from_verse': 0,
-          'to_surah': '',
-          'to_verse': 0,
-        },
-      });
+      final ref = fake.collection('sessions').doc('L1_J30_S67');
+      await ref.set(juzSardJson);
       final DocumentSnapshot doc = await ref.get();
 
       final session = SessionModel.fromFirestore(doc);
 
-      expect(session.id, 'L1_J30_H59_S1');
-      expect(session.sessionNumber, 1);
-      expect(session.sessionType, SessionType.regular);
-      expect(session.currentLevelContent.fromSurah, 'الناس');
+      expect(session.id, 'L1_J30_S67');
+      expect(session.kind, SessionKind.sard);
+      expect(session.scope!.tier, AssessmentTier.juz);
+      expect(session.titleAr, 'سرد الجزء رقم 30 كاملًا على المحفظ المتابع');
+
+      final round = SessionModel.fromJson(session.id, session.toFirestore());
+      expect(round.kind, session.kind);
+      expect(round.orderInLevel, session.orderInLevel);
+      expect(round.scope, session.scope);
+      expect(round.assessedBy, AssessedBy.teacher);
+    });
+
+    test('sessions are equal by their document id', () {
+      final a = SessionModel.fromJson('L1_J30_S67', juzSardJson);
+      final b = SessionModel.fromJson('L1_J30_S67', juzExamJson);
+      final c = SessionModel.fromJson('L1_J30_S68', juzExamJson);
+
+      expect(a, equals(b));
+      expect(a.hashCode, b.hashCode);
+      expect(a, isNot(equals(c)));
+    });
+  });
+
+  group('QuranContent', () {
+    test('an absent content block reads back as absent, not as empty', () {
+      expect(QuranContent.maybeFromJson(null), isNull);
+    });
+
+    test('rangeAr formats a same-surah range', () {
+      const content = QuranContent(
+        fromSurah: 'النبأ',
+        fromVerse: 1,
+        toSurah: 'النبأ',
+        toVerse: 11,
+      );
+      expect(content.rangeAr, 'النبأ: 1 - 11');
+    });
+
+    test('rangeAr formats a cross-surah range', () {
+      const content = QuranContent(
+        fromSurah: 'الفلق',
+        fromVerse: 1,
+        toSurah: 'الناس',
+        toVerse: 6,
+      );
+      expect(content.rangeAr, 'الفلق: 1 إلى الناس: 6');
     });
   });
 }
