@@ -209,6 +209,47 @@ final homePracticeStatsProvider = FutureProvider<HomePracticeStats>((
   );
 });
 
+/// The home assignment the student is currently working off: the passage, how
+/// many repetitions they owe, and how many they have logged against it.
+class HomeAssignment {
+  final String curriculumSessionId;
+  final int repetitionsRequired;
+  final int repetitionsDone;
+
+  const HomeAssignment({
+    required this.curriculumSessionId,
+    required this.repetitionsRequired,
+    required this.repetitionsDone,
+  });
+
+  bool get isComplete => repetitionsDone >= repetitionsRequired;
+}
+
+/// Null when the student has no record yet, or when their last session assigned
+/// no home repetitions.
+final homeAssignmentProvider = FutureProvider<HomeAssignment?>((ref) async {
+  final student = await ref.watch(currentStudentProvider.future);
+  if (student == null) return null;
+
+  final sessionRepo = ref.watch(sessionRepositoryProvider);
+  final record = await sessionRepo.getLatestSessionRecord(student.id);
+  if (record == null || record.homeRepetitionsRequired <= 0) return null;
+
+  final practices = await ref
+      .watch(homePracticeRepositoryProvider)
+      .getHomePracticesForStudent(student.id);
+
+  final done = practices
+      .where((p) => p.curriculumSessionId == record.curriculumSessionId)
+      .fold<int>(0, (total, p) => total + p.repetitions);
+
+  return HomeAssignment(
+    curriculumSessionId: record.curriculumSessionId,
+    repetitionsRequired: record.homeRepetitionsRequired,
+    repetitionsDone: done,
+  );
+});
+
 /// Notifier for creating home practice
 class HomePracticeNotifier extends Notifier<AsyncValue<void>> {
   @override
@@ -224,22 +265,29 @@ class HomePracticeNotifier extends Notifier<AsyncValue<void>> {
         return false;
       }
 
+      // The practice belongs to the session it was ASSIGNED in, which is the
+      // student's last completed session — NOT the session they now stand on.
+      // The teacher advanced them when that session ended.
+      final sessionRepo = ref.read(sessionRepositoryProvider);
+      final lastRecord = await sessionRepo.getLatestSessionRecord(student.id);
+
       final repo = ref.read(homePracticeRepositoryProvider);
       await repo.createHomePractice(
         studentId: student.id,
-        levelId: student.currentLevel,
+        curriculumSessionId: lastRecord?.curriculumSessionId ?? '',
+        levelId: lastRecord?.levelId ?? student.currentLevel,
         juzNumber: student.currentJuz,
-        hizbNumber: student.currentHizb,
-        sessionNumber: student.currentSession,
+        hizbNumber: lastRecord?.hizbNumber ?? student.currentHizb,
+        sessionNumber: lastRecord?.sessionNumber ?? student.currentSession,
         repetitions: repetitions,
         notes: notes,
       );
 
-      // Invalidate providers to refresh data
       ref.invalidate(studentHomePracticesProvider);
       ref.invalidate(todaysPracticesProvider);
       ref.invalidate(thisWeeksPracticesProvider);
       ref.invalidate(homePracticeStatsProvider);
+      ref.invalidate(homeAssignmentProvider);
 
       state = const AsyncValue.data(null);
       return true;

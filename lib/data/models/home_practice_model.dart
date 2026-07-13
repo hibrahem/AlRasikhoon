@@ -5,6 +5,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class HomePracticeModel {
   final String id;
   final String studentId;
+
+  /// The curriculum session this practice was ASSIGNED in — the session whose
+  /// record carries `home_repetitions_required`.
+  ///
+  /// Not the student's current session: the teacher advances the student when
+  /// the session ends, so by the time they practise at home their current
+  /// session is the one AFTER the assignment. Attributing practice to the
+  /// current position files every repetition against the wrong session.
+  final String curriculumSessionId;
   final int levelId;
   final int juzNumber;
 
@@ -21,6 +30,7 @@ class HomePracticeModel {
   const HomePracticeModel({
     required this.id,
     required this.studentId,
+    required this.curriculumSessionId,
     required this.levelId,
     required this.juzNumber,
     this.hizbNumber,
@@ -36,6 +46,7 @@ class HomePracticeModel {
     return HomePracticeModel(
       id: doc.id,
       studentId: data['student_id'] ?? '',
+      curriculumSessionId: data['curriculum_session_id'] ?? '',
       levelId: data['level_id'] ?? 1,
       juzNumber: data['juz_number'] ?? 30,
       hizbNumber: data['hizb_number'] as int?,
@@ -51,6 +62,7 @@ class HomePracticeModel {
   Map<String, dynamic> toFirestore() {
     return {
       'student_id': studentId,
+      'curriculum_session_id': curriculumSessionId,
       'level_id': levelId,
       'juz_number': juzNumber,
       'hizb_number': hizbNumber,
@@ -65,6 +77,7 @@ class HomePracticeModel {
   HomePracticeModel copyWith({
     String? id,
     String? studentId,
+    String? curriculumSessionId,
     int? levelId,
     int? juzNumber,
     int? hizbNumber,
@@ -77,6 +90,7 @@ class HomePracticeModel {
     return HomePracticeModel(
       id: id ?? this.id,
       studentId: studentId ?? this.studentId,
+      curriculumSessionId: curriculumSessionId ?? this.curriculumSessionId,
       levelId: levelId ?? this.levelId,
       juzNumber: juzNumber ?? this.juzNumber,
       hizbNumber: hizbNumber ?? this.hizbNumber,

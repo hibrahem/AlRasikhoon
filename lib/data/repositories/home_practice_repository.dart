@@ -5,13 +5,14 @@ import '../services/firebase_service.dart';
 
 final homePracticeRepositoryProvider = Provider<HomePracticeRepository>((ref) {
   final firestore = ref.watch(firestoreProvider);
-  return HomePracticeRepository(firestore);
+  return HomePracticeRepository(firestore: firestore);
 });
 
 class HomePracticeRepository {
   final FirebaseFirestore _firestore;
 
-  HomePracticeRepository(this._firestore);
+  HomePracticeRepository({FirebaseFirestore? firestore})
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _collection =>
       _firestore.collection('home_practices');
@@ -22,6 +23,7 @@ class HomePracticeRepository {
   /// it keys nothing (see [HomePracticeModel.hizbNumber]).
   Future<String> createHomePractice({
     required String studentId,
+    required String curriculumSessionId,
     required int levelId,
     required int juzNumber,
     int? hizbNumber,
@@ -32,6 +34,7 @@ class HomePracticeRepository {
   }) async {
     final docRef = await _collection.add({
       'student_id': studentId,
+      'curriculum_session_id': curriculumSessionId,
       'level_id': levelId,
       'juz_number': juzNumber,
       'hizb_number': hizbNumber,
