@@ -43,16 +43,17 @@ StudentWithUser _student({
   required String name,
   required String instituteId,
 }) {
+  final userId = 'user-$id';
   return StudentWithUser(
     student: StudentModel(
       id: id,
-      userId: id,
+      userId: userId,
       instituteId: instituteId,
       teacherId: 'teacher1',
       createdAt: DateTime(2024),
     ),
     user: UserModel(
-      id: id,
+      id: userId,
       email: '$id@example.com',
       name: name,
       role: UserRole.student,
@@ -168,5 +169,20 @@ void main() {
     final entries = await container.read(teacherHistoryProvider.future);
 
     expect(entries, isEmpty);
+  });
+
+  test('joins records by student id, not the student\'s user id', () async {
+    final container = _container(
+      records: [_record(id: 'r1', studentId: 's1', date: DateTime(2024, 3, 2))],
+      students: students,
+    );
+    addTearDown(container.dispose);
+
+    final entries = await container.read(teacherHistoryProvider.future);
+
+    // If the provider wrongly keyed the roster by user id (user-s1), this
+    // would find nothing, since the record references the student document id.
+    expect(entries, hasLength(1));
+    expect(entries.single.studentName, 'أحمد');
   });
 }
