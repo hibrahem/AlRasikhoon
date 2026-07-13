@@ -75,8 +75,11 @@ class SessionHistoryScreen extends ConsumerWidget {
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                             const SizedBox(height: 4),
+                            // Never an app-derived hizb — `record.hizbNumber`
+                            // is the denormalized structural value, which can
+                            // disagree with a session's own verbatim label.
                             Text(
-                              'المستوى ${record.levelId} - الحزب ${record.hizbNumber}',
+                              'المستوى ${record.levelId}',
                               style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(color: AppColors.textSecondary),
                             ),

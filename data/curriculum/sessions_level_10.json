@@ -1,0 +1,1403 @@
+[
+  {
+    "id": "L10_J1_S1",
+    "level_id": 10,
+    "juz_number": 1,
+    "session_number": 1,
+    "order_in_level": 1,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 1,
+      "to_surah": "البقرة",
+      "to_verse": 24
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "آل عمران",
+      "from_verse": 1,
+      "to_surah": "آل عمران",
+      "to_verse": 200
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 1 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L10_J1_S2",
+    "level_id": 10,
+    "juz_number": 1,
+    "session_number": 2,
+    "order_in_level": 2,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 25,
+      "to_surah": "البقرة",
+      "to_verse": 43
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 1,
+      "to_surah": "البقرة",
+      "to_verse": 24
+    },
+    "distant_review_content": {
+      "from_surah": "النساء",
+      "from_verse": 1,
+      "to_surah": "النساء",
+      "to_verse": 176
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 1 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L10_J1_S3",
+    "level_id": 10,
+    "juz_number": 1,
+    "session_number": 3,
+    "order_in_level": 3,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 44,
+      "to_surah": "البقرة",
+      "to_verse": 61
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 1,
+      "to_surah": "البقرة",
+      "to_verse": 43
+    },
+    "distant_review_content": {
+      "from_surah": "المائدة",
+      "from_verse": 1,
+      "to_surah": "المائدة",
+      "to_verse": 120
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 1 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L10_J1_S4",
+    "level_id": 10,
+    "juz_number": 1,
+    "session_number": 4,
+    "order_in_level": 4,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 62,
+      "to_surah": "البقرة",
+      "to_verse": 76
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 25,
+      "to_surah": "البقرة",
+      "to_verse": 61
+    },
+    "distant_review_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 1,
+      "to_surah": "الأنعام",
+      "to_verse": 165
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 1 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L10_J1_S5",
+    "level_id": 10,
+    "juz_number": 1,
+    "session_number": 5,
+    "order_in_level": 5,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 62,
+      "to_surah": "البقرة",
+      "to_verse": 76
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 44,
+      "to_surah": "البقرة",
+      "to_verse": 76
+    },
+    "distant_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 1,
+      "to_surah": "الأعراف",
+      "to_verse": 206
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 1 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L10_J1_S6",
+    "level_id": 10,
+    "juz_number": 1,
+    "session_number": 6,
+    "order_in_level": 6,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة البقرة على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        1
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 62,
+      "to_surah": "البقرة",
+      "to_verse": 76
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 1 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L10_J1_S7",
+    "level_id": 10,
+    "juz_number": 1,
+    "session_number": 7,
+    "order_in_level": 7,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة البقرة من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        1
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 1 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 11,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L10_J1_S8",
+    "level_id": 10,
+    "juz_number": 1,
+    "session_number": 8,
+    "order_in_level": 8,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 77,
+      "to_surah": "البقرة",
+      "to_verse": 90
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 1,
+      "to_surah": "التوبة",
+      "to_verse": 129
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 1 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 5,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L10_J1_S9",
+    "level_id": 10,
+    "juz_number": 1,
+    "session_number": 9,
+    "order_in_level": 9,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 91,
+      "to_surah": "البقرة",
+      "to_verse": 109
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 77,
+      "to_surah": "البقرة",
+      "to_verse": 90
+    },
+    "distant_review_content": {
+      "from_surah": "يونس",
+      "from_verse": 1,
+      "to_surah": "هود",
+      "to_verse": 123
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 1 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 6,
+      "raw_session_number": 9
+    }
+  },
+  {
+    "id": "L10_J1_S10",
+    "level_id": 10,
+    "juz_number": 1,
+    "session_number": 10,
+    "order_in_level": 10,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 110,
+      "to_surah": "البقرة",
+      "to_verse": 126
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 77,
+      "to_surah": "البقرة",
+      "to_verse": 109
+    },
+    "distant_review_content": {
+      "from_surah": "يوسف",
+      "from_verse": 1,
+      "to_surah": "إبراهيم",
+      "to_verse": 52
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 1 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 7,
+      "raw_session_number": 10
+    }
+  },
+  {
+    "id": "L10_J1_S11",
+    "level_id": 10,
+    "juz_number": 1,
+    "session_number": 11,
+    "order_in_level": 11,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 127,
+      "to_surah": "البقرة",
+      "to_verse": 141
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 91,
+      "to_surah": "البقرة",
+      "to_verse": 126
+    },
+    "distant_review_content": {
+      "from_surah": "الحجر",
+      "from_verse": 1,
+      "to_surah": "الإسراء",
+      "to_verse": 53
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 1 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 8,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L10_J1_S12",
+    "level_id": 10,
+    "juz_number": 1,
+    "session_number": 12,
+    "order_in_level": 12,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 127,
+      "to_surah": "البقرة",
+      "to_verse": 141
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 110,
+      "to_surah": "البقرة",
+      "to_verse": 141
+    },
+    "distant_review_content": {
+      "from_surah": "الإسراء",
+      "from_verse": 54,
+      "to_surah": "مريم",
+      "to_verse": 98
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 1 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 9,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L10_J1_S13",
+    "level_id": 10,
+    "juz_number": 1,
+    "session_number": 13,
+    "order_in_level": 13,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة البقرة على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        1
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 127,
+      "to_surah": "البقرة",
+      "to_verse": 141
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 1 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 10,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L10_J1_S14",
+    "level_id": 10,
+    "juz_number": 1,
+    "session_number": 14,
+    "order_in_level": 14,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة  البقرة من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        1
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 1 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 11,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L10_J1_S15",
+    "level_id": 10,
+    "juz_number": 1,
+    "session_number": 15,
+    "order_in_level": 15,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد سورة البقرة من 1 : 141  على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        1
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 1 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 12,
+      "raw_session_number": 15
+    }
+  },
+  {
+    "id": "L10_J1_S16",
+    "level_id": 10,
+    "juz_number": 1,
+    "session_number": 16,
+    "order_in_level": 16,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار في سورة  البقرة من 1 : 141  من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        1
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 1 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 13,
+      "raw_session_number": 16
+    }
+  },
+  {
+    "id": "L10_J2_S1",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 1,
+    "order_in_level": 17,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 142,
+      "to_surah": "البقرة",
+      "to_verse": 158
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "طه",
+      "from_verse": 1,
+      "to_surah": "الحج",
+      "to_verse": 78
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L10_J2_S2",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 2,
+    "order_in_level": 18,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 159,
+      "to_surah": "البقرة",
+      "to_verse": 176
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 142,
+      "to_surah": "البقرة",
+      "to_verse": 158
+    },
+    "distant_review_content": {
+      "from_surah": "المؤمنون",
+      "from_verse": 1,
+      "to_surah": "الفرقان",
+      "to_verse": 77
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L10_J2_S3",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 3,
+    "order_in_level": 19,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 177,
+      "to_surah": "البقرة",
+      "to_verse": 187
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 142,
+      "to_surah": "البقرة",
+      "to_verse": 176
+    },
+    "distant_review_content": {
+      "from_surah": "الشعراء",
+      "from_verse": 1,
+      "to_surah": "القصص",
+      "to_verse": 88
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L10_J2_S4",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 4,
+    "order_in_level": 20,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 188,
+      "to_surah": "البقرة",
+      "to_verse": 202
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 159,
+      "to_surah": "البقرة",
+      "to_verse": 187
+    },
+    "distant_review_content": {
+      "from_surah": "العنكبوت",
+      "from_verse": 1,
+      "to_surah": "الاحزاب",
+      "to_verse": 73
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L10_J2_S5",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 5,
+    "order_in_level": 21,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 188,
+      "to_surah": "البقرة",
+      "to_verse": 202
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 177,
+      "to_surah": "البقرة",
+      "to_verse": 202
+    },
+    "distant_review_content": {
+      "from_surah": "سبأ",
+      "from_verse": 1,
+      "to_surah": "ص",
+      "to_verse": 88
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L10_J2_S6",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 6,
+    "order_in_level": 22,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة البقرة من 142 : 202 على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        2
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 188,
+      "to_surah": "البقرة",
+      "to_verse": 202
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L10_J2_S7",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 7,
+    "order_in_level": 23,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة البقرة  من 142 : 202 من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        2
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 11,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L10_J2_S8",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 8,
+    "order_in_level": 24,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 203,
+      "to_surah": "البقرة",
+      "to_verse": 217
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "الزمر",
+      "from_verse": 1,
+      "to_surah": "فصلت",
+      "to_verse": 54
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 5,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L10_J2_S9",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 9,
+    "order_in_level": 25,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 218,
+      "to_surah": "البقرة",
+      "to_verse": 230
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 203,
+      "to_surah": "البقرة",
+      "to_verse": 217
+    },
+    "distant_review_content": {
+      "from_surah": "الشورى",
+      "from_verse": 1,
+      "to_surah": "الجاثية",
+      "to_verse": 37
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 6,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L10_J2_S10",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 10,
+    "order_in_level": 26,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 231,
+      "to_surah": "البقرة",
+      "to_verse": 241
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 203,
+      "to_surah": "البقرة",
+      "to_verse": 230
+    },
+    "distant_review_content": {
+      "from_surah": "الأحقاف",
+      "from_verse": 1,
+      "to_surah": "ق",
+      "to_verse": 45
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 7,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L10_J2_S11",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 11,
+    "order_in_level": 27,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 242,
+      "to_surah": "البقرة",
+      "to_verse": 252
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 218,
+      "to_surah": "البقرة",
+      "to_verse": 241
+    },
+    "distant_review_content": {
+      "from_surah": "الذاريات",
+      "from_verse": 1,
+      "to_surah": "الحديد",
+      "to_verse": 29
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 8,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L10_J2_S12",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 12,
+    "order_in_level": 28,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 242,
+      "to_surah": "البقرة",
+      "to_verse": 252
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 231,
+      "to_surah": "البقرة",
+      "to_verse": 252
+    },
+    "distant_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 1,
+      "to_surah": "نوح",
+      "to_verse": 28
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 9,
+      "raw_session_number": 15
+    }
+  },
+  {
+    "id": "L10_J2_S13",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 13,
+    "order_in_level": 29,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 242,
+      "to_surah": "البقرة",
+      "to_verse": 252
+    },
+    "distant_review_content": {
+      "from_surah": "الجن",
+      "from_verse": 1,
+      "to_surah": "الناس",
+      "to_verse": 6
+    },
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 10,
+      "raw_session_number": 16
+    }
+  },
+  {
+    "id": "L10_J2_S14",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 14,
+    "order_in_level": 30,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة البقرة 203 : 252 على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        2
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 11,
+      "raw_session_number": 19
+    }
+  },
+  {
+    "id": "L10_J2_S15",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 15,
+    "order_in_level": 31,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة  البقرة 203 : 252  من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        2
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 12,
+      "raw_session_number": 20
+    }
+  },
+  {
+    "id": "L10_J2_S16",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 16,
+    "order_in_level": 32,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد سورة البقرة من 142 : 252 على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        2
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 13,
+      "raw_session_number": 21
+    }
+  },
+  {
+    "id": "L10_J2_S17",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 17,
+    "order_in_level": 33,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار في سورة البقرة من 142 : 252 من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        2
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 14,
+      "raw_session_number": 22
+    }
+  },
+  {
+    "id": "L10_J2_S18",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 18,
+    "order_in_level": 34,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "سرد من في سورة البقرة من 1 : 252 على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        1,
+        2
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 15,
+      "raw_session_number": 23
+    }
+  },
+  {
+    "id": "L10_J2_S19",
+    "level_id": 10,
+    "juz_number": 2,
+    "session_number": 19,
+    "order_in_level": 35,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "اختبار من سورة البقرة من 1 : 252 من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        1,
+        2
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 16,
+      "raw_session_number": 24
+    }
+  },
+  {
+    "id": "L10_J3_S1",
+    "level_id": 10,
+    "juz_number": 3,
+    "session_number": 1,
+    "order_in_level": 36,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 253,
+      "to_surah": "البقرة",
+      "to_verse": 261
+    },
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 3 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L10_J3_S2",
+    "level_id": 10,
+    "juz_number": 3,
+    "session_number": 2,
+    "order_in_level": 37,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 262,
+      "to_surah": "البقرة",
+      "to_verse": 274
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 253,
+      "to_surah": "البقرة",
+      "to_verse": 261
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 3 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L10_J3_S3",
+    "level_id": 10,
+    "juz_number": 3,
+    "session_number": 3,
+    "order_in_level": 38,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 275,
+      "to_surah": "البقرة",
+      "to_verse": 286
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 253,
+      "to_surah": "البقرة",
+      "to_verse": 274
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 3 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L10_J3_S4",
+    "level_id": 10,
+    "juz_number": 3,
+    "session_number": 4,
+    "order_in_level": 39,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البقرة",
+      "from_verse": 275,
+      "to_surah": "البقرة",
+      "to_verse": 286
+    },
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 262,
+      "to_surah": "البقرة",
+      "to_verse": 286
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 3 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L10_J3_S5",
+    "level_id": 10,
+    "juz_number": 3,
+    "session_number": 5,
+    "order_in_level": 40,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "البقرة",
+      "from_verse": 275,
+      "to_surah": "البقرة",
+      "to_verse": 286
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 3 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L10_J3_S6",
+    "level_id": 10,
+    "juz_number": 3,
+    "session_number": 6,
+    "order_in_level": 41,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة البقرة 253 : 286 على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        3
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 3 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L10_J3_S7",
+    "level_id": 10,
+    "juz_number": 3,
+    "session_number": 7,
+    "order_in_level": 42,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة  البقرة 253 : 286  من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        3
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 3 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 11,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L10_J3_S8",
+    "level_id": 10,
+    "juz_number": 3,
+    "session_number": 8,
+    "order_in_level": 43,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "سرد من في سورة البقرة من 1 : 286 على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        1,
+        2,
+        3
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 3 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 12,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L10_J3_S9",
+    "level_id": 10,
+    "juz_number": 3,
+    "session_number": 9,
+    "order_in_level": 44,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "اختبار من سورة البقرة من 1 : 286 من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        1,
+        2,
+        3
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 3 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 13,
+      "raw_session_number": 9
+    }
+  }
+]

@@ -452,7 +452,7 @@ class TeacherRobot extends TestRobot {
 
   /// Verify the teacher is blocked from conducting Sard (#29 / #44).
   ///
-  /// At a Sard session (session 35) a teacher sees a read-only notice and the
+  /// At a سرد a teacher sees a read-only notice and the
   /// "بدء السرد" action is absent — Sard is supervisor-only. This asserts both
   /// the presence of the notice and the absence of the start button.
   Future<void> verifySardBlockedForTeacher() async {
@@ -636,6 +636,21 @@ class SupervisorRobot extends TestRobot {
     expect(find.textContaining('نتيجة'), findsWidgets);
   }
 
+  /// Save the exam result on the result screen. Stops one pump short of
+  /// settling so the success snackbar is still on-screen for the assertion.
+  Future<void> saveExamResult() async {
+    final finder = find.text('حفظ النتيجة');
+    await tester.scrollUntilVisible(
+      finder,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await pumpAndSettle();
+    await tester.tap(finder);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+  }
+
   /// Verify pass result
   Future<void> verifyPassResult() async {
     await pumpAndSettle();
@@ -692,7 +707,7 @@ class SupervisorRobot extends TestRobot {
 
   /// Verify the supervisor is offered the Sard entry point (#29 / #44).
   ///
-  /// At a Sard session (35) a supervisor sees the "بدء السرد" action and does
+  /// At a سرد a supervisor sees the "بدء السرد" action and does
   /// NOT see the teacher-only read-only notice — the exact inverse of
   /// [TeacherRobot.verifySardBlockedForTeacher]. The button can sit below the
   /// fold on smaller emulator screens, so scroll it into view before asserting.

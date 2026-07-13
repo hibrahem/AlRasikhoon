@@ -18,23 +18,24 @@ import 'package:al_rasikhoon/features/teacher/screens/recitation_screen.dart';
 ///   4. the Arabic mode label is still shown (color is never the only signal).
 
 QuranContent _content() => const QuranContent(
-      fromSurah: 'البقرة',
-      fromVerse: 1,
-      toSurah: 'البقرة',
-      toVerse: 5,
-    );
+  fromSurah: 'البقرة',
+  fromVerse: 1,
+  toSurah: 'البقرة',
+  toVerse: 5,
+);
 
 SessionModel _session() => SessionModel(
-      id: 's1',
-      sessionNumber: 1,
-      levelId: 1,
-      juzNumber: 1,
-      hizbNumber: 1,
-      sessionType: SessionType.regular,
-      currentLevelContent: _content(),
-      recentReviewContent: _content(),
-      distantReviewContent: _content(),
-    );
+  id: 'L1_J30_S1',
+  sessionNumber: 1,
+  levelId: 1,
+  juzNumber: 30,
+  orderInLevel: 1,
+  hizbNumber: 59,
+  kind: SessionKind.lesson,
+  currentLevelContent: _content(),
+  recentReviewContent: _content(),
+  distantReviewContent: _content(),
+);
 
 Future<void> _pumpRecitation(WidgetTester tester, int part) async {
   // Give the surface enough height; the recitation body uses Spacer + fixed
@@ -47,8 +48,9 @@ Future<void> _pumpRecitation(WidgetTester tester, int part) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        studentCurrentSessionProvider('student1')
-            .overrideWith((ref) async => _session()),
+        studentCurrentSessionProvider(
+          'student1',
+        ).overrideWith((ref) async => _session()),
       ],
       child: MaterialApp(
         home: RecitationScreen(studentId: 'student1', part: part),
@@ -93,16 +95,18 @@ void main() {
       final expectedColor = entry.value.$1;
       final expectedLabel = entry.value.$2;
 
-      testWidgets('part $part app bar uses its token + keeps the Arabic label',
-          (tester) async {
-        await _pumpRecitation(tester, part);
+      testWidgets(
+        'part $part app bar uses its token + keeps the Arabic label',
+        (tester) async {
+          await _pumpRecitation(tester, part);
 
-        final appBar = tester.widget<AppBar>(find.byType(AppBar));
-        expect(appBar.backgroundColor, expectedColor);
+          final appBar = tester.widget<AppBar>(find.byType(AppBar));
+          expect(appBar.backgroundColor, expectedColor);
 
-        // Color is never the only signal — the Arabic mode label is present.
-        expect(find.text(expectedLabel), findsWidgets);
-      });
+          // Color is never the only signal — the Arabic mode label is present.
+          expect(find.text(expectedLabel), findsWidgets);
+        },
+      );
     }
   });
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/grade_calculator.dart';
+import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../routing/app_router.dart';
@@ -45,26 +46,42 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
       // Resolve through the supervisor's institute scope (AgDR-0003) — Sard is
       // supervisor-only (#29), and supervisor-created students have
       // teacher_id: null, so the teacher-scoped lookup would fail (#45).
-      final studentAsync =
-          await ref.read(supervisorStudentProvider(widget.studentId).future);
+      final studentAsync = await ref.read(
+        supervisorStudentProvider(widget.studentId).future,
+      );
       if (studentAsync == null) throw Exception('Student not found');
 
       final student = studentAsync.student;
       final sessionRepo = ref.read(sessionRepositoryProvider);
       final studentRepo = ref.read(studentRepositoryProvider);
 
-      // Get attempt count
+      // The سرد is recorded with the SCOPE the curriculum gives it: its tier,
+      // the juz it covers, the hizb LABEL if it has one, and the source's own
+      // Arabic wording. A record keyed on a hizb cannot represent a juz- or
+      // level-tier سرد at all.
+      final session = await ref
+          .read(curriculumRepositoryProvider)
+          .getSessionById(student.currentSessionId);
+      final scope = session?.scope;
+      if (session == null || !session.isSard || scope == null) {
+        throw Exception('الحلقة الحالية للطالب ليست سردًا في المنهج');
+      }
+
+      // Attempts are counted per curriculum session — and never capped: an
+      // assessment may be retried without limit.
       final attemptCount = await sessionRepo.getSardAttemptCount(
         studentId: student.id,
-        hizbNumber: student.currentHizb,
+        curriculumSessionId: session.id,
       );
 
-      // Create sard record
       final record = await sessionRepo.createSardRecord(
         studentId: student.id,
         teacherId: currentUser.id,
-        hizbNumber: student.currentHizb,
-        juzNumber: student.currentJuz,
+        curriculumSessionId: session.id,
+        tier: scope.tier,
+        juzNumbers: scope.juzNumbers,
+        hizbNumber: scope.hizbNumber,
+        scopeLabelAr: scope.labelAr,
         levelId: student.currentLevel,
         attemptNumber: attemptCount + 1,
         errorCount: widget.errorCount,
@@ -74,11 +91,25 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
       );
 
       // Update student progress
+      StudentAdvanceOutcome? advanceOutcome;
       if (record.passed) {
-        await studentRepo.advanceStudentSession(student.id);
+        advanceOutcome = await studentRepo.advanceStudentSession(student.id);
       } else {
         await studentRepo.incrementStudentAttempt(student.id);
       }
+
+      // The four outcomes are four different things, and the supervisor is told
+      // which: a pass that MOVED the student, a pass that FINISHED the
+      // curriculum, and a pass that could not move them at all (a hole in the
+      // seeded data, or a student that vanished) — the last of which must never
+      // be reported as an unqualified success, or the student is left stuck on
+      // the same session forever with nobody the wiser.
+      final progressNotAdvanced =
+          record.passed &&
+          (advanceOutcome == StudentAdvanceOutcome.curriculumDataMissing ||
+              advanceOutcome == StudentAdvanceOutcome.studentNotFound);
+      final curriculumCompleted =
+          advanceOutcome == StudentAdvanceOutcome.curriculumCompleted;
 
       // Invalidate the supervisor's institute-scoped providers so the students
       // list and the resolved student reflect the advanced/incremented state.
@@ -86,14 +117,26 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
       ref.invalidate(supervisorStudentProvider(widget.studentId));
 
       if (mounted) {
+        final String message;
+        final Color background;
+        if (progressNotAdvanced) {
+          message =
+              'تم حفظ النتيجة، لكن تعذر تحديث تقدم الطالب: لا توجد حلقات '
+              'تالية في المنهج.';
+          background = AppColors.error;
+        } else if (curriculumCompleted) {
+          message = 'تم حفظ السرد - ناجح. أتم الطالب المنهج كاملًا.';
+          background = AppColors.success;
+        } else if (record.passed) {
+          message = 'تم حفظ السرد - ناجح';
+          background = AppColors.success;
+        } else {
+          message = 'تم حفظ السرد - راسب';
+          background = AppColors.warning;
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              record.passed ? 'تم حفظ السرد - ناجح' : 'تم حفظ السرد - راسب',
-            ),
-            backgroundColor:
-                record.passed ? AppColors.success : AppColors.warning,
-          ),
+          SnackBar(content: Text(message), backgroundColor: background),
         );
 
         // Navigate back to the supervisor's students list. Sard is a
@@ -119,8 +162,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final studentAsync =
-        ref.watch(supervisorStudentProvider(widget.studentId));
+    final studentAsync = ref.watch(supervisorStudentProvider(widget.studentId));
     // Grade is level-based (hibrahem/AlRasikhoon#22). The level-based grade is
     // only computed once the student value resolves — never from a default
     // level=1 while loading, which would flash a harsher grade (#36).
@@ -141,10 +183,16 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              // Student info
+              // What was recited: the curriculum's own label for this سرد
+              // (`سرد الجزء رقم 30 كاملًا…`), which is exactly what the record
+              // will carry. The student's denormalized label is used, so the
+              // header is right even before the session document resolves.
               studentAsync.when(
                 data: (studentWithUser) {
                   if (studentWithUser == null) return const SizedBox();
+
+                  final label =
+                      studentWithUser.student.currentSessionLabelAr ?? 'السرد';
 
                   return Container(
                     padding: const EdgeInsets.symmetric(
@@ -156,7 +204,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      'سرد الحزب ${studentWithUser.student.currentHizb}',
+                      label,
                       style: Theme.of(context).textTheme.labelLarge,
                     ),
                   );
@@ -222,8 +270,10 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
                   text: 'إعادة السرد',
                   onPressed: () {
                     context.pushReplacement(
-                      AppRoutes.sardSession
-                          .replaceFirst(':studentId', widget.studentId),
+                      AppRoutes.sardSession.replaceFirst(
+                        ':studentId',
+                        widget.studentId,
+                      ),
                     );
                   },
                   type: AppButtonType.outline,

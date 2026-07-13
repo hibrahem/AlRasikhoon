@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/grade_calculator.dart';
+import '../../../data/repositories/student_repository.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
@@ -43,15 +44,30 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
           .read(activeSessionProvider.notifier)
           .completeSession();
 
+      // Read after completeSession() so this reflects the outcome of the
+      // advance it just triggered (null when the record failed, since
+      // progress is never advanced on a fail).
+      final advanceOutcome = ref.read(activeSessionProvider)?.advanceOutcome;
+      final progressNotAdvanced =
+          record != null &&
+          record.passed &&
+          (advanceOutcome == StudentAdvanceOutcome.curriculumDataMissing ||
+              advanceOutcome == StudentAdvanceOutcome.studentNotFound);
+
       if (record != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              record.passed ? 'تم حفظ الحلقة - ناجح' : 'تم حفظ الحلقة - راسب',
+              progressNotAdvanced
+                  ? 'تم حفظ النتيجة، لكن تعذر تحديث تقدم الطالب: لا توجد حلقات '
+                        'تالية في المنهج.'
+                  : (record.passed
+                        ? 'تم حفظ الحلقة - ناجح'
+                        : 'تم حفظ الحلقة - راسب'),
             ),
-            backgroundColor: record.passed
-                ? AppColors.success
-                : AppColors.warning,
+            backgroundColor: progressNotAdvanced
+                ? AppColors.error
+                : (record.passed ? AppColors.success : AppColors.warning),
           ),
         );
 
@@ -121,7 +137,9 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                   child: Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                        backgroundColor: AppColors.primary.withValues(
+                          alpha: 0.1,
+                        ),
                         child: Text(
                           studentWithUser.user.name.isNotEmpty
                               ? studentWithUser.user.name[0]

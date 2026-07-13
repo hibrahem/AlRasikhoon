@@ -64,13 +64,25 @@ final supervisorStudentCurrentSessionProvider =
       final student = studentAsync.student;
       final curriculumRepo = ref.watch(curriculumRepositoryProvider);
 
-      return curriculumRepo.getCurrentSessionForStudent(
-        levelId: student.currentLevel,
-        juzNumber: student.currentJuz,
-        hizbNumber: student.currentHizb,
-        sessionNumber: student.currentSession,
-      );
+      // The student carries the id of the session they stand on
+      // (`L{level}_J{juz}_S{n}`) — a direct read, no id rebuilding.
+      return curriculumRepo.getSessionById(student.currentSessionId);
     });
+
+/// The curriculum session a student in the supervisor's EXAM QUEUE stands on.
+/// The اختبار screens read the assessment's scope (tier, juz, the source's
+/// verbatim Arabic label) off it, so what is being assessed — this hizb, this
+/// juz, or the level so far — is shown and recorded from the data.
+final examSessionProvider = FutureProvider.family<SessionModel?, String>((
+  ref,
+  studentId,
+) async {
+  final studentAsync = await ref.watch(examStudentProvider(studentId).future);
+  if (studentAsync == null) return null;
+
+  final curriculumRepo = ref.watch(curriculumRepositoryProvider);
+  return curriculumRepo.getSessionById(studentAsync.student.currentSessionId);
+});
 
 /// Provider for students ready for exam in supervisor's institutes
 final examQueueProvider = FutureProvider<List<StudentWithUser>>((ref) async {
@@ -81,7 +93,9 @@ final examQueueProvider = FutureProvider<List<StudentWithUser>>((ref) async {
   final studentRepo = ref.watch(studentRepositoryProvider);
 
   // Get supervisor's institutes
-  final institutes = await instituteRepo.getInstitutesForSupervisor(currentUser.id);
+  final institutes = await instituteRepo.getInstitutesForSupervisor(
+    currentUser.id,
+  );
 
   // Get students ready for exam from each institute
   final allStudents = <StudentWithUser>[];
@@ -94,8 +108,10 @@ final examQueueProvider = FutureProvider<List<StudentWithUser>>((ref) async {
 });
 
 /// Provider for a specific student for exam
-final examStudentProvider =
-    FutureProvider.family<StudentWithUser?, String>((ref, studentId) async {
+final examStudentProvider = FutureProvider.family<StudentWithUser?, String>((
+  ref,
+  studentId,
+) async {
   final examQueue = await ref.watch(examQueueProvider.future);
   return examQueue.firstWhere(
     (s) => s.student.id == studentId,
@@ -104,8 +120,9 @@ final examStudentProvider =
 });
 
 /// Provider for supervisor's exam history
-final supervisorExamHistoryProvider =
-    FutureProvider<List<ExamRecordModel>>((ref) async {
+final supervisorExamHistoryProvider = FutureProvider<List<ExamRecordModel>>((
+  ref,
+) async {
   final currentUser = ref.watch(currentUserProvider);
   if (currentUser == null) return [];
 

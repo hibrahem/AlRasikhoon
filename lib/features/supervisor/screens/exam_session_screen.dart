@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_counter.dart';
@@ -11,10 +12,7 @@ import '../providers/supervisor_provider.dart';
 class ExamSessionScreen extends ConsumerStatefulWidget {
   final String studentId;
 
-  const ExamSessionScreen({
-    super.key,
-    required this.studentId,
-  });
+  const ExamSessionScreen({super.key, required this.studentId});
 
   @override
   ConsumerState<ExamSessionScreen> createState() => _ExamSessionScreenState();
@@ -26,6 +24,10 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
   @override
   Widget build(BuildContext context) {
     final studentAsync = ref.watch(examStudentProvider(widget.studentId));
+    // WHAT is being examined comes from the curriculum session the student
+    // stands on — its verbatim label and its tier — never from a hizb: the
+    // juz-30 اختبار covers a whole juz, and the level's اختبار covers three.
+    final session = ref.watch(examSessionProvider(widget.studentId)).value;
 
     return Scaffold(
       appBar: AppBar(
@@ -59,7 +61,9 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                       children: [
                         CircleAvatar(
                           radius: 24,
-                          backgroundColor: AppColors.secondary.withValues(alpha: 0.1),
+                          backgroundColor: AppColors.secondary.withValues(
+                            alpha: 0.1,
+                          ),
                           child: Text(
                             user.name.isNotEmpty ? user.name[0] : '?',
                             style: const TextStyle(
@@ -75,17 +79,12 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                             children: [
                               Text(
                                 user.name,
-                                style:
-                                    Theme.of(context).textTheme.titleMedium,
+                                style: Theme.of(context).textTheme.titleMedium,
                               ),
                               Text(
                                 'المستوى ${student.currentLevel}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: AppColors.textSecondary),
                               ),
                             ],
                           ),
@@ -114,18 +113,15 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'اختبار الحزب ${student.currentHizb}',
-                                style:
-                                    Theme.of(context).textTheme.titleMedium,
+                                session?.titleAr ??
+                                    'اختبار — الجزء ${student.currentJuz}',
+                                style: Theme.of(context).textTheme.titleMedium,
                               ),
                               Text(
-                                'الجزء ${student.currentJuz}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
+                                session?.scopeAr ??
+                                    'الجزء ${student.currentJuz}',
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: AppColors.textSecondary),
                               ),
                             ],
                           ),
@@ -149,13 +145,10 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'اختبر الطالب بأسئلة عشوائية من الحزب',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: AppColors.secondary,
-                                  ),
+                              session?.assessmentInstructionAr ??
+                                  'يختبر المشرف الطالب في المقرر',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.secondary),
                             ),
                           ),
                         ],
@@ -192,8 +185,10 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                   text: 'إنهاء الاختبار',
                   onPressed: () {
                     context.push(
-                      AppRoutes.examResult
-                          .replaceFirst(':studentId', widget.studentId),
+                      AppRoutes.examResult.replaceFirst(
+                        ':studentId',
+                        widget.studentId,
+                      ),
                       extra: _errorCount,
                     );
                   },
@@ -227,9 +222,7 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
               Navigator.pop(context);
               context.pop();
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('نعم، إلغاء'),
           ),
         ],

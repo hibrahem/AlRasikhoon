@@ -13,8 +13,16 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "level_id", "order": "ASCENDING" },
-        { "fieldPath": "hizb_number", "order": "ASCENDING" },
-        { "fieldPath": "session_number", "order": "ASCENDING" }
+        { "fieldPath": "order_in_level", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "sessions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "level_id", "order": "ASCENDING" },
+        { "fieldPath": "juz_number", "order": "ASCENDING" },
+        { "fieldPath": "order_in_level", "order": "ASCENDING" }
       ]
     },
     {
@@ -23,6 +31,15 @@
       "fields": [
         { "fieldPath": "institute_id", "order": "ASCENDING" },
         { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "students",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "institute_id", "order": "ASCENDING" },
+        { "fieldPath": "current_session_kind", "order": "ASCENDING" },
+        { "fieldPath": "is_active", "order": "ASCENDING" }
       ]
     },
     {
@@ -72,7 +89,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "student_id", "order": "ASCENDING" },
-        { "fieldPath": "hizb_number", "order": "ASCENDING" }
+        { "fieldPath": "curriculum_session_id", "order": "ASCENDING" }
       ]
     },
     {
@@ -96,7 +113,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "student_id", "order": "ASCENDING" },
-        { "fieldPath": "hizb_number", "order": "ASCENDING" }
+        { "fieldPath": "curriculum_session_id", "order": "ASCENDING" }
       ]
     },
     {

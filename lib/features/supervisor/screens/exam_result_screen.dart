@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/grade_calculator.dart';
+import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../routing/app_router.dart';
@@ -42,26 +43,42 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
       final currentUser = ref.read(currentUserProvider);
       if (currentUser == null) throw Exception('User not authenticated');
 
-      final studentAsync =
-          await ref.read(examStudentProvider(widget.studentId).future);
+      final studentAsync = await ref.read(
+        examStudentProvider(widget.studentId).future,
+      );
       if (studentAsync == null) throw Exception('Student not found');
 
       final student = studentAsync.student;
       final sessionRepo = ref.read(sessionRepositoryProvider);
       final studentRepo = ref.read(studentRepositoryProvider);
 
-      // Get attempt count
+      // The اختبار is recorded with the SCOPE the curriculum gives it: its
+      // tier, the juz it covers, the hizb LABEL if it has one, and the source's
+      // own Arabic wording. A record keyed on a hizb cannot represent a juz- or
+      // level-tier اختبار at all.
+      final session = await ref
+          .read(curriculumRepositoryProvider)
+          .getSessionById(student.currentSessionId);
+      final scope = session?.scope;
+      if (session == null || !session.isExam || scope == null) {
+        throw Exception('الحلقة الحالية للطالب ليست اختبارًا في المنهج');
+      }
+
+      // Attempts are counted per curriculum session — and never capped: an
+      // assessment may be retried without limit.
       final attemptCount = await sessionRepo.getExamAttemptCount(
         studentId: student.id,
-        hizbNumber: student.currentHizb,
+        curriculumSessionId: session.id,
       );
 
-      // Create exam record
       final record = await sessionRepo.createExamRecord(
         studentId: student.id,
         supervisorId: currentUser.id,
-        hizbNumber: student.currentHizb,
-        juzNumber: student.currentJuz,
+        curriculumSessionId: session.id,
+        tier: scope.tier,
+        juzNumbers: scope.juzNumbers,
+        hizbNumber: scope.hizbNumber,
+        scopeLabelAr: scope.labelAr,
         levelId: student.currentLevel,
         attemptNumber: attemptCount + 1,
         errorCount: widget.errorCount,
@@ -71,27 +88,50 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
       );
 
       // Update student progress
+      StudentAdvanceOutcome? advanceOutcome;
       if (record.passed) {
-        await studentRepo.advanceStudentSession(student.id);
+        advanceOutcome = await studentRepo.advanceStudentSession(student.id);
       } else {
         await studentRepo.incrementStudentAttempt(student.id);
       }
+
+      // The four outcomes are four different things, and the supervisor is told
+      // which: a pass that MOVED the student, a pass that FINISHED the
+      // curriculum, and a pass that could not move them at all (a hole in the
+      // seeded data, or a student that vanished) — the last of which must never
+      // be reported as an unqualified success.
+      final progressNotAdvanced =
+          record.passed &&
+          (advanceOutcome == StudentAdvanceOutcome.curriculumDataMissing ||
+              advanceOutcome == StudentAdvanceOutcome.studentNotFound);
+      final curriculumCompleted =
+          advanceOutcome == StudentAdvanceOutcome.curriculumCompleted;
 
       // Invalidate providers
       ref.invalidate(examQueueProvider);
       ref.invalidate(supervisorStatsProvider);
 
       if (mounted) {
+        final String message;
+        final Color background;
+        if (progressNotAdvanced) {
+          message =
+              'تم حفظ النتيجة، لكن تعذر تحديث تقدم الطالب: لا توجد حلقات '
+              'تالية في المنهج.';
+          background = AppColors.error;
+        } else if (curriculumCompleted) {
+          message = 'تم حفظ الاختبار - ناجح. أتم الطالب المنهج كاملًا.';
+          background = AppColors.success;
+        } else if (record.passed) {
+          message = 'تم حفظ الاختبار - ناجح';
+          background = AppColors.success;
+        } else {
+          message = 'تم حفظ الاختبار - راسب';
+          background = AppColors.warning;
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              record.passed
-                  ? 'تم حفظ الاختبار - ناجح'
-                  : 'تم حفظ الاختبار - راسب',
-            ),
-            backgroundColor:
-                record.passed ? AppColors.success : AppColors.warning,
-          ),
+          SnackBar(content: Text(message), backgroundColor: background),
         );
 
         // Navigate back to exam queue
@@ -150,8 +190,10 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
                       color: AppColors.surfaceVariant,
                       borderRadius: BorderRadius.circular(20),
                     ),
+                    // What was examined: the curriculum's own label for this
+                    // اختبار — the same wording the record will carry.
                     child: Text(
-                      'اختبار الحزب ${studentWithUser.student.currentHizb} - ${studentWithUser.user.name}',
+                      '${studentWithUser.student.currentSessionLabelAr ?? 'الاختبار'} - ${studentWithUser.user.name}',
                       style: Theme.of(context).textTheme.labelLarge,
                     ),
                   );
@@ -218,8 +260,10 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
                   text: 'إعادة الاختبار',
                   onPressed: () {
                     context.pushReplacement(
-                      AppRoutes.examSession
-                          .replaceFirst(':studentId', widget.studentId),
+                      AppRoutes.examSession.replaceFirst(
+                        ':studentId',
+                        widget.studentId,
+                      ),
                     );
                   },
                   type: AppButtonType.outline,

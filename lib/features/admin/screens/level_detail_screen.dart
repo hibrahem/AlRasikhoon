@@ -50,10 +50,7 @@ class LevelDetailScreen extends ConsumerWidget {
                 orElse: () => const SizedBox.shrink(),
               ),
               const SizedBox(height: 16),
-              Text(
-                'الحلقات',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              Text('الحلقات', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 12),
               ...sessions.map((session) => _SessionCard(session: session)),
             ],
@@ -112,8 +109,8 @@ class _LevelHeader extends StatelessWidget {
                 Text(
                   '$juzRangeAr • $sessionCount حلقة',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -131,9 +128,11 @@ class _SessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentRange = session.currentLevelContent.rangeAr;
-    final recentRange = session.recentReviewContent.rangeAr;
-    final distantRange = session.distantReviewContent.rangeAr;
+    // Content blocks are legitimately absent (assessments carry none) — an
+    // absent block is simply not listed.
+    final currentRange = session.currentLevelContent?.rangeAr ?? '';
+    final recentRange = session.recentReviewContent?.rangeAr ?? '';
+    final distantRange = session.distantReviewContent?.rangeAr ?? '';
 
     return AppCard(
       margin: const EdgeInsets.only(bottom: 12),
@@ -148,16 +147,19 @@ class _SessionCard extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
               ),
-              _SessionTypeChip(type: session.sessionType),
+              _SessionKindChip(kind: session.kind),
             ],
           ),
           const SizedBox(height: 4),
           Text(
-            'الجزء ${session.juzNumber} • الحزب ${session.hizbNumber}',
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(color: AppColors.textSecondary),
+            // Never an app-derived hizb: `session.titleAr` above may already
+            // be the assessment's own verbatim label, and level 2's
+            // structural hizb is known to disagree with it for the same
+            // session. The juz is always consistent with the data.
+            'الجزء ${session.juzNumber}',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
           ),
           if (currentRange.isNotEmpty ||
               recentRange.isNotEmpty ||
@@ -195,17 +197,13 @@ class _ContentRow extends StatelessWidget {
             width: 110,
             child: Text(
               label,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: AppColors.textSecondary),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
             ),
           ),
           Expanded(
-            child: Text(
-              range,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            child: Text(range, style: Theme.of(context).textTheme.bodyMedium),
           ),
         ],
       ),
@@ -213,22 +211,24 @@ class _ContentRow extends StatelessWidget {
   }
 }
 
-class _SessionTypeChip extends StatelessWidget {
-  final SessionType type;
+/// What a session IS — حلقة, سرد or اختبار — as the curriculum states it in the
+/// session's `kind`. Never inferred from the session number.
+class _SessionKindChip extends StatelessWidget {
+  final SessionKind kind;
 
-  const _SessionTypeChip({required this.type});
+  const _SessionKindChip({required this.kind});
 
   @override
   Widget build(BuildContext context) {
     final Color color;
-    switch (type) {
-      case SessionType.sard:
+    switch (kind) {
+      case SessionKind.sard:
         color = AppColors.info;
         break;
-      case SessionType.exam:
+      case SessionKind.exam:
         color = AppColors.warning;
         break;
-      case SessionType.regular:
+      case SessionKind.lesson:
         color = AppColors.primary;
         break;
     }
@@ -239,7 +239,7 @@ class _SessionTypeChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        type.nameAr,
+        kind.nameAr,
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,
@@ -277,10 +277,9 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'لم تتم إضافة أي حلقات للمستوى $levelNumber بعد.',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: AppColors.textSecondary),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
           ],

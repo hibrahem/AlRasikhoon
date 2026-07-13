@@ -147,12 +147,9 @@ final adminStudentCurrentSessionProvider =
       final student = studentWithUser.student;
       final curriculumRepo = ref.watch(curriculumRepositoryProvider);
 
-      return curriculumRepo.getCurrentSessionForStudent(
-        levelId: student.currentLevel,
-        juzNumber: student.currentJuz,
-        hizbNumber: student.currentHizb,
-        sessionNumber: student.currentSession,
-      );
+      // The student carries the id of the session they stand on
+      // (`L{level}_J{juz}_S{n}`) — a direct read, no id rebuilding.
+      return curriculumRepo.getSessionById(student.currentSessionId);
     });
 
 /// Recent session records for a student (admin-only view).

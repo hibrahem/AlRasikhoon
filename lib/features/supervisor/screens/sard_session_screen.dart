@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_counter.dart';
@@ -11,10 +12,7 @@ import '../providers/supervisor_provider.dart';
 class SardSessionScreen extends ConsumerStatefulWidget {
   final String studentId;
 
-  const SardSessionScreen({
-    super.key,
-    required this.studentId,
-  });
+  const SardSessionScreen({super.key, required this.studentId});
 
   @override
   ConsumerState<SardSessionScreen> createState() => _SardSessionScreenState();
@@ -29,7 +27,14 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
     // supervisor's institute scope (AgDR-0003) so supervisor-created students
     // (teacher_id: null) resolve — the teacher-scoped studentProvider would
     // return "Student not found" for them (#45).
-    final studentAsync = ref.watch(supervisorStudentProvider(widget.studentId));
+    //
+    // WHAT is being recited comes from the curriculum session the student
+    // stands on: its verbatim label and its tier. A juz-tier سرد covers a whole
+    // juz and a cumulative one the whole level, so neither can be called "the
+    // hizb".
+    final sessionAsync = ref.watch(
+      supervisorStudentCurrentSessionProvider(widget.studentId),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -41,13 +46,13 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
           },
         ),
       ),
-      body: studentAsync.when(
-        data: (studentWithUser) {
-          if (studentWithUser == null) {
-            return const Center(child: Text('الطالب غير موجود'));
+      body: sessionAsync.when(
+        data: (session) {
+          if (session == null || !session.isSard) {
+            return const Center(
+              child: Text('لا توجد بيانات للسرد في هذه الحلقة'),
+            );
           }
-
-          final student = studentWithUser.student;
 
           return Column(
             children: [
@@ -76,19 +81,17 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // The curriculum's own words for this سرد.
                               Text(
-                                'سرد الحزب ${student.currentHizb}',
-                                style:
-                                    Theme.of(context).textTheme.titleMedium,
+                                session.titleAr,
+                                style: Theme.of(context).textTheme.titleMedium,
                               ),
+                              // And what it covers: this hizb, this juz, or the
+                              // level so far.
                               Text(
-                                'الجزء ${student.currentJuz}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
+                                session.scopeAr,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: AppColors.textSecondary),
                               ),
                             ],
                           ),
@@ -112,13 +115,9 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'يقوم الطالب بسرد كامل الحزب من الذاكرة دون النظر للمصحف',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: AppColors.info,
-                                  ),
+                              session.assessmentInstructionAr,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.info),
                             ),
                           ),
                         ],
@@ -155,8 +154,10 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
                   text: 'إنهاء السرد',
                   onPressed: () {
                     context.push(
-                      AppRoutes.sardResult
-                          .replaceFirst(':studentId', widget.studentId),
+                      AppRoutes.sardResult.replaceFirst(
+                        ':studentId',
+                        widget.studentId,
+                      ),
                       extra: _errorCount,
                     );
                   },
@@ -189,9 +190,7 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
               Navigator.pop(context);
               context.pop();
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('نعم، إلغاء'),
           ),
         ],

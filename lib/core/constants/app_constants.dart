@@ -7,19 +7,17 @@ class AppConstants {
   static const String version = '1.0.0';
 
   // Curriculum
+  // Session counts are DATA — they vary per juz and per level, and live in the
+  // levels catalog (`levels.json` / the `levels` collection). Nothing here may
+  // pretend to know them, and a session's kind is NEVER inferred from its
+  // number: the old `sessionsPerHizb = 36`, `sardSessionNumber = 35`,
+  // `examSessionNumber = 36` were exactly that mistake.
   static const int totalLevels = 10;
-  static const int totalSessions = 1453;
-  static const int hizbsPerLevel = 6;
-  static const int sessionsPerHizb = 36; // 34 regular + sard + exam
 
-  // Session types
-  static const String sessionTypeRegular = 'regular';
-  static const String sessionTypeSard = 'sard';
-  static const String sessionTypeExam = 'exam';
-
-  // Session numbers
-  static const int sardSessionNumber = 35;
-  static const int examSessionNumber = 36;
+  // Session kinds
+  static const String sessionKindLesson = 'lesson';
+  static const String sessionKindSard = 'sard';
+  static const String sessionKindExam = 'exam';
 
   // Grading thresholds (per spec)
   // راسخ: 0 errors, متقن: 1-2, حافظ: 3-4, مجتهد: 5-6, محب: 7+
@@ -31,9 +29,9 @@ class AppConstants {
   // 7+ errors = Muhib (1 star, fail)
 
   // Attempt limits
+  // Lessons only. Assessments (سرد and اختبار, at every tier) may be retried
+  // without limit — a student who cannot yet recite a juz keeps working at it.
   static const int maxSessionAttempts = 3;
-  static const int maxSardAttempts = 3;
-  static const int maxExamAttempts = 3;
 
   // User roles
   static const String roleSuperAdmin = 'super_admin';

@@ -64,12 +64,9 @@ final studentDashboardSessionProvider = FutureProvider<SessionModel?>((
   if (student == null) return null;
 
   final repo = ref.watch(curriculumRepositoryProvider);
-  return repo.getCurrentSessionForStudent(
-    levelId: student.currentLevel,
-    juzNumber: student.currentJuz,
-    hizbNumber: student.currentHizb,
-    sessionNumber: student.currentSession,
-  );
+  // The student carries the id of the session they stand on
+  // (`L{level}_J{juz}_S{n}`) — a direct read, no id rebuilding.
+  return repo.getSessionById(student.currentSessionId);
 });
 
 /// Provider for student's session history
@@ -104,6 +101,7 @@ final studentStatsProvider = FutureProvider<StudentStats>((ref) async {
     currentJuz: student.currentJuz,
     currentHizb: student.currentHizb,
     currentSession: student.currentSession,
+    currentOrderInLevel: student.currentOrderInLevel,
     totalSessions: stats['total_sessions'] ?? 0,
     passedSessions: stats['passed_sessions'] ?? 0,
     completedLevelsList: student.completedLevels,
@@ -114,8 +112,14 @@ final studentStatsProvider = FutureProvider<StudentStats>((ref) async {
 class StudentStats {
   final int currentLevel;
   final int currentJuz;
-  final int currentHizb;
+
+  /// A LABEL, and only in levels 1-2 — null elsewhere. Never identity.
+  final int? currentHizb;
   final int currentSession;
+
+  /// Where the student stands within the level — the numerator of the level
+  /// progress bar, whose denominator is the level's real session count.
+  final int currentOrderInLevel;
   final int totalSessions;
   final int passedSessions;
   final List<int> completedLevelsList;
@@ -124,8 +128,9 @@ class StudentStats {
   const StudentStats({
     this.currentLevel = 1,
     this.currentJuz = 30,
-    this.currentHizb = 59,
+    this.currentHizb,
     this.currentSession = 1,
+    this.currentOrderInLevel = 1,
     this.totalSessions = 0,
     this.passedSessions = 0,
     this.completedLevelsList = const [],

@@ -1,0 +1,2003 @@
+[
+  {
+    "id": "L8_J9_S1",
+    "level_id": 8,
+    "juz_number": 9,
+    "session_number": 1,
+    "order_in_level": 1,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 1,
+      "to_surah": "الأنفال",
+      "to_verse": 16
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "التوبة",
+      "from_verse": 1,
+      "to_surah": "التوبة",
+      "to_verse": 68
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 9 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L8_J9_S2",
+    "level_id": 8,
+    "juz_number": 9,
+    "session_number": 2,
+    "order_in_level": 2,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 17,
+      "to_surah": "الأنفال",
+      "to_verse": 33
+    },
+    "recent_review_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 1,
+      "to_surah": "الأنفال",
+      "to_verse": 16
+    },
+    "distant_review_content": {
+      "from_surah": "التوبة",
+      "from_verse": 69,
+      "to_surah": "التوبة",
+      "to_verse": 129
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 9 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L8_J9_S3",
+    "level_id": 8,
+    "juz_number": 9,
+    "session_number": 3,
+    "order_in_level": 3,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 34,
+      "to_surah": "الأنفال",
+      "to_verse": 40
+    },
+    "recent_review_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 1,
+      "to_surah": "الأنفال",
+      "to_verse": 33
+    },
+    "distant_review_content": {
+      "from_surah": "يونس",
+      "from_verse": 1,
+      "to_surah": "يونس",
+      "to_verse": 109
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 9 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L8_J9_S4",
+    "level_id": 8,
+    "juz_number": 9,
+    "session_number": 4,
+    "order_in_level": 4,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 34,
+      "to_surah": "الأنفال",
+      "to_verse": 40
+    },
+    "recent_review_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 17,
+      "to_surah": "الأنفال",
+      "to_verse": 40
+    },
+    "distant_review_content": {
+      "from_surah": "هود",
+      "from_verse": 1,
+      "to_surah": "هود",
+      "to_verse": 28
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 9 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L8_J9_S5",
+    "level_id": 8,
+    "juz_number": 9,
+    "session_number": 5,
+    "order_in_level": 5,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة الأنفال على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        9
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 34,
+      "to_surah": "الأنفال",
+      "to_verse": 40
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 9 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L8_J9_S6",
+    "level_id": 8,
+    "juz_number": 9,
+    "session_number": 6,
+    "order_in_level": 6,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة الأنفال من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        9
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 9 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L8_J9_S7",
+    "level_id": 8,
+    "juz_number": 9,
+    "session_number": 7,
+    "order_in_level": 7,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 41,
+      "to_surah": "الأنفال",
+      "to_verse": 52
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "يوسف",
+      "from_verse": 1,
+      "to_surah": "يوسف",
+      "to_verse": 111
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 9 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 5,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L8_J9_S8",
+    "level_id": 8,
+    "juz_number": 9,
+    "session_number": 8,
+    "order_in_level": 8,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 53,
+      "to_surah": "الأنفال",
+      "to_verse": 69
+    },
+    "recent_review_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 41,
+      "to_surah": "الأنفال",
+      "to_verse": 52
+    },
+    "distant_review_content": {
+      "from_surah": "الرعد",
+      "from_verse": 1,
+      "to_surah": "إبراهيم",
+      "to_verse": 52
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 9 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 6,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L8_J9_S9",
+    "level_id": 8,
+    "juz_number": 9,
+    "session_number": 9,
+    "order_in_level": 9,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 70,
+      "to_surah": "الأنفال",
+      "to_verse": 75
+    },
+    "recent_review_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 41,
+      "to_surah": "الأنفال",
+      "to_verse": 69
+    },
+    "distant_review_content": {
+      "from_surah": "النحل",
+      "from_verse": 1,
+      "to_surah": "النحل",
+      "to_verse": 72
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 9 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 7,
+      "raw_session_number": 9
+    }
+  },
+  {
+    "id": "L8_J9_S10",
+    "level_id": 8,
+    "juz_number": 9,
+    "session_number": 10,
+    "order_in_level": 10,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 70,
+      "to_surah": "الأنفال",
+      "to_verse": 75
+    },
+    "recent_review_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 53,
+      "to_surah": "الأنفال",
+      "to_verse": 75
+    },
+    "distant_review_content": {
+      "from_surah": "النحل",
+      "from_verse": 73,
+      "to_surah": "الحجر",
+      "to_verse": 99
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 9 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 8,
+      "raw_session_number": 10
+    }
+  },
+  {
+    "id": "L8_J9_S11",
+    "level_id": 8,
+    "juz_number": 9,
+    "session_number": 11,
+    "order_in_level": 11,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة الأنفال على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        9
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "الأنفال",
+      "from_verse": 70,
+      "to_surah": "الأنفال",
+      "to_verse": 75
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 9 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 9,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L8_J9_S12",
+    "level_id": 8,
+    "juz_number": 9,
+    "session_number": 12,
+    "order_in_level": 12,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة  الأنفال من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        9
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 9 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 10,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L8_J9_S13",
+    "level_id": 8,
+    "juz_number": 9,
+    "session_number": 13,
+    "order_in_level": 13,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد سورة الأنفال كاملةَ على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        9
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 9 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 11,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L8_J9_S14",
+    "level_id": 8,
+    "juz_number": 9,
+    "session_number": 14,
+    "order_in_level": 14,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار في سورة الانفال من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        9
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 9 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 12,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L8_J8_S1",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 1,
+    "order_in_level": 15,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 1,
+      "to_surah": "الأعراف",
+      "to_verse": 22
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "الإسراء",
+      "from_verse": 1,
+      "to_surah": "الإسراء",
+      "to_verse": 111
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L8_J8_S2",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 2,
+    "order_in_level": 16,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 23,
+      "to_surah": "الأعراف",
+      "to_verse": 37
+    },
+    "recent_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 1,
+      "to_surah": "الأعراف",
+      "to_verse": 22
+    },
+    "distant_review_content": {
+      "from_surah": "الكهف",
+      "from_verse": 1,
+      "to_surah": "الكهف",
+      "to_verse": 110
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L8_J8_S3",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 3,
+    "order_in_level": 17,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 38,
+      "to_surah": "الأعراف",
+      "to_verse": 51
+    },
+    "recent_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 1,
+      "to_surah": "الأعراف",
+      "to_verse": 37
+    },
+    "distant_review_content": {
+      "from_surah": "مريم",
+      "from_verse": 1,
+      "to_surah": "طه",
+      "to_verse": 98
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L8_J8_S4",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 4,
+    "order_in_level": 18,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 52,
+      "to_surah": "الأعراف",
+      "to_verse": 67
+    },
+    "recent_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 23,
+      "to_surah": "الأعراف",
+      "to_verse": 51
+    },
+    "distant_review_content": {
+      "from_surah": "طه",
+      "from_verse": 99,
+      "to_surah": "الأنبياء",
+      "to_verse": 112
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L8_J8_S5",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 5,
+    "order_in_level": 19,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 68,
+      "to_surah": "الأعراف",
+      "to_verse": 81
+    },
+    "recent_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 38,
+      "to_surah": "الأعراف",
+      "to_verse": 67
+    },
+    "distant_review_content": {
+      "from_surah": "الحج",
+      "from_verse": 1,
+      "to_surah": "الحج",
+      "to_verse": 78
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L8_J8_S6",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 6,
+    "order_in_level": 20,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 82,
+      "to_surah": "الأعراف",
+      "to_verse": 95
+    },
+    "recent_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 52,
+      "to_surah": "الأعراف",
+      "to_verse": 81
+    },
+    "distant_review_content": {
+      "from_surah": "المؤمنون",
+      "from_verse": 1,
+      "to_surah": "المؤمنون",
+      "to_verse": 118
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L8_J8_S7",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 7,
+    "order_in_level": 21,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 96,
+      "to_surah": "الأعراف",
+      "to_verse": 104
+    },
+    "recent_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 68,
+      "to_surah": "الأعراف",
+      "to_verse": 95
+    },
+    "distant_review_content": {
+      "from_surah": "النور",
+      "from_verse": 1,
+      "to_surah": "النور",
+      "to_verse": 64
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 11,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L8_J8_S8",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 8,
+    "order_in_level": 22,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 96,
+      "to_surah": "الأعراف",
+      "to_verse": 104
+    },
+    "recent_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 82,
+      "to_surah": "الأعراف",
+      "to_verse": 104
+    },
+    "distant_review_content": {
+      "from_surah": "الفرقان",
+      "from_verse": 1,
+      "to_surah": "الشعراء",
+      "to_verse": 104
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 12,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L8_J8_S9",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 9,
+    "order_in_level": 23,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة الأعراف على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        8
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 96,
+      "to_surah": "الأعراف",
+      "to_verse": 104
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 13,
+      "raw_session_number": 9
+    }
+  },
+  {
+    "id": "L8_J8_S10",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 10,
+    "order_in_level": 24,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة الأعراف من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        8
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 14,
+      "raw_session_number": 10
+    }
+  },
+  {
+    "id": "L8_J8_S11",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 11,
+    "order_in_level": 25,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 105,
+      "to_surah": "الأعراف",
+      "to_verse": 130
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "الشعراء",
+      "from_verse": 105,
+      "to_surah": "النمل",
+      "to_verse": 93
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 5,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L8_J8_S12",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 12,
+    "order_in_level": 26,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 131,
+      "to_surah": "الأعراف",
+      "to_verse": 143
+    },
+    "recent_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 105,
+      "to_surah": "الأعراف",
+      "to_verse": 130
+    },
+    "distant_review_content": {
+      "from_surah": "القصص",
+      "from_verse": 1,
+      "to_surah": "القصص",
+      "to_verse": 88
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 6,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L8_J8_S13",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 13,
+    "order_in_level": 27,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 144,
+      "to_surah": "الأعراف",
+      "to_verse": 155
+    },
+    "recent_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 105,
+      "to_surah": "الأعراف",
+      "to_verse": 143
+    },
+    "distant_review_content": {
+      "from_surah": "العنكبوت",
+      "from_verse": 1,
+      "to_surah": "الروم",
+      "to_verse": 60
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 7,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L8_J8_S14",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 14,
+    "order_in_level": 28,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 156,
+      "to_surah": "الأعراف",
+      "to_verse": 163
+    },
+    "recent_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 131,
+      "to_surah": "الأعراف",
+      "to_verse": 155
+    },
+    "distant_review_content": {
+      "from_surah": "لقمان",
+      "from_verse": 1,
+      "to_surah": "الأحزاب",
+      "to_verse": 35
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 8,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L8_J8_S15",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 15,
+    "order_in_level": 29,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 164,
+      "to_surah": "الأعراف",
+      "to_verse": 178
+    },
+    "recent_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 144,
+      "to_surah": "الأعراف",
+      "to_verse": 163
+    },
+    "distant_review_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 36,
+      "to_surah": "سبأ",
+      "to_verse": 54
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 9,
+      "raw_session_number": 15
+    }
+  },
+  {
+    "id": "L8_J8_S16",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 16,
+    "order_in_level": 30,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 179,
+      "to_surah": "الأعراف",
+      "to_verse": 195
+    },
+    "recent_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 156,
+      "to_surah": "الأعراف",
+      "to_verse": 178
+    },
+    "distant_review_content": {
+      "from_surah": "فاطر",
+      "from_verse": 1,
+      "to_surah": "يس",
+      "to_verse": 83
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 10,
+      "raw_session_number": 16
+    }
+  },
+  {
+    "id": "L8_J8_S17",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 17,
+    "order_in_level": 31,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 196,
+      "to_surah": "الأعراف",
+      "to_verse": 206
+    },
+    "recent_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 164,
+      "to_surah": "الأعراف",
+      "to_verse": 195
+    },
+    "distant_review_content": {
+      "from_surah": "الصافات",
+      "from_verse": 1,
+      "to_surah": "ص",
+      "to_verse": 88
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 11,
+      "raw_session_number": 17
+    }
+  },
+  {
+    "id": "L8_J8_S18",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 18,
+    "order_in_level": 32,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 196,
+      "to_surah": "الأعراف",
+      "to_verse": 206
+    },
+    "recent_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 179,
+      "to_surah": "الأعراف",
+      "to_verse": 206
+    },
+    "distant_review_content": {
+      "from_surah": "الزمر",
+      "from_verse": 1,
+      "to_surah": "غافر",
+      "to_verse": 22
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 12,
+      "raw_session_number": 18
+    }
+  },
+  {
+    "id": "L8_J8_S19",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 19,
+    "order_in_level": 33,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة الأعراف على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        8
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "الأعراف",
+      "from_verse": 196,
+      "to_surah": "الأعراف",
+      "to_verse": 206
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 13,
+      "raw_session_number": 19
+    }
+  },
+  {
+    "id": "L8_J8_S20",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 20,
+    "order_in_level": 34,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة الأعراف من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        8
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 14,
+      "raw_session_number": 20
+    }
+  },
+  {
+    "id": "L8_J8_S21",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 21,
+    "order_in_level": 35,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد سورة الأعراف كاملةَ على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        8
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 15,
+      "raw_session_number": 21
+    }
+  },
+  {
+    "id": "L8_J8_S22",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 22,
+    "order_in_level": 36,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار في سورة الأعراف كاملةَ من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        8
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 16,
+      "raw_session_number": 22
+    }
+  },
+  {
+    "id": "L8_J8_S23",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 23,
+    "order_in_level": 37,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "سرد من أول سورة الأعراف إلى أخر سورة الأنفال على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        8,
+        9
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 17,
+      "raw_session_number": 23
+    }
+  },
+  {
+    "id": "L8_J8_S24",
+    "level_id": 8,
+    "juz_number": 8,
+    "session_number": 24,
+    "order_in_level": 38,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "اختبار من أول سورة الأعراف إلى أخر سورة الأنفال من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        8,
+        9
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 8 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 18,
+      "raw_session_number": 24
+    }
+  },
+  {
+    "id": "L8_J7_S1",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 1,
+    "order_in_level": 39,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 1,
+      "to_surah": "الأنعام",
+      "to_verse": 18
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "غافر",
+      "from_verse": 23,
+      "to_surah": "فصلت",
+      "to_verse": 54
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L8_J7_S2",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 2,
+    "order_in_level": 40,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 19,
+      "to_surah": "الأنعام",
+      "to_verse": 35
+    },
+    "recent_review_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 1,
+      "to_surah": "الأنعام",
+      "to_verse": 18
+    },
+    "distant_review_content": {
+      "from_surah": "الشورى",
+      "from_verse": 1,
+      "to_surah": "الزخرف",
+      "to_verse": 89
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L8_J7_S3",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 3,
+    "order_in_level": 41,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 36,
+      "to_surah": "الأنعام",
+      "to_verse": 52
+    },
+    "recent_review_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 1,
+      "to_surah": "الأنعام",
+      "to_verse": 35
+    },
+    "distant_review_content": {
+      "from_surah": "الدخان",
+      "from_verse": 1,
+      "to_surah": "الأحقاف",
+      "to_verse": 35
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L8_J7_S4",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 4,
+    "order_in_level": 42,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 53,
+      "to_surah": "الأنعام",
+      "to_verse": 68
+    },
+    "recent_review_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 19,
+      "to_surah": "الأنعام",
+      "to_verse": 52
+    },
+    "distant_review_content": {
+      "from_surah": "محمد",
+      "from_verse": 1,
+      "to_surah": "الحجرات",
+      "to_verse": 18
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L8_J7_S5",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 5,
+    "order_in_level": 43,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 69,
+      "to_surah": "الأنعام",
+      "to_verse": 81
+    },
+    "recent_review_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 36,
+      "to_surah": "الأنعام",
+      "to_verse": 68
+    },
+    "distant_review_content": {
+      "from_surah": "ق",
+      "from_verse": 1,
+      "to_surah": "القمر",
+      "to_verse": 55
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L8_J7_S6",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 6,
+    "order_in_level": 44,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 82,
+      "to_surah": "الأنعام",
+      "to_verse": 94
+    },
+    "recent_review_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 53,
+      "to_surah": "الأنعام",
+      "to_verse": 81
+    },
+    "distant_review_content": {
+      "from_surah": "الرحمن",
+      "from_verse": 1,
+      "to_surah": "الحديد",
+      "to_verse": 29
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L8_J7_S7",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 7,
+    "order_in_level": 45,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 82,
+      "to_surah": "الأنعام",
+      "to_verse": 94
+    },
+    "recent_review_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 69,
+      "to_surah": "الأنعام",
+      "to_verse": 94
+    },
+    "distant_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 1,
+      "to_surah": "الصف",
+      "to_verse": 14
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 11,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L8_J7_S8",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 8,
+    "order_in_level": 46,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة الأنعام على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        7
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 82,
+      "to_surah": "الأنعام",
+      "to_verse": 94
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 12,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L8_J7_S9",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 9,
+    "order_in_level": 47,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة الأنعام من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        7
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1",
+      "row": 13,
+      "raw_session_number": 9
+    }
+  },
+  {
+    "id": "L8_J7_S10",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 10,
+    "order_in_level": 48,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 95,
+      "to_surah": "الأنعام",
+      "to_verse": 110
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "الجمعة",
+      "from_verse": 1,
+      "to_surah": "التحريم",
+      "to_verse": 12
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 5,
+      "raw_session_number": 10
+    }
+  },
+  {
+    "id": "L8_J7_S11",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 11,
+    "order_in_level": 49,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 111,
+      "to_surah": "الأنعام",
+      "to_verse": 124
+    },
+    "recent_review_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 95,
+      "to_surah": "الأنعام",
+      "to_verse": 110
+    },
+    "distant_review_content": {
+      "from_surah": "الملك",
+      "from_verse": 1,
+      "to_surah": "نوح",
+      "to_verse": 28
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 6,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L8_J7_S12",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 12,
+    "order_in_level": 50,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 125,
+      "to_surah": "الأنعام",
+      "to_verse": 137
+    },
+    "recent_review_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 95,
+      "to_surah": "الأنعام",
+      "to_verse": 124
+    },
+    "distant_review_content": {
+      "from_surah": "الجن",
+      "from_verse": 1,
+      "to_surah": "المرسلات",
+      "to_verse": 50
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 7,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L8_J7_S13",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 13,
+    "order_in_level": 51,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 138,
+      "to_surah": "الأنعام",
+      "to_verse": 146
+    },
+    "recent_review_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 111,
+      "to_surah": "الأنعام",
+      "to_verse": 137
+    },
+    "distant_review_content": {
+      "from_surah": "النبأ",
+      "from_verse": 1,
+      "to_surah": "الطارق",
+      "to_verse": 17
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 8,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L8_J7_S14",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 14,
+    "order_in_level": 52,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 147,
+      "to_surah": "الأنعام",
+      "to_verse": 157
+    },
+    "recent_review_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 125,
+      "to_surah": "الأنعام",
+      "to_verse": 146
+    },
+    "distant_review_content": {
+      "from_surah": "الأعلى",
+      "from_verse": 1,
+      "to_surah": "الناس",
+      "to_verse": 6
+    },
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 9,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L8_J7_S15",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 15,
+    "order_in_level": 53,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 158,
+      "to_surah": "الأنعام",
+      "to_verse": 165
+    },
+    "recent_review_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 138,
+      "to_surah": "الأنعام",
+      "to_verse": 157
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 10,
+      "raw_session_number": 15
+    }
+  },
+  {
+    "id": "L8_J7_S16",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 16,
+    "order_in_level": 54,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 158,
+      "to_surah": "الأنعام",
+      "to_verse": 165
+    },
+    "recent_review_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 147,
+      "to_surah": "الأنعام",
+      "to_verse": 165
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 11,
+      "raw_session_number": 16
+    }
+  },
+  {
+    "id": "L8_J7_S17",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 17,
+    "order_in_level": 55,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "الأنعام",
+      "from_verse": 158,
+      "to_surah": "الأنعام",
+      "to_verse": 165
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 12,
+      "raw_session_number": 17
+    }
+  },
+  {
+    "id": "L8_J7_S18",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 18,
+    "order_in_level": 56,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة الأنعام على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        7
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 13,
+      "raw_session_number": 18
+    }
+  },
+  {
+    "id": "L8_J7_S19",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 19,
+    "order_in_level": 57,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة الأنعام من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        7
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 14,
+      "raw_session_number": 19
+    }
+  },
+  {
+    "id": "L8_J7_S20",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 20,
+    "order_in_level": 58,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد سورة الأنعام كاملة على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        7
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 15,
+      "raw_session_number": 20
+    }
+  },
+  {
+    "id": "L8_J7_S21",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 21,
+    "order_in_level": 59,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار في سورة الأنعام كاملة من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        7
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 16,
+      "raw_session_number": 21
+    }
+  },
+  {
+    "id": "L8_J7_S22",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 22,
+    "order_in_level": 60,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "سرد من أول سورة الأنعام إلى أخر سورة الأنفال على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        7,
+        8,
+        9
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 17,
+      "raw_session_number": 22
+    }
+  },
+  {
+    "id": "L8_J7_S23",
+    "level_id": 8,
+    "juz_number": 7,
+    "session_number": 23,
+    "order_in_level": 61,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "اختبار من أول سورة الأنعام إلى أخر سورة الأنفال من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        7,
+        8,
+        9
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 18,
+      "raw_session_number": 23
+    }
+  }
+]

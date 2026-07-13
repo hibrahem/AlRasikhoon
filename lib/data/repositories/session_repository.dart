@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/session_model.dart';
 import '../models/session_record_model.dart';
 import '../models/sard_record_model.dart';
 import '../models/exam_record_model.dart';
@@ -25,12 +26,14 @@ class SessionRepository {
   // ==================== Session Records ====================
 
   /// Create session record
+  ///
+  /// [hizbNumber] is a LABEL, present only in levels 1-2. It keys nothing.
   Future<SessionRecordModel> createSessionRecord({
     required String studentId,
     required String teacherId,
     required String curriculumSessionId,
     required int levelId,
-    required int hizbNumber,
+    int? hizbNumber,
     required int sessionNumber,
     required int attemptNumber,
     required int newMemorizationErrors,
@@ -148,12 +151,20 @@ class SessionRepository {
 
   // ==================== Sard Records ====================
 
-  /// Create sard record
+  /// Record a سرد, scoped by the curriculum session it answers.
+  ///
+  /// The scope — [tier], [juzNumbers], the optional [hizbNumber] label and the
+  /// curriculum's verbatim [scopeLabelAr] — comes from the session itself. A
+  /// record keyed on a hizb could not even represent a juz- or level-tier سرد
+  /// (`سرد الجزء رقم 30 كاملًا`, `سرد المستوى كاملًا`), which have no hizb at all.
   Future<SardRecordModel> createSardRecord({
     required String studentId,
     required String teacherId,
-    required int hizbNumber,
-    required int juzNumber,
+    required String curriculumSessionId,
+    required AssessmentTier tier,
+    List<int> juzNumbers = const [],
+    int? hizbNumber,
+    String scopeLabelAr = '',
     required int levelId,
     required int attemptNumber,
     required int errorCount,
@@ -168,8 +179,11 @@ class SessionRepository {
       id: docRef.id,
       studentId: studentId,
       teacherId: teacherId,
+      curriculumSessionId: curriculumSessionId,
+      tier: tier,
+      juzNumbers: juzNumbers,
       hizbNumber: hizbNumber,
-      juzNumber: juzNumber,
+      scopeLabelAr: scopeLabelAr,
       levelId: levelId,
       date: DateTime.now(),
       errorCount: errorCount,
@@ -198,14 +212,19 @@ class SessionRepository {
         .toList();
   }
 
-  /// Get sard attempt count for specific hizb
+  /// How many times this student has attempted this سرد.
+  ///
+  /// Keyed on the curriculum session, not a hizb: a juz- or level-tier سرد has
+  /// no hizb, and two different سرد of the same hizb (unit and juz) would
+  /// otherwise share a count. Assessments may be retried without limit, so this
+  /// count numbers the attempts — it never caps them.
   Future<int> getSardAttemptCount({
     required String studentId,
-    required int hizbNumber,
+    required String curriculumSessionId,
   }) async {
     final result = await _sardRecordsCollection
         .where('student_id', isEqualTo: studentId)
-        .where('hizb_number', isEqualTo: hizbNumber)
+        .where('curriculum_session_id', isEqualTo: curriculumSessionId)
         .count()
         .get();
 
@@ -214,12 +233,16 @@ class SessionRepository {
 
   // ==================== Exam Records ====================
 
-  /// Create exam record
+  /// Record an اختبار, scoped by the curriculum session it answers — see
+  /// [createSardRecord]; the same scope reaches the supervisor's record.
   Future<ExamRecordModel> createExamRecord({
     required String studentId,
     required String supervisorId,
-    required int hizbNumber,
-    required int juzNumber,
+    required String curriculumSessionId,
+    required AssessmentTier tier,
+    List<int> juzNumbers = const [],
+    int? hizbNumber,
+    String scopeLabelAr = '',
     required int levelId,
     required int attemptNumber,
     required int errorCount,
@@ -234,8 +257,11 @@ class SessionRepository {
       id: docRef.id,
       studentId: studentId,
       supervisorId: supervisorId,
+      curriculumSessionId: curriculumSessionId,
+      tier: tier,
+      juzNumbers: juzNumbers,
       hizbNumber: hizbNumber,
-      juzNumber: juzNumber,
+      scopeLabelAr: scopeLabelAr,
       levelId: levelId,
       date: DateTime.now(),
       errorCount: errorCount,
@@ -293,14 +319,15 @@ class SessionRepository {
         .toList();
   }
 
-  /// Get exam attempt count for specific hizb
+  /// How many times this student has sat this اختبار — keyed on the curriculum
+  /// session, and uncapped; see [getSardAttemptCount].
   Future<int> getExamAttemptCount({
     required String studentId,
-    required int hizbNumber,
+    required String curriculumSessionId,
   }) async {
     final result = await _examRecordsCollection
         .where('student_id', isEqualTo: studentId)
-        .where('hizb_number', isEqualTo: hizbNumber)
+        .where('curriculum_session_id', isEqualTo: curriculumSessionId)
         .count()
         .get();
 

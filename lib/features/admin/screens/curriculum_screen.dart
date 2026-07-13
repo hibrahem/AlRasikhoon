@@ -17,6 +17,13 @@ class CurriculumScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('المنهج')),
       body: levelsAsync.when(
         data: (levels) {
+          // The curriculum's size is the sum of what the catalog actually
+          // holds — never a number typed into the UI.
+          final totalSessions = levels.fold<int>(
+            0,
+            (sum, level) => sum + level.sessionCount,
+          );
+
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
@@ -48,7 +55,7 @@ class CurriculumScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '10 مستويات • 1,453 حلقة',
+                            '${levels.length} مستويات • $totalSessions حلقة',
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(color: AppColors.textSecondary),
                           ),
@@ -133,14 +140,13 @@ class CurriculumScreen extends ConsumerWidget {
                             value: '${level.juzNumbers.length}',
                             icon: Icons.menu_book,
                           ),
-                          _StatItem(
-                            label: 'الأحزاب',
-                            value: '${level.hizbCount}',
-                            icon: Icons.bookmark,
-                          ),
+                          // The session count is DATA, per level (204 in level
+                          // 1, 44 in level 10). A level has no fixed number of
+                          // "hizbs" — levels 3-10 have none at all — so the
+                          // catalog's own count is what is shown.
                           _StatItem(
                             label: 'الحلقات',
-                            value: '${level.totalSessions}',
+                            value: '${level.sessionCount}',
                             icon: Icons.school,
                           ),
                         ],

@@ -235,7 +235,11 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                       Text(
-                        'المستوى ${student.currentLevel} - الحزب ${student.currentHizb}',
+                        // Never an app-derived hizb: level 2's structural hizb
+                        // can disagree with the assessment's own verbatim
+                        // label (`scope.labelAr`) for the same session. The
+                        // level and juz are always consistent with the data.
+                        'المستوى ${student.currentLevel} - الجزء ${student.currentJuz}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textSecondary,
                         ),

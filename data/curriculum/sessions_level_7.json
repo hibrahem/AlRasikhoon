@@ -1,0 +1,1766 @@
+[
+  {
+    "id": "L7_J12_S1",
+    "level_id": 7,
+    "juz_number": 12,
+    "session_number": 1,
+    "order_in_level": 1,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "هود",
+      "from_verse": 1,
+      "to_surah": "هود",
+      "to_verse": 16
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "يوسف",
+      "from_verse": 1,
+      "to_surah": "يوسف",
+      "to_verse": 100
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 12جاهز للمنسق/الحزب 23.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L7_J12_S2",
+    "level_id": 7,
+    "juz_number": 12,
+    "session_number": 2,
+    "order_in_level": 2,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "هود",
+      "from_verse": 17,
+      "to_surah": "هود",
+      "to_verse": 32
+    },
+    "recent_review_content": {
+      "from_surah": "هود",
+      "from_verse": 1,
+      "to_surah": "هود",
+      "to_verse": 16
+    },
+    "distant_review_content": {
+      "from_surah": "يوسف",
+      "from_verse": 101,
+      "to_surah": "إبراهيم",
+      "to_verse": 29
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 12جاهز للمنسق/الحزب 23.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L7_J12_S3",
+    "level_id": 7,
+    "juz_number": 12,
+    "session_number": 3,
+    "order_in_level": 3,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "هود",
+      "from_verse": 33,
+      "to_surah": "هود",
+      "to_verse": 49
+    },
+    "recent_review_content": {
+      "from_surah": "هود",
+      "from_verse": 1,
+      "to_surah": "هود",
+      "to_verse": 32
+    },
+    "distant_review_content": {
+      "from_surah": "إبراهيم",
+      "from_verse": 30,
+      "to_surah": "النحل",
+      "to_verse": 37
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 12جاهز للمنسق/الحزب 23.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L7_J12_S4",
+    "level_id": 7,
+    "juz_number": 12,
+    "session_number": 4,
+    "order_in_level": 4,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "هود",
+      "from_verse": 33,
+      "to_surah": "هود",
+      "to_verse": 49
+    },
+    "recent_review_content": {
+      "from_surah": "هود",
+      "from_verse": 17,
+      "to_surah": "هود",
+      "to_verse": 49
+    },
+    "distant_review_content": {
+      "from_surah": "النحل",
+      "from_verse": 38,
+      "to_surah": "النحل",
+      "to_verse": 128
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 12جاهز للمنسق/الحزب 23.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L7_J12_S5",
+    "level_id": 7,
+    "juz_number": 12,
+    "session_number": 5,
+    "order_in_level": 5,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة هود على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        12
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "هود",
+      "from_verse": 33,
+      "to_surah": "هود",
+      "to_verse": 49
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 12جاهز للمنسق/الحزب 23.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L7_J12_S6",
+    "level_id": 7,
+    "juz_number": 12,
+    "session_number": 6,
+    "order_in_level": 6,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة هود َمن قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        12
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 12جاهز للمنسق/الحزب 23.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L7_J12_S7",
+    "level_id": 7,
+    "juz_number": 12,
+    "session_number": 7,
+    "order_in_level": 7,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "هود",
+      "from_verse": 50,
+      "to_surah": "هود",
+      "to_verse": 66
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "الإسراء",
+      "from_verse": 1,
+      "to_surah": "الإسراء",
+      "to_verse": 111
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 12جاهز للمنسق/الحزب 23.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 5,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L7_J12_S8",
+    "level_id": 7,
+    "juz_number": 12,
+    "session_number": 8,
+    "order_in_level": 8,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "هود",
+      "from_verse": 67,
+      "to_surah": "هود",
+      "to_verse": 85
+    },
+    "recent_review_content": {
+      "from_surah": "هود",
+      "from_verse": 50,
+      "to_surah": "هود",
+      "to_verse": 66
+    },
+    "distant_review_content": {
+      "from_surah": "الكهف",
+      "from_verse": 1,
+      "to_surah": "الكهف",
+      "to_verse": 110
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 12جاهز للمنسق/الحزب 23.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 6,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L7_J12_S9",
+    "level_id": 7,
+    "juz_number": 12,
+    "session_number": 9,
+    "order_in_level": 9,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "هود",
+      "from_verse": 86,
+      "to_surah": "هود",
+      "to_verse": 102
+    },
+    "recent_review_content": {
+      "from_surah": "هود",
+      "from_verse": 50,
+      "to_surah": "هود",
+      "to_verse": 85
+    },
+    "distant_review_content": {
+      "from_surah": "مريم",
+      "from_verse": 1,
+      "to_surah": "طه",
+      "to_verse": 82
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 12جاهز للمنسق/الحزب 23.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 7,
+      "raw_session_number": 9
+    }
+  },
+  {
+    "id": "L7_J12_S10",
+    "level_id": 7,
+    "juz_number": 12,
+    "session_number": 10,
+    "order_in_level": 10,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "هود",
+      "from_verse": 103,
+      "to_surah": "هود",
+      "to_verse": 123
+    },
+    "recent_review_content": {
+      "from_surah": "هود",
+      "from_verse": 67,
+      "to_surah": "هود",
+      "to_verse": 102
+    },
+    "distant_review_content": {
+      "from_surah": "طه",
+      "from_verse": 83,
+      "to_surah": "الأنبياء",
+      "to_verse": 86
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 12جاهز للمنسق/الحزب 23.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 8,
+      "raw_session_number": 10
+    }
+  },
+  {
+    "id": "L7_J12_S11",
+    "level_id": 7,
+    "juz_number": 12,
+    "session_number": 11,
+    "order_in_level": 11,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "هود",
+      "from_verse": 103,
+      "to_surah": "هود",
+      "to_verse": 123
+    },
+    "recent_review_content": {
+      "from_surah": "هود",
+      "from_verse": 86,
+      "to_surah": "هود",
+      "to_verse": 123
+    },
+    "distant_review_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 87,
+      "to_surah": "الحج",
+      "to_verse": 78
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 12جاهز للمنسق/الحزب 23.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 9,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L7_J12_S12",
+    "level_id": 7,
+    "juz_number": 12,
+    "session_number": 12,
+    "order_in_level": 12,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة هود على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        12
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "هود",
+      "from_verse": 103,
+      "to_surah": "هود",
+      "to_verse": 123
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 12جاهز للمنسق/الحزب 23.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 10,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L7_J12_S13",
+    "level_id": 7,
+    "juz_number": 12,
+    "session_number": 13,
+    "order_in_level": 13,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة هود َمن قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        12
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 12جاهز للمنسق/الحزب 23.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 11,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L7_J12_S14",
+    "level_id": 7,
+    "juz_number": 12,
+    "session_number": 14,
+    "order_in_level": 14,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد سورة هود كاملةَ على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        12
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 12جاهز للمنسق/الحزب 23.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 12,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L7_J12_S15",
+    "level_id": 7,
+    "juz_number": 12,
+    "session_number": 15,
+    "order_in_level": 15,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار في سورة هود من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        12
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 12جاهز للمنسق/الحزب 23.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 13,
+      "raw_session_number": 15
+    }
+  },
+  {
+    "id": "L7_J11_S1",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 1,
+    "order_in_level": 16,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "يونس",
+      "from_verse": 1,
+      "to_surah": "يونس",
+      "to_verse": 14
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "المؤمنون",
+      "from_verse": 1,
+      "to_surah": "النور",
+      "to_verse": 31
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L7_J11_S2",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 2,
+    "order_in_level": 17,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "يونس",
+      "from_verse": 15,
+      "to_surah": "يونس",
+      "to_verse": 25
+    },
+    "recent_review_content": {
+      "from_surah": "يونس",
+      "from_verse": 1,
+      "to_surah": "يونس",
+      "to_verse": 14
+    },
+    "distant_review_content": {
+      "from_surah": "النور",
+      "from_verse": 32,
+      "to_surah": "الفرقان",
+      "to_verse": 67
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L7_J11_S3",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 3,
+    "order_in_level": 18,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "يونس",
+      "from_verse": 26,
+      "to_surah": "يونس",
+      "to_verse": 42
+    },
+    "recent_review_content": {
+      "from_surah": "يونس",
+      "from_verse": 1,
+      "to_surah": "يونس",
+      "to_verse": 25
+    },
+    "distant_review_content": {
+      "from_surah": "الفرقان",
+      "from_verse": 68,
+      "to_surah": "النمل",
+      "to_verse": 13
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L7_J11_S4",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 4,
+    "order_in_level": 19,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "يونس",
+      "from_verse": 43,
+      "to_surah": "يونس",
+      "to_verse": 61
+    },
+    "recent_review_content": {
+      "from_surah": "يونس",
+      "from_verse": 15,
+      "to_surah": "يونس",
+      "to_verse": 42
+    },
+    "distant_review_content": {
+      "from_surah": "النمل",
+      "from_verse": 14,
+      "to_surah": "القصص",
+      "to_verse": 35
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L7_J11_S5",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 5,
+    "order_in_level": 20,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "يونس",
+      "from_verse": 43,
+      "to_surah": "يونس",
+      "to_verse": 61
+    },
+    "recent_review_content": {
+      "from_surah": "يونس",
+      "from_verse": 26,
+      "to_surah": "يونس",
+      "to_verse": 61
+    },
+    "distant_review_content": {
+      "from_surah": "القصص",
+      "from_verse": 36,
+      "to_surah": "العنكبوت",
+      "to_verse": 45
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L7_J11_S6",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 6,
+    "order_in_level": 21,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة يونس على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        11
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "يونس",
+      "from_verse": 43,
+      "to_surah": "يونس",
+      "to_verse": 61
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L7_J11_S7",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 7,
+    "order_in_level": 22,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة يونس من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        11
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1",
+      "row": 11,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L7_J11_S8",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 8,
+    "order_in_level": 23,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "يونس",
+      "from_verse": 62,
+      "to_surah": "يونس",
+      "to_verse": 78
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "العنكبوت",
+      "from_verse": 46,
+      "to_surah": "لقمان",
+      "to_verse": 28
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 5,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L7_J11_S9",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 9,
+    "order_in_level": 24,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "يونس",
+      "from_verse": 79,
+      "to_surah": "يونس",
+      "to_verse": 97
+    },
+    "recent_review_content": {
+      "from_surah": "يونس",
+      "from_verse": 62,
+      "to_surah": "يونس",
+      "to_verse": 78
+    },
+    "distant_review_content": {
+      "from_surah": "لقمان",
+      "from_verse": 29,
+      "to_surah": "الأحزاب",
+      "to_verse": 54
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 6,
+      "raw_session_number": 9
+    }
+  },
+  {
+    "id": "L7_J11_S10",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 10,
+    "order_in_level": 25,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "يونس",
+      "from_verse": 98,
+      "to_surah": "يونس",
+      "to_verse": 109
+    },
+    "recent_review_content": {
+      "from_surah": "يونس",
+      "from_verse": 62,
+      "to_surah": "يونس",
+      "to_verse": 97
+    },
+    "distant_review_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 55,
+      "to_surah": "فاطر",
+      "to_verse": 30
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 7,
+      "raw_session_number": 10
+    }
+  },
+  {
+    "id": "L7_J11_S11",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 11,
+    "order_in_level": 26,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "يونس",
+      "from_verse": 98,
+      "to_surah": "يونس",
+      "to_verse": 109
+    },
+    "recent_review_content": {
+      "from_surah": "يونس",
+      "from_verse": 79,
+      "to_surah": "يونس",
+      "to_verse": 109
+    },
+    "distant_review_content": {
+      "from_surah": "فاطر",
+      "from_verse": 31,
+      "to_surah": "الصافات",
+      "to_verse": 102
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 8,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L7_J11_S12",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 12,
+    "order_in_level": 27,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة يونس على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        11
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "يونس",
+      "from_verse": 98,
+      "to_surah": "يونس",
+      "to_verse": 109
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 9,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L7_J11_S13",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 13,
+    "order_in_level": 28,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة يونس من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        11
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 10,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L7_J11_S14",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 14,
+    "order_in_level": 29,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد سورة يونس كاملةَ على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        11
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 11,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L7_J11_S15",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 15,
+    "order_in_level": 30,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار في سورة يونس كاملةَ من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        11
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 12,
+      "raw_session_number": 15
+    }
+  },
+  {
+    "id": "L7_J11_S16",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 16,
+    "order_in_level": 31,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "سرد من أول سورة يونس إلى أخر سورة هود على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        11,
+        12
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 13,
+      "raw_session_number": 16
+    }
+  },
+  {
+    "id": "L7_J11_S17",
+    "level_id": 7,
+    "juz_number": 11,
+    "session_number": 17,
+    "order_in_level": 32,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "اختبار من أول سورة يونس إلى أخر سورة هود من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        11,
+        12
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 11جاهز للمنسق/الحزب 21.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 14,
+      "raw_session_number": 17
+    }
+  },
+  {
+    "id": "L7_J10_S1",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 1,
+    "order_in_level": 33,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التوبة",
+      "from_verse": 1,
+      "to_surah": "التوبة",
+      "to_verse": 13
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "الصافات",
+      "from_verse": 103,
+      "to_surah": "الزمر",
+      "to_verse": 31
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L7_J10_S2",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 2,
+    "order_in_level": 34,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التوبة",
+      "from_verse": 14,
+      "to_surah": "التوبة",
+      "to_verse": 26
+    },
+    "recent_review_content": {
+      "from_surah": "التوبة",
+      "from_verse": 1,
+      "to_surah": "التوبة",
+      "to_verse": 13
+    },
+    "distant_review_content": {
+      "from_surah": "الزمر",
+      "from_verse": 32,
+      "to_surah": "غافر",
+      "to_verse": 58
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L7_J10_S3",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 3,
+    "order_in_level": 35,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التوبة",
+      "from_verse": 27,
+      "to_surah": "التوبة",
+      "to_verse": 36
+    },
+    "recent_review_content": {
+      "from_surah": "التوبة",
+      "from_verse": 1,
+      "to_surah": "التوبة",
+      "to_verse": 26
+    },
+    "distant_review_content": {
+      "from_surah": "غافر",
+      "from_verse": 59,
+      "to_surah": "الشورى",
+      "to_verse": 22
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L7_J10_S4",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 4,
+    "order_in_level": 36,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التوبة",
+      "from_verse": 37,
+      "to_surah": "التوبة",
+      "to_verse": 47
+    },
+    "recent_review_content": {
+      "from_surah": "التوبة",
+      "from_verse": 14,
+      "to_surah": "التوبة",
+      "to_verse": 36
+    },
+    "distant_review_content": {
+      "from_surah": "الشورى",
+      "from_verse": 23,
+      "to_surah": "الدخان",
+      "to_verse": 29
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L7_J10_S5",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 5,
+    "order_in_level": 37,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التوبة",
+      "from_verse": 48,
+      "to_surah": "التوبة",
+      "to_verse": 61
+    },
+    "recent_review_content": {
+      "from_surah": "التوبة",
+      "from_verse": 27,
+      "to_surah": "التوبة",
+      "to_verse": 47
+    },
+    "distant_review_content": {
+      "from_surah": "الدخان",
+      "from_verse": 30,
+      "to_surah": "محمد",
+      "to_verse": 24
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L7_J10_S6",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 6,
+    "order_in_level": 38,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التوبة",
+      "from_verse": 48,
+      "to_surah": "التوبة",
+      "to_verse": 61
+    },
+    "recent_review_content": {
+      "from_surah": "التوبة",
+      "from_verse": 37,
+      "to_surah": "التوبة",
+      "to_verse": 61
+    },
+    "distant_review_content": {
+      "from_surah": "محمد",
+      "from_verse": 25,
+      "to_surah": "ق",
+      "to_verse": 45
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L7_J10_S7",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 7,
+    "order_in_level": 39,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة التوبة على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        10
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "التوبة",
+      "from_verse": 48,
+      "to_surah": "التوبة",
+      "to_verse": 61
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1",
+      "row": 11,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L7_J10_S8",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 8,
+    "order_in_level": 40,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة التوبة من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        10
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1",
+      "row": 12,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L7_J10_S9",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 9,
+    "order_in_level": 41,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التوبة",
+      "from_verse": 62,
+      "to_surah": "التوبة",
+      "to_verse": 72
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "الذاريات",
+      "from_verse": 1,
+      "to_surah": "القمر",
+      "to_verse": 55
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 5,
+      "raw_session_number": 9
+    }
+  },
+  {
+    "id": "L7_J10_S10",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 10,
+    "order_in_level": 42,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التوبة",
+      "from_verse": 73,
+      "to_surah": "التوبة",
+      "to_verse": 86
+    },
+    "recent_review_content": {
+      "from_surah": "التوبة",
+      "from_verse": 62,
+      "to_surah": "التوبة",
+      "to_verse": 72
+    },
+    "distant_review_content": {
+      "from_surah": "الرحمن",
+      "from_verse": 1,
+      "to_surah": "الحديد",
+      "to_verse": 29
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 6,
+      "raw_session_number": 10
+    }
+  },
+  {
+    "id": "L7_J10_S11",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 11,
+    "order_in_level": 43,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التوبة",
+      "from_verse": 87,
+      "to_surah": "التوبة",
+      "to_verse": 99
+    },
+    "recent_review_content": {
+      "from_surah": "التوبة",
+      "from_verse": 62,
+      "to_surah": "التوبة",
+      "to_verse": 86
+    },
+    "distant_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 1,
+      "to_surah": "الجمعة",
+      "to_verse": 11
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 7,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L7_J10_S12",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 12,
+    "order_in_level": 44,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التوبة",
+      "from_verse": 100,
+      "to_surah": "التوبة",
+      "to_verse": 111
+    },
+    "recent_review_content": {
+      "from_surah": "التوبة",
+      "from_verse": 73,
+      "to_surah": "التوبة",
+      "to_verse": 99
+    },
+    "distant_review_content": {
+      "from_surah": "المنافقون",
+      "from_verse": 1,
+      "to_surah": "القلم",
+      "to_verse": 52
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 8,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L7_J10_S13",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 13,
+    "order_in_level": 45,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التوبة",
+      "from_verse": 112,
+      "to_surah": "التوبة",
+      "to_verse": 122
+    },
+    "recent_review_content": {
+      "from_surah": "التوبة",
+      "from_verse": 87,
+      "to_surah": "التوبة",
+      "to_verse": 111
+    },
+    "distant_review_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 1,
+      "to_surah": "المدثر",
+      "to_verse": 56
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 9,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L7_J10_S14",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 14,
+    "order_in_level": 46,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التوبة",
+      "from_verse": 123,
+      "to_surah": "التوبة",
+      "to_verse": 129
+    },
+    "recent_review_content": {
+      "from_surah": "التوبة",
+      "from_verse": 100,
+      "to_surah": "التوبة",
+      "to_verse": 122
+    },
+    "distant_review_content": {
+      "from_surah": "القيامة",
+      "from_verse": 1,
+      "to_surah": "المطففين",
+      "to_verse": 36
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 10,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L7_J10_S15",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 15,
+    "order_in_level": 47,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التوبة",
+      "from_verse": 123,
+      "to_surah": "التوبة",
+      "to_verse": 129
+    },
+    "recent_review_content": {
+      "from_surah": "التوبة",
+      "from_verse": 112,
+      "to_surah": "التوبة",
+      "to_verse": 129
+    },
+    "distant_review_content": {
+      "from_surah": "الانشقاق",
+      "from_verse": 1,
+      "to_surah": "العاديات",
+      "to_verse": 11
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 11,
+      "raw_session_number": 15
+    }
+  },
+  {
+    "id": "L7_J10_S16",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 16,
+    "order_in_level": 48,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "التوبة",
+      "from_verse": 123,
+      "to_surah": "التوبة",
+      "to_verse": 129
+    },
+    "distant_review_content": {
+      "from_surah": "القارعة",
+      "from_verse": 1,
+      "to_surah": "الناس",
+      "to_verse": 6
+    },
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 12,
+      "raw_session_number": 16
+    }
+  },
+  {
+    "id": "L7_J10_S17",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 17,
+    "order_in_level": 49,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد المقرر من سورة التوبة على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        10
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 13,
+      "raw_session_number": 17
+    }
+  },
+  {
+    "id": "L7_J10_S18",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 18,
+    "order_in_level": 50,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في المقرر من سورة التوبة من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        10
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 14,
+      "raw_session_number": 18
+    }
+  },
+  {
+    "id": "L7_J10_S19",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 19,
+    "order_in_level": 51,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد سورة التوبة كاملة على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        10
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 15,
+      "raw_session_number": 19
+    }
+  },
+  {
+    "id": "L7_J10_S20",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 20,
+    "order_in_level": 52,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار في سورة التوبة كاملة من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        10
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 16,
+      "raw_session_number": 20
+    }
+  },
+  {
+    "id": "L7_J10_S21",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 21,
+    "order_in_level": 53,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "سرد من أول سورة التوبة إلى أخر سورة هود على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        10,
+        11,
+        12
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 17,
+      "raw_session_number": 21
+    }
+  },
+  {
+    "id": "L7_J10_S22",
+    "level_id": 7,
+    "juz_number": 10,
+    "session_number": 22,
+    "order_in_level": 54,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "اختبار من أول سورة التوبة إلى أخر سورة هود من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        10,
+        11,
+        12
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 18,
+      "raw_session_number": 22
+    }
+  }
+]

@@ -7,7 +7,11 @@ class HomePracticeModel {
   final String studentId;
   final int levelId;
   final int juzNumber;
-  final int hizbNumber;
+
+  /// A LABEL, present only in levels 1-2. It keys nothing — the practice is
+  /// identified by its level, juz and session. It used to default to 59, filing
+  /// every practice of the whole curriculum under the first hizb of level 1.
+  final int? hizbNumber;
   final int sessionNumber;
   final int repetitions;
   final String? notes;
@@ -19,7 +23,7 @@ class HomePracticeModel {
     required this.studentId,
     required this.levelId,
     required this.juzNumber,
-    required this.hizbNumber,
+    this.hizbNumber,
     required this.sessionNumber,
     required this.repetitions,
     this.notes,
@@ -34,11 +38,12 @@ class HomePracticeModel {
       studentId: data['student_id'] ?? '',
       levelId: data['level_id'] ?? 1,
       juzNumber: data['juz_number'] ?? 30,
-      hizbNumber: data['hizb_number'] ?? 59,
+      hizbNumber: data['hizb_number'] as int?,
       sessionNumber: data['session_number'] ?? 1,
       repetitions: data['repetitions'] ?? 0,
       notes: data['notes'],
-      practiceDate: (data['practice_date'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      practiceDate:
+          (data['practice_date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       createdAt: (data['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
