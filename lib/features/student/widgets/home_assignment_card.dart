@@ -23,6 +23,19 @@ class HomeAssignmentCard extends ConsumerWidget {
               1.0,
             );
 
+        // `HomeAssignment.repetitionsDone` is a true, uncapped count — the
+        // domain object must stay honest about how much the student actually
+        // logged. Display is a separate decision: this card caps the shown
+        // count at the target so a student who over-practises sees '10 / 10'
+        // (matching the progress bar, which is already capped at 100%) rather
+        // than an inconsistent '12 / 10'. Over-delivery is still visible via
+        // the "اكتمل الواجب" complete-state text, just not as a raw number
+        // that would read as a typo or a bug against the capped bar.
+        final displayedDone = assignment.repetitionsDone.clamp(
+          0,
+          assignment.repetitionsRequired,
+        );
+
         return AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,7 +51,7 @@ class HomeAssignmentCard extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    '${assignment.repetitionsDone} / '
+                    '$displayedDone / '
                     '${assignment.repetitionsRequired}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
@@ -77,7 +90,20 @@ class HomeAssignmentCard extends ConsumerWidget {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, _) => const SizedBox.shrink(),
+      // This is a secondary card — a provider failure here should not block
+      // the rest of the home-practice screen, so it stays visually silent.
+      // But the codebase has no existing convention for a non-fatal provider
+      // error in a silent branch (every other `error: (_, _) =>
+      // SizedBox.shrink()`/`SizedBox()` in this app — e.g.
+      // home_practice_screen.dart, student_dashboard_screen.dart,
+      // session_summary_screen.dart — swallows without a trace, and the
+      // rest use a visible `Text('Error: $e')` instead). Rather than repeat
+      // that silent swallow, leave a debug trace so the failure is at least
+      // discoverable in logs.
+      error: (error, stackTrace) {
+        debugPrint('homeAssignmentProvider failed: $error\n$stackTrace');
+        return const SizedBox.shrink();
+      },
     );
   }
 }
