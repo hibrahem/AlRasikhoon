@@ -1,0 +1,687 @@
+[
+  {
+    "id": 1,
+    "name_ar": "المستوى الأول",
+    "name_en": "Level 1",
+    "order": 1,
+    "juz_numbers": [
+      30,
+      29,
+      28
+    ],
+    "session_count": 204,
+    "juz": [
+      {
+        "juz_number": 30,
+        "session_count": 68,
+        "unit_labels": [
+          "سرد الحزب رقم 59 كاملًا على المحفظ المتابع",
+          "سرد الحزب رقم 60 كاملًا على المحفظ المتابع"
+        ],
+        "hizb_numbers": [
+          59,
+          60
+        ],
+        "first_order_in_level": 1,
+        "source_files": [
+          "منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx"
+        ],
+        "notes": [
+          "single workbook; sheets used: ['Sheet1']",
+          "tiers: unit1, unit2, juz"
+        ]
+      },
+      {
+        "juz_number": 29,
+        "session_count": 69,
+        "unit_labels": [
+          "سرد الحزب رقم 57 كاملًا على المحفظ المتابع",
+          "سرد الحزب رقم 58 كاملًا على المحفظ المتابع"
+        ],
+        "hizb_numbers": [
+          57,
+          58
+        ],
+        "first_order_in_level": 69,
+        "source_files": [
+          "منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx"
+        ],
+        "notes": [
+          "single workbook; sheets used: ['Sheet1']",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      },
+      {
+        "juz_number": 28,
+        "session_count": 67,
+        "unit_labels": [
+          "سرد الحزب رقم 55 كاملًا على المحفظ المتابع",
+          "سرد الحزب رقم 56 كاملًا على المحفظ المتابع"
+        ],
+        "hizb_numbers": [
+          55,
+          56
+        ],
+        "first_order_in_level": 138,
+        "source_files": [
+          "منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx"
+        ],
+        "notes": [
+          "single workbook; sheets used: ['Sheet1']",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name_ar": "المستوى الثاني",
+    "name_en": "Level 2",
+    "order": 2,
+    "juz_numbers": [
+      27,
+      26,
+      25
+    ],
+    "session_count": 148,
+    "juz": [
+      {
+        "juz_number": 27,
+        "session_count": 51,
+        "unit_labels": [
+          "سرد الحزب رقم 53 كاملًا على المحفظ المتابع",
+          "سرد الحزب رقم 54 كاملًا على المحفظ المتابع"
+        ],
+        "hizb_numbers": [
+          53,
+          54
+        ],
+        "first_order_in_level": 1,
+        "source_files": [
+          "منهج الراسخون المستوى الثاني الجزء  رقم  1 الحزب  الــ 54.xlsx",
+          "منهج الراسخون المستوى الثاني الجزء  رقم  1  الــ 53.xlsx"
+        ],
+        "notes": [
+          "two half-workbooks; teaching order [54, 53] (hizb descending), corroborated by the juz-tier pair living in the last half ('منهج الراسخون المستوى الثاني الجزء  رقم  1  الــ 53.xlsx')",
+          "tiers: unit1, unit2, juz"
+        ]
+      },
+      {
+        "juz_number": 26,
+        "session_count": 47,
+        "unit_labels": [
+          "سرد الحزب رقم 51 كاملًا على المحفظ المتابع",
+          "سرد الحزب رقم 52 كاملًا على المحفظ المتابع"
+        ],
+        "hizb_numbers": [
+          51,
+          52
+        ],
+        "first_order_in_level": 52,
+        "source_files": [
+          "منهج الراسخون المستوى الثاني الحزب الــ  52-.xlsx",
+          "منهج الراسخون المستوى الثاني الحزب الــ  51.xlsx"
+        ],
+        "notes": [
+          "two half-workbooks; teaching order [52, 51] (hizb descending), corroborated by the juz-tier pair living in the last half ('منهج الراسخون المستوى الثاني الحزب الــ  51.xlsx')",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      },
+      {
+        "juz_number": 25,
+        "session_count": 50,
+        "unit_labels": [
+          "سرد الحزب رقم 49 كاملًا على المحفظ المتابع",
+          "سرد الحزب رقم 50 كاملًا على المحفظ المتابع"
+        ],
+        "hizb_numbers": [
+          49,
+          50
+        ],
+        "first_order_in_level": 99,
+        "source_files": [
+          "منهج الراسخون المستوى الثاني الجزء رقم 3 - الحزب الــ  50.xlsx",
+          "منهج الراسخون المستوى الثاني الجزء رقم 3 الحزب الـــ  49.xlsx"
+        ],
+        "notes": [
+          "two half-workbooks; teaching order [50, 49] (hizb descending), corroborated by the juz-tier pair living in the last half ('منهج الراسخون المستوى الثاني الجزء رقم 3 الحزب الـــ  49.xlsx')",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name_ar": "المستوى الثالث",
+    "name_en": "Level 3",
+    "order": 3,
+    "juz_numbers": [
+      24,
+      23,
+      22
+    ],
+    "session_count": 93,
+    "juz": [
+      {
+        "juz_number": 24,
+        "session_count": 33,
+        "unit_labels": [
+          "سرد سورتي غافر و فصلت على المحفظ المتابع",
+          "سرد سورة الزمرعلى المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 1,
+        "source_files": [
+          "الحزب  47.xlsx",
+          "الحزب  48.xlsx"
+        ],
+        "notes": [
+          "two workbooks with identical Sheet1* content ('الحزب  47.xlsx' == 'الحزب  48.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "tiers: unit1, unit2, juz"
+        ]
+      },
+      {
+        "juz_number": 23,
+        "session_count": 28,
+        "unit_labels": [
+          "سرد سورتي الصافات وص على المحفظ المتابع",
+          "سرد سورة يس على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 34,
+        "source_files": [
+          "الحزب  45.xlsx",
+          "الحزب  46.xlsx"
+        ],
+        "notes": [
+          "two workbooks with identical Sheet1* content ('الحزب  45.xlsx' == 'الحزب  46.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      },
+      {
+        "juz_number": 22,
+        "session_count": 32,
+        "unit_labels": [
+          "سرد سورتي سبأ وفاطرعلى المحفظ المتابع",
+          "سرد سورة الأحزاب على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 62,
+        "source_files": [
+          "الحزب  43.xlsx",
+          "الحزب  44.xlsx"
+        ],
+        "notes": [
+          "two workbooks with identical Sheet1* content ('الحزب  43.xlsx' == 'الحزب  44.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name_ar": "المستوى الرابع",
+    "name_en": "Level 4",
+    "order": 4,
+    "juz_numbers": [
+      21,
+      20,
+      19
+    ],
+    "session_count": 87,
+    "juz": [
+      {
+        "juz_number": 21,
+        "session_count": 30,
+        "unit_labels": [
+          "سرد سور الروم ولقمان والسجدة لى المحفظ المتابع",
+          "سرد سورة العنكبوت على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 1,
+        "source_files": [
+          "منهج الراسخون المستوى الرابع الجزء  الحزب 41.xlsx",
+          "منهج الراسخون المستوى الرابع الجزء  الحزب 42.xlsx"
+        ],
+        "notes": [
+          "two workbooks with identical Sheet1* content ('منهج الراسخون المستوى الرابع الجزء  الحزب 41.xlsx' == 'منهج الراسخون المستوى الرابع الجزء  الحزب 42.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "tiers: unit1, unit2, juz"
+        ]
+      },
+      {
+        "juz_number": 20,
+        "session_count": 30,
+        "unit_labels": [
+          "سرد سورة القصص كاملةَ على المحفظ المتابع",
+          "سرد سورة النمل على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 31,
+        "source_files": [
+          "الحزب 39.xlsx",
+          "الحزب 40.xlsx"
+        ],
+        "notes": [
+          "two workbooks with identical Sheet1* content ('الحزب 39.xlsx' == 'الحزب 40.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      },
+      {
+        "juz_number": 19,
+        "session_count": 27,
+        "unit_labels": [
+          "سرد سورة الشعراء على المحفظ المتابع",
+          "سرد سورة الفرقان على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 61,
+        "source_files": [
+          "الحزب 37.xlsx",
+          "الحزب 38.xlsx"
+        ],
+        "notes": [
+          "two workbooks with identical Sheet1* content ('الحزب 37.xlsx' == 'الحزب 38.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name_ar": "المستوى الخامس",
+    "name_en": "Level 5",
+    "order": 5,
+    "juz_numbers": [
+      18,
+      17,
+      16
+    ],
+    "session_count": 65,
+    "juz": [
+      {
+        "juz_number": 18,
+        "session_count": 20,
+        "unit_labels": [
+          "سرد سورة النور كاملة على المحفظ المتابع",
+          "سرد سورة المؤمنون على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 1,
+        "source_files": [
+          "الحزب 35.xlsx",
+          "الحزب 36.xlsx"
+        ],
+        "notes": [
+          "two workbooks with identical Sheet1* content ('الحزب 35.xlsx' == 'الحزب 36.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "tiers: unit1, unit2, juz"
+        ]
+      },
+      {
+        "juz_number": 17,
+        "session_count": 24,
+        "unit_labels": [
+          "سرد سورة الحج كاملةَ على المحفظ المتابع",
+          "سرد سورة الأنبياء على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 21,
+        "source_files": [
+          "الحزب 33.xlsx",
+          "الحزب 34.xlsx"
+        ],
+        "notes": [
+          "two workbooks with identical Sheet1* content ('الحزب 33.xlsx' == 'الحزب 34.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      },
+      {
+        "juz_number": 16,
+        "session_count": 21,
+        "unit_labels": [
+          "سرد سورة طه كاملةً على المحفظ المتابع",
+          "سرد سورة مريم على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 45,
+        "source_files": [
+          "الحزب 31.xlsx",
+          "الحزب 32.xlsx"
+        ],
+        "notes": [
+          "two workbooks with identical Sheet1* content ('الحزب 31.xlsx' == 'الحزب 32.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name_ar": "المستوى السادس",
+    "name_en": "Level 6",
+    "order": 6,
+    "juz_numbers": [
+      15,
+      14,
+      13
+    ],
+    "session_count": 76,
+    "juz": [
+      {
+        "juz_number": 15,
+        "session_count": 24,
+        "unit_labels": [
+          "سرد سورة الكهف كاملةَ على المحفظ المتابع",
+          "سرد سورة الإسراء كاملةَ على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 1,
+        "source_files": [
+          "الحزب 29-.xlsx",
+          "الحزب 30.xlsx"
+        ],
+        "notes": [
+          "two workbooks with identical Sheet1* content ('الحزب 29-.xlsx' == 'الحزب 30.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "tiers: unit1, unit2, juz"
+        ]
+      },
+      {
+        "juz_number": 14,
+        "session_count": 24,
+        "unit_labels": [
+          "سرد المقرر من سورة النحل على المحفظ المتابع",
+          "سرد المقرر من سورة النحل والحجر على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 25,
+        "source_files": [
+          "الحزب 27-.xlsx",
+          "الحزب 28.xlsx"
+        ],
+        "notes": [
+          "two workbooks with identical Sheet1* content ('الحزب 27-.xlsx' == 'الحزب 28.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      },
+      {
+        "juz_number": 13,
+        "session_count": 28,
+        "unit_labels": [
+          "سرد سورتي الرعد وإبراهيم على المحفظ المتابع",
+          "سرد سورة يوسف على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 49,
+        "source_files": [
+          "الحزب 25.xlsx",
+          "الحزب 26.xlsx"
+        ],
+        "notes": [
+          "two workbooks with identical Sheet1* content ('الحزب 25.xlsx' == 'الحزب 26.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "name_ar": "المستوى السابع",
+    "name_en": "Level 7",
+    "order": 7,
+    "juz_numbers": [
+      12,
+      11,
+      10
+    ],
+    "session_count": 54,
+    "juz": [
+      {
+        "juz_number": 12,
+        "session_count": 15,
+        "unit_labels": [
+          "سرد المقرر من سورة هود على المحفظ المتابع",
+          "سرد المقرر من سورة هود على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 1,
+        "source_files": [
+          "الحزب 23.xlsx",
+          "الحزب 24.xlsx"
+        ],
+        "notes": [
+          "two workbooks with identical Sheet1* content ('الحزب 23.xlsx' == 'الحزب 24.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "tiers: unit1, unit2, juz"
+        ]
+      },
+      {
+        "juz_number": 11,
+        "session_count": 17,
+        "unit_labels": [
+          "سرد المقرر من سورة يونس على المحفظ المتابع",
+          "سرد المقرر من سورة يونس على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 16,
+        "source_files": [
+          "الحزب 21.xlsx",
+          "الحزب 22.xlsx"
+        ],
+        "notes": [
+          "two workbooks with identical Sheet1* content ('الحزب 21.xlsx' == 'الحزب 22.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      },
+      {
+        "juz_number": 10,
+        "session_count": 22,
+        "unit_labels": [
+          "سرد المقرر من سورة التوبة على المحفظ المتابع",
+          "سرد المقرر من سورة التوبة على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 33,
+        "source_files": [
+          "الحزب 19.xlsx",
+          "الحزب 20.xlsx"
+        ],
+        "notes": [
+          "two workbooks with identical Sheet1* content ('الحزب 19.xlsx' == 'الحزب 20.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "name_ar": "المستوى الثامن",
+    "name_en": "Level 8",
+    "order": 8,
+    "juz_numbers": [
+      9,
+      8,
+      7
+    ],
+    "session_count": 61,
+    "juz": [
+      {
+        "juz_number": 9,
+        "session_count": 14,
+        "unit_labels": [
+          "سرد المقرر من سورة الأنفال على المحفظ المتابع",
+          "سرد المقرر من سورة الأنفال على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 1,
+        "source_files": [
+          "منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx"
+        ],
+        "notes": [
+          "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+          "tiers: unit1, unit2, juz"
+        ]
+      },
+      {
+        "juz_number": 8,
+        "session_count": 24,
+        "unit_labels": [
+          "سرد المقرر من سورة الأعراف على المحفظ المتابع",
+          "سرد المقرر من سورة الأعراف على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 15,
+        "source_files": [
+          "منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx"
+        ],
+        "notes": [
+          "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      },
+      {
+        "juz_number": 7,
+        "session_count": 23,
+        "unit_labels": [
+          "سرد المقرر من سورة الأنعام على المحفظ المتابع",
+          "سرد المقرر من سورة الأنعام على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 39,
+        "source_files": [
+          "منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx"
+        ],
+        "notes": [
+          "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "name_ar": "المستوى التاسع",
+    "name_en": "Level 9",
+    "order": 9,
+    "juz_numbers": [
+      6,
+      5,
+      4
+    ],
+    "session_count": 61,
+    "juz": [
+      {
+        "juz_number": 6,
+        "session_count": 17,
+        "unit_labels": [
+          "سرد المقرر من سورة المائدة على المحفظ المتابع",
+          "سرد المقرر من سورة المائدة على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 1,
+        "source_files": [
+          "منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx"
+        ],
+        "notes": [
+          "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+          "tiers: unit1, unit2, juz"
+        ]
+      },
+      {
+        "juz_number": 5,
+        "session_count": 22,
+        "unit_labels": [
+          "سرد المقرر من سورة النساء على المحفظ المتابع",
+          "سرد المقرر من سورة النساء على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 18,
+        "source_files": [
+          "منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx"
+        ],
+        "notes": [
+          "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      },
+      {
+        "juz_number": 4,
+        "session_count": 22,
+        "unit_labels": [
+          "سرد المقرر من سورة آل عمران على المحفظ المتابع",
+          "سرد المقرر من سورة آل عمران على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 40,
+        "source_files": [
+          "منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx"
+        ],
+        "notes": [
+          "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "name_ar": "المستوى العاشر",
+    "name_en": "Level 10",
+    "order": 10,
+    "juz_numbers": [
+      1,
+      2,
+      3
+    ],
+    "session_count": 44,
+    "juz": [
+      {
+        "juz_number": 1,
+        "session_count": 16,
+        "unit_labels": [
+          "سرد المقرر من سورة البقرة على المحفظ المتابع",
+          "سرد المقرر من سورة البقرة على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 1,
+        "source_files": [
+          "منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx"
+        ],
+        "notes": [
+          "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+          "tiers: unit1, unit2, juz"
+        ]
+      },
+      {
+        "juz_number": 2,
+        "session_count": 19,
+        "unit_labels": [
+          "سرد المقرر من سورة البقرة من 142 : 202 على المحفظ المتابع",
+          "سرد المقرر من سورة البقرة 203 : 252 على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 17,
+        "source_files": [
+          "منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx"
+        ],
+        "notes": [
+          "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+          "tiers: unit1, unit2, juz, cumulative"
+        ]
+      },
+      {
+        "juz_number": 3,
+        "session_count": 9,
+        "unit_labels": [
+          "سرد المقرر من سورة البقرة 253 : 286 على المحفظ المتابع"
+        ],
+        "hizb_numbers": null,
+        "first_order_in_level": 36,
+        "source_files": [
+          "منهج الراسخون المستوى العاشر الجزء  ال  3 للمحفظين.xlsx"
+        ],
+        "notes": [
+          "single workbook; sheets used: ['Sheet1 (2)']",
+          "tiers: unit1, cumulative"
+        ]
+      }
+    ]
+  }
+]

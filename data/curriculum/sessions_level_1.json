@@ -1,0 +1,6846 @@
+[
+  {
+    "id": "L1_J30_S1",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 1,
+    "order_in_level": 1,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النبأ",
+      "from_verse": 1,
+      "to_surah": "النبأ",
+      "to_verse": 11
+    },
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L1_J30_S2",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 2,
+    "order_in_level": 2,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النبأ",
+      "from_verse": 12,
+      "to_surah": "النبأ",
+      "to_verse": 20
+    },
+    "recent_review_content": {
+      "from_surah": "النبأ",
+      "from_verse": 1,
+      "to_surah": "النبأ",
+      "to_verse": 11
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L1_J30_S3",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 3,
+    "order_in_level": 3,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النبأ",
+      "from_verse": 21,
+      "to_surah": "النبأ",
+      "to_verse": 30
+    },
+    "recent_review_content": {
+      "from_surah": "النبأ",
+      "from_verse": 1,
+      "to_surah": "النبأ",
+      "to_verse": 20
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L1_J30_S4",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 4,
+    "order_in_level": 4,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النبأ",
+      "from_verse": 31,
+      "to_surah": "النبأ",
+      "to_verse": 37
+    },
+    "recent_review_content": {
+      "from_surah": "النبأ",
+      "from_verse": 12,
+      "to_surah": "النبأ",
+      "to_verse": 30
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L1_J30_S5",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 5,
+    "order_in_level": 5,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النبأ",
+      "from_verse": 38,
+      "to_surah": "النبأ",
+      "to_verse": 40
+    },
+    "recent_review_content": {
+      "from_surah": "النبأ",
+      "from_verse": 21,
+      "to_surah": "النبأ",
+      "to_verse": 37
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L1_J30_S6",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 6,
+    "order_in_level": 6,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النازعات",
+      "from_verse": 1,
+      "to_surah": "النازعات",
+      "to_verse": 14
+    },
+    "recent_review_content": {
+      "from_surah": "النبأ",
+      "from_verse": 31,
+      "to_surah": "النبأ",
+      "to_verse": 40
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L1_J30_S7",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 7,
+    "order_in_level": 7,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النازعات",
+      "from_verse": 15,
+      "to_surah": "النازعات",
+      "to_verse": 26
+    },
+    "recent_review_content": {
+      "from_surah": "النبأ",
+      "from_verse": 38,
+      "to_surah": "النازعات",
+      "to_verse": 14
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 11,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L1_J30_S8",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 8,
+    "order_in_level": 8,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النازعات",
+      "from_verse": 27,
+      "to_surah": "النازعات",
+      "to_verse": 36
+    },
+    "recent_review_content": {
+      "from_surah": "النازعات",
+      "from_verse": 1,
+      "to_surah": "النازعات",
+      "to_verse": 26
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 12,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L1_J30_S9",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 9,
+    "order_in_level": 9,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النازعات",
+      "from_verse": 37,
+      "to_surah": "النازعات",
+      "to_verse": 46
+    },
+    "recent_review_content": {
+      "from_surah": "النازعات",
+      "from_verse": 15,
+      "to_surah": "النازعات",
+      "to_verse": 36
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 13,
+      "raw_session_number": 9
+    }
+  },
+  {
+    "id": "L1_J30_S10",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 10,
+    "order_in_level": 10,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "عبس",
+      "from_verse": 1,
+      "to_surah": "عبس",
+      "to_verse": 16
+    },
+    "recent_review_content": {
+      "from_surah": "النازعات",
+      "from_verse": 27,
+      "to_surah": "النازعات",
+      "to_verse": 46
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 14,
+      "raw_session_number": 10
+    }
+  },
+  {
+    "id": "L1_J30_S11",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 11,
+    "order_in_level": 11,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "عبس",
+      "from_verse": 17,
+      "to_surah": "عبس",
+      "to_verse": 32
+    },
+    "recent_review_content": {
+      "from_surah": "النازعات",
+      "from_verse": 37,
+      "to_surah": "عبس",
+      "to_verse": 16
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 15,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L1_J30_S12",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 12,
+    "order_in_level": 12,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "عبس",
+      "from_verse": 33,
+      "to_surah": "عبس",
+      "to_verse": 42
+    },
+    "recent_review_content": {
+      "from_surah": "عبس",
+      "from_verse": 1,
+      "to_surah": "عبس",
+      "to_verse": 32
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 16,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L1_J30_S13",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 13,
+    "order_in_level": 13,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التكوير",
+      "from_verse": 1,
+      "to_surah": "التكوير",
+      "to_verse": 9
+    },
+    "recent_review_content": {
+      "from_surah": "عبس",
+      "from_verse": 17,
+      "to_surah": "عبس",
+      "to_verse": 42
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 17,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L1_J30_S14",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 14,
+    "order_in_level": 14,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التكوير",
+      "from_verse": 10,
+      "to_surah": "التكوير",
+      "to_verse": 20
+    },
+    "recent_review_content": {
+      "from_surah": "عبس",
+      "from_verse": 33,
+      "to_surah": "التكوير",
+      "to_verse": 9
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 18,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L1_J30_S15",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 15,
+    "order_in_level": 15,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التكوير",
+      "from_verse": 21,
+      "to_surah": "التكوير",
+      "to_verse": 29
+    },
+    "recent_review_content": {
+      "from_surah": "التكوير",
+      "from_verse": 1,
+      "to_surah": "التكوير",
+      "to_verse": 20
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 19,
+      "raw_session_number": 15
+    }
+  },
+  {
+    "id": "L1_J30_S16",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 16,
+    "order_in_level": 16,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الانفطار",
+      "from_verse": 1,
+      "to_surah": "الانفطار",
+      "to_verse": 8
+    },
+    "recent_review_content": {
+      "from_surah": "التكوير",
+      "from_verse": 10,
+      "to_surah": "التكوير",
+      "to_verse": 29
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 20,
+      "raw_session_number": 16
+    }
+  },
+  {
+    "id": "L1_J30_S17",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 17,
+    "order_in_level": 17,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الانفطار",
+      "from_verse": 9,
+      "to_surah": "الانفطار",
+      "to_verse": 19
+    },
+    "recent_review_content": {
+      "from_surah": "التكوير",
+      "from_verse": 21,
+      "to_surah": "الانفطار",
+      "to_verse": 8
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 21,
+      "raw_session_number": 17
+    }
+  },
+  {
+    "id": "L1_J30_S18",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 18,
+    "order_in_level": 18,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المطففين",
+      "from_verse": 1,
+      "to_surah": "المطففين",
+      "to_verse": 10
+    },
+    "recent_review_content": {
+      "from_surah": "الانفطار",
+      "from_verse": 1,
+      "to_surah": "الانفطار",
+      "to_verse": 19
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 22,
+      "raw_session_number": 18
+    }
+  },
+  {
+    "id": "L1_J30_S19",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 19,
+    "order_in_level": 19,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المطففين",
+      "from_verse": 11,
+      "to_surah": "المطففين",
+      "to_verse": 21
+    },
+    "recent_review_content": {
+      "from_surah": "الانفطار",
+      "from_verse": 9,
+      "to_surah": "المطففين",
+      "to_verse": 10
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 23,
+      "raw_session_number": 19
+    }
+  },
+  {
+    "id": "L1_J30_S20",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 20,
+    "order_in_level": 20,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المطففين",
+      "from_verse": 22,
+      "to_surah": "المطففين",
+      "to_verse": 28
+    },
+    "recent_review_content": {
+      "from_surah": "المطففين",
+      "from_verse": 1,
+      "to_surah": "المطففين",
+      "to_verse": 21
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 24,
+      "raw_session_number": 20
+    }
+  },
+  {
+    "id": "L1_J30_S21",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 21,
+    "order_in_level": 21,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المطففين",
+      "from_verse": 29,
+      "to_surah": "المطففين",
+      "to_verse": 36
+    },
+    "recent_review_content": {
+      "from_surah": "المطففين",
+      "from_verse": 11,
+      "to_surah": "المطففين",
+      "to_verse": 28
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 25,
+      "raw_session_number": 21
+    }
+  },
+  {
+    "id": "L1_J30_S22",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 22,
+    "order_in_level": 22,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الانشقاق",
+      "from_verse": 1,
+      "to_surah": "الانشقاق",
+      "to_verse": 9
+    },
+    "recent_review_content": {
+      "from_surah": "المطففين",
+      "from_verse": 22,
+      "to_surah": "المطففين",
+      "to_verse": 36
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 26,
+      "raw_session_number": 22
+    }
+  },
+  {
+    "id": "L1_J30_S23",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 23,
+    "order_in_level": 23,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الانشقاق",
+      "from_verse": 10,
+      "to_surah": "الانشقاق",
+      "to_verse": 18
+    },
+    "recent_review_content": {
+      "from_surah": "المطففين",
+      "from_verse": 29,
+      "to_surah": "الانشقاق",
+      "to_verse": 9
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 27,
+      "raw_session_number": 23
+    }
+  },
+  {
+    "id": "L1_J30_S24",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 24,
+    "order_in_level": 24,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الانشقاق",
+      "from_verse": 19,
+      "to_surah": "الانشقاق",
+      "to_verse": 25
+    },
+    "recent_review_content": {
+      "from_surah": "الانشقاق",
+      "from_verse": 1,
+      "to_surah": "الانشقاق",
+      "to_verse": 18
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 28,
+      "raw_session_number": 24
+    }
+  },
+  {
+    "id": "L1_J30_S25",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 25,
+    "order_in_level": 25,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البروج",
+      "from_verse": 1,
+      "to_surah": "البروج",
+      "to_verse": 9
+    },
+    "recent_review_content": {
+      "from_surah": "الانشقاق",
+      "from_verse": 10,
+      "to_surah": "الانشقاق",
+      "to_verse": 25
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 29,
+      "raw_session_number": 25
+    }
+  },
+  {
+    "id": "L1_J30_S26",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 26,
+    "order_in_level": 26,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البروج",
+      "from_verse": 10,
+      "to_surah": "البروج",
+      "to_verse": 11
+    },
+    "recent_review_content": {
+      "from_surah": "الانشقاق",
+      "from_verse": 19,
+      "to_surah": "البروج",
+      "to_verse": 9
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 30,
+      "raw_session_number": 26
+    }
+  },
+  {
+    "id": "L1_J30_S27",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 27,
+    "order_in_level": 27,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البروج",
+      "from_verse": 12,
+      "to_surah": "البروج",
+      "to_verse": 22
+    },
+    "recent_review_content": {
+      "from_surah": "البروج",
+      "from_verse": 1,
+      "to_surah": "البروج",
+      "to_verse": 11
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 31,
+      "raw_session_number": 27
+    }
+  },
+  {
+    "id": "L1_J30_S28",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 28,
+    "order_in_level": 28,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الطارق",
+      "from_verse": 1,
+      "to_surah": "الطارق",
+      "to_verse": 17
+    },
+    "recent_review_content": {
+      "from_surah": "البروج",
+      "from_verse": 10,
+      "to_surah": "البروج",
+      "to_verse": 22
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 32,
+      "raw_session_number": 28
+    }
+  },
+  {
+    "id": "L1_J30_S29",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 29,
+    "order_in_level": 29,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الطارق",
+      "from_verse": 1,
+      "to_surah": "الطارق",
+      "to_verse": 17
+    },
+    "recent_review_content": {
+      "from_surah": "البروج",
+      "from_verse": 12,
+      "to_surah": "الطارق",
+      "to_verse": 17
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 33,
+      "raw_session_number": 29
+    }
+  },
+  {
+    "id": "L1_J30_S30",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 30,
+    "order_in_level": 30,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد الحزب رقم 59 كاملًا على المحفظ المتابع",
+      "hizb_number": 59,
+      "juz_numbers": [
+        30
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "الطارق",
+      "from_verse": 1,
+      "to_surah": "الطارق",
+      "to_verse": 17
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 34,
+      "raw_session_number": 30
+    }
+  },
+  {
+    "id": "L1_J30_S31",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 31,
+    "order_in_level": 31,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": 59,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في الحزب رقم 59 كاملًا من قِبل إدارة الحلقات",
+      "hizb_number": 59,
+      "juz_numbers": [
+        30
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 35,
+      "raw_session_number": 31
+    }
+  },
+  {
+    "id": "L1_J30_S32",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 32,
+    "order_in_level": 32,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعلى",
+      "from_verse": 1,
+      "to_surah": "الأعلى",
+      "to_verse": 10
+    },
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 36,
+      "raw_session_number": 32
+    }
+  },
+  {
+    "id": "L1_J30_S33",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 33,
+    "order_in_level": 33,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأعلى",
+      "from_verse": 10,
+      "to_surah": "الأعلى",
+      "to_verse": 19
+    },
+    "recent_review_content": {
+      "from_surah": "الأعلى",
+      "from_verse": 1,
+      "to_surah": "الأعلى",
+      "to_verse": 10
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 37,
+      "raw_session_number": 33
+    }
+  },
+  {
+    "id": "L1_J30_S34",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 34,
+    "order_in_level": 34,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الغاشية",
+      "from_verse": 1,
+      "to_surah": "الغاشية",
+      "to_verse": 7
+    },
+    "recent_review_content": {
+      "from_surah": "الأعلى",
+      "from_verse": 1,
+      "to_surah": "الأعلى",
+      "to_verse": 19
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 38,
+      "raw_session_number": 34
+    }
+  },
+  {
+    "id": "L1_J30_S35",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 35,
+    "order_in_level": 35,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الغاشية",
+      "from_verse": 8,
+      "to_surah": "الغاشية",
+      "to_verse": 20
+    },
+    "recent_review_content": {
+      "from_surah": "الأعلى",
+      "from_verse": 10,
+      "to_surah": "الغاشية",
+      "to_verse": 7
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 39,
+      "raw_session_number": 35
+    }
+  },
+  {
+    "id": "L1_J30_S36",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 36,
+    "order_in_level": 36,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الغاشية",
+      "from_verse": 21,
+      "to_surah": "الغاشية",
+      "to_verse": 26
+    },
+    "recent_review_content": {
+      "from_surah": "الغاشية",
+      "from_verse": 1,
+      "to_surah": "الغاشية",
+      "to_verse": 20
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 40,
+      "raw_session_number": 36
+    }
+  },
+  {
+    "id": "L1_J30_S37",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 37,
+    "order_in_level": 37,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الفجر",
+      "from_verse": 1,
+      "to_surah": "الفجر",
+      "to_verse": 14
+    },
+    "recent_review_content": {
+      "from_surah": "الغاشية",
+      "from_verse": 8,
+      "to_surah": "الغاشية",
+      "to_verse": 26
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 41,
+      "raw_session_number": 37
+    }
+  },
+  {
+    "id": "L1_J30_S38",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 38,
+    "order_in_level": 38,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الفجر",
+      "from_verse": 15,
+      "to_surah": "الفجر",
+      "to_verse": 20
+    },
+    "recent_review_content": {
+      "from_surah": "الغاشية",
+      "from_verse": 21,
+      "to_surah": "الفجر",
+      "to_verse": 14
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 42,
+      "raw_session_number": 38
+    }
+  },
+  {
+    "id": "L1_J30_S39",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 39,
+    "order_in_level": 39,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الفجر",
+      "from_verse": 21,
+      "to_surah": "الفجر",
+      "to_verse": 30
+    },
+    "recent_review_content": {
+      "from_surah": "الفجر",
+      "from_verse": 1,
+      "to_surah": "الفجر",
+      "to_verse": 20
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 43,
+      "raw_session_number": 39
+    }
+  },
+  {
+    "id": "L1_J30_S40",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 40,
+    "order_in_level": 40,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البلد",
+      "from_verse": 1,
+      "to_surah": "البلد",
+      "to_verse": 10
+    },
+    "recent_review_content": {
+      "from_surah": "الفجر",
+      "from_verse": 15,
+      "to_surah": "الفجر",
+      "to_verse": 30
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 44,
+      "raw_session_number": 40
+    }
+  },
+  {
+    "id": "L1_J30_S41",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 41,
+    "order_in_level": 41,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البلد",
+      "from_verse": 11,
+      "to_surah": "البلد",
+      "to_verse": 20
+    },
+    "recent_review_content": {
+      "from_surah": "الفجر",
+      "from_verse": 21,
+      "to_surah": "البلد",
+      "to_verse": 10
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 45,
+      "raw_session_number": 41
+    }
+  },
+  {
+    "id": "L1_J30_S42",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 42,
+    "order_in_level": 42,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الشمس",
+      "from_verse": 1,
+      "to_surah": "الشمس",
+      "to_verse": 10
+    },
+    "recent_review_content": {
+      "from_surah": "البلد",
+      "from_verse": 1,
+      "to_surah": "البلد",
+      "to_verse": 20
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 46,
+      "raw_session_number": 42
+    }
+  },
+  {
+    "id": "L1_J30_S43",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 43,
+    "order_in_level": 43,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الشمس",
+      "from_verse": 11,
+      "to_surah": "الشمس",
+      "to_verse": 15
+    },
+    "recent_review_content": {
+      "from_surah": "البلد",
+      "from_verse": 11,
+      "to_surah": "الشمس",
+      "to_verse": 10
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 47,
+      "raw_session_number": 43
+    }
+  },
+  {
+    "id": "L1_J30_S44",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 44,
+    "order_in_level": 44,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الليل",
+      "from_verse": 1,
+      "to_surah": "الليل",
+      "to_verse": 11
+    },
+    "recent_review_content": {
+      "from_surah": "الشمس",
+      "from_verse": 1,
+      "to_surah": "الشمس",
+      "to_verse": 15
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 48,
+      "raw_session_number": 44
+    }
+  },
+  {
+    "id": "L1_J30_S45",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 45,
+    "order_in_level": 45,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الليل",
+      "from_verse": 12,
+      "to_surah": "الليل",
+      "to_verse": 21
+    },
+    "recent_review_content": {
+      "from_surah": "الشمس",
+      "from_verse": 11,
+      "to_surah": "الليل",
+      "to_verse": 11
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 49,
+      "raw_session_number": 45
+    }
+  },
+  {
+    "id": "L1_J30_S46",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 46,
+    "order_in_level": 46,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الضحى",
+      "from_verse": 1,
+      "to_surah": "الضحى",
+      "to_verse": 11
+    },
+    "recent_review_content": {
+      "from_surah": "الليل",
+      "from_verse": 1,
+      "to_surah": "الليل",
+      "to_verse": 21
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 50,
+      "raw_session_number": 46
+    }
+  },
+  {
+    "id": "L1_J30_S47",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 47,
+    "order_in_level": 47,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الشرح",
+      "from_verse": 1,
+      "to_surah": "الشرح",
+      "to_verse": 8
+    },
+    "recent_review_content": {
+      "from_surah": "الليل",
+      "from_verse": 12,
+      "to_surah": "الضحى",
+      "to_verse": 11
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 51,
+      "raw_session_number": 47
+    }
+  },
+  {
+    "id": "L1_J30_S48",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 48,
+    "order_in_level": 48,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التين",
+      "from_verse": 1,
+      "to_surah": "التين",
+      "to_verse": 8
+    },
+    "recent_review_content": {
+      "from_surah": "الضحى",
+      "from_verse": 1,
+      "to_surah": "الشرح",
+      "to_verse": 8
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 52,
+      "raw_session_number": 48
+    }
+  },
+  {
+    "id": "L1_J30_S49",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 49,
+    "order_in_level": 49,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "العلق",
+      "from_verse": 1,
+      "to_surah": "العلق",
+      "to_verse": 8
+    },
+    "recent_review_content": {
+      "from_surah": "الشرح",
+      "from_verse": 1,
+      "to_surah": "التين",
+      "to_verse": 8
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 53,
+      "raw_session_number": 49
+    }
+  },
+  {
+    "id": "L1_J30_S50",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 50,
+    "order_in_level": 50,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "العلق",
+      "from_verse": 9,
+      "to_surah": "العلق",
+      "to_verse": 19
+    },
+    "recent_review_content": {
+      "from_surah": "التين",
+      "from_verse": 1,
+      "to_surah": "العلق",
+      "to_verse": 8
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 54,
+      "raw_session_number": 50
+    }
+  },
+  {
+    "id": "L1_J30_S51",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 51,
+    "order_in_level": 51,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "القدر",
+      "from_verse": 1,
+      "to_surah": "القدر",
+      "to_verse": 5
+    },
+    "recent_review_content": {
+      "from_surah": "العلق",
+      "from_verse": 1,
+      "to_surah": "العلق",
+      "to_verse": 19
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 55,
+      "raw_session_number": 51
+    }
+  },
+  {
+    "id": "L1_J30_S52",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 52,
+    "order_in_level": 52,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البينة",
+      "from_verse": 1,
+      "to_surah": "البينة",
+      "to_verse": 5
+    },
+    "recent_review_content": {
+      "from_surah": "العلق",
+      "from_verse": 9,
+      "to_surah": "القدر",
+      "to_verse": 5
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 56,
+      "raw_session_number": 52
+    }
+  },
+  {
+    "id": "L1_J30_S53",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 53,
+    "order_in_level": 53,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "البينة",
+      "from_verse": 6,
+      "to_surah": "البينة",
+      "to_verse": 8
+    },
+    "recent_review_content": {
+      "from_surah": "القدر",
+      "from_verse": 1,
+      "to_surah": "البينة",
+      "to_verse": 5
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 57,
+      "raw_session_number": 53
+    }
+  },
+  {
+    "id": "L1_J30_S54",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 54,
+    "order_in_level": 54,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الزلزلة",
+      "from_verse": 1,
+      "to_surah": "الزلزلة",
+      "to_verse": 8
+    },
+    "recent_review_content": {
+      "from_surah": "البينة",
+      "from_verse": 1,
+      "to_surah": "البينة",
+      "to_verse": 8
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 58,
+      "raw_session_number": 54
+    }
+  },
+  {
+    "id": "L1_J30_S55",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 55,
+    "order_in_level": 55,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "العاديات",
+      "from_verse": 1,
+      "to_surah": "العاديات",
+      "to_verse": 11
+    },
+    "recent_review_content": {
+      "from_surah": "البينة",
+      "from_verse": 6,
+      "to_surah": "الزلزلة",
+      "to_verse": 8
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 59,
+      "raw_session_number": 55
+    }
+  },
+  {
+    "id": "L1_J30_S56",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 56,
+    "order_in_level": 56,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "القارعة",
+      "from_verse": 1,
+      "to_surah": "القارعة",
+      "to_verse": 11
+    },
+    "recent_review_content": {
+      "from_surah": "الزلزلة",
+      "from_verse": 1,
+      "to_surah": "العاديات",
+      "to_verse": 11
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 60,
+      "raw_session_number": 56
+    }
+  },
+  {
+    "id": "L1_J30_S57",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 57,
+    "order_in_level": 57,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التكاثر",
+      "from_verse": 1,
+      "to_surah": "العصر",
+      "to_verse": 3
+    },
+    "recent_review_content": {
+      "from_surah": "العاديات",
+      "from_verse": 1,
+      "to_surah": "القارعة",
+      "to_verse": 11
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 61,
+      "raw_session_number": 57
+    }
+  },
+  {
+    "id": "L1_J30_S58",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 58,
+    "order_in_level": 58,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الهمزة",
+      "from_verse": 1,
+      "to_surah": "الهمزة",
+      "to_verse": 9
+    },
+    "recent_review_content": {
+      "from_surah": "القارعة",
+      "from_verse": 1,
+      "to_surah": "العصر",
+      "to_verse": 3
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 62,
+      "raw_session_number": 58
+    }
+  },
+  {
+    "id": "L1_J30_S59",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 59,
+    "order_in_level": 59,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الفيل",
+      "from_verse": 1,
+      "to_surah": "قريش",
+      "to_verse": 4
+    },
+    "recent_review_content": {
+      "from_surah": "التكاثر",
+      "from_verse": 1,
+      "to_surah": "الهمزة",
+      "to_verse": 9
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 63,
+      "raw_session_number": 59
+    }
+  },
+  {
+    "id": "L1_J30_S60",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 60,
+    "order_in_level": 60,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الماعون",
+      "from_verse": 1,
+      "to_surah": "الكوثر",
+      "to_verse": 3
+    },
+    "recent_review_content": {
+      "from_surah": "الهمزة",
+      "from_verse": 1,
+      "to_surah": "قريش",
+      "to_verse": 4
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 64,
+      "raw_session_number": 60
+    }
+  },
+  {
+    "id": "L1_J30_S61",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 61,
+    "order_in_level": 61,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الكافرون",
+      "from_verse": 1,
+      "to_surah": "النصر",
+      "to_verse": 3
+    },
+    "recent_review_content": {
+      "from_surah": "الفيل",
+      "from_verse": 1,
+      "to_surah": "الكوثر",
+      "to_verse": 3
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 65,
+      "raw_session_number": 61
+    }
+  },
+  {
+    "id": "L1_J30_S62",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 62,
+    "order_in_level": 62,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المسد",
+      "from_verse": 1,
+      "to_surah": "الإخلاص",
+      "to_verse": 4
+    },
+    "recent_review_content": {
+      "from_surah": "الماعون",
+      "from_verse": 1,
+      "to_surah": "النصر",
+      "to_verse": 3
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 66,
+      "raw_session_number": 62
+    }
+  },
+  {
+    "id": "L1_J30_S63",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 63,
+    "order_in_level": 63,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الفلق",
+      "from_verse": 1,
+      "to_surah": "الناس",
+      "to_verse": 6
+    },
+    "recent_review_content": {
+      "from_surah": "الكافرون",
+      "from_verse": 1,
+      "to_surah": "الإخلاص",
+      "to_verse": 4
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 67,
+      "raw_session_number": 63
+    }
+  },
+  {
+    "id": "L1_J30_S64",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 64,
+    "order_in_level": 64,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الفلق",
+      "from_verse": 1,
+      "to_surah": "الناس",
+      "to_verse": 6
+    },
+    "recent_review_content": {
+      "from_surah": "المسد",
+      "from_verse": 1,
+      "to_surah": "الناس",
+      "to_verse": 6
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 68,
+      "raw_session_number": 64
+    }
+  },
+  {
+    "id": "L1_J30_S65",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 65,
+    "order_in_level": 65,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد الحزب رقم 60 كاملًا على المحفظ المتابع",
+      "hizb_number": 60,
+      "juz_numbers": [
+        30
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "الفلق",
+      "from_verse": 1,
+      "to_surah": "الناس",
+      "to_verse": 6
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 69,
+      "raw_session_number": 65
+    }
+  },
+  {
+    "id": "L1_J30_S66",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 66,
+    "order_in_level": 66,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": 60,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في الحزب رقم 60 كاملًا من قِبل إدارة الحلقات",
+      "hizb_number": 60,
+      "juz_numbers": [
+        30
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 70,
+      "raw_session_number": 66
+    }
+  },
+  {
+    "id": "L1_J30_S67",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 67,
+    "order_in_level": 67,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد الجزء رقم 30 كاملًا على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        30
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 71,
+      "raw_session_number": 67
+    }
+  },
+  {
+    "id": "L1_J30_S68",
+    "level_id": 1,
+    "juz_number": 30,
+    "session_number": 68,
+    "order_in_level": 68,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار في الجزء رقم 30 كاملًا من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        30
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx",
+      "sheet": "Sheet1",
+      "row": 72,
+      "raw_session_number": 68
+    }
+  },
+  {
+    "id": "L1_J29_S1",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 1,
+    "order_in_level": 69,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الملك",
+      "from_verse": 1,
+      "to_surah": "الملك",
+      "to_verse": 4
+    },
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L1_J29_S2",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 2,
+    "order_in_level": 70,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الملك",
+      "from_verse": 5,
+      "to_surah": "الملك",
+      "to_verse": 8
+    },
+    "recent_review_content": {
+      "from_surah": "الملك",
+      "from_verse": 1,
+      "to_surah": "الملك",
+      "to_verse": 4
+    },
+    "distant_review_content": {
+      "from_surah": "النبأ",
+      "from_verse": 1,
+      "to_surah": "النبأ",
+      "to_verse": 11
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L1_J29_S3",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 3,
+    "order_in_level": 71,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الملك",
+      "from_verse": 9,
+      "to_surah": "الملك",
+      "to_verse": 12
+    },
+    "recent_review_content": {
+      "from_surah": "الملك",
+      "from_verse": 1,
+      "to_surah": "الملك",
+      "to_verse": 8
+    },
+    "distant_review_content": {
+      "from_surah": "النبأ",
+      "from_verse": 12,
+      "to_surah": "النبأ",
+      "to_verse": 20
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L1_J29_S4",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 4,
+    "order_in_level": 72,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الملك",
+      "from_verse": 13,
+      "to_surah": "الملك",
+      "to_verse": 17
+    },
+    "recent_review_content": {
+      "from_surah": "الملك",
+      "from_verse": 5,
+      "to_surah": "الملك",
+      "to_verse": 12
+    },
+    "distant_review_content": {
+      "from_surah": "النبأ",
+      "from_verse": 21,
+      "to_surah": "النبأ",
+      "to_verse": 30
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L1_J29_S5",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 5,
+    "order_in_level": 73,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الملك",
+      "from_verse": 18,
+      "to_surah": "الملك",
+      "to_verse": 21
+    },
+    "recent_review_content": {
+      "from_surah": "الملك",
+      "from_verse": 9,
+      "to_surah": "الملك",
+      "to_verse": 17
+    },
+    "distant_review_content": {
+      "from_surah": "النبأ",
+      "from_verse": 31,
+      "to_surah": "النبأ",
+      "to_verse": 37
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L1_J29_S6",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 6,
+    "order_in_level": 74,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الملك",
+      "from_verse": 22,
+      "to_surah": "الملك",
+      "to_verse": 26
+    },
+    "recent_review_content": {
+      "from_surah": "الملك",
+      "from_verse": 13,
+      "to_surah": "الملك",
+      "to_verse": 21
+    },
+    "distant_review_content": {
+      "from_surah": "النبأ",
+      "from_verse": 38,
+      "to_surah": "النبأ",
+      "to_verse": 40
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L1_J29_S7",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 7,
+    "order_in_level": 75,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الملك",
+      "from_verse": 27,
+      "to_surah": "الملك",
+      "to_verse": 30
+    },
+    "recent_review_content": {
+      "from_surah": "الملك",
+      "from_verse": 18,
+      "to_surah": "الملك",
+      "to_verse": 26
+    },
+    "distant_review_content": {
+      "from_surah": "النازعات",
+      "from_verse": 1,
+      "to_surah": "النازعات",
+      "to_verse": 14
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 11,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L1_J29_S8",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 8,
+    "order_in_level": 76,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "القلم",
+      "from_verse": 1,
+      "to_surah": "القلم",
+      "to_verse": 7
+    },
+    "recent_review_content": {
+      "from_surah": "الملك",
+      "from_verse": 22,
+      "to_surah": "الملك",
+      "to_verse": 30
+    },
+    "distant_review_content": {
+      "from_surah": "النازعات",
+      "from_verse": 15,
+      "to_surah": "النازعات",
+      "to_verse": 26
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 12,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L1_J29_S9",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 9,
+    "order_in_level": 77,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "القلم",
+      "from_verse": 8,
+      "to_surah": "القلم",
+      "to_verse": 15
+    },
+    "recent_review_content": {
+      "from_surah": "الملك",
+      "from_verse": 27,
+      "to_surah": "القلم",
+      "to_verse": 7
+    },
+    "distant_review_content": {
+      "from_surah": "النازعات",
+      "from_verse": 27,
+      "to_surah": "النازعات",
+      "to_verse": 36
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 13,
+      "raw_session_number": 9
+    }
+  },
+  {
+    "id": "L1_J29_S10",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 10,
+    "order_in_level": 78,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "القلم",
+      "from_verse": 16,
+      "to_surah": "القلم",
+      "to_verse": 25
+    },
+    "recent_review_content": {
+      "from_surah": "القلم",
+      "from_verse": 1,
+      "to_surah": "القلم",
+      "to_verse": 15
+    },
+    "distant_review_content": {
+      "from_surah": "النازعات",
+      "from_verse": 37,
+      "to_surah": "النازعات",
+      "to_verse": 46
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 14,
+      "raw_session_number": 10
+    }
+  },
+  {
+    "id": "L1_J29_S11",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 11,
+    "order_in_level": 79,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "القلم",
+      "from_verse": 26,
+      "to_surah": "القلم",
+      "to_verse": 33
+    },
+    "recent_review_content": {
+      "from_surah": "القلم",
+      "from_verse": 8,
+      "to_surah": "القلم",
+      "to_verse": 25
+    },
+    "distant_review_content": {
+      "from_surah": "عبس",
+      "from_verse": 1,
+      "to_surah": "عبس",
+      "to_verse": 16
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 15,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L1_J29_S12",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 12,
+    "order_in_level": 80,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "القلم",
+      "from_verse": 34,
+      "to_surah": "القلم",
+      "to_verse": 42
+    },
+    "recent_review_content": {
+      "from_surah": "القلم",
+      "from_verse": 16,
+      "to_surah": "القلم",
+      "to_verse": 33
+    },
+    "distant_review_content": {
+      "from_surah": "عبس",
+      "from_verse": 17,
+      "to_surah": "عبس",
+      "to_verse": 32
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 16,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L1_J29_S13",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 13,
+    "order_in_level": 81,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "القلم",
+      "from_verse": 43,
+      "to_surah": "القلم",
+      "to_verse": 47
+    },
+    "recent_review_content": {
+      "from_surah": "القلم",
+      "from_verse": 26,
+      "to_surah": "القلم",
+      "to_verse": 42
+    },
+    "distant_review_content": {
+      "from_surah": "عبس",
+      "from_verse": 33,
+      "to_surah": "عبس",
+      "to_verse": 42
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 17,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L1_J29_S14",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 14,
+    "order_in_level": 82,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "القلم",
+      "from_verse": 48,
+      "to_surah": "القلم",
+      "to_verse": 52
+    },
+    "recent_review_content": {
+      "from_surah": "القلم",
+      "from_verse": 34,
+      "to_surah": "القلم",
+      "to_verse": 47
+    },
+    "distant_review_content": {
+      "from_surah": "التكوير",
+      "from_verse": 1,
+      "to_surah": "التكوير",
+      "to_verse": 9
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 18,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L1_J29_S15",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 15,
+    "order_in_level": 83,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 1,
+      "to_surah": "الحاقة",
+      "to_verse": 8
+    },
+    "recent_review_content": {
+      "from_surah": "القلم",
+      "from_verse": 43,
+      "to_surah": "القلم",
+      "to_verse": 52
+    },
+    "distant_review_content": {
+      "from_surah": "التكوير",
+      "from_verse": 10,
+      "to_surah": "التكوير",
+      "to_verse": 20
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 19,
+      "raw_session_number": 15
+    }
+  },
+  {
+    "id": "L1_J29_S16",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 16,
+    "order_in_level": 84,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 9,
+      "to_surah": "الحاقة",
+      "to_verse": 16
+    },
+    "recent_review_content": {
+      "from_surah": "القلم",
+      "from_verse": 48,
+      "to_surah": "الحاقة",
+      "to_verse": 8
+    },
+    "distant_review_content": {
+      "from_surah": "التكوير",
+      "from_verse": 21,
+      "to_surah": "التكوير",
+      "to_verse": 29
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 20,
+      "raw_session_number": 16
+    }
+  },
+  {
+    "id": "L1_J29_S17",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 17,
+    "order_in_level": 85,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 17,
+      "to_surah": "الحاقة",
+      "to_verse": 24
+    },
+    "recent_review_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 1,
+      "to_surah": "الحاقة",
+      "to_verse": 16
+    },
+    "distant_review_content": {
+      "from_surah": "الانفطار",
+      "from_verse": 1,
+      "to_surah": "الانفطار",
+      "to_verse": 8
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 21,
+      "raw_session_number": 17
+    }
+  },
+  {
+    "id": "L1_J29_S18",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 18,
+    "order_in_level": 86,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 25,
+      "to_surah": "الحاقة",
+      "to_verse": 34
+    },
+    "recent_review_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 9,
+      "to_surah": "الحاقة",
+      "to_verse": 24
+    },
+    "distant_review_content": {
+      "from_surah": "الانفطار",
+      "from_verse": 9,
+      "to_surah": "الانفطار",
+      "to_verse": 19
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 22,
+      "raw_session_number": 18
+    }
+  },
+  {
+    "id": "L1_J29_S19",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 19,
+    "order_in_level": 87,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 35,
+      "to_surah": "الحاقة",
+      "to_verse": 43
+    },
+    "recent_review_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 17,
+      "to_surah": "الحاقة",
+      "to_verse": 34
+    },
+    "distant_review_content": {
+      "from_surah": "المطففين",
+      "from_verse": 1,
+      "to_surah": "المطففين",
+      "to_verse": 10
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 23,
+      "raw_session_number": 19
+    }
+  },
+  {
+    "id": "L1_J29_S20",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 20,
+    "order_in_level": 88,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 44,
+      "to_surah": "الحاقة",
+      "to_verse": 52
+    },
+    "recent_review_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 25,
+      "to_surah": "الحاقة",
+      "to_verse": 43
+    },
+    "distant_review_content": {
+      "from_surah": "المطففين",
+      "from_verse": 11,
+      "to_surah": "المطففين",
+      "to_verse": 21
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 24,
+      "raw_session_number": 20
+    }
+  },
+  {
+    "id": "L1_J29_S21",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 21,
+    "order_in_level": 89,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المعارج",
+      "from_verse": 1,
+      "to_surah": "المعار ج",
+      "to_verse": 10
+    },
+    "recent_review_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 35,
+      "to_surah": "الحاقة",
+      "to_verse": 52
+    },
+    "distant_review_content": {
+      "from_surah": "المطففين",
+      "from_verse": 22,
+      "to_surah": "المطففين",
+      "to_verse": 28
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 25,
+      "raw_session_number": 21
+    }
+  },
+  {
+    "id": "L1_J29_S22",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 22,
+    "order_in_level": 90,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المعارج",
+      "from_verse": 11,
+      "to_surah": "المعار ج",
+      "to_verse": 22
+    },
+    "recent_review_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 44,
+      "to_surah": "المعارج",
+      "to_verse": 10
+    },
+    "distant_review_content": {
+      "from_surah": "المطففين",
+      "from_verse": 29,
+      "to_surah": "المطففين",
+      "to_verse": 36
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 26,
+      "raw_session_number": 22
+    }
+  },
+  {
+    "id": "L1_J29_S23",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 23,
+    "order_in_level": 91,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المعارج",
+      "from_verse": 23,
+      "to_surah": "المعار ج",
+      "to_verse": 31
+    },
+    "recent_review_content": {
+      "from_surah": "المعارج",
+      "from_verse": 1,
+      "to_surah": "المعارج",
+      "to_verse": 22
+    },
+    "distant_review_content": {
+      "from_surah": "الانشقاق",
+      "from_verse": 1,
+      "to_surah": "الانشقاق",
+      "to_verse": 9
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 27,
+      "raw_session_number": 23
+    }
+  },
+  {
+    "id": "L1_J29_S24",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 24,
+    "order_in_level": 92,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المعارج",
+      "from_verse": 32,
+      "to_surah": "المعار ج",
+      "to_verse": 39
+    },
+    "recent_review_content": {
+      "from_surah": "المعارج",
+      "from_verse": 11,
+      "to_surah": "المعارج",
+      "to_verse": 31
+    },
+    "distant_review_content": {
+      "from_surah": "الانشقاق",
+      "from_verse": 10,
+      "to_surah": "الانشقاق",
+      "to_verse": 18
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 28,
+      "raw_session_number": 24
+    }
+  },
+  {
+    "id": "L1_J29_S25",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 25,
+    "order_in_level": 93,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المعارج",
+      "from_verse": 40,
+      "to_surah": "المعار ج",
+      "to_verse": 44
+    },
+    "recent_review_content": {
+      "from_surah": "المعارج",
+      "from_verse": 23,
+      "to_surah": "المعارج",
+      "to_verse": 39
+    },
+    "distant_review_content": {
+      "from_surah": "الانشقاق",
+      "from_verse": 19,
+      "to_surah": "الانشقاق",
+      "to_verse": 25
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 29,
+      "raw_session_number": 25
+    }
+  },
+  {
+    "id": "L1_J29_S26",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 26,
+    "order_in_level": 94,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "نوح",
+      "from_verse": 1,
+      "to_surah": "نوح",
+      "to_verse": 4
+    },
+    "recent_review_content": {
+      "from_surah": "المعارج",
+      "from_verse": 32,
+      "to_surah": "المعارج",
+      "to_verse": 44
+    },
+    "distant_review_content": {
+      "from_surah": "البروج",
+      "from_verse": 1,
+      "to_surah": "البروج",
+      "to_verse": 9
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 30,
+      "raw_session_number": 26
+    }
+  },
+  {
+    "id": "L1_J29_S27",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 27,
+    "order_in_level": 95,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "نوح",
+      "from_verse": 5,
+      "to_surah": "نوح",
+      "to_verse": 10
+    },
+    "recent_review_content": {
+      "from_surah": "المعارج",
+      "from_verse": 40,
+      "to_surah": "نوح",
+      "to_verse": 4
+    },
+    "distant_review_content": {
+      "from_surah": "البروج",
+      "from_verse": 10,
+      "to_surah": "البروج",
+      "to_verse": 11
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 31,
+      "raw_session_number": 27
+    }
+  },
+  {
+    "id": "L1_J29_S28",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 28,
+    "order_in_level": 96,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "نوح",
+      "from_verse": 11,
+      "to_surah": "نوح",
+      "to_verse": 18
+    },
+    "recent_review_content": {
+      "from_surah": "نوح",
+      "from_verse": 1,
+      "to_surah": "نوح",
+      "to_verse": 10
+    },
+    "distant_review_content": {
+      "from_surah": "البروج",
+      "from_verse": 12,
+      "to_surah": "البروج",
+      "to_verse": 22
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 32,
+      "raw_session_number": 28
+    }
+  },
+  {
+    "id": "L1_J29_S29",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 29,
+    "order_in_level": 97,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "نوح",
+      "from_verse": 19,
+      "to_surah": "نوح",
+      "to_verse": 24
+    },
+    "recent_review_content": {
+      "from_surah": "نوح",
+      "from_verse": 5,
+      "to_surah": "نوح",
+      "to_verse": 18
+    },
+    "distant_review_content": {
+      "from_surah": "الطارق",
+      "from_verse": 1,
+      "to_surah": "الطارق",
+      "to_verse": 17
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 33,
+      "raw_session_number": 29
+    }
+  },
+  {
+    "id": "L1_J29_S30",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 30,
+    "order_in_level": 98,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "نوح",
+      "from_verse": 25,
+      "to_surah": "نوح",
+      "to_verse": 28
+    },
+    "recent_review_content": {
+      "from_surah": "نوح",
+      "from_verse": 11,
+      "to_surah": "نوح",
+      "to_verse": 24
+    },
+    "distant_review_content": {
+      "from_surah": "الأعلى",
+      "from_verse": 1,
+      "to_surah": "الأعلى",
+      "to_verse": 10
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 34,
+      "raw_session_number": 30
+    }
+  },
+  {
+    "id": "L1_J29_S31",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 31,
+    "order_in_level": 99,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "نوح",
+      "from_verse": 25,
+      "to_surah": "نوح",
+      "to_verse": 28
+    },
+    "recent_review_content": {
+      "from_surah": "نوح",
+      "from_verse": 19,
+      "to_surah": "نوح",
+      "to_verse": 28
+    },
+    "distant_review_content": {
+      "from_surah": "الأعلى",
+      "from_verse": 10,
+      "to_surah": "الأعلى",
+      "to_verse": 19
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 35,
+      "raw_session_number": 31
+    }
+  },
+  {
+    "id": "L1_J29_S32",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 32,
+    "order_in_level": 100,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد الحزب رقم 57 كاملًا على المحفظ المتابع",
+      "hizb_number": 57,
+      "juz_numbers": [
+        29
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "نوح",
+      "from_verse": 25,
+      "to_surah": "نوح",
+      "to_verse": 28
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 36,
+      "raw_session_number": 32
+    }
+  },
+  {
+    "id": "L1_J29_S33",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 33,
+    "order_in_level": 101,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": 57,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في الحزب رقم 57 كاملًا من قِبل إدارة الحلقات",
+      "hizb_number": 57,
+      "juz_numbers": [
+        29
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 37,
+      "raw_session_number": 33
+    }
+  },
+  {
+    "id": "L1_J29_S34",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 34,
+    "order_in_level": 102,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الجن",
+      "from_verse": 1,
+      "to_surah": "الجن",
+      "to_verse": 5
+    },
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 38,
+      "raw_session_number": 34
+    }
+  },
+  {
+    "id": "L1_J29_S35",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 35,
+    "order_in_level": 103,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الجن",
+      "from_verse": 6,
+      "to_surah": "الجن",
+      "to_verse": 9
+    },
+    "recent_review_content": {
+      "from_surah": "الجن",
+      "from_verse": 1,
+      "to_surah": "الجن",
+      "to_verse": 5
+    },
+    "distant_review_content": {
+      "from_surah": "الغاشية",
+      "from_verse": 1,
+      "to_surah": "الغاشية",
+      "to_verse": 7
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 39,
+      "raw_session_number": 35
+    }
+  },
+  {
+    "id": "L1_J29_S36",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 36,
+    "order_in_level": 104,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الجن",
+      "from_verse": 10,
+      "to_surah": "الجن",
+      "to_verse": 13
+    },
+    "recent_review_content": {
+      "from_surah": "الجن",
+      "from_verse": 1,
+      "to_surah": "الجن",
+      "to_verse": 9
+    },
+    "distant_review_content": {
+      "from_surah": "الغاشية",
+      "from_verse": 8,
+      "to_surah": "الغاشية",
+      "to_verse": 20
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 40,
+      "raw_session_number": 36
+    }
+  },
+  {
+    "id": "L1_J29_S37",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 37,
+    "order_in_level": 105,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الجن",
+      "from_verse": 14,
+      "to_surah": "الجن",
+      "to_verse": 19
+    },
+    "recent_review_content": {
+      "from_surah": "الجن",
+      "from_verse": 6,
+      "to_surah": "الجن",
+      "to_verse": 13
+    },
+    "distant_review_content": {
+      "from_surah": "الغاشية",
+      "from_verse": 21,
+      "to_surah": "الغاشية",
+      "to_verse": 26
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 41,
+      "raw_session_number": 37
+    }
+  },
+  {
+    "id": "L1_J29_S38",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 38,
+    "order_in_level": 106,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الجن",
+      "from_verse": 20,
+      "to_surah": "الجن",
+      "to_verse": 24
+    },
+    "recent_review_content": {
+      "from_surah": "الجن",
+      "from_verse": 10,
+      "to_surah": "الجن",
+      "to_verse": 19
+    },
+    "distant_review_content": {
+      "from_surah": "الفجر",
+      "from_verse": 1,
+      "to_surah": "الفجر",
+      "to_verse": 14
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 42,
+      "raw_session_number": 38
+    }
+  },
+  {
+    "id": "L1_J29_S39",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 39,
+    "order_in_level": 107,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الجن",
+      "from_verse": 25,
+      "to_surah": "الجن",
+      "to_verse": 28
+    },
+    "recent_review_content": {
+      "from_surah": "الجن",
+      "from_verse": 14,
+      "to_surah": "الجن",
+      "to_verse": 24
+    },
+    "distant_review_content": {
+      "from_surah": "الفجر",
+      "from_verse": 15,
+      "to_surah": "الفجر",
+      "to_verse": 20
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 43,
+      "raw_session_number": 39
+    }
+  },
+  {
+    "id": "L1_J29_S40",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 40,
+    "order_in_level": 108,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المزمل",
+      "from_verse": 1,
+      "to_surah": "المزمل",
+      "to_verse": 8
+    },
+    "recent_review_content": {
+      "from_surah": "الجن",
+      "from_verse": 20,
+      "to_surah": "الجن",
+      "to_verse": 28
+    },
+    "distant_review_content": {
+      "from_surah": "الفجر",
+      "from_verse": 21,
+      "to_surah": "الفجر",
+      "to_verse": 30
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 44,
+      "raw_session_number": 40
+    }
+  },
+  {
+    "id": "L1_J29_S41",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 41,
+    "order_in_level": 109,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المزمل",
+      "from_verse": 9,
+      "to_surah": "المزمل",
+      "to_verse": 14
+    },
+    "recent_review_content": {
+      "from_surah": "الجن",
+      "from_verse": 25,
+      "to_surah": "المزمل",
+      "to_verse": 8
+    },
+    "distant_review_content": {
+      "from_surah": "البلد",
+      "from_verse": 1,
+      "to_surah": "البلد",
+      "to_verse": 12
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 45,
+      "raw_session_number": 41
+    }
+  },
+  {
+    "id": "L1_J29_S42",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 42,
+    "order_in_level": 110,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المزمل",
+      "from_verse": 15,
+      "to_surah": "المزمل",
+      "to_verse": 19
+    },
+    "recent_review_content": {
+      "from_surah": "المزمل",
+      "from_verse": 1,
+      "to_surah": "المزمل",
+      "to_verse": 14
+    },
+    "distant_review_content": {
+      "from_surah": "البلد",
+      "from_verse": 13,
+      "to_surah": "البلد",
+      "to_verse": 20
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 46,
+      "raw_session_number": 42
+    }
+  },
+  {
+    "id": "L1_J29_S43",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 43,
+    "order_in_level": 111,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المزمل",
+      "from_verse": 20,
+      "to_surah": "المزمل",
+      "to_verse": 20
+    },
+    "recent_review_content": {
+      "from_surah": "المزمل",
+      "from_verse": 9,
+      "to_surah": "المزمل",
+      "to_verse": 19
+    },
+    "distant_review_content": {
+      "from_surah": "الشمس",
+      "from_verse": 1,
+      "to_surah": "الشمس",
+      "to_verse": 10
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 47,
+      "raw_session_number": 43
+    }
+  },
+  {
+    "id": "L1_J29_S44",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 44,
+    "order_in_level": 112,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المدثر",
+      "from_verse": 1,
+      "to_surah": "المدثر",
+      "to_verse": 17
+    },
+    "recent_review_content": {
+      "from_surah": "المزمل",
+      "from_verse": 15,
+      "to_surah": "المزمل",
+      "to_verse": 20
+    },
+    "distant_review_content": {
+      "from_surah": "الشمس",
+      "from_verse": 11,
+      "to_surah": "الشمس",
+      "to_verse": 15
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 48,
+      "raw_session_number": 44
+    }
+  },
+  {
+    "id": "L1_J29_S45",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 45,
+    "order_in_level": 113,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المدثر",
+      "from_verse": 18,
+      "to_surah": "المدثر",
+      "to_verse": 30
+    },
+    "recent_review_content": {
+      "from_surah": "المزمل",
+      "from_verse": 20,
+      "to_surah": "المدثر",
+      "to_verse": 17
+    },
+    "distant_review_content": {
+      "from_surah": "الليل",
+      "from_verse": 1,
+      "to_surah": "الليل",
+      "to_verse": 11
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 49,
+      "raw_session_number": 45
+    }
+  },
+  {
+    "id": "L1_J29_S46",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 46,
+    "order_in_level": 114,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المدثر",
+      "from_verse": 31,
+      "to_surah": "المدثر",
+      "to_verse": 31
+    },
+    "recent_review_content": {
+      "from_surah": "المدثر",
+      "from_verse": 1,
+      "to_surah": "المدثر",
+      "to_verse": 30
+    },
+    "distant_review_content": {
+      "from_surah": "الليل",
+      "from_verse": 12,
+      "to_surah": "الليل",
+      "to_verse": 21
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 50,
+      "raw_session_number": 46
+    }
+  },
+  {
+    "id": "L1_J29_S47",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 47,
+    "order_in_level": 115,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المدثر",
+      "from_verse": 32,
+      "to_surah": "المدثر",
+      "to_verse": 47
+    },
+    "recent_review_content": {
+      "from_surah": "المدثر",
+      "from_verse": 18,
+      "to_surah": "المدثر",
+      "to_verse": 31
+    },
+    "distant_review_content": {
+      "from_surah": "الضحى",
+      "from_verse": 1,
+      "to_surah": "الضحى",
+      "to_verse": 11
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 51,
+      "raw_session_number": 47
+    }
+  },
+  {
+    "id": "L1_J29_S48",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 48,
+    "order_in_level": 116,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المدثر",
+      "from_verse": 48,
+      "to_surah": "المدثر",
+      "to_verse": 56
+    },
+    "recent_review_content": {
+      "from_surah": "المدثر",
+      "from_verse": 31,
+      "to_surah": "المدثر",
+      "to_verse": 47
+    },
+    "distant_review_content": {
+      "from_surah": "الشرح",
+      "from_verse": 1,
+      "to_surah": "الشرح",
+      "to_verse": 8
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 52,
+      "raw_session_number": 48
+    }
+  },
+  {
+    "id": "L1_J29_S49",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 49,
+    "order_in_level": 117,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "القيامة",
+      "from_verse": 1,
+      "to_surah": "القيامة",
+      "to_verse": 10
+    },
+    "recent_review_content": {
+      "from_surah": "المدثر",
+      "from_verse": 32,
+      "to_surah": "المدثر",
+      "to_verse": 56
+    },
+    "distant_review_content": {
+      "from_surah": "التين",
+      "from_verse": 1,
+      "to_surah": "التين",
+      "to_verse": 8
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 53,
+      "raw_session_number": 49
+    }
+  },
+  {
+    "id": "L1_J29_S50",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 50,
+    "order_in_level": 118,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "القيامة",
+      "from_verse": 11,
+      "to_surah": "القيامة",
+      "to_verse": 19
+    },
+    "recent_review_content": {
+      "from_surah": "المدثر",
+      "from_verse": 48,
+      "to_surah": "القيامة",
+      "to_verse": 10
+    },
+    "distant_review_content": {
+      "from_surah": "العلق",
+      "from_verse": 1,
+      "to_surah": "العلق",
+      "to_verse": 8
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 54,
+      "raw_session_number": 50
+    }
+  },
+  {
+    "id": "L1_J29_S51",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 51,
+    "order_in_level": 119,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "القيامة",
+      "from_verse": 20,
+      "to_surah": "القيامة",
+      "to_verse": 30
+    },
+    "recent_review_content": {
+      "from_surah": "القيامة",
+      "from_verse": 1,
+      "to_surah": "القيامة",
+      "to_verse": 19
+    },
+    "distant_review_content": {
+      "from_surah": "العلق",
+      "from_verse": 9,
+      "to_surah": "العلق",
+      "to_verse": 19
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 55,
+      "raw_session_number": 51
+    }
+  },
+  {
+    "id": "L1_J29_S52",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 52,
+    "order_in_level": 120,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "القيامة",
+      "from_verse": 31,
+      "to_surah": "القيامة",
+      "to_verse": 40
+    },
+    "recent_review_content": {
+      "from_surah": "القيامة",
+      "from_verse": 11,
+      "to_surah": "القيامة",
+      "to_verse": 30
+    },
+    "distant_review_content": {
+      "from_surah": "القدر",
+      "from_verse": 1,
+      "to_surah": "القدر",
+      "to_verse": 5
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 56,
+      "raw_session_number": 52
+    }
+  },
+  {
+    "id": "L1_J29_S53",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 53,
+    "order_in_level": 121,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الإنسان",
+      "from_verse": 1,
+      "to_surah": "الإنسان",
+      "to_verse": 5
+    },
+    "recent_review_content": {
+      "from_surah": "القيامة",
+      "from_verse": 20,
+      "to_surah": "القيامة",
+      "to_verse": 40
+    },
+    "distant_review_content": {
+      "from_surah": "البينة",
+      "from_verse": 1,
+      "to_surah": "البينة",
+      "to_verse": 5
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 57,
+      "raw_session_number": 53
+    }
+  },
+  {
+    "id": "L1_J29_S54",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 54,
+    "order_in_level": 122,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الإنسان",
+      "from_verse": 6,
+      "to_surah": "الإنسان",
+      "to_verse": 12
+    },
+    "recent_review_content": {
+      "from_surah": "القيامة",
+      "from_verse": 31,
+      "to_surah": "الإنسان",
+      "to_verse": 5
+    },
+    "distant_review_content": {
+      "from_surah": "البينة",
+      "from_verse": 6,
+      "to_surah": "البينة",
+      "to_verse": 8
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 58,
+      "raw_session_number": 54
+    }
+  },
+  {
+    "id": "L1_J29_S55",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 55,
+    "order_in_level": 123,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الإنسان",
+      "from_verse": 13,
+      "to_surah": "الإنسان",
+      "to_verse": 19
+    },
+    "recent_review_content": {
+      "from_surah": "الإنسان",
+      "from_verse": 1,
+      "to_surah": "الإنسان",
+      "to_verse": 12
+    },
+    "distant_review_content": {
+      "from_surah": "الزلزلة",
+      "from_verse": 1,
+      "to_surah": "الزلزلة",
+      "to_verse": 8
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 59,
+      "raw_session_number": 55
+    }
+  },
+  {
+    "id": "L1_J29_S56",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 56,
+    "order_in_level": 124,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الإنسان",
+      "from_verse": 20,
+      "to_surah": "الإنسان",
+      "to_verse": 25
+    },
+    "recent_review_content": {
+      "from_surah": "الإنسان",
+      "from_verse": 6,
+      "to_surah": "الإنسان",
+      "to_verse": 19
+    },
+    "distant_review_content": {
+      "from_surah": "العاديات",
+      "from_verse": 1,
+      "to_surah": "العاديات",
+      "to_verse": 11
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 60,
+      "raw_session_number": 56
+    }
+  },
+  {
+    "id": "L1_J29_S57",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 57,
+    "order_in_level": 125,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الإنسان",
+      "from_verse": 26,
+      "to_surah": "الإنسان",
+      "to_verse": 31
+    },
+    "recent_review_content": {
+      "from_surah": "الإنسان",
+      "from_verse": 13,
+      "to_surah": "الإنسان",
+      "to_verse": 25
+    },
+    "distant_review_content": {
+      "from_surah": "القارعة",
+      "from_verse": 1,
+      "to_surah": "القارعة",
+      "to_verse": 11
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 61,
+      "raw_session_number": 57
+    }
+  },
+  {
+    "id": "L1_J29_S58",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 58,
+    "order_in_level": 126,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المرسلات",
+      "from_verse": 1,
+      "to_surah": "المرسلات",
+      "to_verse": 12
+    },
+    "recent_review_content": {
+      "from_surah": "الإنسان",
+      "from_verse": 20,
+      "to_surah": "الإنسان",
+      "to_verse": 31
+    },
+    "distant_review_content": {
+      "from_surah": "التكاثر",
+      "from_verse": 1,
+      "to_surah": "العصر",
+      "to_verse": 3
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 62,
+      "raw_session_number": 58
+    }
+  },
+  {
+    "id": "L1_J29_S59",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 59,
+    "order_in_level": 127,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المرسلات",
+      "from_verse": 13,
+      "to_surah": "المرسلات",
+      "to_verse": 19
+    },
+    "recent_review_content": {
+      "from_surah": "الإنسان",
+      "from_verse": 26,
+      "to_surah": "المرسلات",
+      "to_verse": 12
+    },
+    "distant_review_content": {
+      "from_surah": "الهمزة",
+      "from_verse": 1,
+      "to_surah": "الفيل",
+      "to_verse": 5
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 63,
+      "raw_session_number": 59
+    }
+  },
+  {
+    "id": "L1_J29_S60",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 60,
+    "order_in_level": 128,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المرسلات",
+      "from_verse": 20,
+      "to_surah": "المرسلات",
+      "to_verse": 28
+    },
+    "recent_review_content": {
+      "from_surah": "المرسلات",
+      "from_verse": 1,
+      "to_surah": "المرسلات",
+      "to_verse": 19
+    },
+    "distant_review_content": {
+      "from_surah": "قريش",
+      "from_verse": 1,
+      "to_surah": "الماعون",
+      "to_verse": 7
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 64,
+      "raw_session_number": 60
+    }
+  },
+  {
+    "id": "L1_J29_S61",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 61,
+    "order_in_level": 129,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المرسلات",
+      "from_verse": 29,
+      "to_surah": "المرسلات",
+      "to_verse": 40
+    },
+    "recent_review_content": {
+      "from_surah": "المرسلات",
+      "from_verse": 13,
+      "to_surah": "المرسلات",
+      "to_verse": 28
+    },
+    "distant_review_content": {
+      "from_surah": "الكوثر",
+      "from_verse": 1,
+      "to_surah": "الكافرون",
+      "to_verse": 6
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 65,
+      "raw_session_number": 61
+    }
+  },
+  {
+    "id": "L1_J29_S62",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 62,
+    "order_in_level": 130,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المرسلات",
+      "from_verse": 41,
+      "to_surah": "المرسلات",
+      "to_verse": 50
+    },
+    "recent_review_content": {
+      "from_surah": "المرسلات",
+      "from_verse": 20,
+      "to_surah": "المرسلات",
+      "to_verse": 40
+    },
+    "distant_review_content": {
+      "from_surah": "النصر",
+      "from_verse": 1,
+      "to_surah": "المسد",
+      "to_verse": 5
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 66,
+      "raw_session_number": 62
+    }
+  },
+  {
+    "id": "L1_J29_S63",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 63,
+    "order_in_level": 131,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المرسلات",
+      "from_verse": 41,
+      "to_surah": "المرسلات",
+      "to_verse": 50
+    },
+    "recent_review_content": {
+      "from_surah": "المرسلات",
+      "from_verse": 29,
+      "to_surah": "المرسلات",
+      "to_verse": 50
+    },
+    "distant_review_content": {
+      "from_surah": "الإخلاص",
+      "from_verse": 1,
+      "to_surah": "النااس",
+      "to_verse": 6
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 67,
+      "raw_session_number": 63
+    }
+  },
+  {
+    "id": "L1_J29_S64",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 64,
+    "order_in_level": 132,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد الحزب رقم 58 كاملًا على المحفظ المتابع",
+      "hizb_number": 58,
+      "juz_numbers": [
+        29
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "المرسلات",
+      "from_verse": 41,
+      "to_surah": "المرسلات",
+      "to_verse": 50
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 68,
+      "raw_session_number": 64
+    }
+  },
+  {
+    "id": "L1_J29_S65",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 65,
+    "order_in_level": 133,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": 58,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في الحزب رقم 58 كاملًا من قِبل إدارة الحلقات",
+      "hizb_number": 58,
+      "juz_numbers": [
+        29
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 69,
+      "raw_session_number": 65
+    }
+  },
+  {
+    "id": "L1_J29_S66",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 66,
+    "order_in_level": 134,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد الجزء رقم 29 كاملًا على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        29
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 70,
+      "raw_session_number": 66
+    }
+  },
+  {
+    "id": "L1_J29_S67",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 67,
+    "order_in_level": 135,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار في الجزء رقم 29 كاملًا من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        29
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 71,
+      "raw_session_number": 67
+    }
+  },
+  {
+    "id": "L1_J29_S68",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 68,
+    "order_in_level": 136,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "سرد الجزئين رقم 29 ــ 30  كاملين على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        29,
+        30
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 72,
+      "raw_session_number": 68
+    }
+  },
+  {
+    "id": "L1_J29_S69",
+    "level_id": 1,
+    "juz_number": 29,
+    "session_number": 69,
+    "order_in_level": 137,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "اختبار في الجزئين رقم 29 ــ 30  كاملين من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        29,
+        30
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 29 جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx",
+      "sheet": "Sheet1",
+      "row": 73,
+      "raw_session_number": 69
+    }
+  },
+  {
+    "id": "L1_J28_S1",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 1,
+    "order_in_level": 138,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 1,
+      "to_surah": "المجادلة",
+      "to_verse": 2
+    },
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L1_J28_S2",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 2,
+    "order_in_level": 139,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 3,
+      "to_surah": "المجادلة",
+      "to_verse": 4
+    },
+    "recent_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 1,
+      "to_surah": "المجادلة",
+      "to_verse": 2
+    },
+    "distant_review_content": {
+      "from_surah": "الملك",
+      "from_verse": 1,
+      "to_surah": "الملك",
+      "to_verse": 8
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L1_J28_S3",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 3,
+    "order_in_level": 140,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 5,
+      "to_surah": "المجادلة",
+      "to_verse": 6
+    },
+    "recent_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 1,
+      "to_surah": "المجادلة",
+      "to_verse": 4
+    },
+    "distant_review_content": {
+      "from_surah": "الملك",
+      "from_verse": 9,
+      "to_surah": "الملك",
+      "to_verse": 17
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L1_J28_S4",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 4,
+    "order_in_level": 141,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 7,
+      "to_surah": "المجادلة",
+      "to_verse": 7
+    },
+    "recent_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 3,
+      "to_surah": "المجادلة",
+      "to_verse": 6
+    },
+    "distant_review_content": {
+      "from_surah": "الملك",
+      "from_verse": 18,
+      "to_surah": "الملك",
+      "to_verse": 26
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L1_J28_S5",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 5,
+    "order_in_level": 142,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 8,
+      "to_surah": "المجادلة",
+      "to_verse": 9
+    },
+    "recent_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 5,
+      "to_surah": "المجادلة",
+      "to_verse": 7
+    },
+    "distant_review_content": {
+      "from_surah": "الملك",
+      "from_verse": 27,
+      "to_surah": "القلم",
+      "to_verse": 7
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L1_J28_S6",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 6,
+    "order_in_level": 143,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 10,
+      "to_surah": "المجادلة",
+      "to_verse": 11
+    },
+    "recent_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 7,
+      "to_surah": "المجادلة",
+      "to_verse": 9
+    },
+    "distant_review_content": {
+      "from_surah": "القلم",
+      "from_verse": 8,
+      "to_surah": "القلم",
+      "to_verse": 25
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L1_J28_S7",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 7,
+    "order_in_level": 144,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 12,
+      "to_surah": "المجادلة",
+      "to_verse": 13
+    },
+    "recent_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 8,
+      "to_surah": "المجادلة",
+      "to_verse": 11
+    },
+    "distant_review_content": {
+      "from_surah": "القلم",
+      "from_verse": 26,
+      "to_surah": "القلم",
+      "to_verse": 42
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 11,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L1_J28_S8",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 8,
+    "order_in_level": 145,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 14,
+      "to_surah": "المجادلة",
+      "to_verse": 17
+    },
+    "recent_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 10,
+      "to_surah": "المجادلة",
+      "to_verse": 13
+    },
+    "distant_review_content": {
+      "from_surah": "القلم",
+      "from_verse": 43,
+      "to_surah": "القلم",
+      "to_verse": 52
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 12,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L1_J28_S9",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 9,
+    "order_in_level": 146,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 18,
+      "to_surah": "المجادلة",
+      "to_verse": 21
+    },
+    "recent_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 12,
+      "to_surah": "المجادلة",
+      "to_verse": 17
+    },
+    "distant_review_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 1,
+      "to_surah": "الحاقة",
+      "to_verse": 16
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 13,
+      "raw_session_number": 9
+    }
+  },
+  {
+    "id": "L1_J28_S10",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 10,
+    "order_in_level": 147,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 22,
+      "to_surah": "المجادلة",
+      "to_verse": 22
+    },
+    "recent_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 14,
+      "to_surah": "المجادلة",
+      "to_verse": 21
+    },
+    "distant_review_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 17,
+      "to_surah": "الحاقة",
+      "to_verse": 34
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 14,
+      "raw_session_number": 10
+    }
+  },
+  {
+    "id": "L1_J28_S11",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 11,
+    "order_in_level": 148,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحشر",
+      "from_verse": 1,
+      "to_surah": "الحشر",
+      "to_verse": 3
+    },
+    "recent_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 18,
+      "to_surah": "المجادلة",
+      "to_verse": 22
+    },
+    "distant_review_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 35,
+      "to_surah": "الحاقة",
+      "to_verse": 52
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 15,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L1_J28_S12",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 12,
+    "order_in_level": 149,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحشر",
+      "from_verse": 4,
+      "to_surah": "الحشر",
+      "to_verse": 6
+    },
+    "recent_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 22,
+      "to_surah": "الحشر",
+      "to_verse": 3
+    },
+    "distant_review_content": {
+      "from_surah": "المعارج",
+      "from_verse": 1,
+      "to_surah": "المعارج",
+      "to_verse": 22
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 16,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L1_J28_S13",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 13,
+    "order_in_level": 150,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحشر",
+      "from_verse": 7,
+      "to_surah": "الحشر",
+      "to_verse": 8
+    },
+    "recent_review_content": {
+      "from_surah": "الحشر",
+      "from_verse": 1,
+      "to_surah": "الحشر",
+      "to_verse": 6
+    },
+    "distant_review_content": {
+      "from_surah": "المعارج",
+      "from_verse": 23,
+      "to_surah": "المعارج",
+      "to_verse": 39
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 17,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L1_J28_S14",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 14,
+    "order_in_level": 151,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحشر",
+      "from_verse": 9,
+      "to_surah": "الحشر",
+      "to_verse": 9
+    },
+    "recent_review_content": {
+      "from_surah": "الحشر",
+      "from_verse": 4,
+      "to_surah": "الحشر",
+      "to_verse": 8
+    },
+    "distant_review_content": {
+      "from_surah": "المعارج",
+      "from_verse": 40,
+      "to_surah": "نوح",
+      "to_verse": 4
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 18,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L1_J28_S15",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 15,
+    "order_in_level": 152,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحشر",
+      "from_verse": 10,
+      "to_surah": "الحشر",
+      "to_verse": 11
+    },
+    "recent_review_content": {
+      "from_surah": "الحشر",
+      "from_verse": 7,
+      "to_surah": "الحشر",
+      "to_verse": 9
+    },
+    "distant_review_content": {
+      "from_surah": "نوح",
+      "from_verse": 5,
+      "to_surah": "نوح",
+      "to_verse": 18
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 19,
+      "raw_session_number": 15
+    }
+  },
+  {
+    "id": "L1_J28_S16",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 16,
+    "order_in_level": 153,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحشر",
+      "from_verse": 12,
+      "to_surah": "الحشر",
+      "to_verse": 14
+    },
+    "recent_review_content": {
+      "from_surah": "الحشر",
+      "from_verse": 9,
+      "to_surah": "الحشر",
+      "to_verse": 11
+    },
+    "distant_review_content": {
+      "from_surah": "نوح",
+      "from_verse": 19,
+      "to_surah": "نوح",
+      "to_verse": 28
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 20,
+      "raw_session_number": 16
+    }
+  },
+  {
+    "id": "L1_J28_S17",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 17,
+    "order_in_level": 154,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحشر",
+      "from_verse": 15,
+      "to_surah": "الحشر",
+      "to_verse": 16
+    },
+    "recent_review_content": {
+      "from_surah": "الحشر",
+      "from_verse": 10,
+      "to_surah": "الحشر",
+      "to_verse": 14
+    },
+    "distant_review_content": {
+      "from_surah": "الجن",
+      "from_verse": 1,
+      "to_surah": "الجن",
+      "to_verse": 9
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 21,
+      "raw_session_number": 17
+    }
+  },
+  {
+    "id": "L1_J28_S18",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 18,
+    "order_in_level": 155,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحشر",
+      "from_verse": 17,
+      "to_surah": "الحشر",
+      "to_verse": 19
+    },
+    "recent_review_content": {
+      "from_surah": "الحشر",
+      "from_verse": 12,
+      "to_surah": "الحشر",
+      "to_verse": 16
+    },
+    "distant_review_content": {
+      "from_surah": "الجن",
+      "from_verse": 10,
+      "to_surah": "الجن",
+      "to_verse": 19
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 22,
+      "raw_session_number": 18
+    }
+  },
+  {
+    "id": "L1_J28_S19",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 19,
+    "order_in_level": 156,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحشر",
+      "from_verse": 20,
+      "to_surah": "الحشر",
+      "to_verse": 22
+    },
+    "recent_review_content": {
+      "from_surah": "الحشر",
+      "from_verse": 15,
+      "to_surah": "الحشر",
+      "to_verse": 19
+    },
+    "distant_review_content": {
+      "from_surah": "الجن",
+      "from_verse": 20,
+      "to_surah": "الجن",
+      "to_verse": 28
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 23,
+      "raw_session_number": 19
+    }
+  },
+  {
+    "id": "L1_J28_S20",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 20,
+    "order_in_level": 157,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحشر",
+      "from_verse": 23,
+      "to_surah": "الحشر",
+      "to_verse": 24
+    },
+    "recent_review_content": {
+      "from_surah": "الحشر",
+      "from_verse": 17,
+      "to_surah": "الحشر",
+      "to_verse": 22
+    },
+    "distant_review_content": {
+      "from_surah": "المزمل",
+      "from_verse": 1,
+      "to_surah": "المزمل",
+      "to_verse": 14
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 24,
+      "raw_session_number": 20
+    }
+  },
+  {
+    "id": "L1_J28_S21",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 21,
+    "order_in_level": 158,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الممتحنة",
+      "from_verse": 1,
+      "to_surah": "الممتحنة",
+      "to_verse": 1
+    },
+    "recent_review_content": {
+      "from_surah": "الحشر",
+      "from_verse": 20,
+      "to_surah": "الحشر",
+      "to_verse": 24
+    },
+    "distant_review_content": {
+      "from_surah": "المزمل",
+      "from_verse": 15,
+      "to_surah": "المزمل",
+      "to_verse": 20
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 25,
+      "raw_session_number": 21
+    }
+  },
+  {
+    "id": "L1_J28_S22",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 22,
+    "order_in_level": 159,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الممتحنة",
+      "from_verse": 2,
+      "to_surah": "الممتحنة",
+      "to_verse": 3
+    },
+    "recent_review_content": {
+      "from_surah": "الحشر",
+      "from_verse": 23,
+      "to_surah": "الممتحنة",
+      "to_verse": 1
+    },
+    "distant_review_content": {
+      "from_surah": "المدثر",
+      "from_verse": 1,
+      "to_surah": "المدثر",
+      "to_verse": 30
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 26,
+      "raw_session_number": 22
+    }
+  },
+  {
+    "id": "L1_J28_S23",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 23,
+    "order_in_level": 160,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الممتحنة",
+      "from_verse": 4,
+      "to_surah": "الممتحنة",
+      "to_verse": 5
+    },
+    "recent_review_content": {
+      "from_surah": "الممتحنة",
+      "from_verse": 1,
+      "to_surah": "الممتحنة",
+      "to_verse": 3
+    },
+    "distant_review_content": {
+      "from_surah": "المدثر",
+      "from_verse": 31,
+      "to_surah": "المدثر",
+      "to_verse": 47
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 27,
+      "raw_session_number": 23
+    }
+  },
+  {
+    "id": "L1_J28_S24",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 24,
+    "order_in_level": 161,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الممتحنة",
+      "from_verse": 6,
+      "to_surah": "الممتحنة",
+      "to_verse": 8
+    },
+    "recent_review_content": {
+      "from_surah": "الممتحنة",
+      "from_verse": 2,
+      "to_surah": "الممتحنة",
+      "to_verse": 5
+    },
+    "distant_review_content": {
+      "from_surah": "المدثر",
+      "from_verse": 48,
+      "to_surah": "القيامة",
+      "to_verse": 10
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 28,
+      "raw_session_number": 24
+    }
+  },
+  {
+    "id": "L1_J28_S25",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 25,
+    "order_in_level": 162,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الممتحنة",
+      "from_verse": 9,
+      "to_surah": "الممتحنة",
+      "to_verse": 10
+    },
+    "recent_review_content": {
+      "from_surah": "الممتحنة",
+      "from_verse": 4,
+      "to_surah": "الممتحنة",
+      "to_verse": 8
+    },
+    "distant_review_content": {
+      "from_surah": "القيامة",
+      "from_verse": 11,
+      "to_surah": "القيامة",
+      "to_verse": 30
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 29,
+      "raw_session_number": 25
+    }
+  },
+  {
+    "id": "L1_J28_S26",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 26,
+    "order_in_level": 163,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الممتحنة",
+      "from_verse": 10,
+      "to_surah": "الممتحنة",
+      "to_verse": 11
+    },
+    "recent_review_content": {
+      "from_surah": "الممتحنة",
+      "from_verse": 6,
+      "to_surah": "الممتحنة",
+      "to_verse": 10
+    },
+    "distant_review_content": {
+      "from_surah": "القيامة",
+      "from_verse": 31,
+      "to_surah": "الإنسان",
+      "to_verse": 5
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 30,
+      "raw_session_number": 26
+    }
+  },
+  {
+    "id": "L1_J28_S27",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 27,
+    "order_in_level": 164,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الممتحنة",
+      "from_verse": 12,
+      "to_surah": "الممتحنة",
+      "to_verse": 13
+    },
+    "recent_review_content": {
+      "from_surah": "الممتحنة",
+      "from_verse": 9,
+      "to_surah": "الممتحنة",
+      "to_verse": 11
+    },
+    "distant_review_content": {
+      "from_surah": "الإنسان",
+      "from_verse": 6,
+      "to_surah": "الإنسان",
+      "to_verse": 18
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 31,
+      "raw_session_number": 27
+    }
+  },
+  {
+    "id": "L1_J28_S28",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 28,
+    "order_in_level": 165,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الصف",
+      "from_verse": 1,
+      "to_surah": "الصف",
+      "to_verse": 5
+    },
+    "recent_review_content": {
+      "from_surah": "الممتحنة",
+      "from_verse": 10,
+      "to_surah": "الممتحنة",
+      "to_verse": 13
+    },
+    "distant_review_content": {
+      "from_surah": "الإنسان",
+      "from_verse": 19,
+      "to_surah": "الإنسان",
+      "to_verse": 31
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 32,
+      "raw_session_number": 28
+    }
+  },
+  {
+    "id": "L1_J28_S29",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 29,
+    "order_in_level": 166,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الصف",
+      "from_verse": 6,
+      "to_surah": "الصف",
+      "to_verse": 8
+    },
+    "recent_review_content": {
+      "from_surah": "الممتحنة",
+      "from_verse": 12,
+      "to_surah": "الصف",
+      "to_verse": 5
+    },
+    "distant_review_content": {
+      "from_surah": "المرسلات",
+      "from_verse": 1,
+      "to_surah": "المرسلات",
+      "to_verse": 19
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 33,
+      "raw_session_number": 29
+    }
+  },
+  {
+    "id": "L1_J28_S30",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 30,
+    "order_in_level": 167,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الصف",
+      "from_verse": 9,
+      "to_surah": "الصف",
+      "to_verse": 11
+    },
+    "recent_review_content": {
+      "from_surah": "الصف",
+      "from_verse": 1,
+      "to_surah": "الصف",
+      "to_verse": 8
+    },
+    "distant_review_content": {
+      "from_surah": "المرسلات",
+      "from_verse": 20,
+      "to_surah": "المرسلات",
+      "to_verse": 40
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 34,
+      "raw_session_number": 30
+    }
+  },
+  {
+    "id": "L1_J28_S31",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 31,
+    "order_in_level": 168,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الصف",
+      "from_verse": 12,
+      "to_surah": "الصف",
+      "to_verse": 14
+    },
+    "recent_review_content": {
+      "from_surah": "الصف",
+      "from_verse": 6,
+      "to_surah": "الصف",
+      "to_verse": 11
+    },
+    "distant_review_content": {
+      "from_surah": "المرسلات",
+      "from_verse": 41,
+      "to_surah": "المرسلات",
+      "to_verse": 50
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 35,
+      "raw_session_number": 31
+    }
+  },
+  {
+    "id": "L1_J28_S32",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 32,
+    "order_in_level": 169,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الصف",
+      "from_verse": 12,
+      "to_surah": "الصف",
+      "to_verse": 14
+    },
+    "recent_review_content": {
+      "from_surah": "الصف",
+      "from_verse": 9,
+      "to_surah": "الصف",
+      "to_verse": 14
+    },
+    "distant_review_content": {
+      "from_surah": "النبأ",
+      "from_verse": 1,
+      "to_surah": "النبأ",
+      "to_verse": 40
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 36,
+      "raw_session_number": 32
+    }
+  },
+  {
+    "id": "L1_J28_S33",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 33,
+    "order_in_level": 170,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد الحزب رقم 55 كاملًا على المحفظ المتابع",
+      "hizb_number": 55,
+      "juz_numbers": [
+        28
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "الصف",
+      "from_verse": 12,
+      "to_surah": "الصف",
+      "to_verse": 14
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 37,
+      "raw_session_number": 33
+    }
+  },
+  {
+    "id": "L1_J28_S34",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 34,
+    "order_in_level": 171,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": 55,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في الحزب رقم 55 كاملًا من قِبل إدارة الحلقات",
+      "hizb_number": 55,
+      "juz_numbers": [
+        28
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 38,
+      "raw_session_number": 34
+    }
+  },
+  {
+    "id": "L1_J28_S35",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 35,
+    "order_in_level": 172,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الجمعة",
+      "from_verse": 1,
+      "to_surah": "الجمعة",
+      "to_verse": 4
+    },
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 39,
+      "raw_session_number": 35
+    }
+  },
+  {
+    "id": "L1_J28_S36",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 36,
+    "order_in_level": 173,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الجمعة",
+      "from_verse": 5,
+      "to_surah": "الجمعة",
+      "to_verse": 6
+    },
+    "recent_review_content": {
+      "from_surah": "الجمعة",
+      "from_verse": 1,
+      "to_surah": "الجمعة",
+      "to_verse": 4
+    },
+    "distant_review_content": {
+      "from_surah": "النازعات",
+      "from_verse": 1,
+      "to_surah": "النازعات",
+      "to_verse": 14
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 40,
+      "raw_session_number": 36
+    }
+  },
+  {
+    "id": "L1_J28_S37",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 37,
+    "order_in_level": 174,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الجمعة",
+      "from_verse": 7,
+      "to_surah": "الجمعة",
+      "to_verse": 8
+    },
+    "recent_review_content": {
+      "from_surah": "الجمعة",
+      "from_verse": 1,
+      "to_surah": "الجمعة",
+      "to_verse": 6
+    },
+    "distant_review_content": {
+      "from_surah": "النازعات",
+      "from_verse": 15,
+      "to_surah": "النازعات",
+      "to_verse": 36
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 41,
+      "raw_session_number": 37
+    }
+  },
+  {
+    "id": "L1_J28_S38",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 38,
+    "order_in_level": 175,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الجمعة",
+      "from_verse": 9,
+      "to_surah": "الجمعة",
+      "to_verse": 11
+    },
+    "recent_review_content": {
+      "from_surah": "الجمعة",
+      "from_verse": 5,
+      "to_surah": "الجمعة",
+      "to_verse": 8
+    },
+    "distant_review_content": {
+      "from_surah": "النازعات",
+      "from_verse": 37,
+      "to_surah": "عبس",
+      "to_verse": 16
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 42,
+      "raw_session_number": 38
+    }
+  },
+  {
+    "id": "L1_J28_S39",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 39,
+    "order_in_level": 176,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المنافقون",
+      "from_verse": 1,
+      "to_surah": "المنافقون",
+      "to_verse": 4
+    },
+    "recent_review_content": {
+      "from_surah": "الجمعة",
+      "from_verse": 7,
+      "to_surah": "الجمعة",
+      "to_verse": 11
+    },
+    "distant_review_content": {
+      "from_surah": "عبس",
+      "from_verse": 17,
+      "to_surah": "عبس",
+      "to_verse": 42
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 43,
+      "raw_session_number": 39
+    }
+  },
+  {
+    "id": "L1_J28_S40",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 40,
+    "order_in_level": 177,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المنافقون",
+      "from_verse": 5,
+      "to_surah": "المنافقون",
+      "to_verse": 7
+    },
+    "recent_review_content": {
+      "from_surah": "الجمعة",
+      "from_verse": 9,
+      "to_surah": "المنافقون",
+      "to_verse": 4
+    },
+    "distant_review_content": {
+      "from_surah": "التكوير",
+      "from_verse": 1,
+      "to_surah": "التكوير",
+      "to_verse": 18
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 44,
+      "raw_session_number": 40
+    }
+  },
+  {
+    "id": "L1_J28_S41",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 41,
+    "order_in_level": 178,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المنافقون",
+      "from_verse": 8,
+      "to_surah": "المنافقون",
+      "to_verse": 9
+    },
+    "recent_review_content": {
+      "from_surah": "المنافقون",
+      "from_verse": 1,
+      "to_surah": "المنافقون",
+      "to_verse": 7
+    },
+    "distant_review_content": {
+      "from_surah": "التكوير",
+      "from_verse": 19,
+      "to_surah": "الانفطار",
+      "to_verse": 8
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 45,
+      "raw_session_number": 41
+    }
+  },
+  {
+    "id": "L1_J28_S42",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 42,
+    "order_in_level": 179,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المنافقون",
+      "from_verse": 10,
+      "to_surah": "المنافقون",
+      "to_verse": 11
+    },
+    "recent_review_content": {
+      "from_surah": "المنافقون",
+      "from_verse": 5,
+      "to_surah": "المنافقون",
+      "to_verse": 9
+    },
+    "distant_review_content": {
+      "from_surah": "الانفطار",
+      "from_verse": 9,
+      "to_surah": "المطففين",
+      "to_verse": 10
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 46,
+      "raw_session_number": 42
+    }
+  },
+  {
+    "id": "L1_J28_S43",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 43,
+    "order_in_level": 180,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التغابن",
+      "from_verse": 1,
+      "to_surah": "التغابن",
+      "to_verse": 4
+    },
+    "recent_review_content": {
+      "from_surah": "المنافقون",
+      "from_verse": 8,
+      "to_surah": "المنافقون",
+      "to_verse": 11
+    },
+    "distant_review_content": {
+      "from_surah": "المطففين",
+      "from_verse": 11,
+      "to_surah": "المطففين",
+      "to_verse": 28
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 47,
+      "raw_session_number": 43
+    }
+  },
+  {
+    "id": "L1_J28_S44",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 44,
+    "order_in_level": 181,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التغابن",
+      "from_verse": 5,
+      "to_surah": "التغابن",
+      "to_verse": 7
+    },
+    "recent_review_content": {
+      "from_surah": "المنافقون",
+      "from_verse": 10,
+      "to_surah": "التغابن",
+      "to_verse": 4
+    },
+    "distant_review_content": {
+      "from_surah": "المطففين",
+      "from_verse": 29,
+      "to_surah": "الانشقاق",
+      "to_verse": 9
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 48,
+      "raw_session_number": 44
+    }
+  },
+  {
+    "id": "L1_J28_S45",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 45,
+    "order_in_level": 182,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التغابن",
+      "from_verse": 8,
+      "to_surah": "التغابن",
+      "to_verse": 9
+    },
+    "recent_review_content": {
+      "from_surah": "التغابن",
+      "from_verse": 1,
+      "to_surah": "التغابن",
+      "to_verse": 7
+    },
+    "distant_review_content": {
+      "from_surah": "الانشقاق",
+      "from_verse": 10,
+      "to_surah": "الانشقاق",
+      "to_verse": 25
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 49,
+      "raw_session_number": 45
+    }
+  },
+  {
+    "id": "L1_J28_S46",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 46,
+    "order_in_level": 183,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التغابن",
+      "from_verse": 10,
+      "to_surah": "التغابن",
+      "to_verse": 12
+    },
+    "recent_review_content": {
+      "from_surah": "التغابن",
+      "from_verse": 5,
+      "to_surah": "التغابن",
+      "to_verse": 9
+    },
+    "distant_review_content": {
+      "from_surah": "البروج",
+      "from_verse": 1,
+      "to_surah": "البروج",
+      "to_verse": 11
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 50,
+      "raw_session_number": 46
+    }
+  },
+  {
+    "id": "L1_J28_S47",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 47,
+    "order_in_level": 184,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التغابن",
+      "from_verse": 13,
+      "to_surah": "التغابن",
+      "to_verse": 15
+    },
+    "recent_review_content": {
+      "from_surah": "التغابن",
+      "from_verse": 8,
+      "to_surah": "التغابن",
+      "to_verse": 12
+    },
+    "distant_review_content": {
+      "from_surah": "البروج",
+      "from_verse": 12,
+      "to_surah": "الطارق",
+      "to_verse": 17
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 51,
+      "raw_session_number": 47
+    }
+  },
+  {
+    "id": "L1_J28_S48",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 48,
+    "order_in_level": 185,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التغابن",
+      "from_verse": 16,
+      "to_surah": "التغابن",
+      "to_verse": 18
+    },
+    "recent_review_content": {
+      "from_surah": "التغابن",
+      "from_verse": 10,
+      "to_surah": "التغابن",
+      "to_verse": 15
+    },
+    "distant_review_content": {
+      "from_surah": "الأعلى",
+      "from_verse": 1,
+      "to_surah": "الأعلى",
+      "to_verse": 19
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 52,
+      "raw_session_number": 48
+    }
+  },
+  {
+    "id": "L1_J28_S49",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 49,
+    "order_in_level": 186,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الطلاق",
+      "from_verse": 1,
+      "to_surah": "الطلاق",
+      "to_verse": 1
+    },
+    "recent_review_content": {
+      "from_surah": "التغابن",
+      "from_verse": 13,
+      "to_surah": "التغابن",
+      "to_verse": 18
+    },
+    "distant_review_content": {
+      "from_surah": "الغاشية",
+      "from_verse": 1,
+      "to_surah": "الغاشية",
+      "to_verse": 26
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 53,
+      "raw_session_number": 49
+    }
+  },
+  {
+    "id": "L1_J28_S50",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 50,
+    "order_in_level": 187,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الطلاق",
+      "from_verse": 2,
+      "to_surah": "الطلاق",
+      "to_verse": 3
+    },
+    "recent_review_content": {
+      "from_surah": "التغابن",
+      "from_verse": 16,
+      "to_surah": "الطلاق",
+      "to_verse": 1
+    },
+    "distant_review_content": {
+      "from_surah": "الفجر",
+      "from_verse": 1,
+      "to_surah": "الفجر",
+      "to_verse": 16
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 54,
+      "raw_session_number": 50
+    }
+  },
+  {
+    "id": "L1_J28_S51",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 51,
+    "order_in_level": 188,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الطلاق",
+      "from_verse": 4,
+      "to_surah": "الطلاق",
+      "to_verse": 5
+    },
+    "recent_review_content": {
+      "from_surah": "الطلاق",
+      "from_verse": 1,
+      "to_surah": "الطلاق",
+      "to_verse": 3
+    },
+    "distant_review_content": {
+      "from_surah": "الفجر",
+      "from_verse": 17,
+      "to_surah": "الفجر",
+      "to_verse": 30
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 55,
+      "raw_session_number": 51
+    }
+  },
+  {
+    "id": "L1_J28_S52",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 52,
+    "order_in_level": 189,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الطلاق",
+      "from_verse": 6,
+      "to_surah": "الطلاق",
+      "to_verse": 7
+    },
+    "recent_review_content": {
+      "from_surah": "الطلاق",
+      "from_verse": 2,
+      "to_surah": "الطلاق",
+      "to_verse": 5
+    },
+    "distant_review_content": {
+      "from_surah": "البلد",
+      "from_verse": 1,
+      "to_surah": "البلد",
+      "to_verse": 20
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 56,
+      "raw_session_number": 52
+    }
+  },
+  {
+    "id": "L1_J28_S53",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 53,
+    "order_in_level": 190,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الطلاق",
+      "from_verse": 8,
+      "to_surah": "الطلاق",
+      "to_verse": 10
+    },
+    "recent_review_content": {
+      "from_surah": "الطلاق",
+      "from_verse": 4,
+      "to_surah": "الطلاق",
+      "to_verse": 7
+    },
+    "distant_review_content": {
+      "from_surah": "الشمس",
+      "from_verse": 1,
+      "to_surah": "الشمس",
+      "to_verse": 15
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 57,
+      "raw_session_number": 53
+    }
+  },
+  {
+    "id": "L1_J28_S54",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 54,
+    "order_in_level": 191,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الطلاق",
+      "from_verse": 11,
+      "to_surah": "الطلاق",
+      "to_verse": 12
+    },
+    "recent_review_content": {
+      "from_surah": "الطلاق",
+      "from_verse": 6,
+      "to_surah": "الطلاق",
+      "to_verse": 10
+    },
+    "distant_review_content": {
+      "from_surah": "الليل",
+      "from_verse": 1,
+      "to_surah": "الليل",
+      "to_verse": 21
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 58,
+      "raw_session_number": 54
+    }
+  },
+  {
+    "id": "L1_J28_S55",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 55,
+    "order_in_level": 192,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التحريم",
+      "from_verse": 1,
+      "to_surah": "التحريم",
+      "to_verse": 3
+    },
+    "recent_review_content": {
+      "from_surah": "الطلاق",
+      "from_verse": 8,
+      "to_surah": "الطلاق",
+      "to_verse": 12
+    },
+    "distant_review_content": {
+      "from_surah": "الضحى",
+      "from_verse": 1,
+      "to_surah": "التين",
+      "to_verse": 8
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 59,
+      "raw_session_number": 55
+    }
+  },
+  {
+    "id": "L1_J28_S56",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 56,
+    "order_in_level": 193,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التحريم",
+      "from_verse": 4,
+      "to_surah": "التحريم",
+      "to_verse": 5
+    },
+    "recent_review_content": {
+      "from_surah": "الطلاق",
+      "from_verse": 11,
+      "to_surah": "التحريم",
+      "to_verse": 3
+    },
+    "distant_review_content": {
+      "from_surah": "العلق",
+      "from_verse": 1,
+      "to_surah": "القدر",
+      "to_verse": 5
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 60,
+      "raw_session_number": 56
+    }
+  },
+  {
+    "id": "L1_J28_S57",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 57,
+    "order_in_level": 194,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التحريم",
+      "from_verse": 6,
+      "to_surah": "التحريم",
+      "to_verse": 7
+    },
+    "recent_review_content": {
+      "from_surah": "التحريم",
+      "from_verse": 1,
+      "to_surah": "التحريم",
+      "to_verse": 5
+    },
+    "distant_review_content": {
+      "from_surah": "البينة",
+      "from_verse": 1,
+      "to_surah": "البينة",
+      "to_verse": 8
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 61,
+      "raw_session_number": 57
+    }
+  },
+  {
+    "id": "L1_J28_S58",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 58,
+    "order_in_level": 195,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التحريم",
+      "from_verse": 8,
+      "to_surah": "التحريم",
+      "to_verse": 8
+    },
+    "recent_review_content": {
+      "from_surah": "التحريم",
+      "from_verse": 4,
+      "to_surah": "التحريم",
+      "to_verse": 7
+    },
+    "distant_review_content": {
+      "from_surah": "الزلزلة",
+      "from_verse": 1,
+      "to_surah": "القارعة",
+      "to_verse": 11
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 62,
+      "raw_session_number": 58
+    }
+  },
+  {
+    "id": "L1_J28_S59",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 59,
+    "order_in_level": 196,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التحريم",
+      "from_verse": 9,
+      "to_surah": "التحريم",
+      "to_verse": 10
+    },
+    "recent_review_content": {
+      "from_surah": "التحريم",
+      "from_verse": 6,
+      "to_surah": "التحريم",
+      "to_verse": 8
+    },
+    "distant_review_content": {
+      "from_surah": "التكاثر",
+      "from_verse": 1,
+      "to_surah": "الفيل",
+      "to_verse": 5
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 63,
+      "raw_session_number": 59
+    }
+  },
+  {
+    "id": "L1_J28_S60",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 60,
+    "order_in_level": 197,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التحريم",
+      "from_verse": 11,
+      "to_surah": "التحريم",
+      "to_verse": 12
+    },
+    "recent_review_content": {
+      "from_surah": "التحريم",
+      "from_verse": 8,
+      "to_surah": "التحريم",
+      "to_verse": 10
+    },
+    "distant_review_content": {
+      "from_surah": "قريش",
+      "from_verse": 1,
+      "to_surah": "الكوثر",
+      "to_verse": 3
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 64,
+      "raw_session_number": 60
+    }
+  },
+  {
+    "id": "L1_J28_S61",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 61,
+    "order_in_level": 198,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "التحريم",
+      "from_verse": 11,
+      "to_surah": "التحريم",
+      "to_verse": 12
+    },
+    "recent_review_content": {
+      "from_surah": "التحريم",
+      "from_verse": 9,
+      "to_surah": "التحريم",
+      "to_verse": 12
+    },
+    "distant_review_content": {
+      "from_surah": "الكافرون",
+      "from_verse": 1,
+      "to_surah": "الناس",
+      "to_verse": 6
+    },
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 65,
+      "raw_session_number": 61
+    }
+  },
+  {
+    "id": "L1_J28_S62",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 62,
+    "order_in_level": 199,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد الحزب رقم 56 كاملًا على المحفظ المتابع",
+      "hizb_number": 56,
+      "juz_numbers": [
+        28
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "التحريم",
+      "from_verse": 11,
+      "to_surah": "التحريم",
+      "to_verse": 12
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 66,
+      "raw_session_number": 62
+    }
+  },
+  {
+    "id": "L1_J28_S63",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 63,
+    "order_in_level": 200,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": 56,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في الحزب رقم 56 كاملًا من قِبل إدارة الحلقات",
+      "hizb_number": 56,
+      "juz_numbers": [
+        28
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 67,
+      "raw_session_number": 63
+    }
+  },
+  {
+    "id": "L1_J28_S64",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 64,
+    "order_in_level": 201,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد الجزء رقم 28 كاملًا على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        28
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 68,
+      "raw_session_number": 64
+    }
+  },
+  {
+    "id": "L1_J28_S65",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 65,
+    "order_in_level": 202,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار في الجزء رقم 28 كاملًا من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        28
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 69,
+      "raw_session_number": 65
+    }
+  },
+  {
+    "id": "L1_J28_S66",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 66,
+    "order_in_level": 203,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "سرد المستوى كاملًا الأجزاء رقم 28 ــ  29 ــ 30 على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        28,
+        29,
+        30
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 70,
+      "raw_session_number": 66
+    }
+  },
+  {
+    "id": "L1_J28_S67",
+    "level_id": 1,
+    "juz_number": 28,
+    "session_number": 67,
+    "order_in_level": 204,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "اختبار في المستوى كاملًا  الأجزاء رقم 28 ــ  29 ــ 30 من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        28,
+        29,
+        30
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الأول جاهز للمنسق/الجزء الــــ 28جاهز للمنسق/منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx",
+      "sheet": "Sheet1",
+      "row": 71,
+      "raw_session_number": 67
+    }
+  }
+]

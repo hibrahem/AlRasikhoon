@@ -1,0 +1,455 @@
+{
+  "generated_from": "/Users/hassanibrahim/Documents/Projects/AlRasikhoonProject/curriculum",
+  "levels": 10,
+  "total_sessions": 893,
+  "per_level": {
+    "1": {
+      "session_count": 204,
+      "juz": {
+        "30": {
+          "session_count": 68,
+          "source_files": [
+            "منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx"
+          ],
+          "notes": [
+            "single workbook; sheets used: ['Sheet1']",
+            "tiers: unit1, unit2, juz"
+          ],
+          "hizb_numbers": [
+            59,
+            60
+          ]
+        },
+        "29": {
+          "session_count": 69,
+          "source_files": [
+            "منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx"
+          ],
+          "notes": [
+            "single workbook; sheets used: ['Sheet1']",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": [
+            57,
+            58
+          ]
+        },
+        "28": {
+          "session_count": 67,
+          "source_files": [
+            "منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx"
+          ],
+          "notes": [
+            "single workbook; sheets used: ['Sheet1']",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": [
+            55,
+            56
+          ]
+        }
+      }
+    },
+    "2": {
+      "session_count": 148,
+      "juz": {
+        "27": {
+          "session_count": 51,
+          "source_files": [
+            "منهج الراسخون المستوى الثاني الجزء  رقم  1 الحزب  الــ 54.xlsx",
+            "منهج الراسخون المستوى الثاني الجزء  رقم  1  الــ 53.xlsx"
+          ],
+          "notes": [
+            "two half-workbooks; teaching order [54, 53] (hizb descending), corroborated by the juz-tier pair living in the last half ('منهج الراسخون المستوى الثاني الجزء  رقم  1  الــ 53.xlsx')",
+            "tiers: unit1, unit2, juz"
+          ],
+          "hizb_numbers": [
+            53,
+            54
+          ]
+        },
+        "26": {
+          "session_count": 47,
+          "source_files": [
+            "منهج الراسخون المستوى الثاني الحزب الــ  52-.xlsx",
+            "منهج الراسخون المستوى الثاني الحزب الــ  51.xlsx"
+          ],
+          "notes": [
+            "two half-workbooks; teaching order [52, 51] (hizb descending), corroborated by the juz-tier pair living in the last half ('منهج الراسخون المستوى الثاني الحزب الــ  51.xlsx')",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": [
+            51,
+            52
+          ]
+        },
+        "25": {
+          "session_count": 50,
+          "source_files": [
+            "منهج الراسخون المستوى الثاني الجزء رقم 3 - الحزب الــ  50.xlsx",
+            "منهج الراسخون المستوى الثاني الجزء رقم 3 الحزب الـــ  49.xlsx"
+          ],
+          "notes": [
+            "two half-workbooks; teaching order [50, 49] (hizb descending), corroborated by the juz-tier pair living in the last half ('منهج الراسخون المستوى الثاني الجزء رقم 3 الحزب الـــ  49.xlsx')",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": [
+            49,
+            50
+          ]
+        }
+      }
+    },
+    "3": {
+      "session_count": 93,
+      "juz": {
+        "24": {
+          "session_count": 33,
+          "source_files": [
+            "الحزب  47.xlsx",
+            "الحزب  48.xlsx"
+          ],
+          "notes": [
+            "two workbooks with identical Sheet1* content ('الحزب  47.xlsx' == 'الحزب  48.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+            "tiers: unit1, unit2, juz"
+          ],
+          "hizb_numbers": null
+        },
+        "23": {
+          "session_count": 28,
+          "source_files": [
+            "الحزب  45.xlsx",
+            "الحزب  46.xlsx"
+          ],
+          "notes": [
+            "two workbooks with identical Sheet1* content ('الحزب  45.xlsx' == 'الحزب  46.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": null
+        },
+        "22": {
+          "session_count": 32,
+          "source_files": [
+            "الحزب  43.xlsx",
+            "الحزب  44.xlsx"
+          ],
+          "notes": [
+            "two workbooks with identical Sheet1* content ('الحزب  43.xlsx' == 'الحزب  44.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": null
+        }
+      }
+    },
+    "4": {
+      "session_count": 87,
+      "juz": {
+        "21": {
+          "session_count": 30,
+          "source_files": [
+            "منهج الراسخون المستوى الرابع الجزء  الحزب 41.xlsx",
+            "منهج الراسخون المستوى الرابع الجزء  الحزب 42.xlsx"
+          ],
+          "notes": [
+            "two workbooks with identical Sheet1* content ('منهج الراسخون المستوى الرابع الجزء  الحزب 41.xlsx' == 'منهج الراسخون المستوى الرابع الجزء  الحزب 42.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+            "tiers: unit1, unit2, juz"
+          ],
+          "hizb_numbers": null
+        },
+        "20": {
+          "session_count": 30,
+          "source_files": [
+            "الحزب 39.xlsx",
+            "الحزب 40.xlsx"
+          ],
+          "notes": [
+            "two workbooks with identical Sheet1* content ('الحزب 39.xlsx' == 'الحزب 40.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": null
+        },
+        "19": {
+          "session_count": 27,
+          "source_files": [
+            "الحزب 37.xlsx",
+            "الحزب 38.xlsx"
+          ],
+          "notes": [
+            "two workbooks with identical Sheet1* content ('الحزب 37.xlsx' == 'الحزب 38.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": null
+        }
+      }
+    },
+    "5": {
+      "session_count": 65,
+      "juz": {
+        "18": {
+          "session_count": 20,
+          "source_files": [
+            "الحزب 35.xlsx",
+            "الحزب 36.xlsx"
+          ],
+          "notes": [
+            "two workbooks with identical Sheet1* content ('الحزب 35.xlsx' == 'الحزب 36.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+            "tiers: unit1, unit2, juz"
+          ],
+          "hizb_numbers": null
+        },
+        "17": {
+          "session_count": 24,
+          "source_files": [
+            "الحزب 33.xlsx",
+            "الحزب 34.xlsx"
+          ],
+          "notes": [
+            "two workbooks with identical Sheet1* content ('الحزب 33.xlsx' == 'الحزب 34.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": null
+        },
+        "16": {
+          "session_count": 21,
+          "source_files": [
+            "الحزب 31.xlsx",
+            "الحزب 32.xlsx"
+          ],
+          "notes": [
+            "two workbooks with identical Sheet1* content ('الحزب 31.xlsx' == 'الحزب 32.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": null
+        }
+      }
+    },
+    "6": {
+      "session_count": 76,
+      "juz": {
+        "15": {
+          "session_count": 24,
+          "source_files": [
+            "الحزب 29-.xlsx",
+            "الحزب 30.xlsx"
+          ],
+          "notes": [
+            "two workbooks with identical Sheet1* content ('الحزب 29-.xlsx' == 'الحزب 30.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+            "tiers: unit1, unit2, juz"
+          ],
+          "hizb_numbers": null
+        },
+        "14": {
+          "session_count": 24,
+          "source_files": [
+            "الحزب 27-.xlsx",
+            "الحزب 28.xlsx"
+          ],
+          "notes": [
+            "two workbooks with identical Sheet1* content ('الحزب 27-.xlsx' == 'الحزب 28.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": null
+        },
+        "13": {
+          "session_count": 28,
+          "source_files": [
+            "الحزب 25.xlsx",
+            "الحزب 26.xlsx"
+          ],
+          "notes": [
+            "two workbooks with identical Sheet1* content ('الحزب 25.xlsx' == 'الحزب 26.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": null
+        }
+      }
+    },
+    "7": {
+      "session_count": 54,
+      "juz": {
+        "12": {
+          "session_count": 15,
+          "source_files": [
+            "الحزب 23.xlsx",
+            "الحزب 24.xlsx"
+          ],
+          "notes": [
+            "two workbooks with identical Sheet1* content ('الحزب 23.xlsx' == 'الحزب 24.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+            "tiers: unit1, unit2, juz"
+          ],
+          "hizb_numbers": null
+        },
+        "11": {
+          "session_count": 17,
+          "source_files": [
+            "الحزب 21.xlsx",
+            "الحزب 22.xlsx"
+          ],
+          "notes": [
+            "two workbooks with identical Sheet1* content ('الحزب 21.xlsx' == 'الحزب 22.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": null
+        },
+        "10": {
+          "session_count": 22,
+          "source_files": [
+            "الحزب 19.xlsx",
+            "الحزب 20.xlsx"
+          ],
+          "notes": [
+            "two workbooks with identical Sheet1* content ('الحزب 19.xlsx' == 'الحزب 20.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": null
+        }
+      }
+    },
+    "8": {
+      "session_count": 61,
+      "juz": {
+        "9": {
+          "session_count": 14,
+          "source_files": [
+            "منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx"
+          ],
+          "notes": [
+            "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+            "tiers: unit1, unit2, juz"
+          ],
+          "hizb_numbers": null
+        },
+        "8": {
+          "session_count": 24,
+          "source_files": [
+            "منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx"
+          ],
+          "notes": [
+            "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": null
+        },
+        "7": {
+          "session_count": 23,
+          "source_files": [
+            "منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx"
+          ],
+          "notes": [
+            "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": null
+        }
+      }
+    },
+    "9": {
+      "session_count": 61,
+      "juz": {
+        "6": {
+          "session_count": 17,
+          "source_files": [
+            "منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx"
+          ],
+          "notes": [
+            "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+            "tiers: unit1, unit2, juz"
+          ],
+          "hizb_numbers": null
+        },
+        "5": {
+          "session_count": 22,
+          "source_files": [
+            "منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx"
+          ],
+          "notes": [
+            "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": null
+        },
+        "4": {
+          "session_count": 22,
+          "source_files": [
+            "منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx"
+          ],
+          "notes": [
+            "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": null
+        }
+      }
+    },
+    "10": {
+      "session_count": 44,
+      "juz": {
+        "1": {
+          "session_count": 16,
+          "source_files": [
+            "منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx"
+          ],
+          "notes": [
+            "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+            "tiers: unit1, unit2, juz"
+          ],
+          "hizb_numbers": null
+        },
+        "2": {
+          "session_count": 19,
+          "source_files": [
+            "منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx"
+          ],
+          "notes": [
+            "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+            "tiers: unit1, unit2, juz, cumulative"
+          ],
+          "hizb_numbers": null
+        },
+        "3": {
+          "session_count": 9,
+          "source_files": [
+            "منهج الراسخون المستوى العاشر الجزء  ال  3 للمحفظين.xlsx"
+          ],
+          "notes": [
+            "single workbook; sheets used: ['Sheet1 (2)']",
+            "tiers: unit1, cumulative"
+          ],
+          "hizb_numbers": null
+        }
+      }
+    }
+  },
+  "expected_exceptions": {
+    "L10_J3": {
+      "unit_pairs": 1,
+      "juz_pairs": 0,
+      "cumulative_pairs": 1,
+      "second_pair_tier": "cumulative",
+      "reason": "Source juz 3 of level 10 has a single teaching block (سورة البقرة 253:286, 5 lessons) followed by ONE unit pair and then a pair over the whole of سورة البقرة 1:286 (= juz 1+2+3), i.e. the level cumulative. There is no second unit block and no juz-tier pair. Its first sheet is stamped 'لاغي' (void) and is empty."
+    }
+  },
+  "expected_numbering_gaps": {
+    "L10_J2": "Raw 'الحصة رقم' column jumps 7 -> 11 and 16 -> 19 (sheet 'Sheet1 (2)' of the level-10 juz-2 workbook, which is additionally mis-titled 'المستوى التاسع'). Rows are otherwise in order; sessions are renumbered densely 1..N."
+  },
+  "anomalies": [
+    "L7 J10 curriculum/المستوى السابع جاهز للمنسق/الجزء الــــ 10جاهز للمنسق/الحزب 19.xlsx / Sheet1 (2) row 12: review-only lesson (raw session 16) — no new مقرر, review content only",
+    "L8 J7 curriculum/المستوى الثامن جاهز للمنسق/الجزء الــــ 7 جاهز للمنسق/منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx / Sheet1 (2) row 12: review-only lesson (raw session 17) — no new مقرر, review content only",
+    "L9 J4 curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx / Sheet1 (2) row 11: review-only lesson (raw session 16) — no new مقرر, review content only",
+    "L10 J2 curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 2 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx / Sheet1 (2) row 10: review-only lesson (raw session 16) — no new مقرر, review content only",
+    "منهج الراسخون المستوى العاشر الجزء  ال  3 للمحفظين.xlsx / Sheet1: sheet is stamped 'لاغي' (void) in its title — skipped",
+    "L10 J3 curriculum/المستوى العاشر جاهز للمنسق/الجزء الــــ 3 جاهز للمنسق/منهج الراسخون المستوى العاشر الجزء  ال  3 للمحفظين.xlsx / Sheet1 (2) row 9: review-only lesson (raw session 5) — no new مقرر, review content only"
+  ],
+  "warnings": [
+    "L2 J27: HIZB LABEL CONTRADICTION — unit 1 is structurally hizb 54 (file curriculum/المستوى الثاني جاهز للمنسق/الجزء الــــ 27جاهز للمنسق/منهج الراسخون المستوى الثاني الجزء  رقم  1 الحزب  الــ 54.xlsx) but its text says hizb 53: 'سرد الحزب رقم 53 كاملًا على المحفظ المتابع'",
+    "L2 J27: HIZB LABEL CONTRADICTION — unit 2 is structurally hizb 53 (file curriculum/المستوى الثاني جاهز للمنسق/الجزء الــــ 27جاهز للمنسق/منهج الراسخون المستوى الثاني الجزء  رقم  1  الــ 53.xlsx) but its text says hizb 54: 'سرد الحزب رقم 54 كاملًا على المحفظ المتابع'",
+    "L2 J26: HIZB LABEL CONTRADICTION — unit 1 is structurally hizb 52 (file curriculum/المستوى الثاني جاهز للمنسق/الجزء الــــ 26جاهز للمنسق/منهج الراسخون المستوى الثاني الحزب الــ  52-.xlsx) but its text says hizb 51: 'سرد الحزب رقم 51 كاملًا على المحفظ المتابع'",
+    "L2 J26: HIZB LABEL CONTRADICTION — unit 2 is structurally hizb 51 (file curriculum/المستوى الثاني جاهز للمنسق/الجزء الــــ 26جاهز للمنسق/منهج الراسخون المستوى الثاني الحزب الــ  51.xlsx) but its text says hizb 52: 'سرد الحزب رقم 52 كاملًا على المحفظ المتابع'",
+    "L2 J25: HIZB LABEL CONTRADICTION — unit 1 is structurally hizb 50 (file curriculum/المستوى الثاني جاهز للمنسق/الجزء الــــ 25جاهز للمنسق/منهج الراسخون المستوى الثاني الجزء رقم 3 - الحزب الــ  50.xlsx) but its text says hizb 49: 'سرد الحزب رقم 49 كاملًا على المحفظ المتابع'",
+    "L2 J25: HIZB LABEL CONTRADICTION — unit 2 is structurally hizb 49 (file curriculum/المستوى الثاني جاهز للمنسق/الجزء الــــ 25جاهز للمنسق/منهج الراسخون المستوى الثاني الجزء رقم 3 الحزب الـــ  49.xlsx) but its text says hizb 50: 'سرد الحزب رقم 50 كاملًا على المحفظ المتابع'",
+    "L10 J2: raw session numbers do not increment by 1: [(7, 11), (16, 19)] — documented: Raw 'الحصة رقم' column jumps 7 -> 11 and 16 -> 19 (sheet 'Sheet1 (2)' of the level-10 juz-2 workbook, which is additionally mis-titled 'المستوى التاسع'). Rows are otherwise in order; sessions are renumbered densely 1..N.",
+    "L10 J3: applying documented exception — second pair re-tiered as 'cumulative'. Source juz 3 of level 10 has a single teaching block (سورة البقرة 253:286, 5 lessons) followed by ONE unit pair and then a pair over the whole of سورة البقرة 1:286 (= juz 1+2+3), i.e. the level cumulative. There is no second unit block and no juz-tier pair. Its first sheet is stamped 'لاغي' (void) and is empty."
+  ],
+  "errors": [],
+  "passed": true
+}

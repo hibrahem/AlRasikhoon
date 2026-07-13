@@ -62,3 +62,8 @@ functions/lib/
 
 # Cloud Functions deps
 functions/node_modules/
+
+# Curriculum extractor virtualenv (tools/curriculum)
+tools/curriculum/.venv/
+__pycache__/
+*.pyc

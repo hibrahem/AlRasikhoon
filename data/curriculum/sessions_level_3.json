@@ -1,0 +1,3135 @@
+[
+  {
+    "id": "L3_J24_S1",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 1,
+    "order_in_level": 1,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "فصلت",
+      "from_verse": 1,
+      "to_surah": "فصلت",
+      "to_verse": 11
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "الشورى",
+      "from_verse": 1,
+      "to_surah": "الشورى",
+      "to_verse": 15
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L3_J24_S2",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 2,
+    "order_in_level": 2,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "فصلت",
+      "from_verse": 12,
+      "to_surah": "فصلت",
+      "to_verse": 20
+    },
+    "recent_review_content": {
+      "from_surah": "فصلت",
+      "from_verse": 1,
+      "to_surah": "فصلت",
+      "to_verse": 11
+    },
+    "distant_review_content": {
+      "from_surah": "الشورى",
+      "from_verse": 16,
+      "to_surah": "الشورى",
+      "to_verse": 31
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L3_J24_S3",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 3,
+    "order_in_level": 3,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "فصلت",
+      "from_verse": 21,
+      "to_surah": "فصلت",
+      "to_verse": 29
+    },
+    "recent_review_content": {
+      "from_surah": "فصلت",
+      "from_verse": 1,
+      "to_surah": "فصلت",
+      "to_verse": 20
+    },
+    "distant_review_content": {
+      "from_surah": "الشورى",
+      "from_verse": 32,
+      "to_surah": "الشورى",
+      "to_verse": 51
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L3_J24_S4",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 4,
+    "order_in_level": 4,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "فصلت",
+      "from_verse": 30,
+      "to_surah": "فصلت",
+      "to_verse": 38
+    },
+    "recent_review_content": {
+      "from_surah": "فصلت",
+      "from_verse": 12,
+      "to_surah": "فصلت",
+      "to_verse": 29
+    },
+    "distant_review_content": {
+      "from_surah": "الشورى",
+      "from_verse": 52,
+      "to_surah": "الزخرف",
+      "to_verse": 16
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L3_J24_S5",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 5,
+    "order_in_level": 5,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "فصلت",
+      "from_verse": 39,
+      "to_surah": "فصلت",
+      "to_verse": 46
+    },
+    "recent_review_content": {
+      "from_surah": "فصلت",
+      "from_verse": 21,
+      "to_surah": "فصلت",
+      "to_verse": 38
+    },
+    "distant_review_content": {
+      "from_surah": "الزخرف",
+      "from_verse": 17,
+      "to_surah": "الزخرف",
+      "to_verse": 40
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L3_J24_S6",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 6,
+    "order_in_level": 6,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "فصلت",
+      "from_verse": 47,
+      "to_surah": "فصلت",
+      "to_verse": 54
+    },
+    "recent_review_content": {
+      "from_surah": "فصلت",
+      "from_verse": 30,
+      "to_surah": "فصلت",
+      "to_verse": 46
+    },
+    "distant_review_content": {
+      "from_surah": "الزخرف",
+      "from_verse": 41,
+      "to_surah": "الزخرف",
+      "to_verse": 66
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L3_J24_S7",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 7,
+    "order_in_level": 7,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "غافر",
+      "from_verse": 1,
+      "to_surah": "غافر",
+      "to_verse": 7
+    },
+    "recent_review_content": {
+      "from_surah": "فصلت",
+      "from_verse": 39,
+      "to_surah": "فصلت",
+      "to_verse": 54
+    },
+    "distant_review_content": {
+      "from_surah": "الزخرف",
+      "from_verse": 67,
+      "to_surah": "الدخان",
+      "to_verse": 9
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 11,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L3_J24_S8",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 8,
+    "order_in_level": 8,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "غافر",
+      "from_verse": 8,
+      "to_surah": "غافر",
+      "to_verse": 16
+    },
+    "recent_review_content": {
+      "from_surah": "فصلت",
+      "from_verse": 48,
+      "to_surah": "غافر",
+      "to_verse": 7
+    },
+    "distant_review_content": {
+      "from_surah": "الدخان",
+      "from_verse": 10,
+      "to_surah": "الدخان",
+      "to_verse": 50
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 12,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L3_J24_S9",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 9,
+    "order_in_level": 9,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "غافر",
+      "from_verse": 17,
+      "to_surah": "غافر",
+      "to_verse": 25
+    },
+    "recent_review_content": {
+      "from_surah": "غافر",
+      "from_verse": 7,
+      "to_surah": "غافر",
+      "to_verse": 16
+    },
+    "distant_review_content": {
+      "from_surah": "الدخان",
+      "from_verse": 51,
+      "to_surah": "الجاثية",
+      "to_verse": 17
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 13,
+      "raw_session_number": 9
+    }
+  },
+  {
+    "id": "L3_J24_S10",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 10,
+    "order_in_level": 10,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "غافر",
+      "from_verse": 26,
+      "to_surah": "غافر",
+      "to_verse": 33
+    },
+    "recent_review_content": {
+      "from_surah": "غافر",
+      "from_verse": 8,
+      "to_surah": "غافر",
+      "to_verse": 25
+    },
+    "distant_review_content": {
+      "from_surah": "الجاثية",
+      "from_verse": 18,
+      "to_surah": "الجاثية",
+      "to_verse": 37
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 14,
+      "raw_session_number": 10
+    }
+  },
+  {
+    "id": "L3_J24_S11",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 11,
+    "order_in_level": 11,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "غافر",
+      "from_verse": 34,
+      "to_surah": "غافر",
+      "to_verse": 40
+    },
+    "recent_review_content": {
+      "from_surah": "غافر",
+      "from_verse": 17,
+      "to_surah": "غافر",
+      "to_verse": 33
+    },
+    "distant_review_content": {
+      "from_surah": "الأحقاف",
+      "from_verse": 1,
+      "to_surah": "الأحقاف",
+      "to_verse": 16
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 15,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L3_J24_S12",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 12,
+    "order_in_level": 12,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "غافر",
+      "from_verse": 41,
+      "to_surah": "غافر",
+      "to_verse": 49
+    },
+    "recent_review_content": {
+      "from_surah": "غافر",
+      "from_verse": 26,
+      "to_surah": "غافر",
+      "to_verse": 40
+    },
+    "distant_review_content": {
+      "from_surah": "الأحقاف",
+      "from_verse": 17,
+      "to_surah": "الأحقاف",
+      "to_verse": 32
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 16,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L3_J24_S13",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 13,
+    "order_in_level": 13,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "غافر",
+      "from_verse": 50,
+      "to_surah": "غافر",
+      "to_verse": 58
+    },
+    "recent_review_content": {
+      "from_surah": "غافر",
+      "from_verse": 34,
+      "to_surah": "غافر",
+      "to_verse": 49
+    },
+    "distant_review_content": {
+      "from_surah": "الأحقاف",
+      "from_verse": 33,
+      "to_surah": "محمد",
+      "to_verse": 15
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 17,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L3_J24_S14",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 14,
+    "order_in_level": 14,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "غافر",
+      "from_verse": 59,
+      "to_surah": "غافر",
+      "to_verse": 66
+    },
+    "recent_review_content": {
+      "from_surah": "غافر",
+      "from_verse": 41,
+      "to_surah": "غافر",
+      "to_verse": 58
+    },
+    "distant_review_content": {
+      "from_surah": "محمد",
+      "from_verse": 16,
+      "to_surah": "محمد",
+      "to_verse": 34
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 18,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L3_J24_S15",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 15,
+    "order_in_level": 15,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "غافر",
+      "from_verse": 67,
+      "to_surah": "غافر",
+      "to_verse": 77
+    },
+    "recent_review_content": {
+      "from_surah": "غافر",
+      "from_verse": 50,
+      "to_surah": "غافر",
+      "to_verse": 66
+    },
+    "distant_review_content": {
+      "from_surah": "محمد",
+      "from_verse": 35,
+      "to_surah": "الفتح",
+      "to_verse": 12
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 19,
+      "raw_session_number": 15
+    }
+  },
+  {
+    "id": "L3_J24_S16",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 16,
+    "order_in_level": 16,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "غافر",
+      "from_verse": 78,
+      "to_surah": "غافر",
+      "to_verse": 85
+    },
+    "recent_review_content": {
+      "from_surah": "غافر",
+      "from_verse": 59,
+      "to_surah": "غافر",
+      "to_verse": 77
+    },
+    "distant_review_content": {
+      "from_surah": "الفتح",
+      "from_verse": 13,
+      "to_surah": "الفتح",
+      "to_verse": 25
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 20,
+      "raw_session_number": 16
+    }
+  },
+  {
+    "id": "L3_J24_S17",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 17,
+    "order_in_level": 17,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "غافر",
+      "from_verse": 78,
+      "to_surah": "غافر",
+      "to_verse": 85
+    },
+    "recent_review_content": {
+      "from_surah": "غافر",
+      "from_verse": 67,
+      "to_surah": "غافر",
+      "to_verse": 85
+    },
+    "distant_review_content": {
+      "from_surah": "الفتح",
+      "from_verse": 26,
+      "to_surah": "الحجرات",
+      "to_verse": 8
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 21,
+      "raw_session_number": 17
+    }
+  },
+  {
+    "id": "L3_J24_S18",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 18,
+    "order_in_level": 18,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد سورتي غافر و فصلت على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        24
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "غافر",
+      "from_verse": 78,
+      "to_surah": "غافر",
+      "to_verse": 85
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 22,
+      "raw_session_number": 18
+    }
+  },
+  {
+    "id": "L3_J24_S19",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 19,
+    "order_in_level": 19,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في سورتي غافر وفصلت من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        24
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1",
+      "row": 23,
+      "raw_session_number": 19
+    }
+  },
+  {
+    "id": "L3_J24_S20",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 20,
+    "order_in_level": 20,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الزمر",
+      "from_verse": 1,
+      "to_surah": "الزمر",
+      "to_verse": 5
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "الحجرات",
+      "from_verse": 9,
+      "to_surah": "ق",
+      "to_verse": 8
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 5,
+      "raw_session_number": 20
+    }
+  },
+  {
+    "id": "L3_J24_S21",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 21,
+    "order_in_level": 21,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الزمر",
+      "from_verse": 6,
+      "to_surah": "الزمر",
+      "to_verse": 10
+    },
+    "recent_review_content": {
+      "from_surah": "الزمر",
+      "from_verse": 1,
+      "to_surah": "الزمر",
+      "to_verse": 5
+    },
+    "distant_review_content": {
+      "from_surah": "ق",
+      "from_verse": 9,
+      "to_surah": "ق",
+      "to_verse": 40
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 6,
+      "raw_session_number": 21
+    }
+  },
+  {
+    "id": "L3_J24_S22",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 22,
+    "order_in_level": 22,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الزمر",
+      "from_verse": 11,
+      "to_surah": "الزمر",
+      "to_verse": 21
+    },
+    "recent_review_content": {
+      "from_surah": "الزمر",
+      "from_verse": 1,
+      "to_surah": "الزمر",
+      "to_verse": 10
+    },
+    "distant_review_content": {
+      "from_surah": "ق",
+      "from_verse": 41,
+      "to_surah": "الذاريات",
+      "to_verse": 42
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 7,
+      "raw_session_number": 22
+    }
+  },
+  {
+    "id": "L3_J24_S23",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 23,
+    "order_in_level": 23,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الزمر",
+      "from_verse": 22,
+      "to_surah": "الزمر",
+      "to_verse": 31
+    },
+    "recent_review_content": {
+      "from_surah": "الزمر",
+      "from_verse": 6,
+      "to_surah": "الزمر",
+      "to_verse": 21
+    },
+    "distant_review_content": {
+      "from_surah": "الذاريات",
+      "from_verse": 43,
+      "to_surah": "الطور",
+      "to_verse": 23
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 8,
+      "raw_session_number": 23
+    }
+  },
+  {
+    "id": "L3_J24_S24",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 24,
+    "order_in_level": 24,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الزمر",
+      "from_verse": 32,
+      "to_surah": "الزمر",
+      "to_verse": 40
+    },
+    "recent_review_content": {
+      "from_surah": "الزمر",
+      "from_verse": 11,
+      "to_surah": "الزمر",
+      "to_verse": 31
+    },
+    "distant_review_content": {
+      "from_surah": "الطور",
+      "from_verse": 24,
+      "to_surah": "النجم",
+      "to_verse": 18
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 9,
+      "raw_session_number": 24
+    }
+  },
+  {
+    "id": "L3_J24_S25",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 25,
+    "order_in_level": 25,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الزمر",
+      "from_verse": 41,
+      "to_surah": "الزمر",
+      "to_verse": 47
+    },
+    "recent_review_content": {
+      "from_surah": "الزمر",
+      "from_verse": 22,
+      "to_surah": "الزمر",
+      "to_verse": 40
+    },
+    "distant_review_content": {
+      "from_surah": "النجم",
+      "from_verse": 19,
+      "to_surah": "النجم",
+      "to_verse": 62
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 10,
+      "raw_session_number": 25
+    }
+  },
+  {
+    "id": "L3_J24_S26",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 26,
+    "order_in_level": 26,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الزمر",
+      "from_verse": 48,
+      "to_surah": "الزمر",
+      "to_verse": 56
+    },
+    "recent_review_content": {
+      "from_surah": "الزمر",
+      "from_verse": 32,
+      "to_surah": "الزمر",
+      "to_verse": 47
+    },
+    "distant_review_content": {
+      "from_surah": "القمر",
+      "from_verse": 1,
+      "to_surah": "القمر",
+      "to_verse": 39
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 11,
+      "raw_session_number": 26
+    }
+  },
+  {
+    "id": "L3_J24_S27",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 27,
+    "order_in_level": 27,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الزمر",
+      "from_verse": 57,
+      "to_surah": "الزمر",
+      "to_verse": 67
+    },
+    "recent_review_content": {
+      "from_surah": "الزمر",
+      "from_verse": 41,
+      "to_surah": "الزمر",
+      "to_verse": 56
+    },
+    "distant_review_content": {
+      "from_surah": "القمر",
+      "from_verse": 40,
+      "to_surah": "الرحمن",
+      "to_verse": 30
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 12,
+      "raw_session_number": 27
+    }
+  },
+  {
+    "id": "L3_J24_S28",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 28,
+    "order_in_level": 28,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الزمر",
+      "from_verse": 68,
+      "to_surah": "الزمر",
+      "to_verse": 75
+    },
+    "recent_review_content": {
+      "from_surah": "الزمر",
+      "from_verse": 48,
+      "to_surah": "الزمر",
+      "to_verse": 67
+    },
+    "distant_review_content": {
+      "from_surah": "الرحمن",
+      "from_verse": 31,
+      "to_surah": "الرحمن",
+      "to_verse": 78
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 13,
+      "raw_session_number": 28
+    }
+  },
+  {
+    "id": "L3_J24_S29",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 29,
+    "order_in_level": 29,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الزمر",
+      "from_verse": 68,
+      "to_surah": "الزمر",
+      "to_verse": 75
+    },
+    "recent_review_content": {
+      "from_surah": "الزمر",
+      "from_verse": 57,
+      "to_surah": "الزمر",
+      "to_verse": 75
+    },
+    "distant_review_content": {
+      "from_surah": "الواقعة",
+      "from_verse": 1,
+      "to_surah": "الواقعة",
+      "to_verse": 62
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 14,
+      "raw_session_number": 29
+    }
+  },
+  {
+    "id": "L3_J24_S30",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 30,
+    "order_in_level": 30,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد سورة الزمرعلى المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        24
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "الزمر",
+      "from_verse": 68,
+      "to_surah": "الزمر",
+      "to_verse": 75
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 15,
+      "raw_session_number": 30
+    }
+  },
+  {
+    "id": "L3_J24_S31",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 31,
+    "order_in_level": 31,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في سورة الزمر من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        24
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 16,
+      "raw_session_number": 31
+    }
+  },
+  {
+    "id": "L3_J24_S32",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 32,
+    "order_in_level": 32,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد سور الزمر وغافر وفصلت على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        24
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 17,
+      "raw_session_number": 32
+    }
+  },
+  {
+    "id": "L3_J24_S33",
+    "level_id": 3,
+    "juz_number": 24,
+    "session_number": 33,
+    "order_in_level": 33,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار في سور الزمر وغافر وفصلت من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        24
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 24جاهز للمنسق/الحزب  47.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 18,
+      "raw_session_number": 33
+    }
+  },
+  {
+    "id": "L3_J23_S1",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 1,
+    "order_in_level": 34,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "ص",
+      "from_verse": 1,
+      "to_surah": "ص",
+      "to_verse": 16
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "الواقعة",
+      "from_verse": 63,
+      "to_surah": "الحديد",
+      "to_verse": 3
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L3_J23_S2",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 2,
+    "order_in_level": 35,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "ص",
+      "from_verse": 17,
+      "to_surah": "ص",
+      "to_verse": 26
+    },
+    "recent_review_content": {
+      "from_surah": "ص",
+      "from_verse": 1,
+      "to_surah": "ص",
+      "to_verse": 16
+    },
+    "distant_review_content": {
+      "from_surah": "الحديد",
+      "from_verse": 4,
+      "to_surah": "الحديد",
+      "to_verse": 18
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L3_J23_S3",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 3,
+    "order_in_level": 36,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "ص",
+      "from_verse": 27,
+      "to_surah": "ص",
+      "to_verse": 42
+    },
+    "recent_review_content": {
+      "from_surah": "ص",
+      "from_verse": 1,
+      "to_surah": "ص",
+      "to_verse": 26
+    },
+    "distant_review_content": {
+      "from_surah": "الحديد",
+      "from_verse": 19,
+      "to_surah": "الحديد",
+      "to_verse": 29
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L3_J23_S4",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 4,
+    "order_in_level": 37,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "ص",
+      "from_verse": 43,
+      "to_surah": "ص",
+      "to_verse": 61
+    },
+    "recent_review_content": {
+      "from_surah": "ص",
+      "from_verse": 17,
+      "to_surah": "ص",
+      "to_verse": 42
+    },
+    "distant_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 1,
+      "to_surah": "المجادلة",
+      "to_verse": 11
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L3_J23_S5",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 5,
+    "order_in_level": 38,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "ص",
+      "from_verse": 62,
+      "to_surah": "ص",
+      "to_verse": 88
+    },
+    "recent_review_content": {
+      "from_surah": "ص",
+      "from_verse": 27,
+      "to_surah": "ص",
+      "to_verse": 61
+    },
+    "distant_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 12,
+      "to_surah": "الحشر",
+      "to_verse": 3
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L3_J23_S6",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 6,
+    "order_in_level": 39,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الصافات",
+      "from_verse": 1,
+      "to_surah": "الصافات",
+      "to_verse": 24
+    },
+    "recent_review_content": {
+      "from_surah": "ص",
+      "from_verse": 43,
+      "to_surah": "ص",
+      "to_verse": 88
+    },
+    "distant_review_content": {
+      "from_surah": "الحشر",
+      "from_verse": 4,
+      "to_surah": "الحشر",
+      "to_verse": 16
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L3_J23_S7",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 7,
+    "order_in_level": 40,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الصافات",
+      "from_verse": 25,
+      "to_surah": "الصافات",
+      "to_verse": 51
+    },
+    "recent_review_content": {
+      "from_surah": "ص",
+      "from_verse": 62,
+      "to_surah": "الصافات",
+      "to_verse": 24
+    },
+    "distant_review_content": {
+      "from_surah": "الحشر",
+      "from_verse": 17,
+      "to_surah": "الممتحنة",
+      "to_verse": 5
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1",
+      "row": 11,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L3_J23_S8",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 8,
+    "order_in_level": 41,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الصافات",
+      "from_verse": 52,
+      "to_surah": "الصافات",
+      "to_verse": 76
+    },
+    "recent_review_content": {
+      "from_surah": "الصافات",
+      "from_verse": 1,
+      "to_surah": "الصافات",
+      "to_verse": 51
+    },
+    "distant_review_content": {
+      "from_surah": "الممتحنة",
+      "from_verse": 6,
+      "to_surah": "الصف",
+      "to_verse": 5
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1",
+      "row": 12,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L3_J23_S9",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 9,
+    "order_in_level": 42,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الصافات",
+      "from_verse": 77,
+      "to_surah": "الصافات",
+      "to_verse": 102
+    },
+    "recent_review_content": {
+      "from_surah": "الصافات",
+      "from_verse": 25,
+      "to_surah": "الصافات",
+      "to_verse": 76
+    },
+    "distant_review_content": {
+      "from_surah": "الصف",
+      "from_verse": 6,
+      "to_surah": "الجمعة",
+      "to_verse": 8
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1",
+      "row": 13,
+      "raw_session_number": 9
+    }
+  },
+  {
+    "id": "L3_J23_S10",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 10,
+    "order_in_level": 43,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الصافات",
+      "from_verse": 103,
+      "to_surah": "الصافات",
+      "to_verse": 126
+    },
+    "recent_review_content": {
+      "from_surah": "الصافات",
+      "from_verse": 52,
+      "to_surah": "الصافات",
+      "to_verse": 102
+    },
+    "distant_review_content": {
+      "from_surah": "الجمعة",
+      "from_verse": 9,
+      "to_surah": "المنافقون",
+      "to_verse": 11
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1",
+      "row": 14,
+      "raw_session_number": 10
+    }
+  },
+  {
+    "id": "L3_J23_S11",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 11,
+    "order_in_level": 44,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الصافات",
+      "from_verse": 127,
+      "to_surah": "الصافات",
+      "to_verse": 153
+    },
+    "recent_review_content": {
+      "from_surah": "الصافات",
+      "from_verse": 77,
+      "to_surah": "الصافات",
+      "to_verse": 126
+    },
+    "distant_review_content": {
+      "from_surah": "التغابن",
+      "from_verse": 1,
+      "to_surah": "التغابن",
+      "to_verse": 18
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1",
+      "row": 15,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L3_J23_S12",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 12,
+    "order_in_level": 45,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الصافات",
+      "from_verse": 154,
+      "to_surah": "الصافات",
+      "to_verse": 182
+    },
+    "recent_review_content": {
+      "from_surah": "الصافات",
+      "from_verse": 103,
+      "to_surah": "الصافات",
+      "to_verse": 153
+    },
+    "distant_review_content": {
+      "from_surah": "الطلاق",
+      "from_verse": 1,
+      "to_surah": "الطلاق",
+      "to_verse": 12
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1",
+      "row": 16,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L3_J23_S13",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 13,
+    "order_in_level": 46,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الصافات",
+      "from_verse": 154,
+      "to_surah": "الصافات",
+      "to_verse": 182
+    },
+    "recent_review_content": {
+      "from_surah": "الصافات",
+      "from_verse": 127,
+      "to_surah": "الصافات",
+      "to_verse": 182
+    },
+    "distant_review_content": {
+      "from_surah": "التحريم",
+      "from_verse": 1,
+      "to_surah": "التحريم",
+      "to_verse": 12
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1",
+      "row": 17,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L3_J23_S14",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 14,
+    "order_in_level": 47,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد سورتي الصافات وص على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        23
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "الصافات",
+      "from_verse": 154,
+      "to_surah": "الصافات",
+      "to_verse": 182
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1",
+      "row": 18,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L3_J23_S15",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 15,
+    "order_in_level": 48,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في سورتي الصافات وص من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        23
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1",
+      "row": 19,
+      "raw_session_number": 15
+    }
+  },
+  {
+    "id": "L3_J23_S16",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 16,
+    "order_in_level": 49,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "يس",
+      "from_verse": 1,
+      "to_surah": "يس",
+      "to_verse": 12
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "الملك",
+      "from_verse": 1,
+      "to_surah": "الملك",
+      "to_verse": 26
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 5,
+      "raw_session_number": 16
+    }
+  },
+  {
+    "id": "L3_J23_S17",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 17,
+    "order_in_level": 50,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "يس",
+      "from_verse": 13,
+      "to_surah": "يس",
+      "to_verse": 27
+    },
+    "recent_review_content": {
+      "from_surah": "يس",
+      "from_verse": 1,
+      "to_surah": "يس",
+      "to_verse": 12
+    },
+    "distant_review_content": {
+      "from_surah": "الملك",
+      "from_verse": 27,
+      "to_surah": "القلم",
+      "to_verse": 42
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 6,
+      "raw_session_number": 17
+    }
+  },
+  {
+    "id": "L3_J23_S18",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 18,
+    "order_in_level": 51,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "يس",
+      "from_verse": 28,
+      "to_surah": "يس",
+      "to_verse": 40
+    },
+    "recent_review_content": {
+      "from_surah": "يس",
+      "from_verse": 1,
+      "to_surah": "يس",
+      "to_verse": 27
+    },
+    "distant_review_content": {
+      "from_surah": "القلم",
+      "from_verse": 43,
+      "to_surah": "الحاقة",
+      "to_verse": 34
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 7,
+      "raw_session_number": 18
+    }
+  },
+  {
+    "id": "L3_J23_S19",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 19,
+    "order_in_level": 52,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "يس",
+      "from_verse": 41,
+      "to_surah": "يس",
+      "to_verse": 54
+    },
+    "recent_review_content": {
+      "from_surah": "يس",
+      "from_verse": 13,
+      "to_surah": "يس",
+      "to_verse": 40
+    },
+    "distant_review_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 35,
+      "to_surah": "المعارج",
+      "to_verse": 39
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 8,
+      "raw_session_number": 19
+    }
+  },
+  {
+    "id": "L3_J23_S20",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 20,
+    "order_in_level": 53,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "يس",
+      "from_verse": 55,
+      "to_surah": "يس",
+      "to_verse": 70
+    },
+    "recent_review_content": {
+      "from_surah": "يس",
+      "from_verse": 28,
+      "to_surah": "يس",
+      "to_verse": 54
+    },
+    "distant_review_content": {
+      "from_surah": "المعارج",
+      "from_verse": 40,
+      "to_surah": "نوح",
+      "to_verse": 28
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 9,
+      "raw_session_number": 20
+    }
+  },
+  {
+    "id": "L3_J23_S21",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 21,
+    "order_in_level": 54,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "يس",
+      "from_verse": 71,
+      "to_surah": "يس",
+      "to_verse": 83
+    },
+    "recent_review_content": {
+      "from_surah": "يس",
+      "from_verse": 41,
+      "to_surah": "يس",
+      "to_verse": 70
+    },
+    "distant_review_content": {
+      "from_surah": "الجن",
+      "from_verse": 1,
+      "to_surah": "الجن",
+      "to_verse": 28
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 10,
+      "raw_session_number": 21
+    }
+  },
+  {
+    "id": "L3_J23_S22",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 22,
+    "order_in_level": 55,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "يس",
+      "from_verse": 71,
+      "to_surah": "يس",
+      "to_verse": 83
+    },
+    "recent_review_content": {
+      "from_surah": "يس",
+      "from_verse": 55,
+      "to_surah": "يس",
+      "to_verse": 83
+    },
+    "distant_review_content": {
+      "from_surah": "المزمل",
+      "from_verse": 1,
+      "to_surah": "المدثر",
+      "to_verse": 17
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 11,
+      "raw_session_number": 22
+    }
+  },
+  {
+    "id": "L3_J23_S23",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 23,
+    "order_in_level": 56,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد سورة يس على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        23
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "يس",
+      "from_verse": 71,
+      "to_surah": "يس",
+      "to_verse": 83
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 12,
+      "raw_session_number": 23
+    }
+  },
+  {
+    "id": "L3_J23_S24",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 24,
+    "order_in_level": 57,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في سورة يس من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        23
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 13,
+      "raw_session_number": 24
+    }
+  },
+  {
+    "id": "L3_J23_S25",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 25,
+    "order_in_level": 58,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد سور يس والصافات وص على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        23
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 14,
+      "raw_session_number": 25
+    }
+  },
+  {
+    "id": "L3_J23_S26",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 26,
+    "order_in_level": 59,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار في سور يس و الصافات وص من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        23
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 15,
+      "raw_session_number": 26
+    }
+  },
+  {
+    "id": "L3_J23_S27",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 27,
+    "order_in_level": 60,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "سرد من أول يس إلى أخر فصلت على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        23,
+        24
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 16,
+      "raw_session_number": 27
+    }
+  },
+  {
+    "id": "L3_J23_S28",
+    "level_id": 3,
+    "juz_number": 23,
+    "session_number": 28,
+    "order_in_level": 61,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "اختبار من أول يس إلى أخر فصلت من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        23,
+        24
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 23جاهز للمنسق/الحزب  45.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 17,
+      "raw_session_number": 28
+    }
+  },
+  {
+    "id": "L3_J22_S1",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 1,
+    "order_in_level": 62,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "فاطر",
+      "from_verse": 1,
+      "to_surah": "فاطر",
+      "to_verse": 8
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "المدثر",
+      "from_verse": 18,
+      "to_surah": "القيامة",
+      "to_verse": 19
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L3_J22_S2",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 2,
+    "order_in_level": 63,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "فاطر",
+      "from_verse": 9,
+      "to_surah": "فاطر",
+      "to_verse": 13
+    },
+    "recent_review_content": {
+      "from_surah": "فاطر",
+      "from_verse": 1,
+      "to_surah": "فاطر",
+      "to_verse": 8
+    },
+    "distant_review_content": {
+      "from_surah": "القيامة",
+      "from_verse": 20,
+      "to_surah": "الإنسان",
+      "to_verse": 25
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L3_J22_S3",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 3,
+    "order_in_level": 64,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "فاطر",
+      "from_verse": 14,
+      "to_surah": "فاطر",
+      "to_verse": 26
+    },
+    "recent_review_content": {
+      "from_surah": "فاطر",
+      "from_verse": 1,
+      "to_surah": "فاطر",
+      "to_verse": 13
+    },
+    "distant_review_content": {
+      "from_surah": "الإنسان",
+      "from_verse": 26,
+      "to_surah": "المرسلات",
+      "to_verse": 50
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L3_J22_S4",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 4,
+    "order_in_level": 65,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "فاطر",
+      "from_verse": 27,
+      "to_surah": "فاطر",
+      "to_verse": 35
+    },
+    "recent_review_content": {
+      "from_surah": "فاطر",
+      "from_verse": 9,
+      "to_surah": "فاطر",
+      "to_verse": 26
+    },
+    "distant_review_content": {
+      "from_surah": "النبأ",
+      "from_verse": 1,
+      "to_surah": "النازعات",
+      "to_verse": 14
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L3_J22_S5",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 5,
+    "order_in_level": 66,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "فاطر",
+      "from_verse": 36,
+      "to_surah": "فاطر",
+      "to_verse": 42
+    },
+    "recent_review_content": {
+      "from_surah": "فاطر",
+      "from_verse": 14,
+      "to_surah": "فاطر",
+      "to_verse": 35
+    },
+    "distant_review_content": {
+      "from_surah": "النازعات",
+      "from_verse": 15,
+      "to_surah": "عبس",
+      "to_verse": 42
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L3_J22_S6",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 6,
+    "order_in_level": 67,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "فاطر",
+      "from_verse": 43,
+      "to_surah": "سبأ",
+      "to_verse": 3
+    },
+    "recent_review_content": {
+      "from_surah": "فاطر",
+      "from_verse": 27,
+      "to_surah": "فاطر",
+      "to_verse": 42
+    },
+    "distant_review_content": {
+      "from_surah": "التكوير",
+      "from_verse": 1,
+      "to_surah": "المطففين",
+      "to_verse": 12
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L3_J22_S7",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 7,
+    "order_in_level": 68,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "سبأ",
+      "from_verse": 4,
+      "to_surah": "سبأ",
+      "to_verse": 11
+    },
+    "recent_review_content": {
+      "from_surah": "فاطر",
+      "from_verse": 36,
+      "to_surah": "سبأ",
+      "to_verse": 3
+    },
+    "distant_review_content": {
+      "from_surah": "المطففين",
+      "from_verse": 13,
+      "to_surah": "الإنشقاق",
+      "to_verse": 25
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1",
+      "row": 11,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L3_J22_S8",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 8,
+    "order_in_level": 69,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "سبأ",
+      "from_verse": 12,
+      "to_surah": "سبأ",
+      "to_verse": 18
+    },
+    "recent_review_content": {
+      "from_surah": "فاطر",
+      "from_verse": 43,
+      "to_surah": "سبأ",
+      "to_verse": 11
+    },
+    "distant_review_content": {
+      "from_surah": "البروج",
+      "from_verse": 1,
+      "to_surah": "الأعلى",
+      "to_verse": 19
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1",
+      "row": 12,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L3_J22_S9",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 9,
+    "order_in_level": 70,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "سبأ",
+      "from_verse": 19,
+      "to_surah": "سبأ",
+      "to_verse": 27
+    },
+    "recent_review_content": {
+      "from_surah": "سبأ",
+      "from_verse": 4,
+      "to_surah": "سبأ",
+      "to_verse": 18
+    },
+    "distant_review_content": {
+      "from_surah": "الغاشية",
+      "from_verse": 1,
+      "to_surah": "الفجر",
+      "to_verse": 30
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1",
+      "row": 13,
+      "raw_session_number": 9
+    }
+  },
+  {
+    "id": "L3_J22_S10",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 10,
+    "order_in_level": 71,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "سبأ",
+      "from_verse": 28,
+      "to_surah": "سبأ",
+      "to_verse": 34
+    },
+    "recent_review_content": {
+      "from_surah": "سبأ",
+      "from_verse": 12,
+      "to_surah": "سبأ",
+      "to_verse": 27
+    },
+    "distant_review_content": {
+      "from_surah": "البلد",
+      "from_verse": 1,
+      "to_surah": "الليل",
+      "to_verse": 21
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1",
+      "row": 14,
+      "raw_session_number": 10
+    }
+  },
+  {
+    "id": "L3_J22_S11",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 11,
+    "order_in_level": 72,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "سبأ",
+      "from_verse": 35,
+      "to_surah": "سبأ",
+      "to_verse": 43
+    },
+    "recent_review_content": {
+      "from_surah": "سبأ",
+      "from_verse": 19,
+      "to_surah": "سبأ",
+      "to_verse": 34
+    },
+    "distant_review_content": {
+      "from_surah": "الضحى",
+      "from_verse": 1,
+      "to_surah": "العلق",
+      "to_verse": 19
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1",
+      "row": 15,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L3_J22_S12",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 12,
+    "order_in_level": 73,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "سبأ",
+      "from_verse": 44,
+      "to_surah": "سبأ",
+      "to_verse": 54
+    },
+    "recent_review_content": {
+      "from_surah": "سبأ",
+      "from_verse": 28,
+      "to_surah": "سبأ",
+      "to_verse": 43
+    },
+    "distant_review_content": {
+      "from_surah": "البينة",
+      "from_verse": 1,
+      "to_surah": "العاديات",
+      "to_verse": 11
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1",
+      "row": 16,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L3_J22_S13",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 13,
+    "order_in_level": 74,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "سبأ",
+      "from_verse": 44,
+      "to_surah": "سبأ",
+      "to_verse": 54
+    },
+    "recent_review_content": {
+      "from_surah": "سبأ",
+      "from_verse": 35,
+      "to_surah": "سبأ",
+      "to_verse": 54
+    },
+    "distant_review_content": {
+      "from_surah": "القارعة",
+      "from_verse": 1,
+      "to_surah": "الفيل",
+      "to_verse": 5
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1",
+      "row": 17,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L3_J22_S14",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 14,
+    "order_in_level": 75,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد سورتي سبأ وفاطرعلى المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        22
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "سبأ",
+      "from_verse": 44,
+      "to_surah": "سبأ",
+      "to_verse": 54
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1",
+      "row": 18,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L3_J22_S15",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 15,
+    "order_in_level": 76,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في سورتي سبأ وفاطر من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        22
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1",
+      "row": 19,
+      "raw_session_number": 15
+    }
+  },
+  {
+    "id": "L3_J22_S16",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 16,
+    "order_in_level": 77,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 1,
+      "to_surah": "الأحزاب",
+      "to_verse": 6
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "قريش",
+      "from_verse": 1,
+      "to_surah": "المسد",
+      "to_verse": 5
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 5,
+      "raw_session_number": 16
+    }
+  },
+  {
+    "id": "L3_J22_S17",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 17,
+    "order_in_level": 78,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 7,
+      "to_surah": "الأحزاب",
+      "to_verse": 15
+    },
+    "recent_review_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 1,
+      "to_surah": "الأحزاب",
+      "to_verse": 6
+    },
+    "distant_review_content": {
+      "from_surah": "الإخلاص",
+      "from_verse": 1,
+      "to_surah": "الناس",
+      "to_verse": 6
+    },
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 6,
+      "raw_session_number": 17
+    }
+  },
+  {
+    "id": "L3_J22_S18",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 18,
+    "order_in_level": 79,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 16,
+      "to_surah": "الأحزاب",
+      "to_verse": 22
+    },
+    "recent_review_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 1,
+      "to_surah": "الأحزاب",
+      "to_verse": 15
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 7,
+      "raw_session_number": 18
+    }
+  },
+  {
+    "id": "L3_J22_S19",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 19,
+    "order_in_level": 80,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 23,
+      "to_surah": "الأحزاب",
+      "to_verse": 30
+    },
+    "recent_review_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 7,
+      "to_surah": "الأحزاب",
+      "to_verse": 22
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 8,
+      "raw_session_number": 19
+    }
+  },
+  {
+    "id": "L3_J22_S20",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 20,
+    "order_in_level": 81,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 31,
+      "to_surah": "الأحزاب",
+      "to_verse": 35
+    },
+    "recent_review_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 16,
+      "to_surah": "الأحزاب",
+      "to_verse": 30
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 9,
+      "raw_session_number": 20
+    }
+  },
+  {
+    "id": "L3_J22_S21",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 21,
+    "order_in_level": 82,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 36,
+      "to_surah": "الأحزاب",
+      "to_verse": 43
+    },
+    "recent_review_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 23,
+      "to_surah": "الأحزاب",
+      "to_verse": 35
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 10,
+      "raw_session_number": 21
+    }
+  },
+  {
+    "id": "L3_J22_S22",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 22,
+    "order_in_level": 83,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 44,
+      "to_surah": "الأحزاب",
+      "to_verse": 50
+    },
+    "recent_review_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 31,
+      "to_surah": "الأحزاب",
+      "to_verse": 43
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 11,
+      "raw_session_number": 22
+    }
+  },
+  {
+    "id": "L3_J22_S23",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 23,
+    "order_in_level": 84,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 51,
+      "to_surah": "الأحزاب",
+      "to_verse": 54
+    },
+    "recent_review_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 36,
+      "to_surah": "الأحزاب",
+      "to_verse": 50
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 12,
+      "raw_session_number": 23
+    }
+  },
+  {
+    "id": "L3_J22_S24",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 24,
+    "order_in_level": 85,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 55,
+      "to_surah": "الأحزاب",
+      "to_verse": 62
+    },
+    "recent_review_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 44,
+      "to_surah": "الأحزاب",
+      "to_verse": 54
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 13,
+      "raw_session_number": 24
+    }
+  },
+  {
+    "id": "L3_J22_S25",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 25,
+    "order_in_level": 86,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 63,
+      "to_surah": "الأحزاب",
+      "to_verse": 73
+    },
+    "recent_review_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 51,
+      "to_surah": "الأحزاب",
+      "to_verse": 62
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 14,
+      "raw_session_number": 25
+    }
+  },
+  {
+    "id": "L3_J22_S26",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 26,
+    "order_in_level": 87,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 63,
+      "to_surah": "الأحزاب",
+      "to_verse": 73
+    },
+    "recent_review_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 55,
+      "to_surah": "الأحزاب",
+      "to_verse": 73
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 15,
+      "raw_session_number": 26
+    }
+  },
+  {
+    "id": "L3_J22_S27",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 27,
+    "order_in_level": 88,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد سورة الأحزاب على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        22
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 63,
+      "to_surah": "الأحزاب",
+      "to_verse": 73
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 16,
+      "raw_session_number": 27
+    }
+  },
+  {
+    "id": "L3_J22_S28",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 28,
+    "order_in_level": 89,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في سورة الأحزاب من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        22
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 17,
+      "raw_session_number": 28
+    }
+  },
+  {
+    "id": "L3_J22_S29",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 29,
+    "order_in_level": 90,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد سور الأحزاب وسبأ وفاطرعلى المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        22
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 18,
+      "raw_session_number": 29
+    }
+  },
+  {
+    "id": "L3_J22_S30",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 30,
+    "order_in_level": 91,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار في سور الأحزاب وسبأ وفاطر من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        22
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 19,
+      "raw_session_number": 30
+    }
+  },
+  {
+    "id": "L3_J22_S31",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 31,
+    "order_in_level": 92,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "سرد المستوى كاملًا  من أول سورة الأحزاب إلى نهاية سورة فصلت على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        22,
+        23,
+        24
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 20,
+      "raw_session_number": 31
+    }
+  },
+  {
+    "id": "L3_J22_S32",
+    "level_id": 3,
+    "juz_number": 22,
+    "session_number": 32,
+    "order_in_level": 93,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "اختبار في المستوى كاملًا من أول سورة الأحزاب إلى نهاية سورة فصلت من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        22,
+        23,
+        24
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الثالث جاهز للمنسق/الجزء الــــ 22جاهز للمنسق/الحزب  43.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 21,
+      "raw_session_number": 32
+    }
+  }
+]

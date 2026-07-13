@@ -1,0 +1,2167 @@
+[
+  {
+    "id": "L5_J18_S1",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 1,
+    "order_in_level": 1,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النور",
+      "from_verse": 1,
+      "to_surah": "النور",
+      "to_verse": 14
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "الفرقان",
+      "from_verse": 1,
+      "to_surah": "الفرقان",
+      "to_verse": 67
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L5_J18_S2",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 2,
+    "order_in_level": 2,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النور",
+      "from_verse": 15,
+      "to_surah": "النور",
+      "to_verse": 27
+    },
+    "recent_review_content": {
+      "from_surah": "النور",
+      "from_verse": 1,
+      "to_surah": "النور",
+      "to_verse": 14
+    },
+    "distant_review_content": {
+      "from_surah": "الفرقان",
+      "from_verse": 68,
+      "to_surah": "الشعراء",
+      "to_verse": 111
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L5_J18_S3",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 3,
+    "order_in_level": 3,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النور",
+      "from_verse": 28,
+      "to_surah": "النور",
+      "to_verse": 33
+    },
+    "recent_review_content": {
+      "from_surah": "النور",
+      "from_verse": 1,
+      "to_surah": "النور",
+      "to_verse": 27
+    },
+    "distant_review_content": {
+      "from_surah": "الشعراء",
+      "from_verse": 112,
+      "to_surah": "النمل",
+      "to_verse": 13
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L5_J18_S4",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 4,
+    "order_in_level": 4,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النور",
+      "from_verse": 34,
+      "to_surah": "النور",
+      "to_verse": 43
+    },
+    "recent_review_content": {
+      "from_surah": "النور",
+      "from_verse": 15,
+      "to_surah": "النور",
+      "to_verse": 33
+    },
+    "distant_review_content": {
+      "from_surah": "النمل",
+      "from_verse": 14,
+      "to_surah": "النمل",
+      "to_verse": 76
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L5_J18_S5",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 5,
+    "order_in_level": 5,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النور",
+      "from_verse": 44,
+      "to_surah": "النور",
+      "to_verse": 56
+    },
+    "recent_review_content": {
+      "from_surah": "النور",
+      "from_verse": 28,
+      "to_surah": "النور",
+      "to_verse": 43
+    },
+    "distant_review_content": {
+      "from_surah": "النمل",
+      "from_verse": 77,
+      "to_surah": "القصص",
+      "to_verse": 35
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L5_J18_S6",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 6,
+    "order_in_level": 6,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النور",
+      "from_verse": 57,
+      "to_surah": "النور",
+      "to_verse": 61
+    },
+    "recent_review_content": {
+      "from_surah": "النور",
+      "from_verse": 34,
+      "to_surah": "النور",
+      "to_verse": 56
+    },
+    "distant_review_content": {
+      "from_surah": "القصص",
+      "from_verse": 36,
+      "to_surah": "القصص",
+      "to_verse": 84
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L5_J18_S7",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 7,
+    "order_in_level": 7,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النور",
+      "from_verse": 62,
+      "to_surah": "المؤمنون",
+      "to_verse": 17
+    },
+    "recent_review_content": {
+      "from_surah": "النور",
+      "from_verse": 44,
+      "to_surah": "النور",
+      "to_verse": 61
+    },
+    "distant_review_content": {
+      "from_surah": "القصص",
+      "from_verse": 85,
+      "to_surah": "العنكبوت",
+      "to_verse": 45
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1",
+      "row": 11,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L5_J18_S8",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 8,
+    "order_in_level": 8,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "النور",
+      "from_verse": 62,
+      "to_surah": "المؤمنون",
+      "to_verse": 17
+    },
+    "recent_review_content": {
+      "from_surah": "النور",
+      "from_verse": 57,
+      "to_surah": "المؤمنون",
+      "to_verse": 17
+    },
+    "distant_review_content": {
+      "from_surah": "العنكبوت",
+      "from_verse": 46,
+      "to_surah": "الروم",
+      "to_verse": 32
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1",
+      "row": 12,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L5_J18_S9",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 9,
+    "order_in_level": 9,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد سورة النور كاملة على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        18
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "النور",
+      "from_verse": 62,
+      "to_surah": "المؤمنون",
+      "to_verse": 17
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1",
+      "row": 13,
+      "raw_session_number": 9
+    }
+  },
+  {
+    "id": "L5_J18_S10",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 10,
+    "order_in_level": 10,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في سورة النور كاملة من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        18
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1",
+      "row": 14,
+      "raw_session_number": 10
+    }
+  },
+  {
+    "id": "L5_J18_S11",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 11,
+    "order_in_level": 11,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المؤمنون",
+      "from_verse": 18,
+      "to_surah": "المؤمنون",
+      "to_verse": 33
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "الروم",
+      "from_verse": 33,
+      "to_surah": "لقمان",
+      "to_verse": 28
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 5,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L5_J18_S12",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 12,
+    "order_in_level": 12,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المؤمنون",
+      "from_verse": 34,
+      "to_surah": "المؤمنون",
+      "to_verse": 59
+    },
+    "recent_review_content": {
+      "from_surah": "المؤمنون",
+      "from_verse": 18,
+      "to_surah": "المؤمنون",
+      "to_verse": 33
+    },
+    "distant_review_content": {
+      "from_surah": "لقمان",
+      "from_verse": 29,
+      "to_surah": "الأحزاب",
+      "to_verse": 15
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 6,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L5_J18_S13",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 13,
+    "order_in_level": 13,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المؤمنون",
+      "from_verse": 60,
+      "to_surah": "المؤمنون",
+      "to_verse": 81
+    },
+    "recent_review_content": {
+      "from_surah": "المؤمنون",
+      "from_verse": 18,
+      "to_surah": "المؤمنون",
+      "to_verse": 59
+    },
+    "distant_review_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 16,
+      "to_surah": "الأحزاب",
+      "to_verse": 54
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 7,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L5_J18_S14",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 14,
+    "order_in_level": 14,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المؤمنون",
+      "from_verse": 82,
+      "to_surah": "المؤمنون",
+      "to_verse": 104
+    },
+    "recent_review_content": {
+      "from_surah": "المؤمنون",
+      "from_verse": 34,
+      "to_surah": "المؤمنون",
+      "to_verse": 81
+    },
+    "distant_review_content": {
+      "from_surah": "الأحزاب",
+      "from_verse": 55,
+      "to_surah": "سبأ",
+      "to_verse": 31
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 8,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L5_J18_S15",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 15,
+    "order_in_level": 15,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المؤمنون",
+      "from_verse": 105,
+      "to_surah": "المؤمنون",
+      "to_verse": 118
+    },
+    "recent_review_content": {
+      "from_surah": "المؤمنون",
+      "from_verse": 60,
+      "to_surah": "المؤمنون",
+      "to_verse": 104
+    },
+    "distant_review_content": {
+      "from_surah": "سبأ",
+      "from_verse": 32,
+      "to_surah": "فاطر",
+      "to_verse": 30
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 9,
+      "raw_session_number": 15
+    }
+  },
+  {
+    "id": "L5_J18_S16",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 16,
+    "order_in_level": 16,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "المؤمنون",
+      "from_verse": 105,
+      "to_surah": "المؤمنون",
+      "to_verse": 118
+    },
+    "recent_review_content": {
+      "from_surah": "المؤمنون",
+      "from_verse": 82,
+      "to_surah": "المؤمنون",
+      "to_verse": 118
+    },
+    "distant_review_content": {
+      "from_surah": "فاطر",
+      "from_verse": 31,
+      "to_surah": "يس",
+      "to_verse": 54
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 10,
+      "raw_session_number": 16
+    }
+  },
+  {
+    "id": "L5_J18_S17",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 17,
+    "order_in_level": 17,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد سورة المؤمنون على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        18
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "المؤمنون",
+      "from_verse": 105,
+      "to_surah": "المؤمنون",
+      "to_verse": 118
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 11,
+      "raw_session_number": 17
+    }
+  },
+  {
+    "id": "L5_J18_S18",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 18,
+    "order_in_level": 18,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في سورة المؤمنون من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        18
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 12,
+      "raw_session_number": 18
+    }
+  },
+  {
+    "id": "L5_J18_S19",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 19,
+    "order_in_level": 19,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد سورتي المؤمنون والنور على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        18
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 13,
+      "raw_session_number": 19
+    }
+  },
+  {
+    "id": "L5_J18_S20",
+    "level_id": 5,
+    "juz_number": 18,
+    "session_number": 20,
+    "order_in_level": 20,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار في سورتي المؤمنون والنور من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        18
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 14,
+      "raw_session_number": 20
+    }
+  },
+  {
+    "id": "L5_J17_S1",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 1,
+    "order_in_level": 21,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحج",
+      "from_verse": 1,
+      "to_surah": "الحج",
+      "to_verse": 11
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "يس",
+      "from_verse": 55,
+      "to_surah": "الصافات",
+      "to_verse": 102
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L5_J17_S2",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 2,
+    "order_in_level": 22,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحج",
+      "from_verse": 12,
+      "to_surah": "الحج",
+      "to_verse": 23
+    },
+    "recent_review_content": {
+      "from_surah": "الحج",
+      "from_verse": 1,
+      "to_surah": "الحج",
+      "to_verse": 11
+    },
+    "distant_review_content": {
+      "from_surah": "الصافات",
+      "from_verse": 103,
+      "to_surah": "ص",
+      "to_verse": 42
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L5_J17_S3",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 3,
+    "order_in_level": 23,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحج",
+      "from_verse": 24,
+      "to_surah": "الحج",
+      "to_verse": 35
+    },
+    "recent_review_content": {
+      "from_surah": "الحج",
+      "from_verse": 1,
+      "to_surah": "الحج",
+      "to_verse": 23
+    },
+    "distant_review_content": {
+      "from_surah": "ص",
+      "from_verse": 43,
+      "to_surah": "الزمر",
+      "to_verse": 31
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L5_J17_S4",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 4,
+    "order_in_level": 24,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحج",
+      "from_verse": 36,
+      "to_surah": "الحج",
+      "to_verse": 46
+    },
+    "recent_review_content": {
+      "from_surah": "الحج",
+      "from_verse": 12,
+      "to_surah": "الحج",
+      "to_verse": 35
+    },
+    "distant_review_content": {
+      "from_surah": "الزمر",
+      "from_verse": 32,
+      "to_surah": "غافر",
+      "to_verse": 2
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L5_J17_S5",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 5,
+    "order_in_level": 25,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحج",
+      "from_verse": 47,
+      "to_surah": "الحج",
+      "to_verse": 59
+    },
+    "recent_review_content": {
+      "from_surah": "الحج",
+      "from_verse": 24,
+      "to_surah": "الحج",
+      "to_verse": 46
+    },
+    "distant_review_content": {
+      "from_surah": "غافر",
+      "from_verse": 3,
+      "to_surah": "غافر",
+      "to_verse": 58
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L5_J17_S6",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 6,
+    "order_in_level": 26,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحج",
+      "from_verse": 60,
+      "to_surah": "الحج",
+      "to_verse": 72
+    },
+    "recent_review_content": {
+      "from_surah": "الحج",
+      "from_verse": 35,
+      "to_surah": "الحج",
+      "to_verse": 59
+    },
+    "distant_review_content": {
+      "from_surah": "غافر",
+      "from_verse": 59,
+      "to_surah": "فصلت",
+      "to_verse": 29
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L5_J17_S7",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 7,
+    "order_in_level": 27,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحج",
+      "from_verse": 73,
+      "to_surah": "الأنبياء",
+      "to_verse": 4
+    },
+    "recent_review_content": {
+      "from_surah": "الحج",
+      "from_verse": 47,
+      "to_surah": "الحج",
+      "to_verse": 72
+    },
+    "distant_review_content": {
+      "from_surah": "فصلت",
+      "from_verse": 30,
+      "to_surah": "الشورى",
+      "to_verse": 22
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1",
+      "row": 11,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L5_J17_S8",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 8,
+    "order_in_level": 28,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحج",
+      "from_verse": 73,
+      "to_surah": "الأنبياء",
+      "to_verse": 4
+    },
+    "recent_review_content": {
+      "from_surah": "الحج",
+      "from_verse": 60,
+      "to_surah": "الأنبياء",
+      "to_verse": 4
+    },
+    "distant_review_content": {
+      "from_surah": "الشورى",
+      "from_verse": 23,
+      "to_surah": "الزخرف",
+      "to_verse": 29
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1",
+      "row": 12,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L5_J17_S9",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 9,
+    "order_in_level": 29,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد سورة الحج كاملةَ على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        17
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "الحج",
+      "from_verse": 70,
+      "to_surah": "الأنبياء",
+      "to_verse": 4
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1",
+      "row": 13,
+      "raw_session_number": 9
+    }
+  },
+  {
+    "id": "L5_J17_S10",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 10,
+    "order_in_level": 30,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في سورة الحج كاملةَ من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        17
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1",
+      "row": 14,
+      "raw_session_number": 10
+    }
+  },
+  {
+    "id": "L5_J17_S11",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 11,
+    "order_in_level": 31,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 5,
+      "to_surah": "الأنبياء",
+      "to_verse": 24
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "الزخرف",
+      "from_verse": 30,
+      "to_surah": "الدخان",
+      "to_verse": 29
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 5,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L5_J17_S12",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 12,
+    "order_in_level": 32,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 25,
+      "to_surah": "الأنبياء",
+      "to_verse": 40
+    },
+    "recent_review_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 5,
+      "to_surah": "الأنبياء",
+      "to_verse": 24
+    },
+    "distant_review_content": {
+      "from_surah": "الدخان",
+      "from_verse": 30,
+      "to_surah": "الأحقاف",
+      "to_verse": 2
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 6,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L5_J17_S13",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 13,
+    "order_in_level": 33,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 41,
+      "to_surah": "الأنبياء",
+      "to_verse": 57
+    },
+    "recent_review_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 5,
+      "to_surah": "الأنبياء",
+      "to_verse": 40
+    },
+    "distant_review_content": {
+      "from_surah": "الأحقاف",
+      "from_verse": 3,
+      "to_surah": "محمد",
+      "to_verse": 24
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 7,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L5_J17_S14",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 14,
+    "order_in_level": 34,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 58,
+      "to_surah": "الأنبياء",
+      "to_verse": 77
+    },
+    "recent_review_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 25,
+      "to_surah": "الأنبياء",
+      "to_verse": 57
+    },
+    "distant_review_content": {
+      "from_surah": "محمد",
+      "from_verse": 25,
+      "to_surah": "الفتح",
+      "to_verse": 29
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 8,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L5_J17_S15",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 15,
+    "order_in_level": 35,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 78,
+      "to_surah": "الأنبياء",
+      "to_verse": 90
+    },
+    "recent_review_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 41,
+      "to_surah": "الأنبياء",
+      "to_verse": 77
+    },
+    "distant_review_content": {
+      "from_surah": "الحجرات",
+      "from_verse": 1,
+      "to_surah": "ق",
+      "to_verse": 45
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 9,
+      "raw_session_number": 15
+    }
+  },
+  {
+    "id": "L5_J17_S16",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 16,
+    "order_in_level": 36,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 91,
+      "to_surah": "الأنبياء",
+      "to_verse": 106
+    },
+    "recent_review_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 58,
+      "to_surah": "الأنبياء",
+      "to_verse": 90
+    },
+    "distant_review_content": {
+      "from_surah": "الذاريات",
+      "from_verse": 1,
+      "to_surah": "الطور",
+      "to_verse": 49
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 10,
+      "raw_session_number": 16
+    }
+  },
+  {
+    "id": "L5_J17_S17",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 17,
+    "order_in_level": 37,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 107,
+      "to_surah": "الأنبياء",
+      "to_verse": 112
+    },
+    "recent_review_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 78,
+      "to_surah": "الأنبياء",
+      "to_verse": 106
+    },
+    "distant_review_content": {
+      "from_surah": "النجم",
+      "from_verse": 1,
+      "to_surah": "القمر",
+      "to_verse": 55
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 11,
+      "raw_session_number": 17
+    }
+  },
+  {
+    "id": "L5_J17_S18",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 18,
+    "order_in_level": 38,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 107,
+      "to_surah": "الأنبياء",
+      "to_verse": 112
+    },
+    "recent_review_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 91,
+      "to_surah": "الأنبياء",
+      "to_verse": 112
+    },
+    "distant_review_content": {
+      "from_surah": "الرحمن",
+      "from_verse": 1,
+      "to_surah": "الواقعة",
+      "to_verse": 96
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 12,
+      "raw_session_number": 18
+    }
+  },
+  {
+    "id": "L5_J17_S19",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 19,
+    "order_in_level": 39,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد سورة الأنبياء على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        17
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "الأنبياء",
+      "from_verse": 107,
+      "to_surah": "الأنبياء",
+      "to_verse": 112
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 13,
+      "raw_session_number": 19
+    }
+  },
+  {
+    "id": "L5_J17_S20",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 20,
+    "order_in_level": 40,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في سورة الأنبياء من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        17
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 14,
+      "raw_session_number": 20
+    }
+  },
+  {
+    "id": "L5_J17_S21",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 21,
+    "order_in_level": 41,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد من أول سورة الأنبياء إلى أخر سورة الحج على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        17
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 15,
+      "raw_session_number": 21
+    }
+  },
+  {
+    "id": "L5_J17_S22",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 22,
+    "order_in_level": 42,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار من أول سورة الأنبياء إلى أخر سورة الحج من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        17
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 16,
+      "raw_session_number": 22
+    }
+  },
+  {
+    "id": "L5_J17_S23",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 23,
+    "order_in_level": 43,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "سرد من أول سورة الأنبياء إلى أخر سورة النور على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        17,
+        18
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 17,
+      "raw_session_number": 23
+    }
+  },
+  {
+    "id": "L5_J17_S24",
+    "level_id": 5,
+    "juz_number": 17,
+    "session_number": 24,
+    "order_in_level": 44,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "اختبار من أول سورة الأنبياء إلى أخر سورة النور  من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        17,
+        18
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 18,
+      "raw_session_number": 24
+    }
+  },
+  {
+    "id": "L5_J16_S1",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 1,
+    "order_in_level": 45,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "طه",
+      "from_verse": 1,
+      "to_surah": "طه",
+      "to_verse": 37
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "الحديد",
+      "from_verse": 1,
+      "to_surah": "الحديد",
+      "to_verse": 29
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1",
+      "row": 5,
+      "raw_session_number": 1
+    }
+  },
+  {
+    "id": "L5_J16_S2",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 2,
+    "order_in_level": 46,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "طه",
+      "from_verse": 38,
+      "to_surah": "طه",
+      "to_verse": 58
+    },
+    "recent_review_content": {
+      "from_surah": "طه",
+      "from_verse": 1,
+      "to_surah": "طه",
+      "to_verse": 37
+    },
+    "distant_review_content": {
+      "from_surah": "المجادلة",
+      "from_verse": 1,
+      "to_surah": "الحشر",
+      "to_verse": 24
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1",
+      "row": 6,
+      "raw_session_number": 2
+    }
+  },
+  {
+    "id": "L5_J16_S3",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 3,
+    "order_in_level": 47,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "طه",
+      "from_verse": 59,
+      "to_surah": "طه",
+      "to_verse": 76
+    },
+    "recent_review_content": {
+      "from_surah": "طه",
+      "from_verse": 1,
+      "to_surah": "طه",
+      "to_verse": 58
+    },
+    "distant_review_content": {
+      "from_surah": "الممتحنة",
+      "from_verse": 1,
+      "to_surah": "الجمعة",
+      "to_verse": 11
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1",
+      "row": 7,
+      "raw_session_number": 3
+    }
+  },
+  {
+    "id": "L5_J16_S4",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 4,
+    "order_in_level": 48,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "طه",
+      "from_verse": 77,
+      "to_surah": "طه",
+      "to_verse": 94
+    },
+    "recent_review_content": {
+      "from_surah": "طه",
+      "from_verse": 38,
+      "to_surah": "طه",
+      "to_verse": 76
+    },
+    "distant_review_content": {
+      "from_surah": "المنافقون",
+      "from_verse": 1,
+      "to_surah": "الطلاق",
+      "to_verse": 12
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1",
+      "row": 8,
+      "raw_session_number": 4
+    }
+  },
+  {
+    "id": "L5_J16_S5",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 5,
+    "order_in_level": 49,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "طه",
+      "from_verse": 95,
+      "to_surah": "طه",
+      "to_verse": 113
+    },
+    "recent_review_content": {
+      "from_surah": "طه",
+      "from_verse": 59,
+      "to_surah": "طه",
+      "to_verse": 94
+    },
+    "distant_review_content": {
+      "from_surah": "التحريم",
+      "from_verse": 1,
+      "to_surah": "القلم",
+      "to_verse": 52
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1",
+      "row": 9,
+      "raw_session_number": 5
+    }
+  },
+  {
+    "id": "L5_J16_S6",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 6,
+    "order_in_level": 50,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "طه",
+      "from_verse": 114,
+      "to_surah": "طه",
+      "to_verse": 130
+    },
+    "recent_review_content": {
+      "from_surah": "طه",
+      "from_verse": 77,
+      "to_surah": "طه",
+      "to_verse": 113
+    },
+    "distant_review_content": {
+      "from_surah": "الحاقة",
+      "from_verse": 1,
+      "to_surah": "نوح",
+      "to_verse": 28
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1",
+      "row": 10,
+      "raw_session_number": 6
+    }
+  },
+  {
+    "id": "L5_J16_S7",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 7,
+    "order_in_level": 51,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "طه",
+      "from_verse": 131,
+      "to_surah": "مريم",
+      "to_verse": 11
+    },
+    "recent_review_content": {
+      "from_surah": "طه",
+      "from_verse": 95,
+      "to_surah": "طه",
+      "to_verse": 130
+    },
+    "distant_review_content": {
+      "from_surah": "الجن",
+      "from_verse": 1,
+      "to_surah": "المدثر",
+      "to_verse": 56
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1",
+      "row": 11,
+      "raw_session_number": 7
+    }
+  },
+  {
+    "id": "L5_J16_S8",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 8,
+    "order_in_level": 52,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "طه",
+      "from_verse": 131,
+      "to_surah": "مريم",
+      "to_verse": 11
+    },
+    "recent_review_content": {
+      "from_surah": "طه",
+      "from_verse": 114,
+      "to_surah": "مريم",
+      "to_verse": 11
+    },
+    "distant_review_content": {
+      "from_surah": "القيامة",
+      "from_verse": 1,
+      "to_surah": "النبأ",
+      "to_verse": 40
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1",
+      "row": 12,
+      "raw_session_number": 8
+    }
+  },
+  {
+    "id": "L5_J16_S9",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 9,
+    "order_in_level": 53,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد سورة طه كاملةً على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        16
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "طه",
+      "from_verse": 131,
+      "to_surah": "مريم",
+      "to_verse": 11
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1",
+      "row": 13,
+      "raw_session_number": 9
+    }
+  },
+  {
+    "id": "L5_J16_S10",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 10,
+    "order_in_level": 54,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 1,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في سورة طه كاملةً من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        16
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1",
+      "row": 14,
+      "raw_session_number": 10
+    }
+  },
+  {
+    "id": "L5_J16_S11",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 11,
+    "order_in_level": 55,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "مريم",
+      "from_verse": 12,
+      "to_surah": "مريم",
+      "to_verse": 31
+    },
+    "recent_review_content": null,
+    "distant_review_content": {
+      "from_surah": "النازعات",
+      "from_verse": 1,
+      "to_surah": "المطففين",
+      "to_verse": 36
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 5,
+      "raw_session_number": 11
+    }
+  },
+  {
+    "id": "L5_J16_S12",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 12,
+    "order_in_level": 56,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "مريم",
+      "from_verse": 32,
+      "to_surah": "مريم",
+      "to_verse": 51
+    },
+    "recent_review_content": {
+      "from_surah": "مريم",
+      "from_verse": 12,
+      "to_surah": "مريم",
+      "to_verse": 31
+    },
+    "distant_review_content": {
+      "from_surah": "الانشقاق",
+      "from_verse": 1,
+      "to_surah": "البلد",
+      "to_verse": 20
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 6,
+      "raw_session_number": 12
+    }
+  },
+  {
+    "id": "L5_J16_S13",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 13,
+    "order_in_level": 57,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "مريم",
+      "from_verse": 52,
+      "to_surah": "مريم",
+      "to_verse": 72
+    },
+    "recent_review_content": {
+      "from_surah": "مريم",
+      "from_verse": 12,
+      "to_surah": "مريم",
+      "to_verse": 51
+    },
+    "distant_review_content": {
+      "from_surah": "الشمس",
+      "from_verse": 1,
+      "to_surah": "العاديات",
+      "to_verse": 11
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 7,
+      "raw_session_number": 13
+    }
+  },
+  {
+    "id": "L5_J16_S14",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 14,
+    "order_in_level": 58,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "مريم",
+      "from_verse": 73,
+      "to_surah": "مريم",
+      "to_verse": 98
+    },
+    "recent_review_content": {
+      "from_surah": "مريم",
+      "from_verse": 32,
+      "to_surah": "مريم",
+      "to_verse": 72
+    },
+    "distant_review_content": {
+      "from_surah": "القارعة",
+      "from_verse": 1,
+      "to_surah": "الناس",
+      "to_verse": 6
+    },
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 8,
+      "raw_session_number": 14
+    }
+  },
+  {
+    "id": "L5_J16_S15",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 15,
+    "order_in_level": 59,
+    "kind": "lesson",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "مريم",
+      "from_verse": 73,
+      "to_surah": "مريم",
+      "to_verse": 98
+    },
+    "recent_review_content": {
+      "from_surah": "مريم",
+      "from_verse": 52,
+      "to_surah": "مريم",
+      "to_verse": 98
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 9,
+      "raw_session_number": 15
+    }
+  },
+  {
+    "id": "L5_J16_S16",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 16,
+    "order_in_level": 60,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "سرد سورة مريم على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        16
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": {
+      "from_surah": "مريم",
+      "from_verse": 73,
+      "to_surah": "مريم",
+      "to_verse": 98
+    },
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 10,
+      "raw_session_number": 16
+    }
+  },
+  {
+    "id": "L5_J16_S17",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 17,
+    "order_in_level": 61,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": 2,
+    "hizb_number": null,
+    "scope": {
+      "tier": "unit",
+      "label_ar": "اختبار في سورة مريم من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        16
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 11,
+      "raw_session_number": 17
+    }
+  },
+  {
+    "id": "L5_J16_S18",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 18,
+    "order_in_level": 62,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "سرد سورتي مريم وطه على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        16
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 12,
+      "raw_session_number": 18
+    }
+  },
+  {
+    "id": "L5_J16_S19",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 19,
+    "order_in_level": 63,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "juz",
+      "label_ar": "اختبار في سورتي مريم وطه من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        16
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 13,
+      "raw_session_number": 19
+    }
+  },
+  {
+    "id": "L5_J16_S20",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 20,
+    "order_in_level": 64,
+    "kind": "sard",
+    "assessed_by": "teacher",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "سرد من أول مريم إلى أخر النور على المحفظ المتابع",
+      "hizb_number": null,
+      "juz_numbers": [
+        16,
+        17,
+        18
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 14,
+      "raw_session_number": 20
+    }
+  },
+  {
+    "id": "L5_J16_S21",
+    "level_id": 5,
+    "juz_number": 16,
+    "session_number": 21,
+    "order_in_level": 65,
+    "kind": "exam",
+    "assessed_by": "supervisor",
+    "unit_index": null,
+    "hizb_number": null,
+    "scope": {
+      "tier": "cumulative",
+      "label_ar": "اختبار من أول مريم إلى أخر النور  من قِبل إدارة الحلقات",
+      "hizb_number": null,
+      "juz_numbers": [
+        16,
+        17,
+        18
+      ]
+    },
+    "current_level_content": null,
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
+      "sheet": "Sheet1 (2)",
+      "row": 15,
+      "raw_session_number": 21
+    }
+  }
+]
