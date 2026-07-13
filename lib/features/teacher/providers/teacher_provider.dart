@@ -213,11 +213,31 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
 
   void setRepetitionsWithTeacher(int repetitions) {
     if (state == null) return;
+    // The floor belongs here, not in the stepper widget that happens to be the
+    // only caller today: a negative count is a caller bug, not data to
+    // tolerate, so it surfaces the same way SessionKindX.fromString surfaces
+    // an unknown kind — by throwing — rather than being clamped into a
+    // silently "corrected" value that hides the bug.
+    if (repetitions < 0) {
+      throw ArgumentError.value(
+        repetitions,
+        'repetitions',
+        'Repetitions with teacher cannot be negative',
+      );
+    }
     state = state!.copyWith(repetitionsWithTeacher: repetitions);
   }
 
   void setHomeRepetitionsRequired(int repetitions) {
     if (state == null) return;
+    // See setRepetitionsWithTeacher: same invariant, same treatment.
+    if (repetitions < 0) {
+      throw ArgumentError.value(
+        repetitions,
+        'repetitions',
+        'Home repetitions required cannot be negative',
+      );
+    }
     state = state!.copyWith(homeRepetitionsRequired: repetitions);
   }
 

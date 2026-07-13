@@ -73,4 +73,22 @@ void main() {
     );
     expect(reported, isNull);
   });
+
+  testWidgets('the home-repetitions count never goes below zero either', (
+    tester,
+  ) async {
+    int? reported;
+    await pump(
+      tester,
+      withTeacher: 0,
+      atHome: 0,
+      onWithTeacher: (_) {},
+      onAtHome: (v) => reported = v,
+    );
+
+    await tester.tap(
+      find.byKey(const Key('decrement_home_repetitions_required')),
+    );
+    expect(reported, isNull);
+  });
 }

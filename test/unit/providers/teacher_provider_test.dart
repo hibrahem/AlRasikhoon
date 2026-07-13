@@ -247,6 +247,75 @@ void main() {
     });
   });
 
+  // The zero-floor on both recitation counts is a domain invariant, not a UI
+  // affordance: `RecitationCountsCard` disables its decrement button at zero,
+  // but that is the only caller today. Any future caller — another screen, a
+  // script, a test — must find the SAME floor enforced here, in the state
+  // that actually holds the count, whatever it passes.
+  group('ActiveSessionNotifier.setRepetitionsWithTeacher', () {
+    test('accepts a non-negative value', () {
+      final container = makeContainer(user: buildTeacher());
+      final notifier = container.read(activeSessionProvider.notifier);
+      notifier.startSession('student-1');
+
+      notifier.setRepetitionsWithTeacher(6);
+
+      expect(container.read(activeSessionProvider)!.repetitionsWithTeacher, 6);
+    });
+
+    test(
+      'throws ArgumentError rather than silently clamping a negative value',
+      () {
+        final container = makeContainer(user: buildTeacher());
+        final notifier = container.read(activeSessionProvider.notifier);
+        notifier.startSession('student-1');
+
+        expect(
+          () => notifier.setRepetitionsWithTeacher(-1),
+          throwsArgumentError,
+        );
+        // State is left untouched by the rejected call.
+        expect(
+          container.read(activeSessionProvider)!.repetitionsWithTeacher,
+          0,
+        );
+      },
+    );
+  });
+
+  group('ActiveSessionNotifier.setHomeRepetitionsRequired', () {
+    test('accepts a non-negative value', () {
+      final container = makeContainer(user: buildTeacher());
+      final notifier = container.read(activeSessionProvider.notifier);
+      notifier.startSession('student-1');
+
+      notifier.setHomeRepetitionsRequired(15);
+
+      expect(
+        container.read(activeSessionProvider)!.homeRepetitionsRequired,
+        15,
+      );
+    });
+
+    test(
+      'throws ArgumentError rather than silently clamping a negative value',
+      () {
+        final container = makeContainer(user: buildTeacher());
+        final notifier = container.read(activeSessionProvider.notifier);
+        notifier.startSession('student-1');
+
+        expect(
+          () => notifier.setHomeRepetitionsRequired(-1),
+          throwsArgumentError,
+        );
+        expect(
+          container.read(activeSessionProvider)!.homeRepetitionsRequired,
+          0,
+        );
+      },
+    );
+  });
+
   group('ActiveSessionNotifier.completeSession', () {
     test('advances the student session when the record passes', () async {
       when(
