@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/session_model.dart';
 import '../models/student_model.dart';
 import '../models/user_model.dart';
 import '../services/firebase_service.dart';
 import '../../core/constants/app_constants.dart';
-import '../../domain/curriculum/curriculum_order.dart';
 import '../../domain/curriculum/curriculum_position.dart';
 import 'curriculum_repository.dart';
 import 'user_repository.dart';
@@ -16,33 +16,31 @@ class StudentWithUser {
   const StudentWithUser({required this.student, required this.user});
 }
 
-/// The outcome of walking forward to the next [CurriculumPosition]. Kept as
-/// a sealed type rather than a nullable position so "end of the curriculum"
-/// (a structural fact about the curriculum) can never be conflated with "no
-/// seeded data ahead" (a fixture/environment problem) — see
-/// [StudentRepository._nextPosition].
-sealed class _NextPositionOutcome {
-  const _NextPositionOutcome();
+/// The outcome of walking forward to the next session. Kept as a sealed type
+/// rather than a nullable session so "end of the curriculum" (a structural
+/// fact) can never be conflated with "no seeded data ahead" (a fixture or
+/// environment problem) — see [StudentRepository._nextSession].
+sealed class _NextSessionOutcome {
+  const _NextSessionOutcome();
 }
 
-/// There is a later position in the curriculum; move to it.
-final class _Advanced extends _NextPositionOutcome {
-  final CurriculumPosition position;
-  const _Advanced(this.position);
+/// There is a later session in the curriculum; move to it.
+final class _Advanced extends _NextSessionOutcome {
+  final SessionModel session;
+  const _Advanced(this.session);
 }
 
-/// The student's current hizb is structurally the last one in the
-/// curriculum (no seeded-session check can override this): no later
-/// session exists in it, and [CurriculumOrder.nextHizb] has no next hizb.
-final class _CurriculumCompleted extends _NextPositionOutcome {
+/// The student stands on the last session of the last level: nothing follows it
+/// in the curriculum at all.
+final class _CurriculumCompleted extends _NextSessionOutcome {
   const _CurriculumCompleted();
 }
 
-/// The walk ran out of seeded sessions before reaching a structurally
-/// terminal hizb. This is a data problem (an unseeded environment or test
-/// fixture), not the end of the curriculum, so the caller must not credit
-/// completion or move the student.
-final class _CurriculumDataMissing extends _NextPositionOutcome {
+/// The walk ran out of seeded sessions before reaching the end of the
+/// curriculum. This is a data problem (an unseeded environment or a fixture),
+/// not the end of the curriculum, so the caller must not credit completion or
+/// move the student.
+final class _CurriculumDataMissing extends _NextSessionOutcome {
   const _CurriculumDataMissing();
 }
 
@@ -54,9 +52,13 @@ final class _CurriculumDataMissing extends _NextPositionOutcome {
 /// sessions exist ahead of them), leaving the student re-taught the same
 /// session forever with no signal to anyone.
 enum StudentAdvanceOutcome {
-  /// The student moved to a later position in the curriculum (or completed
-  /// it, crediting the final level).
+  /// The student moved to a later session of the curriculum.
   advanced,
+
+  /// The student passed the last session of the last level: the curriculum is
+  /// finished. Their final level was credited; their position did not move,
+  /// because there is nowhere to move to.
+  curriculumCompleted,
 
   /// The walk ran out of seeded curriculum data before it could tell whether
   /// the student had truly reached the end. The student was left exactly as
@@ -86,6 +88,33 @@ class StudentRepository {
   CollectionReference<Map<String, dynamic>> get _studentsCollection =>
       _firestore.collection(AppConstants.collectionStudents);
 
+  /// The ONLY writer of a student's `current_*` fields.
+  ///
+  /// The student's position is written as one map, copied wholesale from the
+  /// curriculum session they now stand on: the identity (`current_level`,
+  /// `current_juz`, `current_session`, `current_order_in_level`) AND the
+  /// denormalized facts the supervisor's exam queue and the dashboards filter on
+  /// (`current_session_id`, `current_session_kind`, `current_session_tier`,
+  /// `current_session_label_ar`). They cannot drift apart, because no code path
+  /// writes one without the others — a student sitting on an اختبار whose
+  /// `current_session_kind` still said `lesson` would simply never appear in the
+  /// supervisor's queue, and nobody would know why.
+  ///
+  /// A new session is always a fresh first attempt, so the attempt counter is
+  /// part of the same map.
+  Map<String, dynamic> _writePosition(SessionModel next) => {
+    'current_level': next.levelId,
+    'current_juz': next.juzNumber,
+    'current_session': next.sessionNumber,
+    'current_order_in_level': next.orderInLevel,
+    'current_hizb': next.hizbNumber,
+    'current_session_id': next.id,
+    'current_session_kind': next.kind.value,
+    'current_session_tier': next.scope?.tier.value,
+    'current_session_label_ar': next.scope?.labelAr,
+    'current_attempt': 1,
+  };
+
   /// Create a student plus the underlying user account. The auth user AND
   /// users/{uid} Firestore profile are provisioned atomically by the
   /// createUserAccount Cloud Function. Optionally provisions a guardian
@@ -100,6 +129,11 @@ class StudentRepository {
   /// to the first session; a teacher or supervisor may place a student who has
   /// already memorized part of the Quran at any point, which credits everything
   /// before that point as memorized before joining.
+  ///
+  /// The placement is resolved against the curriculum BEFORE anything is
+  /// provisioned: whether a session exists at a position is a data question, and
+  /// a position with no session is a rejected placement — never a
+  /// half-provisioned user (an auth account with no student document).
   Future<StudentWithUser> createStudent({
     required String name,
     required String username,
@@ -112,15 +146,27 @@ class StudentRepository {
     String? guardianPhone,
     CurriculumPosition startingPosition = CurriculumPosition.start,
   }) async {
-    // Reject a self-contradictory position (e.g. level 1 with a hizb that
-    // really belongs to level 2) before it can be persisted as corrupt
-    // credit. CurriculumPosition.validated already knows what a real
-    // position looks like — reuse its checks rather than duplicating them.
+    // Topology first (level 1-10, juz 1-30, session >= 1) — a position that
+    // could never name a real point is rejected without a read.
     CurriculumPosition.validated(
       level: startingPosition.level,
-      hizb: startingPosition.hizb,
+      juz: startingPosition.juz,
       session: startingPosition.session,
     );
+
+    // Then the data: the curriculum decides whether that session exists. The
+    // student is enrolled onto the SessionModel itself, so their denormalized
+    // facts are copied from the curriculum and cannot contradict it.
+    final startingSession = await _curriculumRepository.getSessionAt(
+      startingPosition,
+    );
+    if (startingSession == null) {
+      throw ArgumentError.value(
+        startingPosition.sessionId,
+        'startingPosition',
+        'No curriculum session exists at this position',
+      );
+    }
 
     final normalizedUsername = username.toLowerCase();
     final synthesizedEmail =
@@ -182,10 +228,15 @@ class StudentRepository {
       instituteId: instituteId,
       teacherId: teacherId,
       guardianId: guardianId,
-      position: startingPosition,
+      session: startingSession,
       createdAt: DateTime.now(),
     );
-    await studentDocRef.set(student.toFirestore());
+    // The position goes through _writePosition like every other write, so the
+    // shape of a freshly-created student and an advanced one is one shape.
+    await studentDocRef.set({
+      ...student.toFirestore(),
+      ..._writePosition(startingSession),
+    });
 
     return StudentWithUser(student: student, user: user);
   }
@@ -339,13 +390,19 @@ class StudentRepository {
     return studentsWithUsers;
   }
 
-  /// Get students ready for exam (session 36)
+  /// The supervisor's exam queue: the institute's active students who are
+  /// standing on an اختبار.
+  ///
+  /// The filter is the session's KIND, denormalized onto the student by
+  /// [_writePosition] — never a session number. Assessments sit wherever the
+  /// curriculum puts them (the juz-30 اختبار of level 1 is session 68), so the
+  /// old `current_session == 36` test found nobody at all.
   Future<List<StudentWithUser>> getStudentsReadyForExam(
     String instituteId,
   ) async {
     final query = await _studentsCollection
         .where('institute_id', isEqualTo: instituteId)
-        .where('current_session', isEqualTo: AppConstants.examSessionNumber)
+        .where('current_session_kind', isEqualTo: AppConstants.sessionKindExam)
         .where('is_active', isEqualTo: true)
         .get();
 
@@ -372,95 +429,77 @@ class StudentRepository {
     });
   }
 
-  /// Advance the student to the next session in the curriculum.
+  /// Advance the student to the next session of the curriculum.
   ///
-  /// Follows the real teaching order (level 1 runs 59, 60, 57, 58, 55, 56) over
-  /// the sessions that actually exist — the curriculum is sparse, so the next
-  /// session is rarely `current + 1`. A level completes only after its last
-  /// hizb.
+  /// Advancement walks `order_in_level`: the next session is the one at
+  /// `currentOrderInLevel + 1` of the same level, whatever juz that falls in.
+  /// This is the ONLY rule that crosses a juz boundary correctly, because the
+  /// teaching order of a level's juz is DATA (levels 1-9 descend — level 1 runs
+  /// juz 30 → 29 → 28 — while level 10 ASCENDS, juz 1 → 2 → 3). Every arithmetic
+  /// rule that ever tried to compute the next juz got level 10 wrong.
   ///
-  /// Three internal outcomes, reported back to the caller as a
-  /// [StudentAdvanceOutcome] so a silent no-op can never be mistaken for
-  /// success:
-  /// - [_Advanced]: there is a later position — move to it, resetting the
-  ///   attempt, and crediting every level fully passed through. Reported as
-  ///   [StudentAdvanceOutcome.advanced].
-  /// - [_CurriculumCompleted]: the student's current hizb is structurally the
-  ///   last one in the curriculum and has no later session — credit their
-  ///   final level as completed, reset the attempt, and stay put (there is
-  ///   nowhere to advance to). Also reported as
-  ///   [StudentAdvanceOutcome.advanced] — the student's bookkeeping did
-  ///   change, just not their position.
-  /// - [_CurriculumDataMissing]: the walk ran out of *seeded* sessions before
-  ///   it could tell whether the student had truly reached the end (a data
-  ///   problem, not the end of the curriculum) — leave the student exactly
-  ///   as they are and write nothing. Reported as
-  ///   [StudentAdvanceOutcome.curriculumDataMissing] so callers can warn
-  ///   instead of silently claiming success.
+  /// Assessments need no gating machinery of their own: the سرد and اختبار of a
+  /// juz ARE the last sessions of that juz, and the cumulative pair the last of
+  /// the level, so passing them IS the advance past them.
+  ///
+  /// Three internal outcomes, reported back so a silent no-op can never be
+  /// mistaken for success:
+  /// - [_Advanced]: move onto the session, resetting the attempt and crediting
+  ///   every level fully crossed.
+  /// - [_CurriculumCompleted]: the student stood on the last session of the last
+  ///   level — credit their final level, reset the attempt, stay put.
+  /// - [_CurriculumDataMissing]: the walk ran out of *seeded* sessions before it
+  ///   could tell whether the student had truly finished — leave the student
+  ///   exactly as they are and write nothing.
   Future<StudentAdvanceOutcome> advanceStudentSession(String studentId) async {
     final student = await getStudentById(studentId);
     if (student == null) return StudentAdvanceOutcome.studentNotFound;
 
-    final outcome = await _nextPosition(student.currentPosition);
+    final outcome = await _nextSession(student);
 
     switch (outcome) {
       case _CurriculumDataMissing():
         return StudentAdvanceOutcome.curriculumDataMissing;
 
       case _CurriculumCompleted():
-        // Bookkeeping is keyed off the level derived from the hizb, not
-        // the stored level, so a corrupted record (stored level disagreeing
-        // with its hizb) still gets credited for the level it actually
-        // finished.
-        final fromLevel = CurriculumOrder.levelOfHizb(student.currentHizb);
-        final completedLevels = List<int>.from(student.completedLevels);
-        if (!completedLevels.contains(fromLevel)) {
-          completedLevels.add(fromLevel);
-        }
+        final completedLevels = _creditedLevels(
+          student.completedLevels,
+          upToAndIncluding: student.currentLevel,
+        );
         // There is no eleventh level to unlock into, so finishing the
-        // curriculum backfills every level 1..10 as unlocked.
-        final unlockedLevels = List<int>.from(student.unlockedLevels);
-        for (var level = 1; level <= CurriculumOrder.totalLevels; level++) {
-          if (!unlockedLevels.contains(level)) {
-            unlockedLevels.add(level);
-          }
-        }
+        // curriculum backfills every level as unlocked.
+        final unlockedLevels = _creditedLevels(
+          student.unlockedLevels,
+          upToAndIncluding: CurriculumPosition.totalLevels,
+        );
         await _studentsCollection.doc(studentId).update({
           'current_attempt': 1,
           'completed_levels': completedLevels,
           'unlocked_levels': unlockedLevels,
           'updated_at': FieldValue.serverTimestamp(),
         });
-        return StudentAdvanceOutcome.advanced;
+        return StudentAdvanceOutcome.curriculumCompleted;
 
-      case _Advanced(:final position):
-        // Bookkeeping is keyed off the level derived from the hizb, not
-        // the stored level — see the _CurriculumCompleted branch above.
-        final fromLevel = CurriculumOrder.levelOfHizb(student.currentHizb);
-        final completedLevels = List<int>.from(student.completedLevels);
-        final unlockedLevels = List<int>.from(student.unlockedLevels);
-        if (position.level > fromLevel) {
-          // Every level strictly between the student's current level and
-          // the new one was walked through without stopping (e.g. an
-          // entirely unseeded level) and must still be credited complete.
-          for (var level = fromLevel; level < position.level; level++) {
-            if (!completedLevels.contains(level)) {
-              completedLevels.add(level);
-            }
-          }
-          for (var level = 1; level <= position.level; level++) {
-            if (!unlockedLevels.contains(level)) {
-              unlockedLevels.add(level);
-            }
-          }
+      case _Advanced(:final session):
+        var completedLevels = List<int>.from(student.completedLevels);
+        var unlockedLevels = List<int>.from(student.unlockedLevels);
+        if (session.levelId > student.currentLevel) {
+          // Level credit is awarded on crossing a level boundary. Every level
+          // strictly below the new one is complete — including any the walk
+          // passed straight through (an entirely unseeded level), which must
+          // still be credited rather than silently skipped.
+          completedLevels = _creditedLevels(
+            completedLevels,
+            upToAndIncluding: session.levelId - 1,
+          );
+          unlockedLevels = _creditedLevels(
+            unlockedLevels,
+            upToAndIncluding: session.levelId,
+          );
         }
 
         await _studentsCollection.doc(studentId).update({
-          'current_level': position.level,
-          'current_juz': position.juz,
-          'current_hizb': position.hizb,
-          'current_session': position.session,
-          'current_attempt': 1,
+          ..._writePosition(session),
           'completed_levels': completedLevels,
           'unlocked_levels': unlockedLevels,
           'updated_at': FieldValue.serverTimestamp(),
@@ -469,69 +508,77 @@ class StudentRepository {
     }
   }
 
-  /// The outcome of walking forward from a [CurriculumPosition]. `null` used
-  /// to conflate "end of the curriculum" with "no seeded data ahead" — this
-  /// distinguishes the two so a partially-seeded environment can never be
-  /// mistaken for a student finishing the curriculum.
+  /// [existing] with every level 1..[upToAndIncluding] present: gap-free (a
+  /// level the student walked through is still credited) and duplicate-free (a
+  /// repeated advance does not credit the same level twice).
+  List<int> _creditedLevels(
+    List<int> existing, {
+    required int upToAndIncluding,
+  }) {
+    final credited = List<int>.from(existing);
+    for (var level = 1; level <= upToAndIncluding; level++) {
+      if (!credited.contains(level)) credited.add(level);
+    }
+    return credited;
+  }
+
+  /// The session that follows the one the student stands on.
   ///
-  /// The walk is bounded to at most one lap of the curriculum's hizbs, so it
-  /// cannot loop unboundedly even if [CurriculumOrder.nextHizb] were ever
-  /// buggy again.
-  Future<_NextPositionOutcome> _nextPosition(CurriculumPosition from) async {
-    // A hizb outside the curriculum's valid range (1-60) is a corrupted or
-    // legacy record, not a real position. Without this guard, nextHizb
-    // returning null for such a hizb would be indistinguishable from
-    // "structurally the last hizb of the curriculum" below, misclassifying
-    // garbage data as curriculum completion.
-    if (!CurriculumOrder.isValidHizb(from.hizb)) {
+  /// 1. `order_in_level + 1` within the current level — the whole advancement
+  ///    rule, juz boundaries included.
+  /// 2. If there is none, the level is finished: take the first session
+  ///    (`order_in_level == 1`) of the next level that has one, so a level with
+  ///    no seeded sessions is stepped over rather than mistaken for the end.
+  /// 3. If the student was already in the last level, the curriculum is
+  ///    finished.
+  ///
+  /// Before concluding a level is finished, the levels catalog is consulted: if
+  /// it says the level has more sessions after the student's, then the missing
+  /// `order_in_level + 1` is a HOLE in the data, not the end of the level, and
+  /// the student must not be marched into the next level on the strength of a
+  /// missing document.
+  Future<_NextSessionOutcome> _nextSession(StudentModel student) async {
+    final level = student.currentLevel;
+    if (level < 1 || level > CurriculumPosition.totalLevels) {
+      // A corrupted or legacy record. Not the end of the curriculum, and not a
+      // position to advance from either.
       return const _CurriculumDataMissing();
     }
 
-    // The level is derived from the hizb, not read off the stored position,
-    // so a corrupted record (stored level disagreeing with its hizb) still
-    // finds the sessions that actually exist there.
-    final currentLevel = CurriculumOrder.levelOfHizb(from.hizb);
-    final sessions = await _curriculumRepository.getSessionNumbersForHizb(
-      level: currentLevel,
-      hizb: from.hizb,
+    final next = await _curriculumRepository.getSessionByOrderInLevel(
+      level: level,
+      orderInLevel: student.currentOrderInLevel + 1,
     );
-    final laterInHizb = sessions.where((s) => s > from.session);
-    if (laterInHizb.isNotEmpty) {
-      return _Advanced(
-        CurriculumPosition(
-          level: currentLevel,
-          hizb: from.hizb,
-          session: laterInHizb.first,
-        ),
-      );
+    if (next != null) return _Advanced(next);
+
+    // No next session in this level. Is the level really finished, or is the
+    // data holed?
+    final catalog = await _curriculumRepository.getLevelByNumber(level);
+    if (catalog != null &&
+        catalog.sessionCount > 0 &&
+        student.currentOrderInLevel < catalog.sessionCount) {
+      return const _CurriculumDataMissing();
     }
 
-    // Structural terminality: no later session in this hizb, and the
-    // curriculum has no next hizb at all. This is decided independently of
-    // what's seeded ahead, so it can never be confused with missing data.
-    int? hizb = CurriculumOrder.nextHizb(from.hizb);
-    if (hizb == null) {
+    for (
+      var nextLevel = level + 1;
+      nextLevel <= CurriculumPosition.totalLevels;
+      nextLevel++
+    ) {
+      final first = await _curriculumRepository.getSessionByOrderInLevel(
+        level: nextLevel,
+        orderInLevel: 1,
+      );
+      if (first != null) return _Advanced(first);
+    }
+
+    // Nothing ahead. If the student was in the last level, that is the end of
+    // the curriculum — a structural fact. Otherwise the levels ahead simply
+    // have no seeded data, which is a data problem and must not be credited as
+    // completion.
+    if (level == CurriculumPosition.totalLevels) {
       return const _CurriculumCompleted();
     }
-
-    var steps = 0;
-    const maxSteps =
-        CurriculumOrder.totalLevels * CurriculumOrder.hizbsPerLevel;
-    while (hizb != null && steps < maxSteps) {
-      final level = CurriculumOrder.levelOfHizb(hizb);
-      final next = await _curriculumRepository.getSessionNumbersForHizb(
-        level: level,
-        hizb: hizb,
-      );
-      if (next.isNotEmpty) {
-        return _Advanced(
-          CurriculumPosition(level: level, hizb: hizb, session: next.first),
-        );
-      }
-      hizb = CurriculumOrder.nextHizb(hizb);
-      steps++;
-    }
-
     return const _CurriculumDataMissing();
   }
 

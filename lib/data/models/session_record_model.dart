@@ -56,7 +56,12 @@ class SessionRecordModel {
   final String teacherId;
   final String curriculumSessionId;
   final int levelId;
-  final int hizbNumber;
+
+  /// A LABEL, present only in levels 1-2 — and absent even there on juz- and
+  /// level-tier sessions. It keys nothing: the record is identified by
+  /// [curriculumSessionId]. It used to default to 59, which quietly filed every
+  /// record of the curriculum under the first hizb of level 1.
+  final int? hizbNumber;
   final int sessionNumber;
   final DateTime date;
   final int attemptNumber;
@@ -72,7 +77,7 @@ class SessionRecordModel {
     required this.teacherId,
     required this.curriculumSessionId,
     this.levelId = 1,
-    this.hizbNumber = 59,
+    this.hizbNumber,
     this.sessionNumber = 1,
     required this.date,
     required this.attemptNumber,
@@ -91,7 +96,7 @@ class SessionRecordModel {
       teacherId: data['teacher_id'] ?? '',
       curriculumSessionId: data['curriculum_session_id'] ?? '',
       levelId: data['level_id'] ?? 1,
-      hizbNumber: data['hizb_number'] ?? 59,
+      hizbNumber: data['hizb_number'] as int?,
       sessionNumber: data['session_number'] ?? 1,
       date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       attemptNumber: data['attempt_number'] ?? 1,

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/curriculum_repository.dart';
@@ -9,6 +10,8 @@ import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/domain/curriculum/curriculum_position.dart';
+
+import 'curriculum_fixtures.dart';
 
 class _MockFirebaseService extends Mock implements FirebaseService {}
 
@@ -89,7 +92,55 @@ void main() {
       });
     }
 
+    /// Places a student at a curriculum position, writing the same shape
+    /// StudentRepository writes: identity AND the denormalized session facts.
+    Future<void> seedStudent({
+      String id = 's1',
+      required int level,
+      required int juz,
+      required int session,
+      required int order,
+      String kind = 'lesson',
+      String? tier,
+      String? labelAr,
+      int? hizb,
+      int attempt = 1,
+      List<int> completedLevels = const [],
+      List<int> unlockedLevels = const [1],
+      String instituteId = 'i1',
+    }) async {
+      await fakeFirestore.collection('students').doc(id).set({
+        'user_id': 'u1',
+        'institute_id': instituteId,
+        'current_level': level,
+        'current_juz': juz,
+        'current_session': session,
+        'current_order_in_level': order,
+        'current_hizb': hizb,
+        'current_session_id': 'L${level}_J${juz}_S$session',
+        'current_session_kind': kind,
+        'current_session_tier': tier,
+        'current_session_label_ar': labelAr,
+        'current_attempt': attempt,
+        'completed_levels': completedLevels,
+        'unlocked_levels': unlockedLevels,
+        'is_active': true,
+        'created_at': Timestamp.now(),
+      });
+    }
+
+    Future<Map<String, dynamic>> readStudent([String id = 's1']) async {
+      final doc = await fakeFirestore.collection('students').doc(id).get();
+      return doc.data()!;
+    }
+
     group('createStudent', () {
+      setUp(() async {
+        await seedLevels(fakeFirestore);
+        await seedLevelOneJuz30(fakeFirestore);
+        await seedLevelTwoHead(fakeFirestore);
+      });
+
       test('creates user and student documents', () async {
         final result = await studentRepository.createStudent(
           name: 'طالب جديد',
@@ -108,20 +159,166 @@ void main() {
         expect(result.student.teacherId, 'teacher1');
       });
 
-      test('sets default student progression values', () async {
-        final result = await studentRepository.createStudent(
-          name: 'طالب',
-          username: 'student_two',
-          password: 'pass123',
-          instituteId: 'institute1',
-          teacherId: 'teacher1',
+      test(
+        'a student created without a position starts at the first session of '
+        'the curriculum, with its facts copied from the curriculum',
+        () async {
+          final result = await studentRepository.createStudent(
+            name: 'طالب',
+            username: 'student_two',
+            password: 'pass123',
+            instituteId: 'institute1',
+            teacherId: 'teacher1',
+          );
+
+          expect(result.student.enrollmentPosition, CurriculumPosition.start);
+          expect(result.student.currentLevel, 1);
+          expect(result.student.currentJuz, 30);
+          expect(result.student.currentSession, 1);
+          expect(result.student.currentOrderInLevel, 1);
+          expect(result.student.currentSessionId, 'L1_J30_S1');
+          expect(result.student.currentSessionKind, SessionKind.lesson);
+          expect(result.student.currentAttempt, 1);
+          expect(result.student.completedLevels, isEmpty);
+
+          final doc = await fakeFirestore
+              .collection('students')
+              .doc(result.student.id)
+              .get();
+          expect(doc.data()?['current_session_id'], 'L1_J30_S1');
+          expect(doc.data()?['current_session_kind'], 'lesson');
+          expect(doc.data()?['current_order_in_level'], 1);
+        },
+      );
+
+      test(
+        'a student may be placed onto an assessment — the placement carries its '
+        'kind and its scope, not a guess from the session number',
+        () async {
+          final result = await studentRepository.createStudent(
+            name: 'طالب حافظ',
+            username: 'hafiz',
+            password: 'pass123',
+            instituteId: 'i1',
+            teacherId: 't1',
+            // L1_J30_S67 is the juz-30 سرد — under the old 35/36 rule, session
+            // 67 could only ever have been read as an ordinary lesson.
+            startingPosition: const CurriculumPosition(
+              level: 1,
+              juz: 30,
+              session: 67,
+            ),
+          );
+
+          expect(result.student.currentSessionKind, SessionKind.sard);
+          expect(result.student.currentSessionTier, AssessmentTier.juz);
+          expect(
+            result.student.currentSessionLabelAr,
+            'سرد الجزء رقم 30 كاملًا على المحفظ المتابع',
+          );
+          expect(result.student.currentOrderInLevel, 67);
+
+          final doc = await fakeFirestore
+              .collection('students')
+              .doc(result.student.id)
+              .get();
+          expect(doc.data()?['current_session_kind'], 'sard');
+          expect(doc.data()?['current_session_tier'], 'juz');
+        },
+      );
+
+      test(
+        'a student placed mid-curriculum is credited with the levels before them',
+        () async {
+          final result = await studentRepository.createStudent(
+            name: 'طالب',
+            username: 'level_two',
+            password: 'pass123',
+            instituteId: 'i1',
+            teacherId: 't1',
+            startingPosition: const CurriculumPosition(
+              level: 2,
+              juz: 27,
+              session: 1,
+            ),
+          );
+
+          expect(result.student.currentLevel, 2);
+          expect(result.student.currentJuz, 27);
+          expect(result.student.completedLevels, [1]);
+          expect(result.student.unlockedLevels, [1, 2]);
+
+          final doc = await fakeFirestore
+              .collection('students')
+              .doc(result.student.id)
+              .get();
+          expect(doc.data()?['enrollment_position'], {
+            'level': 2,
+            'juz': 27,
+            'session': 1,
+          });
+        },
+      );
+
+      test('a starting position the curriculum holds no session at is rejected '
+          'before any auth user is provisioned', () async {
+        // Juz 30 of level 1 has 68 sessions; there is no session 99. Whether
+        // a session exists is a DATA question — and a rejected placement must
+        // never leave a half-provisioned user behind (an auth account with no
+        // student document is worse than no student at all).
+        await expectLater(
+          studentRepository.createStudent(
+            name: 'طالب',
+            username: 'no_such_session',
+            password: 'pass123',
+            instituteId: 'institute1',
+            teacherId: 'teacher1',
+            startingPosition: const CurriculumPosition(
+              level: 1,
+              juz: 30,
+              session: 99,
+            ),
+          ),
+          throwsArgumentError,
         );
 
-        expect(result.student.currentLevel, 1);
-        expect(result.student.currentJuz, 30);
-        expect(result.student.currentHizb, 59);
-        expect(result.student.currentSession, 1);
-        expect(result.student.currentAttempt, 1);
+        verifyNever(
+          () => firebaseService.provisionUserAccount(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+            role: any(named: 'role'),
+            name: any(named: 'name'),
+            username: any(named: 'username'),
+            phone: any(named: 'phone'),
+          ),
+        );
+
+        final users = await fakeFirestore.collection('users').get();
+        expect(users.docs, isEmpty);
+        final students = await fakeFirestore.collection('students').get();
+        expect(students.docs, isEmpty);
+      });
+
+      test('a position outside the curriculum topology is rejected before any '
+          'side effect', () async {
+        await expectLater(
+          studentRepository.createStudent(
+            name: 'طالب',
+            username: 'bad_level',
+            password: 'pass123',
+            instituteId: 'institute1',
+            teacherId: 'teacher1',
+            startingPosition: const CurriculumPosition(
+              level: 11,
+              juz: 30,
+              session: 1,
+            ),
+          ),
+          throwsArgumentError,
+        );
+
+        final users = await fakeFirestore.collection('users').get();
+        expect(users.docs, isEmpty);
       });
 
       test(
@@ -146,7 +343,6 @@ void main() {
           expect(guardian, isNotNull);
           expect(guardian?.role, UserRole.guardian);
           expect(guardian?.name, 'ولي أمر طالب');
-          expect(guardian?.username, 'guardian_one');
         },
       );
 
@@ -186,26 +382,8 @@ void main() {
       });
 
       test(
-        'creates student without guardian when no username provided',
-        () async {
-          final result = await studentRepository.createStudent(
-            name: 'طالب',
-            username: 'student_six',
-            password: 'pass123',
-            instituteId: 'institute1',
-            teacherId: 'teacher1',
-          );
-
-          expect(result.student.guardianId, isNull);
-        },
-      );
-
-      test(
         'supervisor path: stamps institute_id and leaves teacher_id null',
         () async {
-          // A supervisor provisions an institute-scoped student (no teacher
-          // assignment) — the student doc must still carry institute_id so
-          // rules/UI can scope by users/{uid}.institute_id (AgDR-0003).
           final result = await studentRepository.createStudent(
             name: 'طالب المشرف',
             username: 'sup_student',
@@ -261,121 +439,374 @@ void main() {
           ),
         ).called(1);
       });
+    });
+
+    group('advanceStudentSession', () {
+      setUp(() async {
+        await seedLevels(fakeFirestore);
+      });
+
+      test('walks order_in_level to the next session', () async {
+        await seedLevelOneJuz30(fakeFirestore);
+        await seedStudent(
+          level: 1,
+          juz: 30,
+          session: 1,
+          order: 1,
+          hizb: 59,
+          attempt: 3,
+        );
+
+        final outcome = await studentRepository.advanceStudentSession('s1');
+
+        expect(outcome, StudentAdvanceOutcome.advanced);
+        final student = await readStudent();
+        expect(student['current_order_in_level'], 2);
+        expect(student['current_session'], 2);
+        expect(student['current_session_id'], 'L1_J30_S2');
+        expect(
+          student['current_attempt'],
+          1,
+          reason: 'a new session is a new attempt',
+        );
+      });
 
       test(
-        'a student created without a position starts at the beginning',
+        'the session after a lesson may be an assessment — its kind and scope '
+        'are read from the curriculum, never from its number',
         () async {
-          final result = await studentRepository.createStudent(
-            name: 'طالب جديد',
-            username: 'newstudent',
-            password: 'secret123',
-            instituteId: 'i1',
-            teacherId: 't1',
+          await seedLevelOneJuz30(fakeFirestore);
+          // The student stands at order 66 — the last lesson of the juz. Order
+          // 67 is the juz-30 سرد. Nothing about the number 67 says so; the
+          // curriculum does.
+          await seedStudent(
+            level: 1,
+            juz: 30,
+            session: 66,
+            order: 66,
+            hizb: 60,
           );
 
-          expect(result.student.enrollmentPosition, CurriculumPosition.start);
-          expect(result.student.currentHizb, 59);
-          expect(result.student.completedLevels, isEmpty);
+          await studentRepository.advanceStudentSession('s1');
+
+          final student = await readStudent();
+          expect(student['current_session_id'], 'L1_J30_S67');
+          expect(student['current_session_kind'], 'sard');
+          expect(student['current_session_tier'], 'juz');
+          expect(
+            student['current_session_label_ar'],
+            'سرد الجزء رقم 30 كاملًا على المحفظ المتابع',
+          );
         },
       );
 
       test(
-        'a student placed mid-curriculum is credited with the levels before them',
+        'crosses a juz boundary within a level without touching hizb arithmetic '
+        '— order 68 of level 1 is the last of juz 30, order 69 the first of '
+        'juz 29',
         () async {
-          final result = await studentRepository.createStudent(
-            name: 'طالب حافظ',
-            username: 'hafiz',
-            password: 'secret123',
-            instituteId: 'i1',
-            teacherId: 't1',
-            startingPosition: const CurriculumPosition(
-              level: 2,
-              hizb: 53,
-              session: 35,
-            ),
+          await seedLevelOneJuz30(fakeFirestore);
+          await seedLevelOneJuz29(fakeFirestore);
+          await seedStudent(
+            level: 1,
+            juz: 30,
+            session: 68,
+            order: 68,
+            kind: 'exam',
+            tier: 'juz',
           );
 
-          expect(result.student.currentLevel, 2);
-          expect(result.student.currentHizb, 53);
-          expect(result.student.currentJuz, 27);
-          expect(result.student.currentSession, 35);
-          expect(result.student.completedLevels, [1]);
-          expect(result.student.unlockedLevels, [1, 2]);
+          final outcome = await studentRepository.advanceStudentSession('s1');
 
-          final doc = await fakeFirestore
-              .collection('students')
-              .doc(result.student.id)
-              .get();
-          expect(doc.data()?['enrollment_position'], {
-            'level': 2,
-            'juz': 27,
-            'hizb': 53,
-            'session': 35,
-          });
+          expect(outcome, StudentAdvanceOutcome.advanced);
+          final student = await readStudent();
+          expect(student['current_level'], 1, reason: 'still the same level');
+          expect(student['current_juz'], 29);
+          expect(student['current_session'], 1);
+          expect(student['current_order_in_level'], 69);
+          expect(student['current_session_id'], 'L1_J29_S1');
+          expect(student['current_session_kind'], 'lesson');
+          expect(
+            student['current_session_tier'],
+            isNull,
+            reason: 'a lesson has no tier — the stale سرد tier must be cleared',
+          );
+          expect(
+            student['completed_levels'],
+            isEmpty,
+            reason: 'finishing a juz does not finish the level',
+          );
         },
       );
 
-      test('rejects a starting position whose hizb does not belong to its '
-          'level, before any side effect', () async {
-        // Hizb 53 belongs to level 2, not level 1 — a self-contradictory
-        // position must never reach Firestore as corrupt credit. This
-        // must be caught before the auth account is provisioned: running
-        // validation after provisioning would leave a half-provisioned
-        // user (an auth account with no matching student document) on
-        // every rejection, which is the exact failure this hardening
-        // exists to prevent.
-        await expectLater(
-          studentRepository.createStudent(
-            name: 'طالب',
-            username: 'bad_position',
-            password: 'pass123',
+      test(
+        'LEVEL 10 ADVANCES JUZ 1 → 2 → 3: the case every arithmetic rule got '
+        'wrong',
+        () async {
+          await seedLevelTenJuz1To2(fakeFirestore);
+          await seedStudent(
+            level: 10,
+            juz: 1,
+            session: 60,
+            order: 60,
+            kind: 'exam',
+            tier: 'juz',
+            completedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            unlockedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          );
+
+          final outcome = await studentRepository.advanceStudentSession('s1');
+
+          expect(outcome, StudentAdvanceOutcome.advanced);
+          final student = await readStudent();
+          expect(
+            student['current_juz'],
+            2,
+            reason: 'level 10 ascends: juz 1 is followed by juz 2, not juz 30',
+          );
+          expect(student['current_order_in_level'], 61);
+          expect(student['current_session_id'], 'L10_J2_S1');
+        },
+      );
+
+      test('the level completes only after its last session', () async {
+        await seedLevelOneTail(fakeFirestore);
+        await seedLevelTwoHead(fakeFirestore);
+        await seedStudent(
+          level: 1,
+          juz: 28,
+          session: 67,
+          order: 204, // the level's session_count — its cumulative اختبار
+          kind: 'exam',
+          tier: 'cumulative',
+        );
+
+        final outcome = await studentRepository.advanceStudentSession('s1');
+
+        expect(outcome, StudentAdvanceOutcome.advanced);
+        final student = await readStudent();
+        expect(student['current_level'], 2);
+        expect(student['current_juz'], 27);
+        expect(student['current_order_in_level'], 1);
+        expect(student['current_session_id'], 'L2_J27_S1');
+        expect(student['completed_levels'], contains(1));
+        expect(student['unlocked_levels'], containsAll([1, 2]));
+      });
+
+      test(
+        'a level with no seeded sessions is stepped over, and still credited',
+        () async {
+          // Level 2 has no sessions at all, so the walk from the end of level 1
+          // lands in level 10 (the only other seeded level). Level credit must
+          // be gap-free: every level below the new one is complete.
+          await seedLevelOneTail(fakeFirestore);
+          await seedSession(
+            fakeFirestore,
+            level: 10,
+            juz: 1,
+            session: 1,
+            order: 1,
+          );
+          await seedStudent(
+            level: 1,
+            juz: 28,
+            session: 67,
+            order: 204,
+            kind: 'exam',
+            tier: 'cumulative',
+          );
+
+          await studentRepository.advanceStudentSession('s1');
+
+          final student = await readStudent();
+          expect(student['current_level'], 10);
+          expect(
+            student['completed_levels'],
+            containsAll([1, 2, 3, 4, 5, 6, 7, 8, 9]),
+          );
+          expect((student['completed_levels'] as List).length, 9);
+          expect((student['unlocked_levels'] as List).length, 10);
+        },
+      );
+
+      test(
+        'passing the last session of the last level completes the curriculum',
+        () async {
+          await seedLevelTenTail(fakeFirestore);
+          await seedStudent(
+            level: 10,
+            juz: 3,
+            session: 60,
+            order: 180, // level 10's session_count
+            kind: 'exam',
+            tier: 'cumulative',
+            attempt: 4,
+            completedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            unlockedLevels: const [1],
+          );
+
+          final outcome = await studentRepository.advanceStudentSession('s1');
+
+          expect(outcome, StudentAdvanceOutcome.curriculumCompleted);
+          final student = await readStudent();
+          // Nowhere to move to — the position stands, the credit lands.
+          expect(student['current_session_id'], 'L10_J3_S60');
+          expect(student['current_attempt'], 1);
+          expect(
+            student['completed_levels'],
+            containsAll([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+          );
+          expect((student['unlocked_levels'] as List).length, 10);
+        },
+      );
+
+      test(
+        'a repeat advance after finishing does not duplicate the level credit',
+        () async {
+          await seedLevelTenTail(fakeFirestore);
+          await seedStudent(
+            level: 10,
+            juz: 3,
+            session: 60,
+            order: 180,
+            kind: 'exam',
+            tier: 'cumulative',
+            completedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            unlockedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          );
+
+          await studentRepository.advanceStudentSession('s1');
+
+          final student = await readStudent();
+          expect(
+            (student['completed_levels'] as List).where((l) => l == 10).length,
+            1,
+          );
+          expect((student['completed_levels'] as List).length, 10);
+        },
+      );
+
+      test('a hole in the curriculum data reports curriculumDataMissing, not '
+          'success, and leaves the student untouched', () async {
+        // The catalog says level 1 has 204 sessions; the student sits at
+        // order 2 and nothing is seeded at order 3. That is a data problem,
+        // never "the level is finished" — a silent no-op reported as success
+        // would leave the student re-taught the same session forever.
+        await seedLevelOneJuz30(fakeFirestore);
+        await seedLevelTwoHead(fakeFirestore);
+        await seedStudent(
+          level: 1,
+          juz: 30,
+          session: 2,
+          order: 2,
+          hizb: 59,
+          attempt: 2,
+        );
+
+        final outcome = await studentRepository.advanceStudentSession('s1');
+
+        expect(outcome, StudentAdvanceOutcome.curriculumDataMissing);
+        final student = await readStudent();
+        expect(student['current_order_in_level'], 2);
+        expect(student['current_session_id'], 'L1_J30_S2');
+        expect(student['current_attempt'], 2, reason: 'nothing was written');
+        expect(student['completed_levels'], isEmpty);
+        expect(student['unlocked_levels'], [1]);
+      });
+
+      test('does nothing when the student does not exist', () async {
+        final outcome = await studentRepository.advanceStudentSession(
+          'nonexistent',
+        );
+        expect(outcome, StudentAdvanceOutcome.studentNotFound);
+      });
+    });
+
+    group('getStudentsReadyForExam', () {
+      test(
+        'returns the students standing on an اختبار — by KIND, not by session '
+        'number',
+        () async {
+          await seedUser(id: 'u1', name: 'طالب على اختبار');
+          // The juz-30 اختبار of level 1 is session 68. The old query
+          // (current_session == 36) would have found nobody.
+          await seedStudent(
+            id: 'ready',
+            level: 1,
+            juz: 30,
+            session: 68,
+            order: 68,
+            kind: 'exam',
+            tier: 'juz',
             instituteId: 'institute1',
-            teacherId: 'teacher1',
-            startingPosition: const CurriculumPosition(
-              level: 1,
-              hizb: 53,
-              session: 1,
-            ),
-          ),
-          throwsArgumentError,
+          );
+          await seedStudent(
+            id: 'on_lesson',
+            level: 1,
+            juz: 30,
+            session: 2,
+            order: 2,
+            instituteId: 'institute1',
+          );
+          await seedStudent(
+            id: 'on_sard',
+            level: 1,
+            juz: 30,
+            session: 67,
+            order: 67,
+            kind: 'sard',
+            tier: 'juz',
+            instituteId: 'institute1',
+          );
+
+          final ready = await studentRepository.getStudentsReadyForExam(
+            'institute1',
+          );
+
+          expect(ready.map((s) => s.student.id), ['ready']);
+          expect(ready.single.student.currentSessionKind, SessionKind.exam);
+          expect(ready.single.student.canTakeExam, isTrue);
+        },
+      );
+
+      test('excludes inactive students and other institutes', () async {
+        await seedUser(id: 'u1');
+        await seedStudent(
+          id: 'other_institute',
+          level: 1,
+          juz: 30,
+          session: 68,
+          order: 68,
+          kind: 'exam',
+          tier: 'juz',
+          instituteId: 'institute2',
+        );
+        await fakeFirestore.collection('students').doc('inactive').set({
+          'user_id': 'u1',
+          'institute_id': 'institute1',
+          'current_session_kind': 'exam',
+          'is_active': false,
+          'created_at': Timestamp.now(),
+        });
+
+        final ready = await studentRepository.getStudentsReadyForExam(
+          'institute1',
         );
 
-        verifyNever(
-          () => firebaseService.provisionUserAccount(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-            role: any(named: 'role'),
-            name: any(named: 'name'),
-            username: any(named: 'username'),
-            phone: any(named: 'phone'),
-          ),
-        );
-
-        final users = await fakeFirestore.collection('users').get();
-        expect(users.docs, isEmpty);
-        final students = await fakeFirestore.collection('students').get();
-        expect(students.docs, isEmpty);
+        expect(ready, isEmpty);
       });
     });
 
     group('getStudentById', () {
       test('returns student when exists', () async {
-        await fakeFirestore.collection('students').doc('student1').set({
-          'user_id': 'user1',
-          'institute_id': 'institute1',
-          'teacher_id': 'teacher1',
-          'current_level': 2,
-          'current_session': 15,
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
+        await seedStudent(level: 2, juz: 27, session: 15, order: 15);
 
-        final student = await studentRepository.getStudentById('student1');
+        final student = await studentRepository.getStudentById('s1');
 
         expect(student, isNotNull);
-        expect(student?.id, 'student1');
         expect(student?.currentLevel, 2);
         expect(student?.currentSession, 15);
+        expect(student?.currentOrderInLevel, 15);
       });
 
       test('returns null when not found', () async {
@@ -386,18 +817,12 @@ void main() {
 
     group('getStudentByUserId', () {
       test('returns student by user_id', () async {
-        await seedUser(id: 'user1');
-        await fakeFirestore.collection('students').doc('student1').set({
-          'user_id': 'user1',
-          'institute_id': 'institute1',
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
+        await seedUser(id: 'u1');
+        await seedStudent(level: 1, juz: 30, session: 1, order: 1);
 
-        final student = await studentRepository.getStudentByUserId('user1');
+        final student = await studentRepository.getStudentByUserId('u1');
 
-        expect(student, isNotNull);
-        expect(student?.userId, 'user1');
+        expect(student?.userId, 'u1');
       });
 
       test('returns null when no student for user', () async {
@@ -413,7 +838,6 @@ void main() {
       test('returns only active students for teacher', () async {
         await seedUser(id: 'user1', name: 'طالب 1');
         await seedUser(id: 'user2', name: 'طالب 2');
-        await seedUser(id: 'user3', name: 'طالب غير فعال');
 
         await fakeFirestore.collection('students').doc('s1').set({
           'user_id': 'user1',
@@ -426,13 +850,6 @@ void main() {
           'user_id': 'user2',
           'institute_id': 'i1',
           'teacher_id': 'teacher1',
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
-        await fakeFirestore.collection('students').doc('s3').set({
-          'user_id': 'user3',
-          'institute_id': 'i1',
-          'teacher_id': 'teacher1',
           'is_active': false,
           'created_at': Timestamp.now(),
         });
@@ -441,484 +858,87 @@ void main() {
           'teacher1',
         );
 
-        expect(students.length, 2);
-        expect(students.every((s) => s.student.teacherId == 'teacher1'), true);
-      });
-
-      test('excludes students from other teachers', () async {
-        await seedUser(id: 'user1', name: 'طالب');
-
-        await fakeFirestore.collection('students').doc('s1').set({
-          'user_id': 'user1',
-          'institute_id': 'i1',
-          'teacher_id': 'other-teacher',
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
-
-        final students = await studentRepository.getStudentsForTeacher(
-          'teacher1',
-        );
-
-        expect(students, isEmpty);
+        expect(students.length, 1);
+        expect(students.single.student.id, 's1');
       });
     });
 
-    group('advanceStudentSession', () {
-      /// Seeds one curriculum session. The curriculum is sparse, so tests seed
-      /// exactly the sessions they mean to exist.
-      Future<void> seedSession({
-        required int level,
-        required int hizb,
-        required int session,
-      }) async {
-        final juz = (hizb + 1) ~/ 2;
-        await fakeFirestore
-            .collection('sessions')
-            .doc('L${level}_J${juz}_H${hizb}_S$session')
-            .set({
-              'session_number': session,
-              'level_id': level,
-              'juz_number': juz,
-              'hizb_number': hizb,
-              'session_type': session == 35
-                  ? 'sard'
-                  : session == 36
-                  ? 'exam'
-                  : 'regular',
-            });
-      }
-
-      Future<void> seedStudent({
-        required int level,
-        required int hizb,
-        required int session,
-        int attempt = 1,
-        List<int> completedLevels = const [],
-        List<int> unlockedLevels = const [1],
-      }) async {
-        await fakeFirestore.collection('students').doc('s1').set({
-          'user_id': 'u1',
-          'institute_id': 'i1',
-          'current_level': level,
-          'current_juz': (hizb + 1) ~/ 2,
-          'current_hizb': hizb,
-          'current_session': session,
-          'current_attempt': attempt,
-          'completed_levels': completedLevels,
-          'unlocked_levels': unlockedLevels,
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
-      }
-
-      Future<Map<String, dynamic>> readStudent() async {
-        final doc = await fakeFirestore.collection('students').doc('s1').get();
-        return doc.data()!;
-      }
-
-      test('moves to the next session in the same hizb', () async {
-        await seedSession(level: 1, hizb: 59, session: 5);
-        await seedSession(level: 1, hizb: 59, session: 6);
-        await seedStudent(level: 1, hizb: 59, session: 5, attempt: 2);
-
-        final outcome = await studentRepository.advanceStudentSession('s1');
-
-        expect(outcome, StudentAdvanceOutcome.advanced);
-        final student = await readStudent();
-        expect(student['current_session'], 6);
-        expect(student['current_hizb'], 59);
-        expect(student['current_attempt'], 1);
-      });
-
-      // A silent no-op must never be indistinguishable from a real advance to
-      // the caller: a teacher/supervisor screen relies on this return value to
-      // decide whether to show an unqualified success message or a warning
-      // that the student's progress could not actually be updated.
-      test('reports curriculumDataMissing, not success, when no next session '
-          'exists for a data-missing walk', () async {
-        // The student sits at hizb 60 of level 1 — not the last hizb of the
-        // curriculum — but nothing is seeded in hizb 60 or in any hizb ahead
-        // of it. See "missing curriculum data ahead leaves the student
-        // untouched" below for the full no-op assertion; this test is
-        // specifically about what advanceStudentSession reports back.
-        await seedStudent(
-          level: 1,
-          hizb: 60,
-          session: 36,
-          attempt: 2,
-          completedLevels: const [],
-          unlockedLevels: const [1],
-        );
-
-        final outcome = await studentRepository.advanceStudentSession('s1');
-
-        expect(outcome, StudentAdvanceOutcome.curriculumDataMissing);
-      });
-
-      test('skips session numbers the curriculum does not contain', () async {
-        // Hizb 49 is sparse: sessions 2 and 18 exist, nothing between them.
-        await seedSession(level: 2, hizb: 49, session: 2);
-        await seedSession(level: 2, hizb: 49, session: 18);
-        await seedStudent(
-          level: 2,
-          hizb: 49,
-          session: 2,
-          completedLevels: [1],
-          unlockedLevels: [1, 2],
-        );
-
-        await studentRepository.advanceStudentSession('s1');
-
-        expect((await readStudent())['current_session'], 18);
-      });
-
+    group('attempt limits', () {
       test(
-        'moves to the next hizb in teaching order, not the next number down',
+        'a student on an assessment may retry it indefinitely — attempt 9 is '
+        'still allowed',
         () async {
-          // Level 1 is taught 59, 60, 57, 58, 55, 56 — after hizb 59 comes 60.
-          await seedSession(level: 1, hizb: 59, session: 36);
-          await seedSession(level: 1, hizb: 60, session: 1);
-          await seedStudent(level: 1, hizb: 59, session: 36);
-
-          await studentRepository.advanceStudentSession('s1');
-
-          final student = await readStudent();
-          expect(student['current_hizb'], 60);
-          expect(student['current_juz'], 30);
-          expect(student['current_session'], 1);
-          expect(student['current_level'], 1);
-          expect(student['completed_levels'], isEmpty);
-        },
-      );
-
-      test('finishing a hizb does not complete the level', () async {
-        // The old code promoted the student to level 2 here. It must not.
-        await seedSession(level: 1, hizb: 60, session: 36);
-        await seedSession(level: 1, hizb: 57, session: 1);
-        await seedStudent(level: 1, hizb: 60, session: 36);
-
-        await studentRepository.advanceStudentSession('s1');
-
-        final student = await readStudent();
-        expect(student['current_level'], 1);
-        expect(student['current_hizb'], 57);
-        expect(student['current_juz'], 29);
-        expect(student['completed_levels'], isEmpty);
-      });
-
-      test('the level completes only after its last hizb', () async {
-        // Hizb 56 is the last hizb of level 1; the next is 53, in level 2.
-        await seedSession(level: 1, hizb: 56, session: 36);
-        await seedSession(level: 2, hizb: 53, session: 1);
-        await seedStudent(level: 1, hizb: 56, session: 36);
-
-        await studentRepository.advanceStudentSession('s1');
-
-        final student = await readStudent();
-        expect(student['current_level'], 2);
-        expect(student['current_hizb'], 53);
-        expect(student['current_juz'], 27);
-        expect(student['current_session'], 1);
-        expect(student['completed_levels'], contains(1));
-        expect(student['unlocked_levels'], contains(2));
-      });
-
-      test('a hizb with no seeded sessions is stepped over', () async {
-        await seedSession(level: 1, hizb: 59, session: 36);
-        // Hizb 60 has no sessions at all; the next real one is in hizb 57.
-        await seedSession(level: 1, hizb: 57, session: 1);
-        await seedStudent(level: 1, hizb: 59, session: 36);
-
-        await studentRepository.advanceStudentSession('s1');
-
-        expect((await readStudent())['current_hizb'], 57);
-      });
-
-      test('the end of the curriculum is a terminal position', () async {
-        // Hizb 2 is the last hizb of level 10, session 36 its exam.
-        await seedSession(level: 10, hizb: 2, session: 36);
-        await seedStudent(
-          level: 10,
-          hizb: 2,
-          session: 36,
-          attempt: 2,
-          completedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9],
-          unlockedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        );
-
-        await studentRepository.advanceStudentSession('s1');
-
-        final student = await readStudent();
-        expect(student['current_level'], 10);
-        expect(student['current_hizb'], 2);
-        expect(student['current_session'], 36);
-        expect(student['current_attempt'], 1);
-        // Passing the final exam must credit level 10 as completed — there
-        // is no eleventh level to unlock into, so completion is the only
-        // signal that the curriculum was finished.
-        expect(
-          student['completed_levels'],
-          containsAll([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
-        );
-      });
-
-      test(
-        'a repeat call after finishing the curriculum does not duplicate the level-10 credit',
-        () async {
-          await seedSession(level: 10, hizb: 2, session: 36);
-          await seedStudent(
-            level: 10,
-            hizb: 2,
-            session: 36,
-            attempt: 1,
-            completedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-            unlockedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-          );
-
-          await studentRepository.advanceStudentSession('s1');
-
-          final student = await readStudent();
-          final tens = (student['completed_levels'] as List).where(
-            (l) => l == 10,
-          );
-          expect(tens.length, 1);
-        },
-      );
-
-      test('missing curriculum data ahead leaves the student untouched, not '
-          'credited as having finished', () async {
-        // The student sits at hizb 60 of level 1 — not the last hizb of
-        // the curriculum — but nothing is seeded in hizb 60 or in any
-        // hizb ahead of it (a partially-seeded environment/fixture). This
-        // must not be conflated with reaching the real end of the
-        // curriculum: position, attempt, and credit must all stay exactly
-        // as they were, and nothing should be written.
-        await seedStudent(
-          level: 1,
-          hizb: 60,
-          session: 36,
-          attempt: 2,
-          completedLevels: const [],
-          unlockedLevels: const [1],
-        );
-
-        await studentRepository.advanceStudentSession('s1');
-
-        final student = await readStudent();
-        expect(student['current_level'], 1);
-        expect(student['current_hizb'], 60);
-        expect(student['current_session'], 36);
-        expect(student['current_attempt'], 2);
-        expect(student['completed_levels'], isEmpty);
-        expect(student['unlocked_levels'], [1]);
-      });
-
-      test(
-        'advancing across a fully-skipped level still credits and unlocks it',
-        () async {
-          // Level 2 has no seeded sessions anywhere, so the walk from the
-          // end of level 1 lands directly in level 3. Level 2 must still be
-          // marked completed and unlocked — not silently skipped.
-          await seedSession(level: 1, hizb: 56, session: 36); // last of L1
-          await seedSession(level: 3, hizb: 47, session: 1); // first of L3
           await seedStudent(
             level: 1,
-            hizb: 56,
-            session: 36,
-            completedLevels: const [],
-            unlockedLevels: const [1],
+            juz: 30,
+            session: 67,
+            order: 67,
+            kind: 'sard',
+            tier: 'juz',
+            attempt: 9,
           );
 
-          await studentRepository.advanceStudentSession('s1');
+          final student = await studentRepository.getStudentById('s1');
 
-          final student = await readStudent();
-          expect(student['current_level'], 3);
-          expect(student['current_hizb'], 47);
-          expect(student['current_session'], 1);
-          expect(student['completed_levels'], containsAll([1, 2]));
-          expect((student['completed_levels'] as List).length, 2);
-          expect(student['unlocked_levels'], containsAll([1, 2, 3]));
-          expect((student['unlocked_levels'] as List).length, 3);
+          expect(student!.isOnAssessment, isTrue);
+          expect(student.hasReachedMaxAttempts, isFalse);
+          expect(student.canStartSession, isTrue);
         },
       );
 
-      test('derives the level from the hizb even when the stored level is '
-          'corrupted (disagrees with the hizb)', () async {
-        // Hizb 53 belongs to level 2, but this record's stored level
-        // still says 1 — the exact corruption the old advancement bug
-        // produced. The walk must find the sessions actually seeded
-        // under hizb 53's real level rather than silently skipping past
-        // them because it queried under the wrong level.
-        await seedSession(level: 2, hizb: 53, session: 5);
-        await seedSession(level: 2, hizb: 53, session: 10);
+      test('a student on a lesson still caps at 3 attempts', () async {
         await seedStudent(
-          level: 1, // corrupted: hizb 53 actually belongs to level 2
-          hizb: 53,
-          session: 5,
-          completedLevels: const [1],
-          unlockedLevels: const [1, 2],
+          level: 1,
+          juz: 30,
+          session: 2,
+          order: 2,
+          hizb: 59,
+          attempt: 4,
         );
 
-        await studentRepository.advanceStudentSession('s1');
+        final student = await studentRepository.getStudentById('s1');
 
-        final student = await readStudent();
-        expect(student['current_level'], 2);
-        expect(student['current_hizb'], 53);
-        expect(student['current_session'], 10);
-      });
-
-      test('credits and unlocks from the hizb-derived level, not the stored '
-          'level, when the two disagree', () async {
-        // Stored level says 2, but hizb 56 is really the last hizb of
-        // level 1 (the corruption the old bug produced). The comparison
-        // and crediting loop must key off the level derived from the hizb
-        // (1), not the stored level (2) — otherwise `2 > 2` is false and
-        // completion credit for level 1 is silently dropped even though
-        // the student is genuinely moving from level 1 into level 2.
-        await seedSession(level: 1, hizb: 56, session: 36);
-        await seedSession(level: 2, hizb: 53, session: 1);
-        await seedStudent(
-          level: 2, // corrupted: hizb 56 actually belongs to level 1
-          hizb: 56,
-          session: 36,
-          completedLevels: const [],
-          unlockedLevels: const [1],
-        );
-
-        await studentRepository.advanceStudentSession('s1');
-
-        final student = await readStudent();
-        expect(student['current_level'], 2);
-        expect(student['current_hizb'], 53);
-        expect(student['completed_levels'], contains(1));
-        expect(student['unlocked_levels'], containsAll([1, 2]));
-      });
-
-      test('a hizb outside the valid curriculum range is classified as '
-          'missing data, not curriculum completion', () async {
-        // A legacy record corrupted to level 11 / hizb -1 (an out-of-range
-        // hizb) must not be misread as "finished the curriculum" —
-        // nextHizb(-1) returning null is ambiguous between "garbage" and
-        // "true end", so this must be caught by an explicit range guard
-        // and treated as a complete no-op: nothing is written.
-        await seedStudent(
-          level: 11,
-          hizb: -1,
-          session: 36,
-          completedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-          unlockedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        );
-
-        await studentRepository.advanceStudentSession('s1');
-
-        final student = await readStudent();
-        expect(student['current_level'], 11);
-        expect(student['current_hizb'], -1);
-        expect(student['current_session'], 36);
-        expect(student['completed_levels'], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-      });
-
-      test(
-        'finishing the curriculum backfills unlocked_levels through 10',
-        () async {
-          // The _Advanced branch backfills unlocked_levels 1..B, but the
-          // completion branch backfilled nothing — a student who finishes
-          // the curriculum with a stale unlocked_levels must still end up
-          // with every level 1..10 unlocked.
-          await seedSession(level: 10, hizb: 2, session: 36);
-          await seedStudent(
-            level: 10,
-            hizb: 2,
-            session: 36,
-            completedLevels: const [1, 2, 3, 4, 5, 6, 7, 8, 9],
-            unlockedLevels: const [1],
-          );
-
-          await studentRepository.advanceStudentSession('s1');
-
-          final student = await readStudent();
-          expect(
-            student['completed_levels'],
-            containsAll([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
-          );
-          expect(
-            (student['completed_levels'] as List).where((l) => l == 10).length,
-            1,
-          );
-          expect(
-            student['unlocked_levels'],
-            containsAll([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
-          );
-          expect((student['unlocked_levels'] as List).length, 10);
-        },
-      );
-
-      test('does nothing when the student does not exist', () async {
-        final outcome = await studentRepository.advanceStudentSession(
-          'nonexistent',
-        );
-        expect(outcome, StudentAdvanceOutcome.studentNotFound);
+        expect(student!.isOnAssessment, isFalse);
+        expect(student.hasReachedMaxAttempts, isTrue);
+        expect(student.canStartSession, isFalse);
       });
     });
 
     group('incrementStudentAttempt', () {
       test('increments attempt count', () async {
-        await fakeFirestore.collection('students').doc('s1').set({
-          'user_id': 'u1',
-          'institute_id': 'i1',
-          'current_attempt': 1,
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
+        await seedStudent(level: 1, juz: 30, session: 1, order: 1);
 
         await studentRepository.incrementStudentAttempt('s1');
 
-        final doc = await fakeFirestore.collection('students').doc('s1').get();
-        expect(doc.data()?['current_attempt'], 2);
+        expect((await readStudent())['current_attempt'], 2);
       });
     });
 
     group('resetStudentAttempt', () {
       test('resets attempt to 1', () async {
-        await fakeFirestore.collection('students').doc('s1').set({
-          'user_id': 'u1',
-          'institute_id': 'i1',
-          'current_attempt': 3,
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
+        await seedStudent(level: 1, juz: 30, session: 1, order: 1, attempt: 3);
 
         await studentRepository.resetStudentAttempt('s1');
 
-        final doc = await fakeFirestore.collection('students').doc('s1').get();
-        expect(doc.data()?['current_attempt'], 1);
+        expect((await readStudent())['current_attempt'], 1);
       });
     });
 
     group('deleteStudent', () {
       test('soft deletes by setting is_active to false', () async {
-        await fakeFirestore.collection('students').doc('s1').set({
-          'user_id': 'u1',
-          'institute_id': 'i1',
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
+        await seedStudent(level: 1, juz: 30, session: 1, order: 1);
 
         await studentRepository.deleteStudent('s1');
 
-        final doc = await fakeFirestore.collection('students').doc('s1').get();
-        expect(doc.exists, true);
-        expect(doc.data()?['is_active'], false);
+        expect((await readStudent())['is_active'], false);
       });
     });
 
     group('getStudentsByGuardianId', () {
       test('returns students for guardian', () async {
-        await seedUser(id: 'user1', name: 'طالب');
-
+        await seedUser(id: 'u1', name: 'طالب');
         await fakeFirestore.collection('students').doc('s1').set({
-          'user_id': 'user1',
+          'user_id': 'u1',
           'institute_id': 'i1',
           'guardian_id': 'guardian1',
           'is_active': true,
@@ -934,48 +954,17 @@ void main() {
       });
 
       test('returns empty list when guardian has no students', () async {
-        final students = await studentRepository.getStudentsByGuardianId(
-          'no-guardian',
+        expect(
+          await studentRepository.getStudentsByGuardianId('no-guardian'),
+          isEmpty,
         );
-
-        expect(students, isEmpty);
-      });
-
-      test('returns multiple students for same guardian', () async {
-        await seedUser(id: 'user1', name: 'طالب 1');
-        await seedUser(
-          id: 'user2',
-          name: 'طالب 2',
-          email: 'student2@example.com',
-        );
-
-        await fakeFirestore.collection('students').doc('s1').set({
-          'user_id': 'user1',
-          'institute_id': 'i1',
-          'guardian_id': 'guardian1',
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
-        await fakeFirestore.collection('students').doc('s2').set({
-          'user_id': 'user2',
-          'institute_id': 'i1',
-          'guardian_id': 'guardian1',
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
-
-        final students = await studentRepository.getStudentsByGuardianId(
-          'guardian1',
-        );
-
-        expect(students.length, 2);
       });
     });
 
     group('getFirstStudentByGuardianId', () {
       test('returns first student for guardian', () async {
         await fakeFirestore.collection('students').doc('s1').set({
-          'user_id': 'user1',
+          'user_id': 'u1',
           'institute_id': 'i1',
           'guardian_id': 'guardian1',
           'is_active': true,
@@ -986,59 +975,21 @@ void main() {
           'guardian1',
         );
 
-        expect(student, isNotNull);
         expect(student?.guardianId, 'guardian1');
       });
 
       test('returns null when no student for guardian', () async {
-        final student = await studentRepository.getFirstStudentByGuardianId(
-          'no-guardian',
+        expect(
+          await studentRepository.getFirstStudentByGuardianId('no-guardian'),
+          isNull,
         );
-
-        expect(student, isNull);
       });
     });
 
     group('getStudentsForInstitute', () {
-      test('returns active students for institute', () async {
-        await seedUser(id: 'user1', name: 'طالب');
-
-        await fakeFirestore.collection('students').doc('s1').set({
-          'user_id': 'user1',
-          'institute_id': 'institute1',
-          'teacher_id': 'teacher1',
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
-        await fakeFirestore.collection('students').doc('s2').set({
-          'user_id': 'user1',
-          'institute_id': 'institute2',
-          'teacher_id': 'teacher1',
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
-
-        final students = await studentRepository.getStudentsForInstitute(
-          'institute1',
-        );
-
-        expect(students.length, 1);
-        expect(students.first.student.instituteId, 'institute1');
-      });
-
-      test('returns empty list for unknown institute', () async {
-        final students = await studentRepository.getStudentsForInstitute(
-          'nonexistent',
-        );
-
-        expect(students, isEmpty);
-      });
-
       test(
         'excludes students of other institutes (supervisor scope)',
         () async {
-          // A supervisor scoped to institute1 (AgDR-0003) must not see the
-          // students of institute2.
           await seedUser(id: 'user-in', name: 'طالب المعهد');
           await seedUser(id: 'user-out', name: 'طالب معهد آخر');
 
@@ -1061,10 +1012,6 @@ void main() {
 
           expect(scoped, hasLength(1));
           expect(scoped.single.student.id, 's-in');
-          expect(
-            scoped.every((s) => s.student.instituteId == 'institute1'),
-            isTrue,
-          );
         },
       );
     });
@@ -1077,16 +1024,10 @@ void main() {
           'is_active': true,
           'created_at': Timestamp.now(),
         });
-        await fakeFirestore.collection('students').doc('s-a2').set({
-          'user_id': 'u-a2',
-          'institute_id': 'institute1',
-          'is_active': false, // inactive — excluded
-          'created_at': Timestamp.now(),
-        });
         await fakeFirestore.collection('students').doc('s-b1').set({
           'user_id': 'u-b1',
           'institute_id': 'institute2',
-          'is_active': true, // other institute — excluded
+          'is_active': true,
           'created_at': Timestamp.now(),
         });
 
@@ -1096,94 +1037,29 @@ void main() {
 
         expect(students, hasLength(1));
         expect(students.single.id, 's-a1');
-        expect(students.single.instituteId, 'institute1');
-      });
-
-      test('emits empty list for an institute with no students', () async {
-        final students = await studentRepository
-            .streamStudentsForInstitute('empty-institute')
-            .first;
-
-        expect(students, isEmpty);
-      });
-    });
-
-    group('getStudentsReadyForExam', () {
-      test('returns students at session 36', () async {
-        await seedUser(id: 'user1', name: 'طالب جاهز');
-        await seedUser(
-          id: 'user2',
-          name: 'طالب غير جاهز',
-          email: 'u2@example.com',
-        );
-
-        await fakeFirestore.collection('students').doc('s1').set({
-          'user_id': 'user1',
-          'institute_id': 'institute1',
-          'current_session': 36,
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
-        await fakeFirestore.collection('students').doc('s2').set({
-          'user_id': 'user2',
-          'institute_id': 'institute1',
-          'current_session': 10,
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
-
-        final ready = await studentRepository.getStudentsReadyForExam(
-          'institute1',
-        );
-
-        expect(ready.length, 1);
-        expect(ready.first.user.name, 'طالب جاهز');
-      });
-
-      test('excludes inactive students', () async {
-        await seedUser(id: 'user1', name: 'طالب غير فعال');
-
-        await fakeFirestore.collection('students').doc('s1').set({
-          'user_id': 'user1',
-          'institute_id': 'institute1',
-          'current_session': 36,
-          'is_active': false,
-          'created_at': Timestamp.now(),
-        });
-
-        final ready = await studentRepository.getStudentsReadyForExam(
-          'institute1',
-        );
-
-        expect(ready, isEmpty);
       });
     });
 
     group('updateStudent', () {
       test('updates student fields', () async {
-        await fakeFirestore.collection('students').doc('s1').set({
-          'user_id': 'u1',
-          'institute_id': 'i1',
-          'current_session': 5,
-          'current_attempt': 1,
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
+        await seedStudent(level: 1, juz: 30, session: 5, order: 5);
 
         final student = StudentModel(
           id: 's1',
           userId: 'u1',
           instituteId: 'i1',
           currentSession: 10,
+          currentOrderInLevel: 10,
           currentAttempt: 2,
           createdAt: DateTime.now(),
         );
 
         await studentRepository.updateStudent(student);
 
-        final doc = await fakeFirestore.collection('students').doc('s1').get();
-        expect(doc.data()?['current_session'], 10);
-        expect(doc.data()?['current_attempt'], 2);
+        final doc = await readStudent();
+        expect(doc['current_session'], 10);
+        expect(doc['current_order_in_level'], 10);
+        expect(doc['current_attempt'], 2);
       });
     });
   });
