@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/models/user_model.dart';
+import 'nav_destinations.dart';
 
 class AppBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -16,7 +17,7 @@ class AppBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = _getItemsForRole(role);
+    final destinations = destinationsFor(role);
 
     return BottomNavigationBar(
       currentIndex: currentIndex,
@@ -25,108 +26,14 @@ class AppBottomNavBar extends StatelessWidget {
       backgroundColor: AppColors.surface,
       selectedItemColor: AppColors.primary,
       unselectedItemColor: AppColors.textSecondary,
-      items: items,
+      items: [
+        for (final destination in destinations)
+          BottomNavigationBarItem(
+            icon: Icon(destination.icon),
+            activeIcon: Icon(destination.activeIcon),
+            label: destination.label,
+          ),
+      ],
     );
-  }
-
-  List<BottomNavigationBarItem> _getItemsForRole(UserRole role) {
-    switch (role) {
-      case UserRole.superAdmin:
-        return const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
-            label: 'الرئيسية',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_outlined),
-            activeIcon: Icon(Icons.account_balance),
-            label: 'المعاهد',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people_outline),
-            activeIcon: Icon(Icons.people),
-            label: 'المعلمون',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book_outlined),
-            activeIcon: Icon(Icons.menu_book),
-            label: 'المنهج',
-          ),
-        ];
-
-      case UserRole.supervisor:
-        return const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
-            label: 'الرئيسية',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.quiz_outlined),
-            activeIcon: Icon(Icons.quiz),
-            label: 'الاختبارات',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.school_outlined),
-            activeIcon: Icon(Icons.school),
-            label: 'الطلاب',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings),
-            label: 'الإعدادات',
-          ),
-        ];
-
-      case UserRole.teacher:
-        return const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.school_outlined),
-            activeIcon: Icon(Icons.school),
-            label: 'الطلاب',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.play_circle_outline),
-            activeIcon: Icon(Icons.play_circle),
-            label: 'الحلقة',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history_outlined),
-            activeIcon: Icon(Icons.history),
-            label: 'السجل',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings),
-            label: 'الإعدادات',
-          ),
-        ];
-
-      case UserRole.student:
-      case UserRole.guardian:
-        return const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
-            label: 'الرئيسية',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.repeat_outlined),
-            activeIcon: Icon(Icons.repeat),
-            label: 'التكرار',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history_outlined),
-            activeIcon: Icon(Icons.history),
-            label: 'السجل',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings),
-            label: 'الإعدادات',
-          ),
-        ];
-    }
   }
 }

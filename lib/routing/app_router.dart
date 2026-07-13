@@ -79,6 +79,7 @@ class AppRoutes {
   // (in the teacher shell) cannot reach it; the router redirect guards it too.
   static const String sardSession = '/supervisor/sard/:studentId';
   static const String sardResult = '/supervisor/sard/:studentId/result';
+  static const String supervisorSettings = '/supervisor/settings';
 
   // Teacher
   static const String teacherStudents = '/teacher';
@@ -90,12 +91,15 @@ class AppRoutes {
       '/teacher/session/:studentId/recitation/:part/result';
   static const String newMemorization = '/teacher/session/:studentId/new';
   static const String sessionSummary = '/teacher/session/:studentId/summary';
+  static const String teacherHistory = '/teacher/history';
+  static const String teacherSettings = '/teacher/settings';
 
   // Student
   static const String studentDashboard = '/student';
   static const String sessionHistory = '/student/history';
   static const String sessionDetail = '/student/history/:recordId';
   static const String homePractice = '/student/practice';
+  static const String studentSettings = '/student/settings';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -230,8 +234,9 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoutes.levelDetail,
                 builder: (context, state) {
-                  final levelNumber =
-                      int.parse(state.pathParameters['levelNumber']!);
+                  final levelNumber = int.parse(
+                    state.pathParameters['levelNumber']!,
+                  );
                   return LevelDetailScreen(levelNumber: levelNumber);
                 },
               ),
