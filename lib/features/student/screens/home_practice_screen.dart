@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../providers/student_provider.dart';
+import '../widgets/home_assignment_card.dart';
 
 class HomePracticeScreen extends ConsumerStatefulWidget {
   const HomePracticeScreen({super.key});
@@ -81,6 +82,9 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const HomeAssignmentCard(),
+              const SizedBox(height: 16),
+
               // Stats cards
               statsAsync.when(
                 data: (stats) => _buildStatsSection(stats),
