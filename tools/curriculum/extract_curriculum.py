@@ -722,6 +722,11 @@ def talqeen_of(lesson: dict) -> dict:
 
     It teaches exactly the passage the student will memorize in `lesson`, and
     carries no review content, no scope and no assessor.
+
+    `derived_from` cannot be filled in here: at this point `lesson["id"]` is
+    still its PRE-renumbering id, and inserting this very talqeen shifts the
+    id/session_number of every session from here on. `insert_talqeen_sessions`
+    fills `derived_from` in once renumbering is done and every id is final.
     """
     return {
         "id": None,             # assigned by insert_talqeen_sessions
@@ -737,7 +742,7 @@ def talqeen_of(lesson: dict) -> dict:
         "current_level_content": lesson["current_level_content"],
         "recent_review_content": None,
         "distant_review_content": None,
-        "source": {"derived_from": lesson["id"]},
+        "source": {"derived_from": None},  # filled in below, once ids are final
     }
 
 
@@ -747,6 +752,11 @@ def insert_talqeen_sessions(sessions: list[dict]) -> list[dict]:
     Renumbering is not bookkeeping: the document id and `session_number` are
     the session's identity, and `order_in_level` (assigned by the caller from
     the list this returns) is the sole advancement key.
+
+    A talqeen is inserted immediately before the lesson it introduces, so once
+    renumbering is done that lesson is always the very next session. Setting
+    `derived_from` is therefore a second pass, run only after every id in the
+    juz is final -- never the lesson's stale pre-renumbering id.
     """
     out: list[dict] = []
     opened: set[int] = set()
@@ -762,6 +772,11 @@ def insert_talqeen_sessions(sessions: list[dict]) -> list[dict]:
     for i, s in enumerate(out):
         s["session_number"] = i + 1
         s["id"] = f"L{level}_J{juz}_S{i + 1}"
+
+    for i, s in enumerate(out):
+        if s["kind"] == "talqeen":
+            s["source"]["derived_from"] = out[i + 1]["id"]
+
     return out
 
 
@@ -898,6 +913,11 @@ def extract() -> tuple[dict, dict, list[str], list[str], list[str]]:
                 errors.append(
                     f"{s['id']}: talqeen does not teach the passage of "
                     f"{following['id']}"
+                )
+            if s["source"].get("derived_from") != following["id"]:
+                errors.append(
+                    f"{s['id']}: derived_from is {s['source'].get('derived_from')!r}, "
+                    f"expected the id of the session it introduces ({following['id']!r})"
                 )
 
     return levels, sessions_by_level, errors, warnings, anomalies

@@ -285,26 +285,39 @@ def test_a_talqeen_teaches_the_passage_of_the_session_that_follows_it(corpus):
 
 
 def test_a_talqeen_carries_no_review_no_scope_and_no_assessor(corpus):
+    seen = 0
     for sessions in corpus["sessions"].values():
         for s in sessions:
             if s["kind"] != "talqeen":
                 continue
+            seen += 1
             assert s["recent_review_content"] is None
             assert s["distant_review_content"] is None
             assert s["scope"] is None
             assert s["assessed_by"] is None
+    assert seen == 59  # must not pass vacuously on a corpus with no talqeen
 
 
 def test_a_talqeen_declares_itself_derived_not_extracted(corpus):
     """Nothing in the source spreadsheets is a talqeen row. The provenance must
-    say so rather than claim a file/sheet/row it did not come from."""
+    say so rather than claim a file/sheet/row it did not come from -- and
+    `derived_from` must name the FINAL id (post-renumbering) of the lesson the
+    talqeen actually introduces, never a stale pre-renumbering id (a talqeen's
+    insertion shifts every id/session_number that follows it in its juz)."""
+    seen = 0
     for sessions in corpus["sessions"].values():
-        for s in sessions:
-            if s["kind"] == "talqeen":
-                assert set(s["source"]) == {"derived_from"}
-                assert s["source"]["derived_from"].startswith("L")
-            else:
+        by_order = sorted(sessions, key=lambda s: s["order_in_level"])
+        for i, s in enumerate(by_order):
+            if s["kind"] != "talqeen":
                 assert isinstance(s["source"]["row"], int)
+                continue
+            seen += 1
+            assert set(s["source"]) == {"derived_from"}
+            following = by_order[i + 1]
+            assert s["source"]["derived_from"] == following["id"]
+            assert following["kind"] == "lesson"
+            assert following["current_level_content"] == s["current_level_content"]
+    assert seen == 59  # must not pass vacuously on a corpus with no talqeen
 
 
 def test_the_curriculum_has_952_sessions(corpus):
