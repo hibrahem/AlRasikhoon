@@ -66,7 +66,9 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                     children: [
                       CircleAvatar(
                         radius: 32,
-                        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                        backgroundColor: AppColors.primary.withValues(
+                          alpha: 0.1,
+                        ),
                         child: Text(
                           teacher.name.isNotEmpty ? teacher.name[0] : '?',
                           style: const TextStyle(
@@ -96,12 +98,21 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                                   color: AppColors.textSecondary,
                                 ),
                                 const SizedBox(width: 4),
-                                Text(
-                                  teacher.phone ?? teacher.email,
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(
-                                        color: AppColors.textSecondary,
-                                      ),
+                                // Falls back to the synthesized login email
+                                // when no phone was given — it must shrink
+                                // rather than overflow the row.
+                                Expanded(
+                                  child: Text(
+                                    teacher.phone ?? teacher.email,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: AppColors.textSecondary,
+                                        ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ],
                             ),
@@ -170,7 +181,9 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                             Icon(
                               Icons.account_balance_outlined,
                               size: 48,
-                              color: AppColors.textSecondary.withValues(alpha: 0.5),
+                              color: AppColors.textSecondary.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             const Text('غير معين لأي معهد'),
@@ -192,7 +205,9 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(alpha: 0.1),
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.1,
+                                  ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Icon(
@@ -242,7 +257,8 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                 studentsAsync.when(
                   data: (students) {
                     // Institute name lookup, built from the teacher's institutes.
-                    final institutes = institutesAsync.asData?.value ??
+                    final institutes =
+                        institutesAsync.asData?.value ??
                         const <InstituteModel>[];
                     final instituteNameById = <String, String>{
                       for (final institute in institutes)
@@ -256,7 +272,9 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                             Icon(
                               Icons.school_outlined,
                               size: 48,
-                              color: AppColors.textSecondary.withValues(alpha: 0.5),
+                              color: AppColors.textSecondary.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             const Text('لا يوجد طلاب لهذا المعلم'),
@@ -270,11 +288,12 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                     final filtered = _selectedInstituteIds.isEmpty
                         ? students
                         : students
-                            .where(
-                              (s) => _selectedInstituteIds
-                                  .contains(s.student.instituteId),
-                            )
-                            .toList();
+                              .where(
+                                (s) => _selectedInstituteIds.contains(
+                                  s.student.instituteId,
+                                ),
+                              )
+                              .toList();
 
                     // Whether the *visible* list spans more than one institute.
                     // The per-card badge is only useful then — when a single
@@ -301,8 +320,9 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                                 Icon(
                                   Icons.filter_alt_off_outlined,
                                   size: 48,
-                                  color: AppColors.textSecondary
-                                      .withValues(alpha: 0.5),
+                                  color: AppColors.textSecondary.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
                                 const SizedBox(height: 8),
                                 const Text('لا يوجد طلاب في المعهد المحدد'),
@@ -321,8 +341,9 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                                 child: StudentCard(
                                   studentWithUser: studentWithUser,
                                   instituteName: showBadges
-                                      ? instituteNameById[
-                                          studentWithUser.student.instituteId]
+                                      ? instituteNameById[studentWithUser
+                                            .student
+                                            .instituteId]
                                       : null,
                                   onTap: () => context.push(
                                     AppRoutes.adminStudentProgress.replaceFirst(

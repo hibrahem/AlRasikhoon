@@ -37,7 +37,9 @@ class TeachersScreen extends ConsumerWidget {
                     children: [
                       CircleAvatar(
                         radius: 24,
-                        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                        backgroundColor: AppColors.primary.withValues(
+                          alpha: 0.1,
+                        ),
                         child: Text(
                           teacher.name.isNotEmpty ? teacher.name[0] : '?',
                           style: const TextStyle(
@@ -55,6 +57,8 @@ class TeachersScreen extends ConsumerWidget {
                             Text(
                               teacher.name,
                               style: Theme.of(context).textTheme.titleMedium,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 4),
                             Row(
@@ -67,12 +71,19 @@ class TeachersScreen extends ConsumerWidget {
                                   color: AppColors.textSecondary,
                                 ),
                                 const SizedBox(width: 4),
-                                Text(
-                                  teacher.phone ?? teacher.email,
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: AppColors.textSecondary,
-                                      ),
+                                // A teacher with no phone falls back to the
+                                // synthesized login email, which is as long as
+                                // their username — it must shrink, not overflow.
+                                Expanded(
+                                  child: Text(
+                                    teacher.phone ?? teacher.email,
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: AppColors.textSecondary,
+                                        ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ],
                             ),
