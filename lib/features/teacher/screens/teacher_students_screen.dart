@@ -26,17 +26,7 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
     ref.watch(authRepositoryProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('طلابي'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await ref.read(authRepositoryProvider.notifier).signOut();
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('طلابي')),
       body: Column(
         children: [
           // Institute filter — only shown when teacher has multiple institutes

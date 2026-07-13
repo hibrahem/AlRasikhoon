@@ -38,6 +38,7 @@ import '../features/student/screens/student_dashboard_screen.dart';
 import '../features/student/screens/session_history_screen.dart';
 import '../features/student/screens/session_detail_screen.dart';
 import '../features/student/screens/home_practice_screen.dart';
+import '../features/settings/screens/settings_screen.dart';
 
 // Route names
 class AppRoutes {
@@ -246,7 +247,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // Supervisor shell — Home / Exams (Students & Settings tabs are stubs)
+      // Supervisor shell — Home / Exams / Students / Settings
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => RoleShell(
           navigationShell: navigationShell,
@@ -340,6 +341,15 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          // Branch 3: Settings
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.supervisorSettings,
+                builder: (context, state) => const SettingsScreen(),
+              ),
+            ],
+          ),
         ],
       ),
 
@@ -412,10 +422,19 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          // Branch 2: Settings
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.teacherSettings,
+                builder: (context, state) => const SettingsScreen(),
+              ),
+            ],
+          ),
         ],
       ),
 
-      // Student shell — Home / Practice / History (Settings stub)
+      // Student shell — Home / Practice / History / Settings
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             RoleShell(navigationShell: navigationShell, role: UserRole.student),
@@ -451,6 +470,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                   final recordId = state.pathParameters['recordId']!;
                   return SessionDetailScreen(recordId: recordId);
                 },
+              ),
+            ],
+          ),
+          // Branch 3: Settings
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.studentSettings,
+                builder: (context, state) => const SettingsScreen(),
               ),
             ],
           ),
