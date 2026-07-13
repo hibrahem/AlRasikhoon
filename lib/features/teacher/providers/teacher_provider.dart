@@ -277,3 +277,56 @@ final studentSessionHistoryProvider =
       final repo = ref.watch(sessionRepositoryProvider);
       return repo.getSessionRecordsForStudent(studentId, limit: 20);
     });
+
+/// One row of the teacher's history: the record, plus the student identity the
+/// record itself does not carry.
+class TeacherHistoryEntry {
+  final SessionRecordModel record;
+  final String studentName;
+  final String instituteId;
+
+  const TeacherHistoryEntry({
+    required this.record,
+    required this.studentName,
+    required this.instituteId,
+  });
+}
+
+/// Every recitation this teacher recorded, newest first.
+///
+/// Scoped by the SAME institute filter as the students list, so selecting a
+/// معهد means one thing across the whole teacher shell.
+final teacherHistoryProvider = FutureProvider<List<TeacherHistoryEntry>>((
+  ref,
+) async {
+  final currentUser = ref.watch(currentUserProvider);
+  if (currentUser == null) return [];
+
+  final repo = ref.watch(sessionRepositoryProvider);
+  final records = await repo.getSessionRecordsForTeacher(currentUser.id);
+
+  // Records carry a studentId only; the name and institute come from the
+  // teacher's roster, which the students tab has already loaded.
+  final students = await ref.watch(teacherStudentsProvider.future);
+  final byStudentId = {for (final s in students) s.student.id: s};
+
+  final filter = ref.watch(selectedTeacherInstituteFilterProvider);
+
+  final entries = <TeacherHistoryEntry>[];
+  for (final record in records) {
+    final student = byStudentId[record.studentId];
+    // A student who has since left this teacher's roster: we can no longer
+    // name or scope the record, so it is not shown.
+    if (student == null) continue;
+    if (filter != null && student.student.instituteId != filter) continue;
+
+    entries.add(
+      TeacherHistoryEntry(
+        record: record,
+        studentName: student.user.name,
+        instituteId: student.student.instituteId,
+      ),
+    );
+  }
+  return entries;
+});
