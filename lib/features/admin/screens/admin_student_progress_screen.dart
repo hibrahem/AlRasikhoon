@@ -186,6 +186,23 @@ class _CurrentSessionCard extends StatelessWidget {
     // A session's kind is read from the curriculum, never inferred from its
     // number; an assessment is named by the curriculum's own label and worded
     // for its tier (this hizb / this juz / the level so far).
+    //
+    // The تلقين branch MUST come before isExam/isSard and the regular-lesson
+    // fallthrough (see session_overview_screen.dart's identical ordering): a
+    // تلقين is neither an assessment nor a graded lesson — falling through to
+    // the lesson card would show a supervisor "الحفظ الجديد" (new
+    // memorization) framing and part tiles for a session that is graded on
+    // nothing and cannot be failed.
+    if (session.isTalqeen) {
+      return _SimpleSessionCard(
+        icon: Icons.record_voice_over,
+        color: AppColors.primary,
+        title: session.titleAr,
+        subtitle:
+            'يقرأ المعلّم المقطع على الطالب ويردده معه. لا تسميع ولا تقييم '
+            'في هذه الحلقة.',
+      );
+    }
     if (session.isExam) {
       return _SimpleSessionCard(
         icon: Icons.quiz,
