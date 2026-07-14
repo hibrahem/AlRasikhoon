@@ -5,6 +5,7 @@ import '../models/student_model.dart';
 import '../models/user_model.dart';
 import '../services/firebase_service.dart';
 import '../../core/constants/app_constants.dart';
+import '../../domain/curriculum/curriculum_pace.dart';
 import '../../domain/curriculum/curriculum_position.dart';
 import 'curriculum_repository.dart';
 import 'user_repository.dart';
@@ -436,6 +437,19 @@ class StudentRepository {
       ..removeWhere((key, _) => key.startsWith('current_'));
     await _studentsCollection.doc(student.id).update({
       ...data,
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Sets how many lessons the student covers in one meeting.
+  ///
+  /// Takes effect on the student's very next meeting: the pending meeting's
+  /// extent is derived from this pace, not stored, so there is nothing to
+  /// migrate and no position to fix up. Records already written keep the pace
+  /// they were recorded at.
+  Future<void> setStudentPace(String studentId, CurriculumPace pace) async {
+    await _studentsCollection.doc(studentId).update({
+      'pace': pace.toJson(),
       'updated_at': FieldValue.serverTimestamp(),
     });
   }

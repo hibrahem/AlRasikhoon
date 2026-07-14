@@ -9,6 +9,7 @@ import 'package:al_rasikhoon/data/repositories/curriculum_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
+import 'package:al_rasikhoon/domain/curriculum/curriculum_pace.dart';
 import 'package:al_rasikhoon/domain/curriculum/curriculum_position.dart';
 
 import 'curriculum_fixtures.dart';
@@ -1150,6 +1151,56 @@ void main() {
         // A genuinely non-denormalized field still updates.
         expect(doc['teacher_id'], 'teacher-2');
       });
+
+      test('carries a loaded pace back through — it is not stripped like the '
+          'current_* position facts', () async {
+        await seedStudent(level: 1, juz: 30, session: 5, order: 5);
+        await fakeFirestore.collection('students').doc('s1').update({
+          'pace': 3,
+        });
+
+        // A realistic caller: load the student (picking up its pace), then
+        // change an unrelated field and write it back.
+        final loaded = await studentRepository.getStudentById('s1');
+        final student = loaded!.copyWith(teacherId: 'teacher-2');
+        await studentRepository.updateStudent(student);
+
+        final doc = await readStudent();
+        expect(doc['pace'], 3);
+      });
+    });
+
+    group('setStudentPace', () {
+      test('sets how many lessons the student covers in one meeting', () async {
+        await seedStudent(level: 1, juz: 30, session: 5, order: 5);
+
+        await studentRepository.setStudentPace('s1', CurriculumPace(2));
+
+        final doc = await readStudent();
+        expect(doc['pace'], 2);
+      });
+
+      test(
+        'does not disturb the denormalized current_* session facts',
+        () async {
+          await seedStudent(
+            level: 1,
+            juz: 30,
+            session: 5,
+            order: 5,
+            kind: 'exam',
+            tier: 'juz',
+          );
+
+          await studentRepository.setStudentPace('s1', CurriculumPace(2));
+
+          final doc = await readStudent();
+          expect(doc['current_level'], 1);
+          expect(doc['current_session'], 5);
+          expect(doc['current_session_kind'], 'exam');
+          expect(doc['current_session_tier'], 'juz');
+        },
+      );
     });
   });
 }

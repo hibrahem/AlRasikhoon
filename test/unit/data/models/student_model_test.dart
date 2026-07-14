@@ -3,6 +3,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
+import 'package:al_rasikhoon/domain/curriculum/curriculum_pace.dart';
 import 'package:al_rasikhoon/domain/curriculum/curriculum_position.dart';
 
 /// Real level-1 rows (see `data/curriculum/sessions_level_1.json`).
@@ -348,6 +349,39 @@ void main() {
       test('can never exhaust attempts at a session that cannot be failed', () {
         expect(onTalqeen(attempt: 9).hasReachedMaxAttempts, isFalse);
         expect(onTalqeen(attempt: 9).canStartSession, isTrue);
+      });
+    });
+
+    group('a student carries the pace the teacher set for them', () {
+      test(
+        'a student created before paced curricula runs at the standard pace',
+        () {
+          final student = StudentModel.fromJson('s1', {
+            'user_id': 'u1',
+            'institute_id': 'i1',
+            // current_session_kind is required on every real student
+            // document (see the "corrupted or unmigrated data" test above);
+            // it is unrelated to pace, so it is included here just to reach
+            // a valid student.
+            'current_session_kind': 'lesson',
+            'created_at': null,
+          });
+
+          expect(student.pace, CurriculumPace.standard);
+        },
+      );
+
+      test('a doubled student reads back doubled', () {
+        final student = StudentModel.fromJson('s1', {
+          'user_id': 'u1',
+          'institute_id': 'i1',
+          'current_session_kind': 'lesson',
+          'pace': 2,
+          'created_at': null,
+        });
+
+        expect(student.pace, CurriculumPace(2));
+        expect(student.toFirestore()['pace'], 2);
       });
     });
 
