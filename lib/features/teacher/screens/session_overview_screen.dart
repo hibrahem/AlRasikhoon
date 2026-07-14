@@ -259,8 +259,15 @@ class SessionOverviewScreen extends ConsumerWidget {
 
     // The student stores where a meeting STARTS, never how far it extends —
     // the new pace only widens the pending meeting once the student is
-    // re-read, so invalidate now rather than leaving the teacher staring at
-    // the pre-change meeting until a manual reload.
+    // RE-READ FROM FIRESTORE.
+    //
+    // `studentProvider` is derived: it picks the student out of the list
+    // `teacherStudentsProvider` already fetched. Invalidating it alone re-runs
+    // its body against that CACHED list — the same student, still carrying the
+    // old pace — so the meeting recomposes from stale data and the teacher sees
+    // no change at all. The source has to be invalidated too, which is exactly
+    // what `completeSession` does after it writes.
+    ref.invalidate(teacherStudentsProvider);
     ref.invalidate(studentProvider(studentId));
   }
 
