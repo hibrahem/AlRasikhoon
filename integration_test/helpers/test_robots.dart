@@ -416,9 +416,17 @@ class TeacherRobot extends TestRobot {
     expect(find.textContaining('الحلقة'), findsWidgets);
   }
 
-  /// Start session
+  /// Start the session from the session overview.
+  ///
+  /// Scroll it into view first. The overview lists every passage the meeting
+  /// covers, and a paced meeting covers several — so "بدء الحلقة" sits below
+  /// the fold on a phone. A bare tap then FINDS the button and MISSES it (the
+  /// hit test lands outside the viewport), flutter_test only warns, and the
+  /// failure surfaces later and misleadingly: the teacher never left the
+  /// overview, so "التالي" is simply absent and the error counter isn't there
+  /// to tap either.
   Future<void> startSession() async {
-    await tapByText('بدء الحلقة');
+    await scrollAndTapByText('بدء الحلقة');
   }
 
   /// Set error count by tapping the add button N times
