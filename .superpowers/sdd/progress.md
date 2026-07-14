@@ -148,3 +148,22 @@ FINAL WHOLE-BRANCH REVIEW: found 1 CRITICAL, fixed in f42cce1. Suite 714/714, an
 Minors filed as al_rasikhoon-1aq. Source-data defects added to al_rasikhoon-drw.
 NOT DONE: (a) in-app verification (plan Task 11 step 2); (b) reconciling with the parallel session's
   uncommitted SessionRecordModel work (kind + juzNumber) in the MAIN checkout — Task 6 rewrote the same model.
+
+=== REBASED ONTO MAIN (2026-07-14) ===
+main had moved 15 commits: the talqeen work (merged under DIFFERENT SHAs, so `git cherry` saw nothing as
+applied), SessionRecordModel.kind + juzNumber, AND a sard/exam ROLE SWAP (al_rasikhoon-801: the TEACHER now
+conducts the سرد; the supervisor gets a read-only StudentProgressScreen, and SessionOverviewScreen's
+`asSupervisor` flag is GONE). main also already had my spec+plan docs (they rode in on feat/talqeen-sessions).
+=> Dropped 20 duplicate talqeen/doc commits, replayed only the 19 paced ones with `rebase -i --onto origin/main`.
+Reconciliations made:
+  - SessionRecordModel: kept main's kind + juzNumber AND my span (from/to/covers/paceAtTime). orderInLevel gone,
+    but still WRITTEN as the compat mirror a Firestore composite index depends on.
+  - createSessionRecord/createTalqeenRecord: DROPPED the redundant kind:/juzNumber: params — they now read
+    meeting.sessions.last.kind/.juzNumber. Strictly better: the real curriculum row, not the student's
+    denormalized current_session_kind/current_juz, which are a copy and can drift.
+  - recitation_screen: KEPT main's guard (refuse the grading flow unless on a lesson), re-expressed via
+    meeting.first.isLesson.
+  - session_overview_screen: followed main — teacher-only, asSupervisor branch deleted.
+  - StudentProgressScreen (main's new role-agnostic screen with INJECTED providers): rewired to inject the
+    MEETING provider. Was showing an admin/supervisor only the FIRST of a 2x student's two lessons.
+Final: 759/759 passing, analyzer clean, 21 commits ahead of main. All invariants verified intact.
