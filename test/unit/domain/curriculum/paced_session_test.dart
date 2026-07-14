@@ -182,6 +182,54 @@ void main() {
         );
       }
     });
+
+    test('the window stops BELOW the meeting, it never reads forward', () {
+      // The window bound (order < startOrderInLevel) is the ONLY thing keeping
+      // unreached content out. For the meeting's OWN rows the bound and the
+      // taught-today exclusion agree — taught-today IS the batch's content — so
+      // a broken bound would be masked there. A row the meeting has not reached
+      // yet carries content nobody is teaching today, so no exclusion would
+      // catch it: only the bound does. Pin it.
+      final level = [
+        _session(
+          order: 1,
+          kind: SessionKind.talqeen,
+          newContent: _content('النبأ', 1, 11),
+        ),
+        _session(order: 2, newContent: _content('النبأ', 1, 11)),
+        _session(order: 3, newContent: _content('النبأ', 12, 20)),
+        _session(order: 4, newContent: _content('النبأ', 21, 30)),
+        _session(order: 5, newContent: _content('النبأ', 31, 37)),
+        _session(order: 6, newContent: _content('النبأ', 38, 40)),
+        // Not yet reached — distinct content, so taught-today cannot exclude it.
+        _session(order: 7, newContent: _content('النازعات', 1, 10)),
+        _session(order: 8, newContent: _content('النازعات', 11, 20)),
+      ];
+
+      final meeting = PacedSessionComposer.compose(
+        levelSessions: level,
+        startOrderInLevel: 5,
+        pace: pace2,
+      );
+
+      // Orders 1..4 — everything below the meeting, nothing at or above it.
+      expect(meeting.recentReview, [
+        _content('النبأ', 1, 11), // order 1 تلقين
+        _content('النبأ', 1, 11), // order 2
+        _content('النبأ', 12, 20), // order 3
+        _content('النبأ', 21, 30), // order 4
+      ]);
+      expect(
+        meeting.recentReview,
+        isNot(contains(_content('النازعات', 1, 10))),
+        reason: 'order 7 is a session the student has not been taught yet',
+      );
+      expect(
+        meeting.recentReview,
+        isNot(contains(_content('النازعات', 11, 20))),
+        reason: 'order 8 is a session the student has not been taught yet',
+      );
+    });
   });
 
   group('the recent window respects the unit', () {
