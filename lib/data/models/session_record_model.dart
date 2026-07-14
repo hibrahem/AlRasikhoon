@@ -58,11 +58,12 @@ class SessionRecordModel {
   final String curriculumSessionId;
   final int levelId;
 
-  /// What the session this record is FOR IS — a تلقين or a lesson, copied
-  /// verbatim from the session (via `student.currentSessionKind` at write
-  /// time), never inferred from [sessionNumber]. A تلقين is never graded, so
-  /// this is what tells the pass/fail statistics and the history/detail
-  /// screens to treat this record as attendance, not a graded pass.
+  /// What the session this record is FOR IS — a تلقين or a lesson, read off
+  /// that curriculum session itself (the last one the meeting discharged), never
+  /// off the student's denormalized `current_session_kind`, and never inferred
+  /// from [sessionNumber]. A تلقين is never graded, so this is what tells the
+  /// pass/fail statistics and the history/detail screens to treat this record as
+  /// attendance, not a graded pass.
   final SessionKind kind;
 
   /// The juz this record's session belongs to, copied verbatim from the
@@ -103,10 +104,13 @@ class SessionRecordModel {
   /// two records would fabricate an observation that never happened.
   final List<String> coversSessionIds;
 
-  /// The pace in force when this was recorded. History must not be rewritten
-  /// when the student's pace later changes: the student may be moved back to
-  /// 1x tomorrow, but this meeting really did cover [coversSessionIds.length]
-  /// sessions.
+  /// The STUDENT'S PACE SETTING in force when this was recorded — not the
+  /// number of sessions this meeting happened to cover. History must not be
+  /// rewritten when the student's pace later changes: the student may be
+  /// moved back to 1x tomorrow, but he really was a [paceAtTime]x student
+  /// when this was recorded. A batch can truncate short of the pace (a تلقين
+  /// or a سرد boundary stops it early), so [coversSessionIds.length] can be
+  /// LESS than [paceAtTime] — the two must never be conflated.
   final int paceAtTime;
 
   /// Whether this meeting covered more than one curriculum session.
@@ -141,7 +145,7 @@ class SessionRecordModel {
     this.sessionNumber = 1,
     required this.fromOrderInLevel,
     required this.toOrderInLevel,
-    this.coversSessionIds = const [],
+    required this.coversSessionIds,
     this.paceAtTime = 1,
     required this.date,
     required this.attemptNumber,

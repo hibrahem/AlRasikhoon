@@ -7,6 +7,7 @@ import '../models/exam_record_model.dart';
 import '../services/firebase_service.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/grade_calculator.dart';
+import '../../domain/curriculum/curriculum_pace.dart';
 import '../../domain/curriculum/paced_session.dart';
 
 class SessionRepository {
@@ -47,8 +48,9 @@ class SessionRepository {
 
   /// Create session record
   ///
-  /// [kind] and [juzNumber] are copied verbatim from the session this record
-  /// is FOR (via `student.currentSessionKind`/`currentJuz` at write time) —
+  /// `kind` and `juzNumber` are read off the session this record NAMES — the
+  /// last one [meeting] discharged — never off the student's denormalized
+  /// `current_session_kind`/`current_juz`, which are a copy and can drift, and
   /// never inferred from [sessionNumber].
   /// [hizbNumber] is a LABEL, present only in levels 1-2. It keys nothing.
   /// [meeting] is the teaching meeting this ONE recitation discharged — one
@@ -57,6 +59,11 @@ class SessionRepository {
   /// matter how many curriculum sessions [meeting] spans; see
   /// [SessionRecordModel.toOrderInLevel] for why that span, not
   /// [sessionNumber], is the advancement key.
+  /// [pace] is the student's pace SETTING, recorded verbatim as
+  /// [SessionRecordModel.paceAtTime] — it is NOT derived from `meeting.sessions.length`,
+  /// because a batch can truncate short of the pace (a تلقين or a سرد
+  /// boundary stops it early) while the student's pace setting has not
+  /// changed.
   /// [now] is a test seam; see [_writeSessionRecord].
   Future<SessionRecordModel> createSessionRecord({
     required String studentId,
@@ -70,6 +77,7 @@ class SessionRepository {
     required int distantReviewErrors,
     required int repetitionsWithTeacher,
     required int homeRepetitionsRequired,
+    required CurriculumPace pace,
     String? notes,
     DateTime? now,
   }) {
@@ -103,7 +111,7 @@ class SessionRepository {
         fromOrderInLevel: meeting.fromOrderInLevel,
         toOrderInLevel: meeting.toOrderInLevel,
         coversSessionIds: meeting.coversSessionIds,
-        paceAtTime: meeting.sessions.length,
+        paceAtTime: pace.multiplier,
         date: writtenAt,
         attemptNumber: attemptNumber,
         grades: grades,
@@ -135,6 +143,9 @@ class SessionRepository {
   /// records nothing else, but it still comes FROM the session rather than being
   /// hardcoded, exactly as the ordering key does.
   ///
+  /// [pace] is the student's pace SETTING, recorded verbatim as
+  /// [SessionRecordModel.paceAtTime] — see [createSessionRecord].
+  ///
   /// [now] is a test seam; see [_writeSessionRecord].
   Future<SessionRecordModel> createTalqeenRecord({
     required String studentId,
@@ -144,6 +155,7 @@ class SessionRepository {
     int? hizbNumber,
     required int repetitionsWithTeacher,
     required int homeRepetitionsRequired,
+    required CurriculumPace pace,
     String? notes,
     DateTime? now,
   }) {
@@ -164,7 +176,7 @@ class SessionRepository {
         fromOrderInLevel: meeting.fromOrderInLevel,
         toOrderInLevel: meeting.toOrderInLevel,
         coversSessionIds: meeting.coversSessionIds,
-        paceAtTime: meeting.sessions.length,
+        paceAtTime: pace.multiplier,
         date: writtenAt,
         attemptNumber: 1,
         grades: const SessionGrades(

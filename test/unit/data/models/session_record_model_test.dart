@@ -463,6 +463,7 @@ void main() {
             sessionNumber: 2,
             fromOrderInLevel: 2,
             toOrderInLevel: 2,
+            coversSessionIds: const ['L1_J30_S2'],
             date: DateTime(2026, 7, 14),
             attemptNumber: 1,
             grades: const SessionGrades(
@@ -493,7 +494,9 @@ void main() {
           kind: SessionKind.lesson,
           juzNumber: 30,
           fromOrderInLevel: 1,
-          toOrderInLevel: 1,          date: DateTime.now(),
+          toOrderInLevel: 1,
+          coversSessionIds: const ['c'],
+          date: DateTime.now(),
           attemptNumber: 1,
           grades: const SessionGrades(
             newMemorizationErrors: 0,
@@ -511,7 +514,9 @@ void main() {
           kind: SessionKind.talqeen,
           juzNumber: 29,
           fromOrderInLevel: 9,
-          toOrderInLevel: 9,          date: DateTime.now(),
+          toOrderInLevel: 9,
+          coversSessionIds: const ['z'],
+          date: DateTime.now(),
           attemptNumber: 2,
           grades: const SessionGrades(
             newMemorizationErrors: 5,
