@@ -51,7 +51,8 @@ function assertFaithful(sessions) {
   if (fabricated.length) {
     throw new Error(`${fabricated.length} session(s) carry no source provenance — refusing to import fabricated data.`);
   }
-  const mistyped = sessions.filter((s) => s.kind !== 'lesson' && s.current_level_content);
+  const assessmentKinds = new Set(['sard', 'exam']);
+  const mistyped = sessions.filter((s) => assessmentKinds.has(s.kind) && s.current_level_content);
   if (mistyped.length) {
     throw new Error(`${mistyped.length} assessment(s) carry lesson content — the old type-by-number bug. Refusing.`);
   }
