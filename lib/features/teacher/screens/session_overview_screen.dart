@@ -5,6 +5,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/student_model.dart';
+import '../../../data/repositories/student_repository.dart';
+import '../../../domain/curriculum/curriculum_pace.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
@@ -103,6 +105,12 @@ class SessionOverviewScreen extends ConsumerWidget {
 
                 const SizedBox(height: 24),
 
+                // Pace control — either a teacher or a supervisor may set it,
+                // and it may change mid-level; there is no approval workflow.
+                _buildPaceControl(context, ref, student),
+
+                const SizedBox(height: 24),
+
                 // Current session info
                 Text(
                   'الحلقة الحالية',
@@ -185,6 +193,79 @@ class SessionOverviewScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
     );
+  }
+
+  /// How many curriculum lessons the student covers per meeting (a تلقين, a
+  /// سرد, and an اختبار each always stand alone, whatever the pace) — a small
+  /// control, not a workflow: either a teacher or a supervisor may set it
+  /// directly, and it takes effect on the student's very next meeting.
+  Widget _buildPaceControl(
+    BuildContext context,
+    WidgetRef ref,
+    StudentModel student,
+  ) {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('وتيرة الحفظ', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          SegmentedButton<int>(
+            segments: const [
+              ButtonSegment(value: 1, label: Text('1x')),
+              ButtonSegment(value: 2, label: Text('2x')),
+              ButtonSegment(value: 3, label: Text('3x')),
+            ],
+            // A student who has never had a pace set is a standard-pace
+            // (1x) student — `CurriculumPace.fromJson` already treats
+            // absence that way, so the control shows the same default.
+            selected: {student.pace.multiplier},
+            onSelectionChanged: (selected) =>
+                _setPace(context, ref, student.id, selected.first),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'عدد الحلقات في اللقاء الواحد',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _setPace(
+    BuildContext context,
+    WidgetRef ref,
+    String studentId,
+    int multiplier,
+  ) async {
+    try {
+      await ref
+          .read(studentRepositoryProvider)
+          .setStudentPace(studentId, CurriculumPace(multiplier));
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('تعذر تحديث وتيرة الحفظ'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+      return;
+    }
+
+    // The student stores where a meeting STARTS, never how far it extends —
+    // the new pace only widens the pending meeting once the student is
+    // re-read, so invalidate now rather than leaving the teacher/supervisor
+    // staring at the pre-change meeting until a manual reload.
+    if (asSupervisor) {
+      ref.invalidate(supervisorStudentProvider(studentId));
+    } else {
+      ref.invalidate(studentProvider(studentId));
+    }
   }
 
   Widget _buildRegularSessionCard(

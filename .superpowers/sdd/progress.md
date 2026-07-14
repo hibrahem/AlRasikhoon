@@ -95,3 +95,35 @@ Task 8: complete (commits ce6150f, 38ad744 — impl + fix, review clean) — mee
   Note: reviewer agent was killed by a session limit mid-run; I completed the critical checks directly
   (no tests deleted — the "dropped test" was the implementer's own scratch, never committed; composer untouched;
   session providers intact) and removed a stray scratch test the killed agent left behind.
+Task 9: complete (commits fe04cf3, 6565a64 — impl + fix, review clean) — 6 screens render the meeting
+  Kind branches now read meeting.first. Curriculum-BROWSING screens (level_detail, starting_point_picker) untouched
+  — verified zero diff. All 4 updated widget tests: every expect() unchanged (reviewer read them line by line).
+  Added adminStudentCurrentMeetingProvider (1:1 mirror of the supervisor one) — admin_student_progress needed it.
+  new_memorization_screen's 4-field breakdown collapsed to one merged-range line (a batch's content is a LIST,
+  not one row's four fields) — was untested, now has a widget test incl. the no-new-content (سرد/اختبار) guard.
+  Fixed: the merged-range MAIN path was unpinned at the widget layer (the fixture used non-contiguous blocks,
+  proving only the edge case) — now pinned, and mutation-proven by forcing _isContiguous=false.
+  Minor (final review): studentCurrentSessionProvider / adminStudentCurrentSessionProvider /
+    studentDashboardSessionProvider are now unreferenced by any screen. LEFT IN PLACE deliberately — the parallel
+    Claude session's uncommitted work touches these same provider files and removing them risks a merge conflict.
+    Final review should decide whether to delete them.
+Task 10 (LAST): complete, full suite 713/713 — the pace control on session_overview_screen.dart.
+  al_rasikhoon-i1d and al_rasikhoon-sne (the "flexible placement / reposition" screens the brief pointed at) are
+  both still OPEN — there is no edit-existing-student screen yet, only StartingPointPicker at student CREATION
+  (add_student_screen). The actual shared neighbour is SessionOverviewScreen (teacher/screens, reused verbatim
+  for the supervisor route with asSupervisor:true per app_router.dart) — the one screen both roles already land
+  on for a given student, already gated by role (isSupervisorProvider) for the سرد card. Put the pace control
+  there once rather than duplicating it across two screens.
+  SegmentedButton<int> 1x/2x/3x reads student.pace.multiplier (CurriculumPace.fromJson already defaults absence
+  to standard, so "never set" renders 1x with no extra branching) and calls
+  studentRepositoryProvider.setStudentPace. On success invalidates studentProvider(studentId) when !asSupervisor,
+  or supervisorStudentProvider(studentId) when asSupervisor — mirrors the existing invalidate pattern in
+  sard_result_screen.dart (supervisorStudentsProvider + supervisorStudentProvider) rather than the brief's literal
+  "invalidate studentProvider" text, because the supervisor branch of this screen never watches studentProvider at
+  all (supervisorStudentProvider resolves independently through supervisorStudentsProvider) — invalidating the
+  wrong family would leave the supervisor's meeting stale after a supervisor-set pace.
+  Test gotcha: StudentLevelProgress (already on this screen) reads levelProvider -> curriculumRepositoryProvider
+  -> firestoreProvider -> real FirebaseFirestore.instance when unmocked. In this Riverpod 3 app that errors and
+  schedules an automatic retry Timer that outlives the test, tripping "Timer still pending" — fixed by overriding
+  firestoreProvider with FakeFirebaseFirestore() in the new test, same as add_student_screen_test.dart /
+  session_summary_screen_test.dart already do.
