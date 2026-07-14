@@ -69,9 +69,9 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        // Standing on the juz-30 اختبار — session 68. The queue finds them by
+        // Standing on the juz-30 اختبار — session 70. The queue finds them by
         // their session's KIND, not by a magic number.
-        sessionId: 'L1_J30_S68',
+        sessionId: 'L1_J30_S70',
       );
 
       // Act
@@ -105,7 +105,7 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        sessionId: 'L1_J30_S68',
+        sessionId: 'L1_J30_S70',
       );
 
       // Act
@@ -146,7 +146,7 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        sessionId: 'L1_J30_S68',
+        sessionId: 'L1_J30_S70',
       );
 
       // Act
@@ -187,7 +187,7 @@ void main() {
         await env.addStudent(
           userId: studentUser.id,
           instituteId: instituteId,
-          sessionId: 'L1_J30_S68',
+          sessionId: 'L1_J30_S70',
         );
       }
 
@@ -225,10 +225,10 @@ void main() {
         final studentId = await env.addStudent(
           userId: studentUser.id,
           instituteId: instituteId,
-          // The juz-30 اختبار is session 68. The queue finds them because their
+          // The juz-30 اختبار is session 70. The queue finds them because their
           // session's KIND is `exam` — the old `current_session == 36` filter
           // would have found nobody.
-          sessionId: 'L1_J30_S68',
+          sessionId: 'L1_J30_S70',
         );
 
         await tester.pumpWidget(TestApp(overrides: env.overrides));
@@ -258,7 +258,7 @@ void main() {
             .get();
         expect(examRecords.docs, hasLength(1));
         final exam = examRecords.docs.first.data();
-        expect(exam['curriculum_session_id'], 'L1_J30_S68');
+        expect(exam['curriculum_session_id'], 'L1_J30_S70');
         expect(exam['tier'], 'juz');
         expect(exam['juz_numbers'], [30]);
         expect(exam['hizb_number'], isNull);
@@ -295,7 +295,7 @@ void main() {
       await env.addStudent(
         userId: assignedStudent.id,
         instituteId: assignedInstitute,
-        sessionId: 'L1_J30_S68',
+        sessionId: 'L1_J30_S70',
       );
 
       // Create student in other institute
@@ -310,7 +310,7 @@ void main() {
       await env.addStudent(
         userId: otherStudent.id,
         instituteId: otherInstitute,
-        sessionId: 'L1_J30_S68',
+        sessionId: 'L1_J30_S70',
       );
 
       // Act
@@ -355,7 +355,7 @@ void main() {
           instituteId: instituteId,
           // The hizb-59 سرد — the exact session a supervisor used to be able to
           // conduct under #29.
-          sessionId: 'L1_J30_S30',
+          sessionId: 'L1_J30_S31',
         );
 
         // Act
@@ -435,7 +435,7 @@ void main() {
           id: 'sardOoPs123',
           userId: studentUser.id,
           instituteId: instituteId,
-          sessionId: 'L1_J30_S30',
+          sessionId: 'L1_J30_S31',
         );
 
         // Act

@@ -8,7 +8,7 @@ import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/features/admin/providers/admin_provider.dart';
-import 'package:al_rasikhoon/features/admin/screens/admin_student_progress_screen.dart';
+import 'package:al_rasikhoon/shared/screens/student_progress_screen.dart';
 
 /// Pins the load-bearing branch of the admin/supervisor progress screen's
 /// current-session card: a student standing on a تلقين MUST be shown as
@@ -130,10 +130,18 @@ void main() {
             ],
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
           home: Directionality(
             textDirection: TextDirection.rtl,
-            child: AdminStudentProgressScreen(studentId: 's1'),
+            // The screen is role-agnostic (al_rasikhoon-801): the admin and the
+            // supervisor get the same read-only view, each with their own
+            // scoped providers injected. Here we inject the admin's.
+            child: StudentProgressScreen(
+              studentId: 's1',
+              studentProvider: adminStudentProvider,
+              currentSessionProvider: adminStudentCurrentSessionProvider,
+              sessionHistoryProvider: adminStudentSessionHistoryProvider,
+            ),
           ),
         ),
       ),
