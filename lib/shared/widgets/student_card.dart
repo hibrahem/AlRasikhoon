@@ -158,11 +158,31 @@ class StudentCard extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 // Progress through the LEVEL: order_in_level over the level's
-                // real session count, from the catalog — never `/ 36`.
-                ProgressBar(
-                  progress: progress,
-                  height: 4,
-                  showPercentage: false,
+                // real session count, from the catalog — never `/ 36`. The
+                // count (current/total) mirrors the level-progress figure the
+                // student detail screen shows, so a teacher sees how far into
+                // the level a student is — and how far is left — without
+                // opening the card.
+                Row(
+                  children: [
+                    Expanded(
+                      child: ProgressBar(
+                        progress: progress,
+                        height: 4,
+                        showPercentage: false,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      sessionCount > 0
+                          ? '${student.currentOrderInLevel}/$sessionCount'
+                          : '—',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ],
 
