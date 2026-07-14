@@ -79,8 +79,8 @@ void main() {
     expect(find.byType(TeacherStudentsScreen), findsNothing);
     expect(find.byType(SettingsScreen), findsNothing);
 
-    // Tap الإعدادات.
-    await tester.tap(find.text('الإعدادات'));
+    // Tap الملف الشخصي.
+    await tester.tap(find.text('الملف الشخصي'));
     await tester.pumpAndSettle();
 
     expect(find.byType(SettingsScreen), findsOneWidget);

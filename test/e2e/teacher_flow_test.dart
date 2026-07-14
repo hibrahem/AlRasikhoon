@@ -343,7 +343,7 @@ void main() {
         await teacherRobot.goToHistory();
         await teacherRobot.verifyHistoryScreen();
 
-        // Assert - tapping الإعدادات lands on the settings screen.
+        // Assert - tapping الملف الشخصي lands on the settings screen.
         await teacherRobot.goToSettings();
         await teacherRobot.verifySettingsScreen();
 
