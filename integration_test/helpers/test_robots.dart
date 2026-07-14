@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:al_rasikhoon/shared/widgets/app_card.dart';
+import 'package:al_rasikhoon/features/teacher/screens/teacher_students_screen.dart';
+import 'package:al_rasikhoon/features/teacher/screens/teacher_history_screen.dart';
+import 'package:al_rasikhoon/features/settings/screens/settings_screen.dart';
 
 /// Base robot class for E2E testing
 abstract class TestRobot {
@@ -353,6 +356,7 @@ class TeacherRobot extends TestRobot {
   Future<void> verifyStudentsScreen() async {
     await pumpAndSettle();
     expect(find.text('طلابي'), findsOneWidget);
+    expect(find.byType(TeacherStudentsScreen), findsOneWidget);
   }
 
   /// Tap add student FAB
@@ -459,6 +463,78 @@ class TeacherRobot extends TestRobot {
     await pumpAndSettle();
     expect(find.text('السرد يُجرى مع المشرف فقط'), findsOneWidget);
     expect(find.text('بدء السرد'), findsNothing);
+  }
+
+  // --- Bottom nav (al_rasikhoon-256) ---------------------------------------
+  // The teacher shell has exactly three tabs — الطلاب / السجل / الإعدادات —
+  // each backed by its own StatefulShellBranch. Tap them the way a user
+  // actually would: through the BottomNavigationBar, mirroring the
+  // Admin/SupervisorRobot nav helpers above.
+
+  /// Navigate to the students tab via bottom nav.
+  Future<void> goToStudents() async {
+    final navBar = find.byType(BottomNavigationBar);
+    final studentsTab = find.descendant(
+      of: navBar,
+      matching: find.text('الطلاب'),
+    );
+    await tester.tap(studentsTab);
+    await pumpAndSettle();
+  }
+
+  /// Navigate to the history tab via bottom nav.
+  Future<void> goToHistory() async {
+    final navBar = find.byType(BottomNavigationBar);
+    final historyTab = find.descendant(
+      of: navBar,
+      matching: find.text('السجل'),
+    );
+    await tester.tap(historyTab);
+    await pumpAndSettle();
+  }
+
+  /// Navigate to the settings tab via bottom nav.
+  Future<void> goToSettings() async {
+    final navBar = find.byType(BottomNavigationBar);
+    final settingsTab = find.descendant(
+      of: navBar,
+      matching: find.text('الإعدادات'),
+    );
+    await tester.tap(settingsTab);
+    await pumpAndSettle();
+  }
+
+  /// Verify the history screen (TeacherHistoryScreen) is showing and the
+  /// students screen is gone.
+  ///
+  /// 'السجل' is both the nav tab's own label AND the screen's AppBar title,
+  /// so a bare `find.text('السجل')` would match both and never resolve to
+  /// exactly one widget — assert on the screen widget type instead, which is
+  /// unambiguous.
+  Future<void> verifyHistoryScreen() async {
+    await pumpAndSettle();
+    expect(find.byType(TeacherHistoryScreen), findsOneWidget);
+    expect(find.byType(TeacherStudentsScreen), findsNothing);
+  }
+
+  /// Verify the settings screen (SettingsScreen) is showing and the students
+  /// screen is gone. See [verifyHistoryScreen] for why this asserts on the
+  /// widget type rather than the ('الإعدادات') label text, which is shared
+  /// with the nav tab.
+  Future<void> verifySettingsScreen() async {
+    await pumpAndSettle();
+    expect(find.byType(SettingsScreen), findsOneWidget);
+    expect(find.byType(TeacherStudentsScreen), findsNothing);
+  }
+
+  /// Verify there is no الحلقة tab in the bottom nav — it was removed by
+  /// design (see nav_destinations.dart).
+  Future<void> verifyNoHalaqahTab() async {
+    final navBar = find.byType(BottomNavigationBar);
+    expect(
+      find.descendant(of: navBar, matching: find.text('الحلقة')),
+      findsNothing,
+    );
   }
 }
 

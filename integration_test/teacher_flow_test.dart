@@ -279,5 +279,43 @@ void main() {
       // Assert - read-only supervisor-only notice shown, start action absent.
       await teacherRobot.verifySardBlockedForTeacher();
     });
+
+    testWidgets(
+      'Every teacher nav tab navigates, not just the first (al_rasikhoon-256)',
+      (tester) async {
+        // Arrange — the teacher's StatefulShellRoute used to have 1 branch
+        // while the nav bar rendered 4 tabs, and RoleShell silently swallowed
+        // taps past the branch count: every tab but the first (الطلاب) did
+        // nothing. This drives each tab through the real
+        // BottomNavigationBar — exactly what a user taps — and asserts it
+        // actually lands on the corresponding screen.
+        final teacher = env.createTeacher();
+        await env.setUp(authenticatedUser: teacher);
+        final instituteId = await env.addInstitute();
+        await env.assignTeacherToInstitute(teacher.id, instituteId);
+
+        // Act
+        await tester.pumpWidget(TestApp(overrides: env.overrides));
+        teacherRobot = TeacherRobot(tester);
+
+        // Assert - starts on الطلاب (students).
+        await teacherRobot.verifyStudentsScreen();
+
+        // The الحلقة tab was removed by design; it must not be present.
+        await teacherRobot.verifyNoHalaqahTab();
+
+        // Assert - tapping السجل lands on the history screen, students gone.
+        await teacherRobot.goToHistory();
+        await teacherRobot.verifyHistoryScreen();
+
+        // Assert - tapping الإعدادات lands on the settings screen.
+        await teacherRobot.goToSettings();
+        await teacherRobot.verifySettingsScreen();
+
+        // Assert - tapping الطلاب again returns to the students screen.
+        await teacherRobot.goToStudents();
+        await teacherRobot.verifyStudentsScreen();
+      },
+    );
   });
 }
