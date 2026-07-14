@@ -131,9 +131,11 @@ class ActiveSessionState {
   final StudentAdvanceOutcome? advanceOutcome;
 
   /// The meeting being taught — every curriculum session it covers, composed
-  /// from the student's LIVE pace. Null until the meeting is composed (on
-  /// [ActiveSessionNotifier.completeSession] / `completeTalqeenSession`), so
-  /// screens can render every block it covers rather than just the one the
+  /// from the student's LIVE pace. Composed (best-effort) by
+  /// [ActiveSessionNotifier.startSession] and recomposed on
+  /// `completeSession` / `completeTalqeenSession`; still null if composition
+  /// couldn't run (e.g. unseeded data, a provider still warming up). Screens
+  /// read it to render every block it covers rather than just the one the
   /// student started on.
   final PacedSession? meeting;
 

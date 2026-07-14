@@ -13,6 +13,12 @@ class PacedSession {
   final List<SessionModel> sessions;
 
   final List<QuranContent> newContent;
+
+  /// May contain a DUPLICATE block at a unit's start — the تلقين that opens
+  /// a unit carries the same passage as the unit's first lesson, so both can
+  /// land in this list. The display getters (`recentReviewAr`) de-duplicate
+  /// before rendering; a raw consumer of this list must do the same or it
+  /// will double-count.
   final List<QuranContent> recentReview;
   final List<QuranContent> distantReview;
 
@@ -51,17 +57,21 @@ class PacedSession {
   /// 1. DE-DUPLICATE — drop a block equal to one already emitted.
   /// 2. MERGE CONTIGUOUS RUNS — collapse a run into ONE range spanning the
   ///    first block's start to the last block's end. Two blocks are
-  ///    contiguous only when:
-  ///      - the SAME surah AND `next.fromVerse == prev.toVerse + 1`
-  ///        (adjacent verses within one surah), or
-  ///      - a DIFFERENT surah AND `next.fromVerse == 1` (the next block opens
-  ///        a new surah at its first verse, right after the previous one
-  ///        ended).
+  ///    contiguous ONLY when they sit in the SAME surah AND
+  ///    `next.fromVerse == prev.toVerse + 1` (adjacent verses within one
+  ///    surah).
   ///    Same-surah alone is NOT contiguous — two blocks in one surah with a
   ///    verse gap between them (e.g. النبأ 1-11 then النبأ 30-40) must stay
   ///    separate, or the merge would claim verses 12-29 that neither block
-  ///    covers. This code never authors content, so it must never invent a
-  ///    range wider than what's actually there.
+  ///    covers.
+  ///    A block that opens a DIFFERENT surah is NEVER merged with the one
+  ///    before it, even when it starts at verse 1 — this app deliberately does
+  ///    not know surah lengths, so seeing "verse 1" cannot tell it the
+  ///    previous surah was finished. The curriculum itself may cross a surah
+  ///    boundary mid-block (its author knows the lengths); this code cannot
+  ///    replicate that safely, so a cross-surah run always renders as
+  ///    separate blocks joined by ` • `. This code never authors content, so
+  ///    it must never invent a range wider than what's actually there.
   ///
   /// A merged block's four fields are always copied from two blocks that are
   /// already there — this computes no surah name and no verse number. A 1x
@@ -80,11 +90,8 @@ class PacedSession {
     return seen;
   }
 
-  static bool _isContiguous(QuranContent prev, QuranContent next) {
-    final sameSurah = next.fromSurah == prev.toSurah;
-    if (sameSurah) return next.fromVerse == prev.toVerse + 1;
-    return next.fromVerse == 1;
-  }
+  static bool _isContiguous(QuranContent prev, QuranContent next) =>
+      next.fromSurah == prev.toSurah && next.fromVerse == prev.toVerse + 1;
 
   static List<QuranContent> _merge(List<QuranContent> blocks) {
     if (blocks.isEmpty) return const [];

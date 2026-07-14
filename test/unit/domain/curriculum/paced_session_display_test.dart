@@ -108,27 +108,53 @@ void main() {
         expect(meeting.newContentAr, 'النبأ: 31 - 40');
       });
 
-      test('two blocks across a SURAH BOUNDARY where the next one opens at '
-          'its first verse are contiguous — the curriculum merges these too '
-          '(e.g. النبأ 38 - النازعات 14)', () {
-        // Different surah, but next.fromVerse == 1: the next block starts a
-        // fresh surah right where the previous one ended.
+      test(
+        'blocks in different surahs are never merged: the app cannot know '
+        'a surah was finished, even when the next block opens at verse 1',
+        () {
+          // Different surah, next.fromVerse == 1: this LOOKS like the previous
+          // surah just finished and the next one picked up immediately, but the
+          // app deliberately does not know surah lengths, so it cannot tell
+          // that النبأ actually ended at verse 38. Merging would silently claim
+          // النبأ 39-40 that no curriculum row assigned to this meeting — the
+          // same class of bug as the same-surah gap case below, just across a
+          // surah boundary instead of within one surah.
+          final meeting = PacedSession(
+            sessions: [_session(order: 6), _session(order: 8)],
+            newContent: [
+              _content('النبأ', 38, 38),
+              QuranContent(
+                fromSurah: 'النازعات',
+                fromVerse: 1,
+                toSurah: 'النازعات',
+                toVerse: 14,
+              ),
+            ],
+            recentReview: const [],
+            distantReview: const [],
+          );
+
+          expect(meeting.newContentAr, 'النبأ: 38 • النازعات: 1 - 14');
+        },
+      );
+
+      test('level 9\'s distant cursor skipping هود 29-123 must never render '
+          'as هود: 1 إلى يوسف: 111 — a cross-surah run always stays separate '
+          'blocks', () {
+        // Real curriculum data (level 9, distant review): order 13's block is
+        // هود 1-28, order 14's block is يوسف 1-111. هود has 123 verses; the
+        // curriculum simply skips هود 29-123 at this cursor position. The old
+        // rule saw "يوسف starts at verse 1" and merged the two into
+        // "هود: 1 إلى يوسف: 111", claiming ~95 verses of هود that no
+        // curriculum row assigned to this meeting.
         final meeting = PacedSession(
-          sessions: [_session(order: 6), _session(order: 8)],
-          newContent: [
-            _content('النبأ', 38, 38),
-            QuranContent(
-              fromSurah: 'النازعات',
-              fromVerse: 1,
-              toSurah: 'النازعات',
-              toVerse: 14,
-            ),
-          ],
+          sessions: [_session(order: 13), _session(order: 14)],
+          newContent: const [],
           recentReview: const [],
-          distantReview: const [],
+          distantReview: [_content('هود', 1, 28), _content('يوسف', 1, 111)],
         );
 
-        expect(meeting.newContentAr, 'النبأ: 38 إلى النازعات: 14');
+        expect(meeting.distantReviewAr, 'هود: 1 - 28 • يوسف: 1 - 111');
       });
 
       test('two blocks in the SAME surah with a verse GAP stay separate — '
