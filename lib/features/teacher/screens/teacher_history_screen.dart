@@ -6,10 +6,10 @@ import '../../../routing/app_router.dart';
 import '../../../shared/widgets/session_record_row.dart';
 import '../providers/teacher_provider.dart';
 
-/// The teacher's recitation history, newest first: "who did I hear?" — so
-/// each row is keyed by student, and tapping opens that student's session
-/// overview (unlike the student's own history, which is keyed by session and
-/// opens the session detail).
+/// The teacher's recitation history, newest first: "who did I hear?" — so each
+/// row is labelled by student. A row is still a record of one past session, and
+/// tapping it opens that session's detail; the student's live session overview
+/// is reached from الطلاب, not from a record of a session already heard.
 class TeacherHistoryScreen extends ConsumerWidget {
   const TeacherHistoryScreen({super.key});
 
@@ -53,9 +53,9 @@ class TeacherHistoryScreen extends ConsumerWidget {
                   date: record.date,
                   onTap: () {
                     context.push(
-                      AppRoutes.sessionOverview.replaceFirst(
-                        ':studentId',
-                        record.studentId,
+                      AppRoutes.teacherSessionDetail.replaceFirst(
+                        ':recordId',
+                        record.id,
                       ),
                     );
                   },
