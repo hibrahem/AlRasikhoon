@@ -62,8 +62,14 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
       ),
       body: sessionAsync.when(
         data: (session) {
-          if (session == null) {
-            return const Center(child: Text('لا توجد بيانات'));
+          // A تلقين is never graded, failed, or attempt-limited — it has no
+          // entry point to this screen in-app (session_overview_screen.dart
+          // branches on isTalqeen before ever reaching the regular-session
+          // card), but a hand-edited URL could still land here directly.
+          // Mirror the guard in talqeen_session_screen.dart: refuse to run
+          // the grading flow unless the student is actually on a lesson.
+          if (session == null || !session.isLesson) {
+            return const Center(child: Text('لا توجد بيانات للتسميع'));
           }
 
           // A content block is legitimately absent on review-only lessons —
