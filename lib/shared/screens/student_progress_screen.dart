@@ -4,11 +4,11 @@ import 'package:flutter_riverpod/misc.dart' show FutureProviderFamily;
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
-import '../../data/models/session_model.dart';
 import '../../data/models/session_record_model.dart';
 import '../../data/models/student_model.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/student_repository.dart';
+import '../../domain/curriculum/paced_session.dart';
 import '../../routing/app_router.dart';
 import '../curriculum/assessment_copy.dart';
 import '../widgets/app_card.dart';
@@ -25,7 +25,7 @@ import '../widgets/student_level_progress.dart';
 class StudentProgressScreen extends ConsumerWidget {
   final String studentId;
   final FutureProviderFamily<StudentWithUser?, String> studentProvider;
-  final FutureProviderFamily<SessionModel?, String> currentSessionProvider;
+  final FutureProviderFamily<PacedSession?, String> currentMeetingProvider;
   final FutureProviderFamily<List<SessionRecordModel>, String>
   sessionHistoryProvider;
 
@@ -33,7 +33,7 @@ class StudentProgressScreen extends ConsumerWidget {
     super.key,
     required this.studentId,
     required this.studentProvider,
-    required this.currentSessionProvider,
+    required this.currentMeetingProvider,
     required this.sessionHistoryProvider,
   });
 
@@ -51,7 +51,7 @@ class StudentProgressScreen extends ConsumerWidget {
           return RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(studentProvider(studentId));
-              ref.invalidate(currentSessionProvider(studentId));
+              ref.invalidate(currentMeetingProvider(studentId));
               ref.invalidate(sessionHistoryProvider(studentId));
             },
             child: SingleChildScrollView(
@@ -59,7 +59,7 @@ class StudentProgressScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               child: _ProgressBody(
                 studentWithUser: studentWithUser,
-                currentSessionProvider: currentSessionProvider,
+                currentMeetingProvider: currentMeetingProvider,
                 sessionHistoryProvider: sessionHistoryProvider,
               ),
             ),
@@ -74,13 +74,13 @@ class StudentProgressScreen extends ConsumerWidget {
 
 class _ProgressBody extends ConsumerWidget {
   final StudentWithUser studentWithUser;
-  final FutureProviderFamily<SessionModel?, String> currentSessionProvider;
+  final FutureProviderFamily<PacedSession?, String> currentMeetingProvider;
   final FutureProviderFamily<List<SessionRecordModel>, String>
   sessionHistoryProvider;
 
   const _ProgressBody({
     required this.studentWithUser,
-    required this.currentSessionProvider,
+    required this.currentMeetingProvider,
     required this.sessionHistoryProvider,
   });
 
@@ -88,7 +88,7 @@ class _ProgressBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final student = studentWithUser.student;
     final user = studentWithUser.user;
-    final sessionAsync = ref.watch(currentSessionProvider(student.id));
+    final meetingAsync = ref.watch(currentMeetingProvider(student.id));
     final historyAsync = ref.watch(sessionHistoryProvider(student.id));
 
     return Column(
@@ -99,8 +99,8 @@ class _ProgressBody extends ConsumerWidget {
 
         Text('الحلقة الحالية', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
-        sessionAsync.when(
-          data: (session) => _CurrentSessionCard(session: session),
+        meetingAsync.when(
+          data: (meeting) => _CurrentSessionCard(meeting: meeting),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Text('Error: $e'),
         ),
@@ -190,24 +190,27 @@ class _StudentHeaderCard extends StatelessWidget {
   }
 }
 
-/// The session the student stands on, described by the CURRICULUM — the student
-/// record is not consulted at all, because the session document is the authority
-/// on what the session is.
+/// The MEETING the student stands on, described by the CURRICULUM — the
+/// student record is not consulted at all, because the curriculum is the
+/// authority on what the meeting is. A batch (a 2x/3x student) merges into
+/// one card, exactly like the teacher's `SessionOverviewScreen`: showing
+/// only the meeting's first session would silently understate a fast
+/// student's assignment.
 class _CurrentSessionCard extends StatelessWidget {
-  final SessionModel? session;
+  final PacedSession? meeting;
 
-  const _CurrentSessionCard({required this.session});
+  const _CurrentSessionCard({required this.meeting});
 
   @override
   Widget build(BuildContext context) {
-    final session = this.session;
-    if (session == null) {
+    final meeting = this.meeting;
+    if (meeting == null) {
       return const AppCard(child: Center(child: Text('لا توجد بيانات للحلقة')));
     }
 
-    // A session's kind is read from the curriculum, never inferred from its
-    // number; an assessment is named by the curriculum's own label and worded
-    // for its tier (this hizb / this juz / the level so far).
+    // The meeting's KIND is the kind of the session it starts on — a batch is
+    // all lessons, so they agree. What this session IS comes from the
+    // curriculum's own `kind`, never from its number.
     //
     // The تلقين branch MUST come before isExam/isSard and the regular-lesson
     // fallthrough (see session_overview_screen.dart's identical ordering): a
@@ -215,6 +218,7 @@ class _CurrentSessionCard extends StatelessWidget {
     // the lesson card would show a supervisor "الحفظ الجديد" (new
     // memorization) framing and part tiles for a session that is graded on
     // nothing and cannot be failed.
+    final session = meeting.first;
     if (session.isTalqeen) {
       return _SimpleSessionCard(
         icon: Icons.record_voice_over,
@@ -282,23 +286,26 @@ class _CurrentSessionCard extends StatelessWidget {
           const Divider(),
           const SizedBox(height: 12),
           // A content block may legitimately be absent (review-only lessons
-          // carry no new memorization) — absence reads as '-'.
+          // carry no new memorization) — absence reads as '-'. A batched
+          // meeting's lines already merge contiguous ranges and de-duplicate
+          // (see `PacedSession._line`), so a 2x/3x student's whole meeting
+          // renders here, not just its first session.
           _PartTile(
             number: 1,
             title: 'الحفظ الجديد',
-            content: session.currentLevelContent?.rangeAr ?? '',
+            content: meeting.newContentAr,
           ),
           const SizedBox(height: 8),
           _PartTile(
             number: 2,
             title: 'المراجعة القريبة',
-            content: session.recentReviewContent?.rangeAr ?? '',
+            content: meeting.recentReviewAr,
           ),
           const SizedBox(height: 8),
           _PartTile(
             number: 3,
             title: 'المراجعة البعيدة',
-            content: session.distantReviewContent?.rangeAr ?? '',
+            content: meeting.distantReviewAr,
           ),
         ],
       ),
