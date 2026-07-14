@@ -92,6 +92,15 @@ class StudentCard extends ConsumerWidget {
                           const SizedBox(height: 4),
                           _InstituteBadge(name: instituteName!),
                         ],
+                        // A teacher-less student is in no teacher's
+                        // getStudentsForTeacher list, so nobody can conduct
+                        // their حلقة or their سرد — surfaced here so a
+                        // supervisor can find and rescue them
+                        // (al_rasikhoon-6bw).
+                        if (student.teacherId == null) ...[
+                          const SizedBox(height: 4),
+                          const _TeacherlessBadge(),
+                        ],
                       ],
                     ),
                   ),
@@ -242,6 +251,40 @@ class _InfoChip extends StatelessWidget {
             style: const TextStyle(
               fontSize: 11,
               color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Marks a student with no `teacher_id` (al_rasikhoon-6bw). A teacher-less
+/// student is invisible to every teacher's roster query, so nobody can ever
+/// conduct their حلقة or their سرد — this badge is how a supervisor finds
+/// them to assign a teacher. Text-based (not colour-only) for accessibility.
+class _TeacherlessBadge extends StatelessWidget {
+  const _TeacherlessBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.warning_amber_rounded, size: 12, color: AppColors.warning),
+          SizedBox(width: 4),
+          Text(
+            'بلا معلم',
+            style: TextStyle(
+              fontSize: 11,
+              color: AppColors.warning,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],

@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -451,6 +452,81 @@ void main() {
         // Assert — the guard must NOT fire: the supervisor lands on the
         // read-only progress screen exactly as for any other student.
         expect(find.text('تقدم الطالب'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'a supervisor assigns a teacher to a teacher-less student, and that '
+      'student then APPEARS IN THAT TEACHER\'S الطلاب list (al_rasikhoon-6bw)',
+      (tester) async {
+        // Arrange — a student stranded exactly the way production already
+        // has some: institute-scoped, but with no teacher_id at all. Nobody
+        // could ever conduct their حلقة or their سرد until this is fixed.
+        const instituteId = 'rescue_institute';
+        final supervisor = env.createSupervisor().copyWith(
+          instituteId: instituteId,
+        );
+        await env.setUp(authenticatedUser: supervisor);
+        await env.addInstitute(id: instituteId);
+        await env.assignSupervisorToInstitute(supervisor.id, instituteId);
+
+        final teacher = env.createTeacher(
+          id: 'rescue_teacher',
+          name: 'المعلم المنقذ',
+        );
+        await env.fakeFirestore
+            .collection('users')
+            .doc(teacher.id)
+            .set(teacher.toFirestore());
+        await env.assignTeacherToInstitute(teacher.id, instituteId);
+
+        final studentUser = env.createStudent(
+          id: 'orphan_student',
+          name: 'الطالب المهجور',
+        );
+        await env.fakeFirestore
+            .collection('users')
+            .doc(studentUser.id)
+            .set(studentUser.toFirestore());
+        // teacherId omitted: null — the exact stranded state al_rasikhoon-6bw
+        // fixes half (2) of.
+        await env.addStudent(
+          userId: studentUser.id,
+          instituteId: instituteId,
+          sessionId: 'L1_J30_S1',
+        );
+
+        // Act (as the supervisor) — the teacher-less marker is visible, then
+        // the supervisor rescues the student through the actions sheet.
+        await tester.pumpWidget(TestApp(overrides: env.overrides));
+        supervisorRobot = SupervisorRobot(tester);
+
+        await supervisorRobot.verifyDashboard();
+        await supervisorRobot.goToStudents();
+        await supervisorRobot.verifyStudentsScreen();
+        expect(find.text('بلا معلم'), findsOneWidget);
+
+        await supervisorRobot.longPressStudent('الطالب المهجور');
+        await supervisorRobot.tapAssignTeacherAction();
+        await supervisorRobot.selectTeacherInAssignDialog('المعلم المنقذ');
+        await supervisorRobot.confirmAssignTeacher();
+
+        // The marker is gone from the supervisor's own list once assigned.
+        await supervisorRobot.pumpAndSettle();
+        expect(find.text('بلا معلم'), findsNothing);
+
+        // Assert the end state that actually matters: switch identity to the
+        // rescuing teacher (same fixture data, fresh remount — see
+        // TestEnvironment.overridesForUser) and confirm the student is now
+        // reachable in THEIR الطلاب list, not merely that a field changed.
+        final teacherOverrides = await env.overridesForUser(teacher);
+        await tester.pumpWidget(
+          TestApp(key: UniqueKey(), overrides: teacherOverrides),
+        );
+        final teacherRobot = TeacherRobot(tester);
+
+        await teacherRobot.verifyStudentsScreen();
+        await teacherRobot.verifyStudentInList('الطالب المهجور');
       },
     );
   });

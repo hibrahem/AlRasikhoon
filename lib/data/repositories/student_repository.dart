@@ -120,12 +120,15 @@ class StudentRepository {
   /// users/{uid} Firestore profile are provisioned atomically by the
   /// createUserAccount Cloud Function. Optionally provisions a guardian
   /// account too. Throws on username collision.
-  /// [teacherId] is optional: a teacher provisioning a student assigns it to
-  /// themselves; a supervisor provisioning a student for their institute may
-  /// leave it null (the student is institute-scoped, not teacher-owned). The
-  /// student record always carries [instituteId] so both UI providers and
-  /// Firestore rules can scope access by `users/{uid}.institute_id` per
-  /// AgDR-0003 — no multi-hop reads.
+  /// [teacherId] is nullable at this layer for flexibility, but every caller
+  /// in the app supplies one: a teacher provisioning a student assigns it to
+  /// themselves; a supervisor provisioning a student must pick a teacher from
+  /// their own institute (al_rasikhoon-6bw — a teacher-less student sits in
+  /// no teacher's `getStudentsForTeacher` list, so nobody can ever conduct
+  /// their حلقة or their سرد). [assignTeacher] is the rescue path for a
+  /// student who is ALREADY teacher-less. The student record always carries
+  /// [instituteId] so both UI providers and Firestore rules can scope access
+  /// by `users/{uid}.institute_id` per AgDR-0003 — no multi-hop reads.
   /// [startingPosition] is where the student enters the curriculum. It defaults
   /// to the first session; a teacher or supervisor may place a student who has
   /// already memorized part of the Quran at any point, which credits everything
@@ -450,6 +453,22 @@ class StudentRepository {
   Future<void> setStudentPace(String studentId, CurriculumPace pace) async {
     await _studentsCollection.doc(studentId).update({
       'pace': pace.toJson(),
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Give a student a teacher (al_rasikhoon-6bw). A student with no teacher is
+  /// in no teacher's list, so nobody can conduct their حلقة or their سرد —
+  /// this is what rescues a student who was created teacher-less (the state
+  /// [createStudent] can no longer produce, but which already exists in
+  /// production). A focused, single-field write — NOT [updateStudent], which
+  /// rewrites the whole document.
+  Future<void> assignTeacher({
+    required String studentId,
+    required String teacherId,
+  }) async {
+    await _studentsCollection.doc(studentId).update({
+      'teacher_id': teacherId,
       'updated_at': FieldValue.serverTimestamp(),
     });
   }
