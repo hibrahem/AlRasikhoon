@@ -40,16 +40,11 @@
       "to_verse": 9
     },
     "recent_review_content": null,
-    "distant_review_content": {
-      "from_surah": "الأنعام",
-      "from_verse": 1,
-      "to_surah": "الأنعام",
-      "to_verse": 94
-    },
+    "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1",
-      "row": 5,
+      "sheet": "Sheet2",
+      "row": 6,
       "raw_session_number": 1
     }
   },
@@ -78,14 +73,14 @@
     },
     "distant_review_content": {
       "from_surah": "الأنعام",
-      "from_verse": 95,
-      "to_surah": "الأنعام",
-      "to_verse": 165
+      "from_verse": 1,
+      "to_surah": "الانعام",
+      "to_verse": 118
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1",
-      "row": 6,
+      "sheet": "Sheet2",
+      "row": 7,
       "raw_session_number": 2
     }
   },
@@ -113,15 +108,15 @@
       "to_verse": 19
     },
     "distant_review_content": {
-      "from_surah": "الأعراف",
-      "from_verse": 1,
+      "from_surah": "الأنعام",
+      "from_verse": 119,
       "to_surah": "الأعراف",
-      "to_verse": 104
+      "to_verse": 57
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1",
-      "row": 7,
+      "sheet": "Sheet2",
+      "row": 8,
       "raw_session_number": 3
     }
   },
@@ -150,14 +145,14 @@
     },
     "distant_review_content": {
       "from_surah": "الأعراف",
-      "from_verse": 104,
+      "from_verse": 58,
       "to_surah": "الأعراف",
-      "to_verse": 206
+      "to_verse": 170
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1",
-      "row": 8,
+      "sheet": "Sheet2",
+      "row": 9,
       "raw_session_number": 4
     }
   },
@@ -185,15 +180,15 @@
       "to_verse": 48
     },
     "distant_review_content": {
-      "from_surah": "الأنفال",
-      "from_verse": 1,
-      "to_surah": "الأنفال",
-      "to_verse": 75
+      "from_surah": "الأعراف",
+      "from_verse": 171,
+      "to_surah": "التوبة",
+      "to_verse": 6
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1",
-      "row": 9,
+      "sheet": "Sheet2",
+      "row": 10,
       "raw_session_number": 5
     }
   },
@@ -222,14 +217,14 @@
     },
     "distant_review_content": {
       "from_surah": "التوبة",
-      "from_verse": 1,
+      "from_verse": 7,
       "to_surah": "التوبة",
-      "to_verse": 68
+      "to_verse": 99
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1",
-      "row": 10,
+      "sheet": "Sheet2",
+      "row": 11,
       "raw_session_number": 6
     }
   },
@@ -245,7 +240,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "سرد المقرر من سورة المائدة على المحفظ المتابع",
+      "label_ar": "سرد المقرر من سورة المائدة من [ 1 : 64 ] على المحفظ المتابع",
       "hizb_number": null,
       "juz_numbers": [
         6
@@ -261,8 +256,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1",
-      "row": 11,
+      "sheet": "Sheet2",
+      "row": 12,
       "raw_session_number": 7
     }
   },
@@ -278,7 +273,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "اختبار في المقرر من سورة المائدة من قِبل إدارة الحلقات",
+      "label_ar": "اختبار في المقرر من سورة المائدة من [ 1 : 64 ] من قِبل إدارة الحلقات",
       "hizb_number": null,
       "juz_numbers": [
         6
@@ -289,8 +284,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1",
-      "row": 12,
+      "sheet": "Sheet2",
+      "row": 13,
       "raw_session_number": 8
     }
   },
@@ -335,16 +330,11 @@
       "to_verse": 79
     },
     "recent_review_content": null,
-    "distant_review_content": {
-      "from_surah": "التوبة",
-      "from_verse": 69,
-      "to_surah": "التوبة",
-      "to_verse": 129
-    },
+    "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 5,
+      "sheet": "Sheet2",
+      "row": 14,
       "raw_session_number": 9
     }
   },
@@ -372,15 +362,15 @@
       "to_verse": 79
     },
     "distant_review_content": {
-      "from_surah": "يونس",
-      "from_verse": 1,
+      "from_surah": "التوبة",
+      "from_verse": 100,
       "to_surah": "يونس",
-      "to_verse": 109
+      "to_verse": 78
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 6,
+      "sheet": "Sheet2",
+      "row": 15,
       "raw_session_number": 10
     }
   },
@@ -408,15 +398,15 @@
       "to_verse": 95
     },
     "distant_review_content": {
-      "from_surah": "هود",
-      "from_verse": 1,
+      "from_surah": "يونس",
+      "from_verse": 79,
       "to_surah": "هود",
-      "to_verse": 28
+      "to_verse": 97
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 7,
+      "sheet": "Sheet2",
+      "row": 16,
       "raw_session_number": 11
     }
   },
@@ -444,15 +434,15 @@
       "to_verse": 110
     },
     "distant_review_content": {
-      "from_surah": "يوسف",
-      "from_verse": 1,
+      "from_surah": "هود",
+      "from_verse": 98,
       "to_surah": "يوسف",
-      "to_verse": 111
+      "to_verse": 103
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 8,
+      "sheet": "Sheet2",
+      "row": 17,
       "raw_session_number": 12
     }
   },
@@ -480,15 +470,15 @@
       "to_verse": 120
     },
     "distant_review_content": {
-      "from_surah": "الرعد",
-      "from_verse": 1,
-      "to_surah": "إبراهيم",
-      "to_verse": 52
+      "from_surah": "يوسف",
+      "from_verse": 104,
+      "to_surah": "الحجر",
+      "to_verse": 15
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 9,
+      "sheet": "Sheet2",
+      "row": 18,
       "raw_session_number": 13
     }
   },
@@ -504,7 +494,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "سرد المقرر من سورة المائدة على المحفظ المتابع",
+      "label_ar": "سرد المقرر من سورة المائدة من [ 65 : 120 ] على المحفظ المتابع",
       "hizb_number": null,
       "juz_numbers": [
         6
@@ -520,8 +510,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 10,
+      "sheet": "Sheet2",
+      "row": 19,
       "raw_session_number": 14
     }
   },
@@ -537,7 +527,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "اختبار في المقرر من سورة  المائدة من قِبل إدارة الحلقات",
+      "label_ar": "اختبار في المقرر من سورة المائدة من [ 65 : 120 ] من قِبل إدارة الحلقات",
       "hizb_number": null,
       "juz_numbers": [
         6
@@ -548,8 +538,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 11,
+      "sheet": "Sheet2",
+      "row": 20,
       "raw_session_number": 15
     }
   },
@@ -576,8 +566,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 12,
+      "sheet": "Sheet2",
+      "row": 21,
       "raw_session_number": 16
     }
   },
@@ -604,8 +594,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 6جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 13,
+      "sheet": "Sheet2",
+      "row": 22,
       "raw_session_number": 17
     }
   },
@@ -650,16 +640,11 @@
       "to_verse": 12
     },
     "recent_review_content": null,
-    "distant_review_content": {
-      "from_surah": "النحل",
-      "from_verse": 1,
-      "to_surah": "النحل",
-      "to_verse": 72
-    },
+    "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1",
-      "row": 5,
+      "sheet": "Sheet2",
+      "row": 6,
       "raw_session_number": 1
     }
   },
@@ -687,15 +672,15 @@
       "to_verse": 12
     },
     "distant_review_content": {
-      "from_surah": "النحل",
-      "from_verse": 73,
-      "to_surah": "الحجر",
-      "to_verse": 99
+      "from_surah": "الحجر",
+      "from_verse": 16,
+      "to_surah": "النحل",
+      "to_verse": 93
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1",
-      "row": 6,
+      "sheet": "Sheet2",
+      "row": 7,
       "raw_session_number": 2
     }
   },
@@ -723,15 +708,15 @@
       "to_verse": 23
     },
     "distant_review_content": {
-      "from_surah": "الإسراء",
-      "from_verse": 1,
+      "from_surah": "النحل",
+      "from_verse": 94,
       "to_surah": "الإسراء",
-      "to_verse": 111
+      "to_verse": 104
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1",
-      "row": 7,
+      "sheet": "Sheet2",
+      "row": 8,
       "raw_session_number": 3
     }
   },
@@ -759,15 +744,15 @@
       "to_verse": 35
     },
     "distant_review_content": {
-      "from_surah": "الكهف",
-      "from_verse": 1,
-      "to_surah": "الكهف",
-      "to_verse": 110
+      "from_surah": "الإسراء",
+      "from_verse": 105,
+      "to_surah": "مريم",
+      "to_verse": 45
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1",
-      "row": 8,
+      "sheet": "Sheet2",
+      "row": 9,
       "raw_session_number": 4
     }
   },
@@ -796,14 +781,14 @@
     },
     "distant_review_content": {
       "from_surah": "مريم",
-      "from_verse": 1,
-      "to_surah": "طه",
-      "to_verse": 98
+      "from_verse": 46,
+      "to_surah": "الأنبياء",
+      "to_verse": 24
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1",
-      "row": 9,
+      "sheet": "Sheet2",
+      "row": 10,
       "raw_session_number": 5
     }
   },
@@ -831,15 +816,15 @@
       "to_verse": 70
     },
     "distant_review_content": {
-      "from_surah": "طه",
-      "from_verse": 99,
-      "to_surah": "الأنبياء",
-      "to_verse": 112
+      "from_surah": "الأنبياء",
+      "from_verse": 25,
+      "to_surah": "الحج",
+      "to_verse": 55
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1",
-      "row": 10,
+      "sheet": "Sheet2",
+      "row": 11,
       "raw_session_number": 6
     }
   },
@@ -868,14 +853,14 @@
     },
     "distant_review_content": {
       "from_surah": "الحج",
-      "from_verse": 1,
-      "to_surah": "الحجر",
-      "to_verse": 78
+      "from_verse": 56,
+      "to_surah": "النور",
+      "to_verse": 31
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1",
-      "row": 11,
+      "sheet": "Sheet2",
+      "row": 12,
       "raw_session_number": 7
     }
   },
@@ -891,7 +876,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "سرد المقرر من سورة النساء على المحفظ المتابع",
+      "label_ar": "سرد المقرر من سورة النساء من [ 1 : 86 ] على المحفظ المتابع",
       "hizb_number": null,
       "juz_numbers": [
         5
@@ -907,8 +892,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1",
-      "row": 12,
+      "sheet": "Sheet2",
+      "row": 13,
       "raw_session_number": 8
     }
   },
@@ -924,7 +909,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "اختبار في المقرر من سورة النساء من قِبل إدارة الحلقات",
+      "label_ar": "اختبار في المقرر من سورة النساء من [ 1 : 86 ] من قِبل إدارة الحلقات",
       "hizb_number": null,
       "juz_numbers": [
         5
@@ -935,8 +920,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1",
-      "row": 13,
+      "sheet": "Sheet2",
+      "row": 14,
       "raw_session_number": 9
     }
   },
@@ -955,7 +940,7 @@
       "from_surah": "النساء",
       "from_verse": 87,
       "to_surah": "النساء",
-      "to_verse": 97
+      "to_verse": 99
     },
     "recent_review_content": null,
     "distant_review_content": null,
@@ -978,19 +963,14 @@
       "from_surah": "النساء",
       "from_verse": 87,
       "to_surah": "النساء",
-      "to_verse": 97
+      "to_verse": 99
     },
     "recent_review_content": null,
-    "distant_review_content": {
-      "from_surah": "المؤمنون",
-      "from_verse": 1,
-      "to_surah": "المؤمنون",
-      "to_verse": 118
-    },
+    "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 5,
+      "sheet": "Sheet2",
+      "row": 15,
       "raw_session_number": 10
     }
   },
@@ -1007,7 +987,7 @@
     "scope": null,
     "current_level_content": {
       "from_surah": "النساء",
-      "from_verse": 98,
+      "from_verse": 100,
       "to_surah": "النساء",
       "to_verse": 113
     },
@@ -1015,18 +995,18 @@
       "from_surah": "النساء",
       "from_verse": 87,
       "to_surah": "النساء",
-      "to_verse": 97
+      "to_verse": 99
     },
     "distant_review_content": {
       "from_surah": "النور",
-      "from_verse": 1,
-      "to_surah": "النور",
-      "to_verse": 64
+      "from_verse": 32,
+      "to_surah": "الشعراء",
+      "to_verse": 48
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 6,
+      "sheet": "Sheet2",
+      "row": 16,
       "raw_session_number": 11
     }
   },
@@ -1054,15 +1034,15 @@
       "to_verse": 113
     },
     "distant_review_content": {
-      "from_surah": "الفرقان",
-      "from_verse": 1,
-      "to_surah": "الشعراء",
-      "to_verse": 104
+      "from_surah": "الشعراء",
+      "from_verse": 49,
+      "to_surah": "النمل",
+      "to_verse": 82
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 7,
+      "sheet": "Sheet2",
+      "row": 17,
       "raw_session_number": 12
     }
   },
@@ -1085,20 +1065,20 @@
     },
     "recent_review_content": {
       "from_surah": "النساء",
-      "from_verse": 98,
+      "from_verse": 100,
       "to_surah": "النساء",
       "to_verse": 130
     },
     "distant_review_content": {
-      "from_surah": "الشعراء",
-      "from_verse": 105,
-      "to_surah": "النمل",
-      "to_verse": 93
+      "from_surah": "النمل",
+      "from_verse": 83,
+      "to_surah": "العنكبوت",
+      "to_verse": 26
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 8,
+      "sheet": "Sheet2",
+      "row": 18,
       "raw_session_number": 13
     }
   },
@@ -1126,15 +1106,15 @@
       "to_verse": 147
     },
     "distant_review_content": {
-      "from_surah": "القصص",
-      "from_verse": 1,
-      "to_surah": "القصص",
-      "to_verse": 88
+      "from_surah": "العنكبوت",
+      "from_verse": 27,
+      "to_surah": "لقمان",
+      "to_verse": 32
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 9,
+      "sheet": "Sheet2",
+      "row": 19,
       "raw_session_number": 14
     }
   },
@@ -1162,15 +1142,15 @@
       "to_verse": 165
     },
     "distant_review_content": {
-      "from_surah": "العنكبوت",
-      "from_verse": 1,
-      "to_surah": "الروم",
-      "to_verse": 60
+      "from_surah": "لقمان",
+      "from_verse": 33,
+      "to_surah": "سبأ",
+      "to_verse": 11
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 10,
+      "sheet": "Sheet2",
+      "row": 20,
       "raw_session_number": 15
     }
   },
@@ -1198,15 +1178,15 @@
       "to_verse": 176
     },
     "distant_review_content": {
-      "from_surah": "لقمان",
-      "from_verse": 1,
-      "to_surah": "الأحزاب",
-      "to_verse": 35
+      "from_surah": "سبأ",
+      "from_verse": 12,
+      "to_surah": "يس",
+      "to_verse": 63
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 11,
+      "sheet": "Sheet2",
+      "row": 21,
       "raw_session_number": 16
     }
   },
@@ -1222,7 +1202,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "سرد المقرر من سورة النساء على المحفظ المتابع",
+      "label_ar": "سرد المقرر من سورة النساء من [ 87 : 176 ] على المحفظ المتابع",
       "hizb_number": null,
       "juz_numbers": [
         5
@@ -1238,8 +1218,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 12,
+      "sheet": "Sheet2",
+      "row": 22,
       "raw_session_number": 17
     }
   },
@@ -1255,7 +1235,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "اختبار في المقرر من سورة النساء من قِبل إدارة الحلقات",
+      "label_ar": "اختبار في المقرر من سورة النساء من [ 87 : 176 ] من قِبل إدارة الحلقات",
       "hizb_number": null,
       "juz_numbers": [
         5
@@ -1266,8 +1246,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 13,
+      "sheet": "Sheet2",
+      "row": 23,
       "raw_session_number": 18
     }
   },
@@ -1294,8 +1274,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 14,
+      "sheet": "Sheet2",
+      "row": 24,
       "raw_session_number": 19
     }
   },
@@ -1322,8 +1302,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 15,
+      "sheet": "Sheet2",
+      "row": 25,
       "raw_session_number": 20
     }
   },
@@ -1339,7 +1319,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "cumulative",
-      "label_ar": "سرد من أول سورة النساء إلى أخر سورة المائدة على المحفظ المتابع",
+      "label_ar": "سرد من أول النساء إلى أخر المائدة على المحفظ المتابع",
       "hizb_number": null,
       "juz_numbers": [
         5,
@@ -1351,8 +1331,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 16,
+      "sheet": "Sheet2",
+      "row": 26,
       "raw_session_number": 21
     }
   },
@@ -1368,7 +1348,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "cumulative",
-      "label_ar": "اختبار من أول سورة النساء إلى أخر سورة المائدة من قِبل إدارة الحلقات",
+      "label_ar": "اختبار من أول النساء إلى أخر المائدة من قِبل إدارة الحلقات",
       "hizb_number": null,
       "juz_numbers": [
         5,
@@ -1380,8 +1360,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 5جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 17,
+      "sheet": "Sheet2",
+      "row": 27,
       "raw_session_number": 22
     }
   },
@@ -1400,7 +1380,7 @@
       "from_surah": "آل عمران",
       "from_verse": 1,
       "to_surah": "آل عمران",
-      "to_verse": 19
+      "to_verse": 18
     },
     "recent_review_content": null,
     "distant_review_content": null,
@@ -1423,19 +1403,14 @@
       "from_surah": "آل عمران",
       "from_verse": 1,
       "to_surah": "آل عمران",
-      "to_verse": 19
+      "to_verse": 18
     },
     "recent_review_content": null,
-    "distant_review_content": {
-      "from_surah": "الأحزاب",
-      "from_verse": 36,
-      "to_surah": "سبأ",
-      "to_verse": 54
-    },
+    "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1",
-      "row": 5,
+      "sheet": "Sheet2",
+      "row": 6,
       "raw_session_number": 1
     }
   },
@@ -1452,7 +1427,7 @@
     "scope": null,
     "current_level_content": {
       "from_surah": "آل عمران",
-      "from_verse": 20,
+      "from_verse": 19,
       "to_surah": "آل عمران",
       "to_verse": 37
     },
@@ -1460,18 +1435,18 @@
       "from_surah": "آل عمران",
       "from_verse": 1,
       "to_surah": "آل عمران",
-      "to_verse": 19
+      "to_verse": 18
     },
     "distant_review_content": {
-      "from_surah": "فاطر",
-      "from_verse": 1,
-      "to_surah": "يس",
-      "to_verse": 83
+      "from_surah": "يس",
+      "from_verse": 64,
+      "to_surah": "الزمر",
+      "to_verse": 7
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1",
-      "row": 6,
+      "sheet": "Sheet2",
+      "row": 7,
       "raw_session_number": 2
     }
   },
@@ -1490,7 +1465,7 @@
       "from_surah": "آل عمران",
       "from_verse": 38,
       "to_surah": "آل عمران",
-      "to_verse": 56
+      "to_verse": 58
     },
     "recent_review_content": {
       "from_surah": "آل عمران",
@@ -1499,15 +1474,15 @@
       "to_verse": 37
     },
     "distant_review_content": {
-      "from_surah": "الصافات",
-      "from_verse": 1,
-      "to_surah": "ص",
-      "to_verse": 88
+      "from_surah": "الزمر",
+      "from_verse": 8,
+      "to_surah": "غافر",
+      "to_verse": 62
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1",
-      "row": 7,
+      "sheet": "Sheet2",
+      "row": 8,
       "raw_session_number": 3
     }
   },
@@ -1524,26 +1499,26 @@
     "scope": null,
     "current_level_content": {
       "from_surah": "آل عمران",
-      "from_verse": 57,
+      "from_verse": 59,
       "to_surah": "آل عمران",
       "to_verse": 77
     },
     "recent_review_content": {
       "from_surah": "آل عمران",
-      "from_verse": 20,
+      "from_verse": 19,
       "to_surah": "آل عمران",
-      "to_verse": 56
+      "to_verse": 58
     },
     "distant_review_content": {
-      "from_surah": "الزمر",
-      "from_verse": 1,
-      "to_surah": "غافر",
-      "to_verse": 22
+      "from_surah": "غافر",
+      "from_verse": 63,
+      "to_surah": "الشورى",
+      "to_verse": 53
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1",
-      "row": 8,
+      "sheet": "Sheet2",
+      "row": 9,
       "raw_session_number": 4
     }
   },
@@ -1571,15 +1546,15 @@
       "to_verse": 77
     },
     "distant_review_content": {
-      "from_surah": "غافر",
-      "from_verse": 23,
-      "to_surah": "فصلت",
-      "to_verse": 54
+      "from_surah": "الزخرف",
+      "from_verse": 1,
+      "to_surah": "الأحقاف",
+      "to_verse": 14
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1",
-      "row": 9,
+      "sheet": "Sheet2",
+      "row": 10,
       "raw_session_number": 5
     }
   },
@@ -1602,20 +1577,20 @@
     },
     "recent_review_content": {
       "from_surah": "آل عمران",
-      "from_verse": 57,
+      "from_verse": 59,
       "to_surah": "آل عمران",
       "to_verse": 95
     },
     "distant_review_content": {
-      "from_surah": "الشورى",
-      "from_verse": 1,
-      "to_surah": "الزخرف",
-      "to_verse": 89
+      "from_surah": "الأحقاف",
+      "from_verse": 15,
+      "to_surah": "ق",
+      "to_verse": 15
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1",
-      "row": 10,
+      "sheet": "Sheet2",
+      "row": 11,
       "raw_session_number": 6
     }
   },
@@ -1643,15 +1618,15 @@
       "to_verse": 115
     },
     "distant_review_content": {
-      "from_surah": "الدخان",
-      "from_verse": 1,
-      "to_surah": "الأحقاف",
-      "to_verse": 35
+      "from_surah": "ق",
+      "from_verse": 16,
+      "to_surah": "الرحمن",
+      "to_verse": 78
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1",
-      "row": 11,
+      "sheet": "Sheet2",
+      "row": 12,
       "raw_session_number": 7
     }
   },
@@ -1667,7 +1642,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "سرد المقرر من سورة آل عمران على المحفظ المتابع",
+      "label_ar": "سرد المقرر من سورة آل عمران من [ 1 : 115 ] على المحفظ المتابع",
       "hizb_number": null,
       "juz_numbers": [
         4
@@ -1683,8 +1658,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1",
-      "row": 12,
+      "sheet": "Sheet2",
+      "row": 13,
       "raw_session_number": 8
     }
   },
@@ -1700,7 +1675,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "اختبار في المقرر من سورة آل عمران من قِبل إدارة الحلقات",
+      "label_ar": "اختبار في المقرر من سورة آل عمران من [ 1 : 115 ] من قِبل إدارة الحلقات",
       "hizb_number": null,
       "juz_numbers": [
         4
@@ -1711,8 +1686,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1",
-      "row": 13,
+      "sheet": "Sheet2",
+      "row": 14,
       "raw_session_number": 9
     }
   },
@@ -1731,7 +1706,7 @@
       "from_surah": "آل عمران",
       "from_verse": 116,
       "to_surah": "آل عمران",
-      "to_verse": 135
+      "to_verse": 136
     },
     "recent_review_content": null,
     "distant_review_content": null,
@@ -1754,19 +1729,14 @@
       "from_surah": "آل عمران",
       "from_verse": 116,
       "to_surah": "آل عمران",
-      "to_verse": 135
+      "to_verse": 136
     },
     "recent_review_content": null,
-    "distant_review_content": {
-      "from_surah": "محمد",
-      "from_verse": 1,
-      "to_surah": "الحجرات",
-      "to_verse": 18
-    },
+    "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 5,
+      "sheet": "Sheet2",
+      "row": 15,
       "raw_session_number": 10
     }
   },
@@ -1783,7 +1753,7 @@
     "scope": null,
     "current_level_content": {
       "from_surah": "آل عمران",
-      "from_verse": 136,
+      "from_verse": 137,
       "to_surah": "آل عمران",
       "to_verse": 153
     },
@@ -1791,18 +1761,18 @@
       "from_surah": "آل عمران",
       "from_verse": 116,
       "to_surah": "آل عمران",
-      "to_verse": 135
+      "to_verse": 136
     },
     "distant_review_content": {
-      "from_surah": "ق",
-      "from_verse": 1,
-      "to_surah": "القمر",
-      "to_verse": 55
+      "from_surah": "الرحمن",
+      "from_verse": 79,
+      "to_surah": "الحشر",
+      "to_verse": 24
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 6,
+      "sheet": "Sheet2",
+      "row": 16,
       "raw_session_number": 11
     }
   },
@@ -1821,7 +1791,7 @@
       "from_surah": "آل عمران",
       "from_verse": 154,
       "to_surah": "آل عمران",
-      "to_verse": 169
+      "to_verse": 170
     },
     "recent_review_content": {
       "from_surah": "آل عمران",
@@ -1830,15 +1800,15 @@
       "to_verse": 153
     },
     "distant_review_content": {
-      "from_surah": "الرحمن",
+      "from_surah": "الممتحنة",
       "from_verse": 1,
-      "to_surah": "الحديد",
-      "to_verse": 29
+      "to_surah": "الملك",
+      "to_verse": 30
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 7,
+      "sheet": "Sheet2",
+      "row": 17,
       "raw_session_number": 12
     }
   },
@@ -1855,26 +1825,26 @@
     "scope": null,
     "current_level_content": {
       "from_surah": "آل عمران",
-      "from_verse": 170,
+      "from_verse": 171,
       "to_surah": "آل عمران",
       "to_verse": 186
     },
     "recent_review_content": {
       "from_surah": "آل عمران",
-      "from_verse": 136,
+      "from_verse": 137,
       "to_surah": "آل عمران",
-      "to_verse": 169
+      "to_verse": 170
     },
     "distant_review_content": {
-      "from_surah": "المجادلة",
+      "from_surah": "القلم",
       "from_verse": 1,
-      "to_surah": "التحريم",
-      "to_verse": 12
+      "to_surah": "الإنسان",
+      "to_verse": 31
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 8,
+      "sheet": "Sheet2",
+      "row": 18,
       "raw_session_number": 13
     }
   },
@@ -1902,15 +1872,15 @@
       "to_verse": 186
     },
     "distant_review_content": {
-      "from_surah": "الملك",
+      "from_surah": "المرسلات",
       "from_verse": 1,
-      "to_surah": "المرسلات",
-      "to_verse": 50
+      "to_surah": "الشرح",
+      "to_verse": 7
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 9,
+      "sheet": "Sheet2",
+      "row": 19,
       "raw_session_number": 14
     }
   },
@@ -1933,20 +1903,20 @@
     },
     "recent_review_content": {
       "from_surah": "آل عمران",
-      "from_verse": 170,
+      "from_verse": 171,
       "to_surah": "آل عمران",
       "to_verse": 200
     },
     "distant_review_content": {
-      "from_surah": "النبأ",
-      "from_verse": 1,
+      "from_surah": "التين",
+      "from_verse": 3,
       "to_surah": "الناس",
       "to_verse": 6
     },
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 10,
+      "sheet": "Sheet2",
+      "row": 20,
       "raw_session_number": 15
     }
   },
@@ -1971,8 +1941,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 11,
+      "sheet": "Sheet2",
+      "row": 21,
       "raw_session_number": 16
     }
   },
@@ -1988,7 +1958,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "سرد المقرر من سورة آل عمران على المحفظ المتابع",
+      "label_ar": "سرد المقرر من سورة آل عمران من [ 116 : 200 ] على المحفظ المتابع",
       "hizb_number": null,
       "juz_numbers": [
         4
@@ -1999,8 +1969,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 12,
+      "sheet": "Sheet2",
+      "row": 22,
       "raw_session_number": 17
     }
   },
@@ -2016,7 +1986,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "اختبار في المقرر من سورة آل عمران من قِبل إدارة الحلقات",
+      "label_ar": "اختبار في المقرر من سورة آل عمران من [ 116 : 200 ] من قِبل إدارة الحلقات",
       "hizb_number": null,
       "juz_numbers": [
         4
@@ -2027,8 +1997,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 13,
+      "sheet": "Sheet2",
+      "row": 23,
       "raw_session_number": 18
     }
   },
@@ -2055,8 +2025,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 14,
+      "sheet": "Sheet2",
+      "row": 24,
       "raw_session_number": 19
     }
   },
@@ -2083,8 +2053,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 15,
+      "sheet": "Sheet2",
+      "row": 25,
       "raw_session_number": 20
     }
   },
@@ -2113,8 +2083,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 16,
+      "sheet": "Sheet2",
+      "row": 26,
       "raw_session_number": 21
     }
   },
@@ -2143,8 +2113,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى التاسع جاهز للمنسق/الجزء الــــ 4جاهز للمنسق/منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 17,
+      "sheet": "Sheet2",
+      "row": 27,
       "raw_session_number": 22
     }
   }

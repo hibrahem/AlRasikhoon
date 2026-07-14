@@ -2,18 +2,18 @@
   "source": "curriculum/ (read-only spreadsheets)",
   "extractor": "tools/curriculum/extract_curriculum.py",
   "levels": 10,
-  "total_sessions": 952,
+  "total_sessions": 955,
   "sessions_per_level": {
     "1": 210,
     "2": 154,
-    "3": 99,
-    "4": 93,
+    "3": 100,
+    "4": 94,
     "5": 71,
     "6": 82,
     "7": 60,
     "8": 67,
     "9": 67,
-    "10": 49
+    "10": 50
   },
   "schema_version": 3
 }
