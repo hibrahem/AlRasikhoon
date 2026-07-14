@@ -173,6 +173,8 @@ class PacedSessionComposer {
     required int startOrderInLevel,
     required CurriculumPace pace,
   }) {
+    // Keyed on orderInLevel ALONE: [levelSessions] must be one level's rows.
+    // Two levels here would collide on this key and silently drop rows.
     final byOrder = {
       for (final session in levelSessions) session.orderInLevel: session,
     };
@@ -218,8 +220,11 @@ class PacedSessionComposer {
   }
 
   /// Up to [pace] consecutive LESSONS from [start]. A non-lesson stands alone;
-  /// a batch stops before the first session that is not a lesson of the same
-  /// level, and before a hole in the data.
+  /// a batch stops before the first session that is not a lesson, and before a
+  /// hole in the data.
+  ///
+  /// Every row in [byOrder] is of one level (see `compose`), so a batch cannot
+  /// cross a level boundary — there is nothing here to check it against.
   static List<SessionModel> _batch(
     Map<int, SessionModel> byOrder,
     SessionModel start,
@@ -232,14 +237,21 @@ class PacedSessionComposer {
       final next = byOrder[start.orderInLevel + step];
       if (next == null) break;
       if (!next.isLesson) break;
-      if (next.levelId != start.levelId) break;
       batch.add(next);
     }
     return batch;
   }
 
   /// The new content of the previous 2N sessions — the previous two meetings'
-  /// worth — with three exclusions:
+  /// worth.
+  ///
+  /// The window is `[from, startOrderInLevel)`: STRICTLY BELOW the meeting's
+  /// first order. The sessions this meeting discharges are therefore out of the
+  /// window by ORDER, not by exclusion 3 below — a session cannot be reviewed
+  /// as "recent" and taught on the same day, and that guarantee does not depend
+  /// on comparing content.
+  ///
+  /// Three exclusions:
   ///
   /// 1. sessions carrying no new content (a سرد, an اختبار);
   /// 2. sessions before the تلقين that opens this unit — the window never
@@ -248,6 +260,13 @@ class PacedSessionComposer {
   ///    what zeroes the recent block for a unit's first lesson: the تلقين
   ///    before it read out the very passage it teaches, and a student cannot
   ///    review what he is learning today.
+  ///
+  /// Exclusion 3 is EXACT-EQUALITY on the block, which holds only because all
+  /// 59 تلقين rows carry content identical to the lesson that follows them. It
+  /// is thinner than it reads: the source's structural assumptions do not hold
+  /// universally (see the L9 distant gap, al_rasikhoon-drw), and a تلقين whose
+  /// passage ever spanned MORE than its following lesson would leave the window
+  /// listing a range the meeting is teaching today.
   static List<QuranContent> _recentWindow({
     required Map<int, SessionModel> byOrder,
     required int startOrderInLevel,
