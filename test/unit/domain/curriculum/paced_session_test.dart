@@ -40,6 +40,11 @@ SessionModel _session({
 /// order 5  lesson  new: النبأ 31-37   recent: النبأ 12-30   distant: الفاتحة 1-3
 /// order 6  lesson  new: النبأ 38-40   recent: النبأ 21-37   distant: الفاتحة 4-7
 /// order 7  سرد
+/// order 8  lesson   — trailing filler so the سرد's "stands alone" test is
+///                      load-bearing: without the non-lesson guard it would
+///                      batch forward into this row.
+/// order 9  اختبار
+/// order 10 lesson   — ditto, for the اختبار's "stands alone" test.
 List<SessionModel> _unit() => [
   _session(
     order: 1,
@@ -70,6 +75,9 @@ List<SessionModel> _unit() => [
     distant: _content('الفاتحة', 4, 7),
   ),
   _session(order: 7, kind: SessionKind.sard),
+  _session(order: 8, newContent: _content('المرسلات', 1, 10)),
+  _session(order: 9, kind: SessionKind.exam),
+  _session(order: 10, newContent: _content('المرسلات', 11, 20)),
 ];
 
 void main() {
@@ -228,6 +236,41 @@ void main() {
         ]);
       },
     );
+
+    test('the window still stops at the previous unit\'s سرد when this unit '
+        'opens without a تلقين', () {
+      // Nothing in today's curriculum lacks an opening تلقين, but a future
+      // re-import could produce a lesson run with no تلقين before it. The
+      // clamp must still stop at the previous unit's assessment, not walk
+      // past it looking for a تلقين that will never come.
+      final sessions = [
+        _session(order: 1, newContent: _content('الفيل', 1, 5)),
+        _session(order: 2, newContent: _content('قريش', 1, 4)),
+        _session(order: 3, kind: SessionKind.sard),
+        _session(order: 4, newContent: _content('النبأ', 1, 11)),
+        _session(order: 5, newContent: _content('النبأ', 12, 20)),
+        _session(order: 6, newContent: _content('النبأ', 21, 30)),
+        _session(order: 7, newContent: _content('النبأ', 31, 37)),
+        _session(order: 8, newContent: _content('النبأ', 38, 40)),
+        _session(order: 9, newContent: _content('المرسلات', 1, 10)),
+      ];
+
+      final meeting = PacedSessionComposer.compose(
+        levelSessions: sessions,
+        startOrderInLevel: 7,
+        pace: pace3,
+      );
+
+      // Window would be orders 1..6, reaching straight through the سرد into
+      // the previous unit. Clamped to the order right after the سرد at 3,
+      // i.e. order 4. الفيل and قريش — the previous unit's content — must
+      // NOT appear.
+      expect(meeting.recentReview, [
+        _content('النبأ', 1, 11), // order 4
+        _content('النبأ', 12, 20), // order 5
+        _content('النبأ', 21, 30), // order 6
+      ]);
+    });
   });
 
   group('only lessons batch', () {
@@ -244,6 +287,8 @@ void main() {
     });
 
     test('a سرد stands alone however fast the student is', () {
+      // Order 8 is a lesson right after the سرد: if the non-lesson guard were
+      // missing, a 3x meeting starting at the سرد would batch forward into it.
       final meeting = PacedSessionComposer.compose(
         levelSessions: _unit(),
         startOrderInLevel: 7,
@@ -251,6 +296,20 @@ void main() {
       );
 
       expect(meeting.sessions.map((s) => s.orderInLevel), [7]);
+      expect(meeting.isBatched, isFalse);
+    });
+
+    test('an اختبار stands alone however fast the student is', () {
+      // Order 10 is a lesson right after the اختبار: if the non-lesson guard
+      // were missing, a 3x meeting starting at the اختبار would batch forward
+      // into it, the same way the سرد case above would.
+      final meeting = PacedSessionComposer.compose(
+        levelSessions: _unit(),
+        startOrderInLevel: 9,
+        pace: pace3,
+      );
+
+      expect(meeting.sessions.map((s) => s.orderInLevel), [9]);
       expect(meeting.isBatched, isFalse);
     });
 

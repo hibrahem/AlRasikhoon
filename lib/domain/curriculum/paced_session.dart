@@ -173,11 +173,20 @@ class PacedSessionComposer {
     return window;
   }
 
-  /// The order of the تلقين that opens the unit containing [orderInLevel], or 1
-  /// if the level has none before it (nothing to clamp against).
+  /// The first order of the unit containing [orderInLevel]: the order of the
+  /// تلقين that opens it, or the order right after the previous unit's
+  /// assessment (سرد/اختبار) if the scan reaches one first, or 1 if the level
+  /// has neither before it (nothing to clamp against).
+  ///
+  /// The assessment check matters even though every unit in today's data opens
+  /// with a تلقين: without it, a lesson run that ever begins WITHOUT one would
+  /// let the window scan straight through an intervening سرد/اختبار and into
+  /// the previous unit's content.
   static int _unitStart(Map<int, SessionModel> byOrder, int orderInLevel) {
     for (var order = orderInLevel; order >= 1; order--) {
-      if (byOrder[order]?.isTalqeen ?? false) return order;
+      final session = byOrder[order];
+      if (session?.isTalqeen ?? false) return order;
+      if (session?.isAssessment ?? false) return order + 1;
     }
     return 1;
   }
