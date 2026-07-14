@@ -106,4 +106,31 @@ void main() {
     expect(find.textContaining('النبأ: 31 - 37'), findsOneWidget);
     expect(find.textContaining('النبأ: 38 - 40'), findsNothing);
   });
+
+  testWidgets(
+    'a doubled meeting on two verse-adjacent lessons shows ONE merged range, not two halves',
+    (tester) async {
+      // The realistic case, unlike the fixture above: النبأ 31-37 and its
+      // immediate continuation 38-40 are verse-adjacent (same surah,
+      // 38 == 37 + 1), so `PacedSession.newContentAr` merges them into a
+      // single "النبأ: 31 - 40" (pinned at the domain layer in
+      // paced_session_display_test.dart). Built from the two SEPARATE blocks
+      // — never a pre-merged one — so the merge under test is the getter's,
+      // exactly as it runs in production.
+      final adjacent = PacedSession(
+        sessions: [
+          lesson(5, content('النبأ', 31, 37)),
+          lesson(6, content('النبأ', 38, 40)),
+        ],
+        newContent: [content('النبأ', 31, 37), content('النبأ', 38, 40)],
+        recentReview: [content('النبأ', 12, 30)],
+        distantReview: const [],
+      );
+
+      await pump(tester, adjacent);
+
+      expect(find.textContaining('النبأ: 31 - 40'), findsOneWidget);
+      expect(find.textContaining('النبأ: 31 - 37'), findsNothing);
+    },
+  );
 }
