@@ -420,10 +420,18 @@ class _SessionHistoryList extends StatelessWidget {
       itemCount: records.length,
       itemBuilder: (context, index) {
         final record = records[index];
-        // Listing shows only binary pass/fail (نجح / رسب), never an average
-        // of the three component grades (#24). The per-component breakdown
-        // lives in the session detail view.
-        final passColor = record.passed ? AppColors.success : AppColors.error;
+        // A تلقين is never graded — no pass/fail, no errors — so it must
+        // never render with a pass/fail badge, even though
+        // `createTalqeenRecord` writes `passed: true` unconditionally (that
+        // flag exists for the stats query, not for display). Listing shows
+        // only a binary pass/fail (نجح / رسب) for a graded record, never an
+        // average of the three component grades (#24). The per-component
+        // breakdown lives in the session detail view. Mirrors
+        // `session_history_screen.dart`'s student-facing list.
+        final isTalqeen = record.isTalqeen;
+        final badgeColor = isTalqeen
+            ? AppColors.primary
+            : (record.passed ? AppColors.success : AppColors.error);
         return AppCard(
           margin: const EdgeInsets.only(bottom: 8),
           onTap: () => context.push(
@@ -435,12 +443,14 @@ class _SessionHistoryList extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: passColor.withValues(alpha: 0.1),
+                  color: badgeColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
-                  record.passed ? Icons.check_circle : Icons.cancel,
-                  color: passColor,
+                  isTalqeen
+                      ? Icons.record_voice_over
+                      : (record.passed ? Icons.check_circle : Icons.cancel),
+                  color: badgeColor,
                 ),
               ),
               const SizedBox(width: 12),
@@ -449,7 +459,7 @@ class _SessionHistoryList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'الحلقة ${record.sessionNumber}',
+                      isTalqeen ? 'تلقين' : 'الحلقة ${record.sessionNumber}',
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     Text(
@@ -476,16 +486,16 @@ class _SessionHistoryList extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: passColor.withValues(alpha: 0.1),
+                  color: badgeColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: passColor),
+                  border: Border.all(color: badgeColor),
                 ),
                 child: Text(
-                  record.passed ? 'نجح' : 'رسب',
+                  isTalqeen ? 'تلقين' : (record.passed ? 'نجح' : 'رسب'),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: passColor,
+                    color: badgeColor,
                   ),
                 ),
               ),

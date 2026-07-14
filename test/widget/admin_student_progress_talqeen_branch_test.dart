@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/session_record_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
@@ -19,7 +20,16 @@ import 'package:al_rasikhoon/features/admin/screens/admin_student_progress_scree
 /// supervisor reviewing a student's progress would see the model's own
 /// new-memorization framing ("الحفظ الجديد") for a session that is graded on
 /// nothing and cannot be failed.
+///
+/// It also pins the session-history LIST below the current-session card
+/// (`_SessionHistoryList`): that list branches on `record.passed` and had no
+/// تلقين check at all, so a تلقين record rendered as a phantom graded pass.
 void main() {
+  setUpAll(() async {
+    // The history list formats dates with the Arabic locale.
+    await initializeDateFormatting('ar');
+  });
+
   const talqeenSession = SessionModel(
     id: 'L1_J30_S1',
     levelId: 1,
@@ -54,6 +64,55 @@ void main() {
     createdAt: DateTime(2026),
   );
 
+  // A تلقين record and a real, FAILED lesson record. The talqeen carries
+  // `passed: true` unconditionally (it exists to record attendance and carry
+  // the home assignment, not a grade) — if the history list branched only on
+  // `record.passed`, this talqeen would render as a graded pass, and this
+  // failed lesson would prove the list still uses `record.passed` at all.
+  final talqeenRecord = SessionRecordModel(
+    id: 'r-talqeen',
+    studentId: 's1',
+    teacherId: 't1',
+    curriculumSessionId: 'L1_J30_S1',
+    levelId: 1,
+    kind: SessionKind.talqeen,
+    juzNumber: 30,
+    hizbNumber: 59,
+    sessionNumber: 1,
+    orderInLevel: 1,
+    date: DateTime(2026, 7, 1),
+    attemptNumber: 1,
+    grades: const SessionGrades(
+      newMemorizationErrors: 0,
+      recentReviewErrors: 0,
+      distantReviewErrors: 0,
+    ),
+    passed: true,
+    createdAt: DateTime(2026, 7, 1),
+  );
+
+  final failedLessonRecord = SessionRecordModel(
+    id: 'r-lesson',
+    studentId: 's1',
+    teacherId: 't1',
+    curriculumSessionId: 'L1_J30_S2',
+    levelId: 1,
+    kind: SessionKind.lesson,
+    juzNumber: 30,
+    hizbNumber: 59,
+    sessionNumber: 2,
+    orderInLevel: 2,
+    date: DateTime(2026, 7, 2),
+    attemptNumber: 1,
+    grades: const SessionGrades(
+      newMemorizationErrors: 5,
+      recentReviewErrors: 0,
+      distantReviewErrors: 0,
+    ),
+    passed: false,
+    createdAt: DateTime(2026, 7, 2),
+  );
+
   Future<void> pump(WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -64,9 +123,12 @@ void main() {
           adminStudentCurrentSessionProvider(
             's1',
           ).overrideWith((ref) async => talqeenSession),
-          adminStudentSessionHistoryProvider(
-            's1',
-          ).overrideWith((ref) async => const <SessionRecordModel>[]),
+          adminStudentSessionHistoryProvider('s1').overrideWith(
+            (ref) async => <SessionRecordModel>[
+              talqeenRecord,
+              failedLessonRecord,
+            ],
+          ),
         ],
         child: const MaterialApp(
           home: Directionality(
@@ -94,6 +156,25 @@ void main() {
       expect(find.text('الحفظ الجديد'), findsNothing);
       expect(find.text('المراجعة القريبة'), findsNothing);
       expect(find.text('المراجعة البعيدة'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'the session-history list shows a تلقين record as attendance, never as '
+    'a graded pass, while a real failed lesson still shows رسب',
+    (tester) async {
+      await pump(tester);
+
+      // The talqeen record: named as a تلقين both in its title and its badge
+      // (two exact-text widgets), no pass badge, no fail badge — just
+      // because `passed` happens to be `true` on the record must not make it
+      // render as "نجح".
+      expect(find.text('تلقين'), findsNWidgets(2));
+      expect(find.text('نجح'), findsNothing);
+
+      // The real lesson record still shows its own, genuine result.
+      expect(find.text('رسب'), findsOneWidget);
+      expect(find.text('الحلقة 2'), findsOneWidget);
     },
   );
 }
