@@ -1618,14 +1618,62 @@ Expected: FAIL — `studentCurrentMeetingProvider` is not defined.
 
 - [ ] **Step 3: Write the implementation**
 
-Add the display getters to `lib/domain/curriculum/paced_session.dart`:
+Add the display getters to `lib/domain/curriculum/paced_session.dart`.
+
+**The display layer de-duplicates and merges; the composer does not.** A composed
+meeting's lists are deliberately DISCRETE — two lessons, two distant chunks, four
+recent-window rows. That is the truth of what the meeting covers, and it is what
+gives the Task 2 and Task 3 gate tests their teeth (the "recent review never
+intersects the meeting's own new content" assertion compares discrete blocks; if
+the composer merged them into one wide range it would never match a taught block
+and the assertion would silently go toothless). So keep `newContent`,
+`recentReview` and `distantReview` exactly as they are, and merge only on the way
+to the screen.
+
+Two operations, in order:
+
+1. **De-duplicate.** Drop a block equal to one already emitted. This removes the
+   تلقين's copy of the passage the unit's opening lesson also teaches — the two
+   rows genuinely carry identical content, and a student must not be shown the
+   same range twice.
+2. **Merge contiguous runs.** Collapse a run of blocks into one range spanning the
+   first block's start to the last block's end. This is the curriculum's OWN
+   idiom, not an invention: an authored recent block is literally
+   `from new(K-2).start to new(K-1).end` — which is how the window rule was
+   verified against 659 of 672 source rows. No verse number is computed; both
+   endpoints are copied from existing blocks. A run breaks only where the blocks
+   are not contiguous (`next.fromSurah != prev.toSurah` AND
+   `next.fromVerse != prev.toVerse + 1`); non-contiguous blocks stay separate.
+
+A 2x meeting on sessions 5+6 then displays:
+
+```
+new      النبأ: 31 - 40      (merged from 31-37 and 38-40)
+recent   النبأ: 1 - 30       (merged from 4 window rows; the تلقين dup dropped)
+distant  الفاتحة: 1 - 7      (merged from 1-3 and 4-7)
+```
+
+A standard (1x) meeting has exactly one block per stream, so de-dupe and merge are
+both no-ops and every line is byte-identical to what the screen rendered before
+paced curricula. Pin that with a test.
 
 ```dart
-  /// The passages of this stream on one line — what a screen shows where it used
-  /// to show a single range. A standard meeting has exactly one, so its line is
-  /// byte-identical to what the screen rendered before paced curricula.
+  /// The passages of this stream on one line, de-duplicated and with contiguous
+  /// ranges merged — the curriculum's own idiom (`النبأ: 1 - 30`), not the
+  /// fragmented `النبأ: 1 - 11 • النبأ: 12 - 20 • النبأ: 21 - 30` the discrete
+  /// blocks would otherwise read as.
+  ///
+  /// A 1x meeting carries one block per stream, so this is a no-op for every
+  /// ordinary student.
   static String _line(List<QuranContent> blocks) =>
-      blocks.map((block) => block.rangeAr).join(' • ');
+      _merge(blocks).map((block) => block.rangeAr).join(' • ');
+
+  /// [blocks] with duplicates dropped and contiguous runs collapsed into a
+  /// single range. Merging copies the first block's start and the last block's
+  /// end — it never computes a surah name or a verse number.
+  static List<QuranContent> _merge(List<QuranContent> blocks) {
+    // ... de-dupe, then fold contiguous runs into span(first.from -> last.to)
+  }
 
   String get newContentAr => _line(newContent);
   String get recentReviewAr => _line(recentReview);
@@ -1635,6 +1683,11 @@ Add the display getters to `lib/domain/curriculum/paced_session.dart`:
   bool get hasRecentReview => recentReview.isNotEmpty;
   bool get hasDistantReview => distantReview.isNotEmpty;
 ```
+
+Write `_merge` yourself and test it directly: an empty list, one block, two
+contiguous blocks in one surah, two blocks across a surah boundary (contiguous —
+the curriculum merges these, e.g. `النبأ 38 - النازعات 14`), two genuinely
+non-contiguous blocks (stay separate), and a duplicate pair (collapses to one).
 
 In `lib/features/teacher/providers/teacher_provider.dart`, beneath `studentCurrentSessionProvider`:
 
