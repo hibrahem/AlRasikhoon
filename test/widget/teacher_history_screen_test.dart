@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/session_record_model.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/features/teacher/screens/teacher_history_screen.dart';
@@ -12,6 +13,7 @@ TeacherHistoryEntry _entry({
   required String studentName,
   required bool passed,
   required DateTime date,
+  SessionKind kind = SessionKind.lesson,
 }) {
   return TeacherHistoryEntry(
     studentName: studentName,
@@ -22,7 +24,10 @@ TeacherHistoryEntry _entry({
       teacherId: 'teacher1',
       curriculumSessionId: 'cs1',
       levelId: 2,
+      juzNumber: 27,
       sessionNumber: 7,
+      orderInLevel: 7,
+      kind: kind,
       date: date,
       attemptNumber: 1,
       grades: const SessionGrades(
@@ -68,6 +73,37 @@ void main() {
     expect(find.text('المستوى 2'), findsOneWidget);
     expect(find.text('نجح'), findsOneWidget);
     expect(find.text('رسب'), findsNothing);
+  });
+
+  testWidgets('a تلقين shows no outcome, while a graded lesson still does', (
+    tester,
+  ) async {
+    // createTalqeenRecord writes `passed: true` unconditionally — that flag
+    // says the session happened, it is not a grade. Rendering it would report
+    // a pass the student never earned: a تلقين is graded on nothing.
+    await _pump(tester, [
+      _entry(
+        id: 'r1',
+        studentName: 'أحمد',
+        passed: true,
+        date: DateTime(2024, 3, 16),
+        kind: SessionKind.talqeen,
+      ),
+      _entry(
+        id: 'r2',
+        studentName: 'خالد',
+        passed: false,
+        date: DateTime(2024, 3, 15),
+      ),
+    ]);
+    await tester.pumpAndSettle();
+
+    expect(find.text('تلقين'), findsNWidgets(2)); // the subtitle and the badge
+    expect(find.text('نجح'), findsNothing);
+    expect(
+      find.text('رسب'),
+      findsOneWidget,
+    ); // the real lesson keeps its result
   });
 
   testWidgets('a failed record shows رسب', (tester) async {

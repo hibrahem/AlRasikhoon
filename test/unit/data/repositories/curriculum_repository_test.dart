@@ -22,23 +22,23 @@ void main() {
       final session = await repository.getSessionByPosition(
         level: 1,
         juz: 30,
-        session: 30,
+        session: 31,
       );
 
       expect(session, isNotNull);
-      expect(session!.id, 'L1_J30_S30');
+      expect(session!.id, 'L1_J30_S31');
       expect(session.kind, SessionKind.sard);
-      expect(session.orderInLevel, 30);
+      expect(session.orderInLevel, 31);
     });
 
     test('reads the same session from a CurriculumPosition', () async {
       await seedLevelOneJuz30(firestore);
 
       final session = await repository.getSessionAt(
-        const CurriculumPosition(level: 1, juz: 30, session: 68),
+        const CurriculumPosition(level: 1, juz: 30, session: 70),
       );
 
-      expect(session!.id, 'L1_J30_S68');
+      expect(session!.id, 'L1_J30_S70');
       expect(session.kind, SessionKind.exam);
       expect(session.scope!.tier, AssessmentTier.juz);
     });
@@ -62,10 +62,10 @@ void main() {
 
       final session = await repository.getSessionByOrderInLevel(
         level: 1,
-        orderInLevel: 67,
+        orderInLevel: 69,
       );
 
-      expect(session!.id, 'L1_J30_S67');
+      expect(session!.id, 'L1_J30_S69');
       expect(session.kind, SessionKind.sard);
       expect(
         session.scope!.labelAr,
@@ -73,14 +73,14 @@ void main() {
       );
     });
 
-    test('the order runs on across a juz boundary — order 69 of level 1 is the '
+    test('the order runs on across a juz boundary — order 71 of level 1 is the '
         'first session of juz 29, not of juz 30', () async {
       await seedLevelOneJuz30(firestore);
       await seedLevelOneJuz29(firestore);
 
       final session = await repository.getSessionByOrderInLevel(
         level: 1,
-        orderInLevel: 69,
+        orderInLevel: 71,
       );
 
       expect(session!.id, 'L1_J29_S1');
@@ -107,18 +107,22 @@ void main() {
       expect(sessions.map((s) => s.id), [
         'L1_J30_S1',
         'L1_J30_S2',
-        'L1_J30_S30',
+        'L1_J30_S3',
         'L1_J30_S31',
-        'L1_J30_S67',
-        'L1_J30_S68',
+        'L1_J30_S32',
+        'L1_J30_S33',
+        'L1_J30_S69',
+        'L1_J30_S70',
       ]);
       expect(sessions.map((s) => s.orderInLevel), [
         1,
         2,
-        30,
+        3,
         31,
-        67,
-        68,
+        32,
+        33,
+        69,
+        70,
       ], reason: 'ordered by order_in_level');
     });
 
@@ -130,17 +134,17 @@ void main() {
         juz: 30,
       );
 
-      expect(numbers, [1, 2, 30, 31, 67, 68]);
+      expect(numbers, [1, 2, 3, 31, 32, 33, 69, 70]);
     });
 
     test(
-      'assessments are listed like any other session — session 68 is the juz '
+      'assessments are listed like any other session — session 70 is the juz '
       'اختبار and it is offered, not filtered out',
       () async {
         await seedLevelOneJuz30(firestore);
 
         final sessions = await repository.getSessionsForJuz(level: 1, juz: 30);
-        final exam = sessions.firstWhere((s) => s.sessionNumber == 68);
+        final exam = sessions.firstWhere((s) => s.sessionNumber == 70);
 
         expect(exam.kind, SessionKind.exam);
         expect(exam.scope!.tier, AssessmentTier.juz);
@@ -165,7 +169,7 @@ void main() {
       expect(sessions.map((s) => s.orderInLevel), isA<Iterable<int>>());
       expect(
         sessions.map((s) => s.juzNumber).toList(),
-        [30, 30, 30, 30, 30, 30, 29, 29],
+        [30, 30, 30, 30, 30, 30, 30, 30, 29, 29],
         reason:
             'juz 30 is taught before juz 29, though 29 < 30 — the order is '
             'data, not arithmetic',
@@ -179,11 +183,11 @@ void main() {
 
       final level = await repository.getLevelByNumber(1);
 
-      expect(level!.sessionCount, 204);
-      expect(level.juzEntry(30)!.sessionCount, 68);
-      expect(level.juzEntry(29)!.sessionCount, 69);
-      expect(level.juzEntry(28)!.sessionCount, 67);
-      expect(level.juzEntry(29)!.firstOrderInLevel, 69);
+      expect(level!.sessionCount, 210);
+      expect(level.juzEntry(30)!.sessionCount, 70);
+      expect(level.juzEntry(29)!.sessionCount, 71);
+      expect(level.juzEntry(28)!.sessionCount, 69);
+      expect(level.juzEntry(29)!.firstOrderInLevel, 71);
     });
 
     test(

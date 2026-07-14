@@ -41,9 +41,12 @@ class TeacherHistoryScreen extends ConsumerWidget {
                 // Enforced by SessionRecordRow, shared with the student's
                 // history listing.
                 return SessionRecordRow(
+                  isTalqeen: record.isTalqeen,
                   title: entry.studentName,
                   subtitleLines: [
-                    'الحلقة ${record.sessionNumber}',
+                    record.isTalqeen
+                        ? 'تلقين'
+                        : 'الحلقة ${record.sessionNumber}',
                     'المستوى ${record.levelId}',
                   ],
                   passed: record.passed,

@@ -192,7 +192,10 @@ class StudentCard extends ConsumerWidget {
         return AppColors.secondary;
       case SessionKind.sard:
         return AppColors.info;
+      case SessionKind.talqeen:
       case SessionKind.lesson:
+        // A تلقين teaches new content like a lesson does and is never
+        // assessed, so it gets the same badge color.
         return AppColors.primary;
     }
   }
@@ -203,6 +206,12 @@ class StudentCard extends ConsumerWidget {
         return 'اختبار';
       case SessionKind.sard:
         return 'سرد';
+      case SessionKind.talqeen:
+        // Unlike a lesson, a تلقين is not labelled by its session number —
+        // calling it 'حلقة $sessionNumber' here would misname it as an
+        // ordinary lesson in the exact UI meant to show what the student is
+        // truly standing on.
+        return 'تلقين';
       case SessionKind.lesson:
         return 'حلقة $sessionNumber';
     }

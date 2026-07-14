@@ -21,12 +21,17 @@ void main() {
           teacherId: 'teacher1',
           curriculumSessionId: 'cs1',
           levelId: 1,
+          kind: SessionKind.lesson,
+          juzNumber: 30,
           hizbNumber: 59,
           sessionNumber: 5,
+          orderInLevel: 5,
           attemptNumber: 1,
           newMemorizationErrors: 2,
           recentReviewErrors: 1,
           distantReviewErrors: 0,
+          repetitionsWithTeacher: 0,
+          homeRepetitionsRequired: 0,
         );
 
         expect(record.studentId, 'student1');
@@ -48,12 +53,17 @@ void main() {
             teacherId: 'teacher1',
             curriculumSessionId: 'cs1',
             levelId: 1,
+            kind: SessionKind.lesson,
+            juzNumber: 30,
             hizbNumber: 59,
             sessionNumber: 5,
+            orderInLevel: 5,
             attemptNumber: 1,
             newMemorizationErrors: 4, // محب at level 1
             recentReviewErrors: 1,
             distantReviewErrors: 2,
+            repetitionsWithTeacher: 0,
+            homeRepetitionsRequired: 0,
           );
 
           expect(record.passed, false);
@@ -68,12 +78,17 @@ void main() {
             teacherId: 'teacher1',
             curriculumSessionId: 'cs1',
             levelId: 1,
+            kind: SessionKind.lesson,
+            juzNumber: 30,
             hizbNumber: 59,
             sessionNumber: 5,
+            orderInLevel: 5,
             attemptNumber: 1,
             newMemorizationErrors: 3,
             recentReviewErrors: 3,
             distantReviewErrors: 3,
+            repetitionsWithTeacher: 0,
+            homeRepetitionsRequired: 0,
           );
 
           expect(record.passed, true);
@@ -90,12 +105,17 @@ void main() {
             teacherId: 'teacher1',
             curriculumSessionId: 'cs1',
             levelId: 9,
+            kind: SessionKind.lesson,
+            juzNumber: 30,
             hizbNumber: 59,
             sessionNumber: 5,
+            orderInLevel: 5,
             attemptNumber: 1,
             newMemorizationErrors: 4,
             recentReviewErrors: 4,
             distantReviewErrors: 4,
+            repetitionsWithTeacher: 0,
+            homeRepetitionsRequired: 0,
           );
 
           expect(record.passed, true);
@@ -108,12 +128,17 @@ void main() {
           teacherId: 'teacher1',
           curriculumSessionId: 'cs1',
           levelId: 1,
+          kind: SessionKind.lesson,
+          juzNumber: 30,
           hizbNumber: 59,
           sessionNumber: 5,
+          orderInLevel: 5,
           attemptNumber: 1,
           newMemorizationErrors: 0,
           recentReviewErrors: 0,
           distantReviewErrors: 0,
+          repetitionsWithTeacher: 0,
+          homeRepetitionsRequired: 0,
           notes: 'ممتاز',
         );
 
@@ -126,22 +151,174 @@ void main() {
         expect(doc.data()?['notes'], 'ممتاز');
       });
 
-      test('stores repetitions count', () async {
+      test('stores the recitation counts', () async {
         final record = await sessionRepository.createSessionRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
           curriculumSessionId: 'cs1',
           levelId: 1,
+          kind: SessionKind.lesson,
+          juzNumber: 30,
           hizbNumber: 59,
           sessionNumber: 5,
+          orderInLevel: 5,
           attemptNumber: 1,
           newMemorizationErrors: 0,
           recentReviewErrors: 0,
           distantReviewErrors: 0,
-          repetitions: 5,
+          repetitionsWithTeacher: 5,
+          homeRepetitionsRequired: 8,
         );
 
-        expect(record.repetitions, 5);
+        expect(record.repetitionsWithTeacher, 5);
+        expect(record.homeRepetitionsRequired, 8);
+      });
+    });
+
+    group('createTalqeenRecord', () {
+      test(
+        'records a talqeen as happened, with no errors and no failure',
+        () async {
+          final record = await sessionRepository.createTalqeenRecord(
+            studentId: 'student1',
+            teacherId: 'teacher1',
+            curriculumSessionId: 'L1_J30_S1',
+            levelId: 1,
+            kind: SessionKind.talqeen,
+            juzNumber: 30,
+            hizbNumber: 59,
+            sessionNumber: 1,
+            orderInLevel: 1,
+            repetitionsWithTeacher: 4,
+            homeRepetitionsRequired: 10,
+          );
+
+          expect(record.passed, isTrue);
+          expect(record.grades.totalErrors, 0);
+          expect(record.attemptNumber, 1);
+          expect(record.repetitionsWithTeacher, 4);
+          expect(record.homeRepetitionsRequired, 10);
+
+          final stored = await fakeFirestore
+              .collection('session_records')
+              .doc(record.id)
+              .get();
+          expect(stored.data()!['home_repetitions_required'], 10);
+        },
+      );
+    });
+
+    group('getLatestSessionRecord', () {
+      // Determinism comes from the `now` seam on `createTalqeenRecord` (see
+      // `_writeSessionRecord`), not a sleep: the two records get explicit,
+      // distinct instants, so which one is "later" is fixed by the test
+      // rather than by how fast the machine running it happens to be.
+      test(
+        'returns the most recent record, which carries the home assignment',
+        () async {
+          await sessionRepository.createTalqeenRecord(
+            studentId: 'student1',
+            teacherId: 'teacher1',
+            curriculumSessionId: 'L1_J30_S1',
+            levelId: 1,
+            kind: SessionKind.talqeen,
+            juzNumber: 30,
+            sessionNumber: 1,
+            orderInLevel: 1,
+            repetitionsWithTeacher: 3,
+            homeRepetitionsRequired: 7,
+            now: DateTime(2026, 1, 1, 10, 0, 0),
+          );
+          final newer = await sessionRepository.createTalqeenRecord(
+            studentId: 'student1',
+            teacherId: 'teacher1',
+            curriculumSessionId: 'L1_J30_S2',
+            levelId: 1,
+            kind: SessionKind.talqeen,
+            juzNumber: 30,
+            sessionNumber: 2,
+            orderInLevel: 2,
+            repetitionsWithTeacher: 2,
+            homeRepetitionsRequired: 12,
+            now: DateTime(2026, 1, 1, 10, 0, 1),
+          );
+
+          final latest = await sessionRepository.getLatestSessionRecord(
+            'student1',
+          );
+          expect(latest!.id, newer.id);
+          expect(latest.curriculumSessionId, 'L1_J30_S2');
+          expect(latest.homeRepetitionsRequired, 12);
+        },
+      );
+
+      // The scenario the fix is actually for: two records sharing the exact
+      // same `date` (a real clock tick, or a backfill). Ordering by `date`
+      // alone leaves Firestore's tie-break unspecified — and `created_at`
+      // cannot help, because it is stamped from the SAME `DateTime.now()`
+      // call as `date` (see `_writeSessionRecord`), so it ties right along
+      // with it.
+      //
+      // Both records go through the REAL write path (`createTalqeenRecord`),
+      // using the `now` seam to force the tie, rather than hand-writing a
+      // Firestore document with divergent `created_at` values that the app
+      // itself could never produce.
+      //
+      // The write order is deliberately adversarial: the EARLIER-curriculum
+      // record (`orderInLevel: 1`) is written FIRST, and the record further
+      // along (`orderInLevel: 3`) is written SECOND. `fake_cloud_firestore`
+      // resolves a tie on `date` alone by falling back to insertion order —
+      // i.e. without the `order_in_level` tie-break, this query would hand
+      // back whichever doc was written first, which here is the WRONG
+      // (earlier-curriculum) record. Only an explicit `order_in_level` DESC
+      // clause gets this right regardless of write order — proven by
+      // sabotage: deleting that `.orderBy` call makes this test return the
+      // first-written, lower-`orderInLevel` record and fail.
+      test('breaks a `date` tie deterministically using `order_in_level`, not '
+          'write order', () async {
+        final tiedInstant = DateTime(2026, 1, 1, 12);
+
+        await sessionRepository.createTalqeenRecord(
+          studentId: 'student1',
+          teacherId: 'teacher1',
+          curriculumSessionId: 'L1_J30_S1',
+          levelId: 1,
+          kind: SessionKind.talqeen,
+          juzNumber: 30,
+          sessionNumber: 1,
+          orderInLevel: 1,
+          repetitionsWithTeacher: 1,
+          homeRepetitionsRequired: 7,
+          now: tiedInstant,
+        );
+        final furtherAlong = await sessionRepository.createTalqeenRecord(
+          studentId: 'student1',
+          teacherId: 'teacher1',
+          curriculumSessionId: 'L1_J30_S3',
+          levelId: 1,
+          kind: SessionKind.talqeen,
+          juzNumber: 30,
+          sessionNumber: 3,
+          orderInLevel: 3,
+          repetitionsWithTeacher: 1,
+          homeRepetitionsRequired: 12,
+          now: tiedInstant,
+        );
+
+        final latest = await sessionRepository.getLatestSessionRecord(
+          'student1',
+        );
+
+        expect(latest!.id, furtherAlong.id);
+        expect(latest.orderInLevel, 3);
+        expect(latest.homeRepetitionsRequired, 12);
+      });
+
+      test('returns null for a student with no records', () async {
+        expect(
+          await sessionRepository.getLatestSessionRecord('nobody'),
+          isNull,
+        );
       });
     });
 
@@ -620,6 +797,61 @@ void main() {
         expect(stats['passed_sards'], 1);
         expect(stats['total_exams'], 1);
         expect(stats['passed_exams'], 0);
+      });
+
+      // hibrahem/AlRasikhoon final-review finding #3: a تلقين record used to
+      // write `passed: true` with no `kind` to tell it apart, so it inflated
+      // `total_sessions`/`passed_sessions` with a phantom pass — a student
+      // who failed every lesson of a unit but sat its تلقين would show one
+      // pass instead of zero.
+      test('a تلقين is attendance, not a graded pass — it must not inflate '
+          'total_sessions/passed_sessions', () async {
+        // 6 failed lessons.
+        for (var i = 1; i <= 6; i++) {
+          await sessionRepository.createSessionRecord(
+            studentId: 'student1',
+            teacherId: 'teacher1',
+            curriculumSessionId: 'L1_J30_S$i',
+            levelId: 1,
+            kind: SessionKind.lesson,
+            juzNumber: 30,
+            hizbNumber: 59,
+            sessionNumber: i,
+            orderInLevel: i,
+            attemptNumber: 1,
+            newMemorizationErrors: 5, // محب at level 1 — always fails
+            recentReviewErrors: 0,
+            distantReviewErrors: 0,
+            repetitionsWithTeacher: 0,
+            homeRepetitionsRequired: 0,
+          );
+        }
+
+        // The unit's تلقين — never graded, always "passes" unconditionally
+        // by contract, but that is attendance, not a graded outcome.
+        await sessionRepository.createTalqeenRecord(
+          studentId: 'student1',
+          teacherId: 'teacher1',
+          curriculumSessionId: 'L1_J30_S7',
+          levelId: 1,
+          kind: SessionKind.talqeen,
+          juzNumber: 30,
+          hizbNumber: 59,
+          sessionNumber: 7,
+          orderInLevel: 7,
+          repetitionsWithTeacher: 4,
+          homeRepetitionsRequired: 10,
+        );
+
+        final stats = await sessionRepository.getStudentStatistics('student1');
+
+        // 6, not 7 — the تلقين record must not be counted as a session at
+        // all for these purposes.
+        expect(stats['total_sessions'], 6);
+        // 0, not 1 — the تلقين's unconditional `passed: true` must not
+        // read as a graded pass.
+        expect(stats['passed_sessions'], 0);
+        expect(stats['session_pass_rate'], 0);
       });
 
       test('returns zero rates for student with no records', () async {

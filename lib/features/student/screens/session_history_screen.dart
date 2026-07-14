@@ -34,9 +34,13 @@ class SessionHistoryScreen extends ConsumerWidget {
                 // average of the three component grades (#24). The
                 // per-component breakdown lives in the session detail view.
                 // Enforced by SessionRecordRow, shared with the teacher's
-                // history listing.
+                // history listing — which also owns the rule that a تلقين
+                // shows no outcome at all.
                 return SessionRecordRow(
-                  title: 'الحلقة ${record.sessionNumber}',
+                  isTalqeen: record.isTalqeen,
+                  title: record.isTalqeen
+                      ? 'تلقين'
+                      : 'الحلقة ${record.sessionNumber}',
                   // Never an app-derived hizb — `record.hizbNumber` is the
                   // denormalized structural value, which can disagree with a
                   // session's own verbatim label.

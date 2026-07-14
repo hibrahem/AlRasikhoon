@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/session_record_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
@@ -21,6 +22,12 @@ class MockSessionRepository extends Mock implements SessionRepository {}
 void main() {
   late MockStudentRepository mockStudentRepository;
   late MockSessionRepository mockSessionRepository;
+
+  setUpAll(() {
+    // mocktail needs a fallback instance to match `any(named: 'kind')`
+    // against `createSessionRecord`'s new `SessionKind kind` parameter.
+    registerFallbackValue(SessionKind.lesson);
+  });
 
   setUp(() {
     mockStudentRepository = MockStudentRepository();
@@ -48,6 +55,10 @@ void main() {
     int currentHizb = 59,
     int currentSession = 5,
     int currentAttempt = 1,
+    // A distinctive non-default value (StudentModel defaults to 1) so a
+    // record carrying the DEFAULT instead of the student's own value would
+    // be caught, not masked by a coincidental match.
+    int currentOrderInLevel = 8,
   }) {
     return StudentModel(
       id: id,
@@ -59,6 +70,7 @@ void main() {
       currentHizb: currentHizb,
       currentSession: currentSession,
       currentAttempt: currentAttempt,
+      currentOrderInLevel: currentOrderInLevel,
       createdAt: DateTime(2026, 1, 1),
     );
   }
@@ -84,6 +96,9 @@ void main() {
       studentId: 'student-1',
       teacherId: 'teacher-1',
       curriculumSessionId: 'L1_J30_H59_S5',
+      kind: SessionKind.lesson,
+      juzNumber: 30,
+      orderInLevel: 5,
       date: DateTime(2026, 1, 2),
       attemptNumber: 1,
       grades: SessionGrades(
@@ -241,6 +256,75 @@ void main() {
     });
   });
 
+  // The zero-floor on both recitation counts is a domain invariant, not a UI
+  // affordance: `RecitationCountsCard` disables its decrement button at zero,
+  // but that is the only caller today. Any future caller — another screen, a
+  // script, a test — must find the SAME floor enforced here, in the state
+  // that actually holds the count, whatever it passes.
+  group('ActiveSessionNotifier.setRepetitionsWithTeacher', () {
+    test('accepts a non-negative value', () {
+      final container = makeContainer(user: buildTeacher());
+      final notifier = container.read(activeSessionProvider.notifier);
+      notifier.startSession('student-1');
+
+      notifier.setRepetitionsWithTeacher(6);
+
+      expect(container.read(activeSessionProvider)!.repetitionsWithTeacher, 6);
+    });
+
+    test(
+      'throws ArgumentError rather than silently clamping a negative value',
+      () {
+        final container = makeContainer(user: buildTeacher());
+        final notifier = container.read(activeSessionProvider.notifier);
+        notifier.startSession('student-1');
+
+        expect(
+          () => notifier.setRepetitionsWithTeacher(-1),
+          throwsArgumentError,
+        );
+        // State is left untouched by the rejected call.
+        expect(
+          container.read(activeSessionProvider)!.repetitionsWithTeacher,
+          0,
+        );
+      },
+    );
+  });
+
+  group('ActiveSessionNotifier.setHomeRepetitionsRequired', () {
+    test('accepts a non-negative value', () {
+      final container = makeContainer(user: buildTeacher());
+      final notifier = container.read(activeSessionProvider.notifier);
+      notifier.startSession('student-1');
+
+      notifier.setHomeRepetitionsRequired(15);
+
+      expect(
+        container.read(activeSessionProvider)!.homeRepetitionsRequired,
+        15,
+      );
+    });
+
+    test(
+      'throws ArgumentError rather than silently clamping a negative value',
+      () {
+        final container = makeContainer(user: buildTeacher());
+        final notifier = container.read(activeSessionProvider.notifier);
+        notifier.startSession('student-1');
+
+        expect(
+          () => notifier.setHomeRepetitionsRequired(-1),
+          throwsArgumentError,
+        );
+        expect(
+          container.read(activeSessionProvider)!.homeRepetitionsRequired,
+          0,
+        );
+      },
+    );
+  });
+
   group('ActiveSessionNotifier.completeSession', () {
     test('advances the student session when the record passes', () async {
       when(
@@ -252,13 +336,17 @@ void main() {
           teacherId: any(named: 'teacherId'),
           curriculumSessionId: any(named: 'curriculumSessionId'),
           levelId: any(named: 'levelId'),
+          kind: any(named: 'kind'),
+          juzNumber: any(named: 'juzNumber'),
           hizbNumber: any(named: 'hizbNumber'),
           sessionNumber: any(named: 'sessionNumber'),
+          orderInLevel: any(named: 'orderInLevel'),
           attemptNumber: any(named: 'attemptNumber'),
           newMemorizationErrors: any(named: 'newMemorizationErrors'),
           recentReviewErrors: any(named: 'recentReviewErrors'),
           distantReviewErrors: any(named: 'distantReviewErrors'),
-          repetitions: any(named: 'repetitions'),
+          repetitionsWithTeacher: any(named: 'repetitionsWithTeacher'),
+          homeRepetitionsRequired: any(named: 'homeRepetitionsRequired'),
           notes: any(named: 'notes'),
         ),
       ).thenAnswer((_) async => buildRecord(passed: true));
@@ -286,6 +374,31 @@ void main() {
         container.read(activeSessionProvider)!.advanceOutcome,
         StudentAdvanceOutcome.advanced,
       );
+
+      // The student's OWN currentOrderInLevel (8, set by buildStudent) must
+      // reach the repository call verbatim — never a hardcoded or
+      // recomputed value.
+      final capturedOrderInLevel = verify(
+        () => mockSessionRepository.createSessionRecord(
+          studentId: any(named: 'studentId'),
+          teacherId: any(named: 'teacherId'),
+          curriculumSessionId: any(named: 'curriculumSessionId'),
+          levelId: any(named: 'levelId'),
+          kind: any(named: 'kind'),
+          juzNumber: any(named: 'juzNumber'),
+          hizbNumber: any(named: 'hizbNumber'),
+          sessionNumber: any(named: 'sessionNumber'),
+          orderInLevel: captureAny(named: 'orderInLevel'),
+          attemptNumber: any(named: 'attemptNumber'),
+          newMemorizationErrors: any(named: 'newMemorizationErrors'),
+          recentReviewErrors: any(named: 'recentReviewErrors'),
+          distantReviewErrors: any(named: 'distantReviewErrors'),
+          repetitionsWithTeacher: any(named: 'repetitionsWithTeacher'),
+          homeRepetitionsRequired: any(named: 'homeRepetitionsRequired'),
+          notes: any(named: 'notes'),
+        ),
+      ).captured;
+      expect(capturedOrderInLevel.single, 8);
     });
 
     // hibrahem/AlRasikhoon final-review finding #2: advanceStudentSession can
@@ -306,13 +419,17 @@ void main() {
             teacherId: any(named: 'teacherId'),
             curriculumSessionId: any(named: 'curriculumSessionId'),
             levelId: any(named: 'levelId'),
+            kind: any(named: 'kind'),
+            juzNumber: any(named: 'juzNumber'),
             hizbNumber: any(named: 'hizbNumber'),
             sessionNumber: any(named: 'sessionNumber'),
+            orderInLevel: any(named: 'orderInLevel'),
             attemptNumber: any(named: 'attemptNumber'),
             newMemorizationErrors: any(named: 'newMemorizationErrors'),
             recentReviewErrors: any(named: 'recentReviewErrors'),
             distantReviewErrors: any(named: 'distantReviewErrors'),
-            repetitions: any(named: 'repetitions'),
+            repetitionsWithTeacher: any(named: 'repetitionsWithTeacher'),
+            homeRepetitionsRequired: any(named: 'homeRepetitionsRequired'),
             notes: any(named: 'notes'),
           ),
         ).thenAnswer((_) async => buildRecord(passed: true));
@@ -352,13 +469,17 @@ void main() {
           teacherId: any(named: 'teacherId'),
           curriculumSessionId: any(named: 'curriculumSessionId'),
           levelId: any(named: 'levelId'),
+          kind: any(named: 'kind'),
+          juzNumber: any(named: 'juzNumber'),
           hizbNumber: any(named: 'hizbNumber'),
           sessionNumber: any(named: 'sessionNumber'),
+          orderInLevel: any(named: 'orderInLevel'),
           attemptNumber: any(named: 'attemptNumber'),
           newMemorizationErrors: any(named: 'newMemorizationErrors'),
           recentReviewErrors: any(named: 'recentReviewErrors'),
           distantReviewErrors: any(named: 'distantReviewErrors'),
-          repetitions: any(named: 'repetitions'),
+          repetitionsWithTeacher: any(named: 'repetitionsWithTeacher'),
+          homeRepetitionsRequired: any(named: 'homeRepetitionsRequired'),
           notes: any(named: 'notes'),
         ),
       ).thenAnswer((_) async => buildRecord(passed: false));

@@ -252,6 +252,20 @@ void main() {
       );
       expect(session.titleAr, 'الحلقة 5 - الجزء 30');
     });
+
+    // A تلقين is neither a lesson nor an assessment: calling it 'الحلقة 1' —
+    // the fallthrough this used to hit — would misname it as an ordinary
+    // lesson in the exact placement screen a teacher relies on to see which
+    // of two identical-range entries is the one they must actually decide
+    // about.
+    test('a تلقين is titled as a تلقين, never as a حلقة', () {
+      final session = SessionModel.fromJson(
+        'L1_J30_S1',
+        lessonJson(sessionNumber: 1, orderInLevel: 1, kind: 'talqeen'),
+      );
+      expect(session.titleAr, 'تلقين - الجزء 30');
+      expect(session.titleAr, isNot(contains('الحلقة')));
+    });
   });
 
   group('ordering', () {
@@ -294,6 +308,53 @@ void main() {
       expect(a, equals(b));
       expect(a.hashCode, b.hashCode);
       expect(a, isNot(equals(c)));
+    });
+  });
+
+  group('SessionKind.talqeen', () {
+    SessionModel talqeen() => SessionModel.fromJson('L1_J30_S1', {
+      'level_id': 1,
+      'juz_number': 30,
+      'session_number': 1,
+      'order_in_level': 1,
+      'kind': 'talqeen',
+      'assessed_by': null,
+      'unit_index': 1,
+      'hizb_number': 59,
+      'scope': null,
+      'current_level_content': {
+        'from_surah': 'النبأ',
+        'from_verse': 1,
+        'to_surah': 'النبأ',
+        'to_verse': 11,
+      },
+      'recent_review_content': null,
+      'distant_review_content': null,
+    });
+
+    test('a talqeen session is read from the curriculum, not guessed', () {
+      expect(SessionKindX.fromString('talqeen'), SessionKind.talqeen);
+      expect(SessionKind.talqeen.nameAr, 'تلقين');
+      expect(talqeen().kind, SessionKind.talqeen);
+      expect(talqeen().isTalqeen, isTrue);
+    });
+
+    test('a talqeen session is not an assessment', () {
+      final session = talqeen();
+      expect(session.isAssessment, isFalse);
+      expect(session.isSard, isFalse);
+      expect(session.isExam, isFalse);
+      expect(session.isLesson, isFalse);
+    });
+
+    test('a talqeen session teaches new content, as a lesson does', () {
+      expect(talqeen().teachesNewContent, isTrue);
+    });
+
+    test('a talqeen session round-trips through Firestore', () {
+      final json = talqeen().toFirestore();
+      expect(json['kind'], 'talqeen');
+      expect(SessionModel.fromJson('L1_J30_S1', json).isTalqeen, isTrue);
     });
   });
 

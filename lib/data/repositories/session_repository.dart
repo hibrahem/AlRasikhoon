@@ -25,23 +25,53 @@ class SessionRepository {
 
   // ==================== Session Records ====================
 
+  /// Allocates a fresh doc ref, builds the record from it via [build], and
+  /// persists it. Shared by [createSessionRecord] and [createTalqeenRecord] so
+  /// the doc-ref → construct → save sequence cannot drift between the two.
+  ///
+  /// [build] receives a single `writtenAt` instant used for BOTH `date` and
+  /// `created_at` — one `DateTime.now()` call, not two, so the fields cannot
+  /// silently disagree. [now] is a narrow test seam (defaults to
+  /// `DateTime.now()`) letting tests give a record an exact, explicit instant
+  /// instead of writing raw documents the app itself could never produce.
+  Future<SessionRecordModel> _writeSessionRecord(
+    SessionRecordModel Function(String id, DateTime writtenAt) build, {
+    DateTime? now,
+  }) async {
+    final docRef = _sessionRecordsCollection.doc();
+    final record = build(docRef.id, now ?? DateTime.now());
+    await docRef.set(record.toFirestore());
+    return record;
+  }
+
   /// Create session record
   ///
+  /// [kind] and [juzNumber] are copied verbatim from the session this record
+  /// is FOR (via `student.currentSessionKind`/`currentJuz` at write time) —
+  /// never inferred from [sessionNumber].
   /// [hizbNumber] is a LABEL, present only in levels 1-2. It keys nothing.
+  /// [orderInLevel] is the curriculum's ordering key — copied verbatim from
+  /// the session this record is FOR (never recomputed from [sessionNumber]).
+  /// [now] is a test seam; see [_writeSessionRecord].
   Future<SessionRecordModel> createSessionRecord({
     required String studentId,
     required String teacherId,
     required String curriculumSessionId,
     required int levelId,
+    required SessionKind kind,
+    required int juzNumber,
     int? hizbNumber,
     required int sessionNumber,
+    required int orderInLevel,
     required int attemptNumber,
     required int newMemorizationErrors,
     required int recentReviewErrors,
     required int distantReviewErrors,
-    int repetitions = 0,
+    required int repetitionsWithTeacher,
+    required int homeRepetitionsRequired,
     String? notes,
-  }) async {
+    DateTime? now,
+  }) {
     final grades = SessionGrades(
       newMemorizationErrors: newMemorizationErrors,
       recentReviewErrors: recentReviewErrors,
@@ -52,26 +82,112 @@ class SessionRepository {
     // (hibrahem/AlRasikhoon#24) — no averaging, no level-agnostic threshold.
     final passed = grades.passesForLevel(levelId);
 
-    final docRef = _sessionRecordsCollection.doc();
-    final record = SessionRecordModel(
-      id: docRef.id,
-      studentId: studentId,
-      teacherId: teacherId,
-      curriculumSessionId: curriculumSessionId,
-      levelId: levelId,
-      hizbNumber: hizbNumber,
-      sessionNumber: sessionNumber,
-      date: DateTime.now(),
-      attemptNumber: attemptNumber,
-      grades: grades,
-      passed: passed,
-      repetitions: repetitions,
-      notes: notes,
-      createdAt: DateTime.now(),
+    return _writeSessionRecord(
+      (id, writtenAt) => SessionRecordModel(
+        id: id,
+        studentId: studentId,
+        teacherId: teacherId,
+        curriculumSessionId: curriculumSessionId,
+        levelId: levelId,
+        kind: kind,
+        juzNumber: juzNumber,
+        hizbNumber: hizbNumber,
+        sessionNumber: sessionNumber,
+        orderInLevel: orderInLevel,
+        date: writtenAt,
+        attemptNumber: attemptNumber,
+        grades: grades,
+        passed: passed,
+        repetitionsWithTeacher: repetitionsWithTeacher,
+        homeRepetitionsRequired: homeRepetitionsRequired,
+        notes: notes,
+        createdAt: writtenAt,
+      ),
+      now: now,
     );
+  }
 
-    await docRef.set(record.toFirestore());
-    return record;
+  /// Records that a تلقين happened.
+  ///
+  /// A تلقين is not graded: the teacher recites the new passage to the student
+  /// and repeats it with him. There are no errors to count and nothing to fail,
+  /// so the record carries zeroed grades and passes unconditionally — it exists
+  /// for history and attendance, and to carry the home assignment.
+  ///
+  /// [kind] and [juzNumber] are copied verbatim from the session this record
+  /// is FOR (via `student.currentSessionKind`/`currentJuz` at write time) —
+  /// [kind] is always [SessionKind.talqeen] here, since this method records
+  /// nothing else, but it is threaded through rather than hardcoded so the
+  /// value keeps coming from the session, exactly like [orderInLevel].
+  /// [orderInLevel] is the curriculum's ordering key — copied verbatim from
+  /// the session this record is FOR (never recomputed from [sessionNumber]).
+  /// [now] is a test seam; see [_writeSessionRecord].
+  Future<SessionRecordModel> createTalqeenRecord({
+    required String studentId,
+    required String teacherId,
+    required String curriculumSessionId,
+    required int levelId,
+    required SessionKind kind,
+    required int juzNumber,
+    int? hizbNumber,
+    required int sessionNumber,
+    required int orderInLevel,
+    required int repetitionsWithTeacher,
+    required int homeRepetitionsRequired,
+    String? notes,
+    DateTime? now,
+  }) {
+    return _writeSessionRecord(
+      (id, writtenAt) => SessionRecordModel(
+        id: id,
+        studentId: studentId,
+        teacherId: teacherId,
+        curriculumSessionId: curriculumSessionId,
+        levelId: levelId,
+        kind: kind,
+        juzNumber: juzNumber,
+        hizbNumber: hizbNumber,
+        sessionNumber: sessionNumber,
+        orderInLevel: orderInLevel,
+        date: writtenAt,
+        attemptNumber: 1,
+        grades: const SessionGrades(
+          newMemorizationErrors: 0,
+          recentReviewErrors: 0,
+          distantReviewErrors: 0,
+        ),
+        passed: true,
+        repetitionsWithTeacher: repetitionsWithTeacher,
+        homeRepetitionsRequired: homeRepetitionsRequired,
+        notes: notes,
+        createdAt: writtenAt,
+      ),
+      now: now,
+    );
+  }
+
+  /// The student's most recent session record — the one carrying the home
+  /// assignment they are currently working off.
+  ///
+  /// Ordered by `date` DESC, then `order_in_level` DESC as a tie-break.
+  /// `order_in_level` — not `created_at` — because `date` and `created_at` are
+  /// both stamped from the SAME `DateTime.now()` call (see
+  /// `_writeSessionRecord`), so anything that ties `date` ties `created_at`
+  /// too; that pairing can never break a tie. `order_in_level` can: a
+  /// student's records are written one per completed session, and a later
+  /// session always carries a strictly greater `order_in_level` within a
+  /// level, so on a same-instant tie the record further along the curriculum
+  /// is the genuinely later one.
+  Future<SessionRecordModel?> getLatestSessionRecord(String studentId) async {
+    final query = await _sessionRecordsCollection
+        .where('student_id', isEqualTo: studentId)
+        .orderBy('date', descending: true)
+        .orderBy('order_in_level', descending: true)
+        .limit(1)
+        .get();
+
+    if (query.docs.isEmpty) return null;
+    return SessionRecordModel.fromFirestore(query.docs.first);
   }
 
   /// Get a single session record by id.
@@ -342,8 +458,14 @@ class SessionRepository {
     final sardRecords = await getSardRecordsForStudent(studentId);
     final examRecords = await getExamRecordsForStudent(studentId);
 
-    final totalSessions = sessionRecords.length;
-    final passedSessions = sessionRecords.where((r) => r.passed).length;
+    // A تلقين is never graded — no errors, no pass/fail — so it must not
+    // inflate `total_sessions`/`passed_sessions` with a phantom pass. Only
+    // graded lesson records count here.
+    final gradedSessionRecords = sessionRecords
+        .where((r) => !r.isTalqeen)
+        .toList();
+    final totalSessions = gradedSessionRecords.length;
+    final passedSessions = gradedSessionRecords.where((r) => r.passed).length;
     final totalSards = sardRecords.length;
     final passedSards = sardRecords.where((r) => r.passed).length;
     final totalExams = examRecords.length;

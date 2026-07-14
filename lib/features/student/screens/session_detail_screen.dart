@@ -77,10 +77,10 @@ class SessionDetailScreen extends ConsumerWidget {
                         label: 'المحاولة',
                         value: '${record.attemptNumber}',
                       ),
-                      if (record.repetitions > 0)
+                      if (record.repetitionsWithTeacher > 0)
                         _InfoRow(
                           label: 'التكرارات',
-                          value: '${record.repetitions}',
+                          value: '${record.repetitionsWithTeacher}',
                         ),
                     ],
                   ),
@@ -88,50 +88,83 @@ class SessionDetailScreen extends ConsumerWidget {
 
                 const SizedBox(height: 24),
 
-                // Overall session result — binary pass/fail, fails on ANY
-                // محب component, no averaging (#24). The session grade is the
-                // worst of the three level-based component grades (#22).
-                Center(
-                  child: GradeDisplay(
-                    errorCount: record.grades.totalErrors,
-                    gradeInfo: GradeCalculator.calculateSessionGrade(
-                      level: record.levelId,
-                      newMemorizationErrors:
-                          record.grades.newMemorizationErrors,
-                      recentReviewErrors: record.grades.recentReviewErrors,
-                      distantReviewErrors: record.grades.distantReviewErrors,
+                // A تلقين is never graded — no errors, no pass/fail, no
+                // attempt cap. It must NOT show `GradeDisplay` or the
+                // part-by-part error breakdown below, which both imply a
+                // graded outcome that a تلقين never has.
+                if (record.isTalqeen)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                      ),
                     ),
-                    showStars: true,
-                    showPassStatus: true,
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.record_voice_over,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'تلقين — قرأ المعلّم المقطع على الطالب وكرّره معه. '
+                            'لا تسميع ولا تقييم ولا نجاح أو رسوب في هذه الحلقة.',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else ...[
+                  // Overall session result — binary pass/fail, fails on ANY
+                  // محب component, no averaging (#24). The session grade is
+                  // the worst of the three level-based component grades (#22).
+                  Center(
+                    child: GradeDisplay(
+                      errorCount: record.grades.totalErrors,
+                      gradeInfo: GradeCalculator.calculateSessionGrade(
+                        level: record.levelId,
+                        newMemorizationErrors:
+                            record.grades.newMemorizationErrors,
+                        recentReviewErrors: record.grades.recentReviewErrors,
+                        distantReviewErrors: record.grades.distantReviewErrors,
+                      ),
+                      showStars: true,
+                      showPassStatus: true,
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                // Part-by-part results
-                Text(
-                  'تفاصيل الأجزاء',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 12),
+                  // Part-by-part results
+                  Text(
+                    'تفاصيل الأجزاء',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 12),
 
-                _PartResultCard(
-                  title: 'الحفظ الجديد',
-                  errors: record.grades.newMemorizationErrors,
-                  level: record.levelId,
-                ),
-                const SizedBox(height: 8),
-                _PartResultCard(
-                  title: 'المراجعة القريبة',
-                  errors: record.grades.recentReviewErrors,
-                  level: record.levelId,
-                ),
-                const SizedBox(height: 8),
-                _PartResultCard(
-                  title: 'المراجعة البعيدة',
-                  errors: record.grades.distantReviewErrors,
-                  level: record.levelId,
-                ),
+                  _PartResultCard(
+                    title: 'الحفظ الجديد',
+                    errors: record.grades.newMemorizationErrors,
+                    level: record.levelId,
+                  ),
+                  const SizedBox(height: 8),
+                  _PartResultCard(
+                    title: 'المراجعة القريبة',
+                    errors: record.grades.recentReviewErrors,
+                    level: record.levelId,
+                  ),
+                  const SizedBox(height: 8),
+                  _PartResultCard(
+                    title: 'المراجعة البعيدة',
+                    errors: record.grades.distantReviewErrors,
+                    level: record.levelId,
+                  ),
+                ],
 
                 // Notes
                 if (record.notes != null && record.notes!.isNotEmpty) ...[

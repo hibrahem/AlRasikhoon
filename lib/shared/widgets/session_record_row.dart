@@ -21,6 +21,12 @@ class SessionRecordRow extends StatelessWidget {
   final DateTime date;
   final VoidCallback? onTap;
 
+  /// A تلقين is graded on nothing and cannot be failed, so it carries no
+  /// outcome to show. `createTalqeenRecord` writes `passed: true` regardless —
+  /// that flag says the session happened, it is not a grade — so rendering
+  /// [passed] for one would report a pass the student never earned.
+  final bool isTalqeen;
+
   const SessionRecordRow({
     super.key,
     required this.title,
@@ -28,11 +34,14 @@ class SessionRecordRow extends StatelessWidget {
     required this.passed,
     required this.date,
     this.onTap,
+    this.isTalqeen = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final passColor = passed ? AppColors.success : AppColors.error;
+    final passColor = isTalqeen
+        ? AppColors.primary
+        : (passed ? AppColors.success : AppColors.error);
     final dateFormat = DateFormat('yyyy/MM/dd', 'ar');
 
     return AppCard(
@@ -49,7 +58,9 @@ class SessionRecordRow extends StatelessWidget {
             ),
             child: Center(
               child: Icon(
-                passed ? Icons.check_circle : Icons.cancel,
+                isTalqeen
+                    ? Icons.record_voice_over
+                    : (passed ? Icons.check_circle : Icons.cancel),
                 color: passColor,
               ),
             ),
@@ -85,7 +96,7 @@ class SessionRecordRow extends StatelessWidget {
               border: Border.all(color: passColor),
             ),
             child: Text(
-              passed ? 'نجح' : 'رسب',
+              isTalqeen ? 'تلقين' : (passed ? 'نجح' : 'رسب'),
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,

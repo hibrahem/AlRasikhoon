@@ -289,11 +289,21 @@ class StudentModel {
   /// Whether the student stands on an assessment of any tier.
   bool get isOnAssessment => canTakeSard || canTakeExam;
 
+  /// Whether the student stands on a تلقين — a session the teacher reads TO
+  /// them, which cannot be failed.
+  bool get isOnTalqeen => currentSessionKind == SessionKind.talqeen;
+
+  /// The 3-attempt cap belongs to ordinary lessons ALONE, and is tested for
+  /// positively.
+  ///
   /// Assessments — سرد and اختبار alike, at every tier — may be retried without
-  /// limit: a student who cannot yet recite a juz keeps working at it. The
-  /// 3-attempt cap belongs to ordinary lessons alone.
+  /// limit: a student who cannot yet recite a juz keeps working at it. A تلقين
+  /// has no attempts to exhaust: it is never graded and never failed. Written
+  /// as `!isOnAssessment && ...`, this would have capped it and locked the
+  /// student out of a session they cannot fail.
   bool get hasReachedMaxAttempts =>
-      !isOnAssessment && currentAttempt > AppConstants.maxSessionAttempts;
+      currentSessionKind == SessionKind.lesson &&
+      currentAttempt > AppConstants.maxSessionAttempts;
 
   /// Whether the student may start another attempt at their current session.
   bool get canStartSession => !hasReachedMaxAttempts;

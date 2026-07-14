@@ -15,6 +15,7 @@ class AppConstants {
   static const int totalLevels = 10;
 
   // Session kinds
+  static const String sessionKindTalqeen = 'talqeen';
   static const String sessionKindLesson = 'lesson';
   static const String sessionKindSard = 'sard';
   static const String sessionKindExam = 'exam';

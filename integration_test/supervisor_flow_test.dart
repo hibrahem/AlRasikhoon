@@ -73,9 +73,9 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        // Standing on the juz-30 اختبار — session 68. The queue finds them by
+        // Standing on the juz-30 اختبار — session 70. The queue finds them by
         // their session's KIND, not by a magic number.
-        sessionId: 'L1_J30_S68',
+        sessionId: 'L1_J30_S70',
       );
 
       // Act
@@ -109,7 +109,7 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        sessionId: 'L1_J30_S68',
+        sessionId: 'L1_J30_S70',
       );
 
       // Act
@@ -150,7 +150,7 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        sessionId: 'L1_J30_S68',
+        sessionId: 'L1_J30_S70',
       );
 
       // Act
@@ -191,7 +191,7 @@ void main() {
         await env.addStudent(
           userId: studentUser.id,
           instituteId: instituteId,
-          sessionId: 'L1_J30_S68',
+          sessionId: 'L1_J30_S70',
         );
       }
 
@@ -253,8 +253,8 @@ void main() {
           // (AgDR-0003). The institute scope matches the supervisor's Students
           // tab; the institute-scoped lookup (not getStudentsForTeacher) resolves
           // it. Passing no teacherId leaves it null.
-          // The hizb-59 سرد — session 30 in the real curriculum.
-          sessionId: 'L1_J30_S30',
+          // The hizb-59 سرد — session 31 in the real curriculum.
+          sessionId: 'L1_J30_S31',
         );
 
         // Act
@@ -302,7 +302,7 @@ void main() {
         await env.assignSupervisorToInstitute(supervisor.id, instituteId);
 
         // Place the student through the production path, not a seeded document.
-        // The session they are placed on — L1_J30_S67, the juz-30 سرد — is one
+        // The session they are placed on — L1_J30_S69, the juz-30 سرد — is one
         // the seeded curriculum really contains.
         final container = ProviderContainer(overrides: env.overrides.cast());
         addTearDown(container.dispose);
@@ -317,7 +317,7 @@ void main() {
               startingPosition: const CurriculumPosition(
                 level: 1,
                 juz: 30,
-                session: 67,
+                session: 69,
               ),
             );
 
@@ -328,8 +328,8 @@ void main() {
             .get();
         expect(doc.data()?['current_level'], 1);
         expect(doc.data()?['current_juz'], 30);
-        expect(doc.data()?['current_session'], 67);
-        expect(doc.data()?['current_session_id'], 'L1_J30_S67');
+        expect(doc.data()?['current_session'], 69);
+        expect(doc.data()?['current_session_id'], 'L1_J30_S69');
         expect(doc.data()?['current_session_kind'], 'sard');
         // A juz-tier سرد has no hizb at all — and the student's label is null,
         // not a fabricated 59.
@@ -338,7 +338,7 @@ void main() {
         expect(doc.data()?['enrollment_position'], {
           'level': 1,
           'juz': 30,
-          'session': 67,
+          'session': 69,
         });
 
         // They hold no session records at all — nothing was taught in the app.
@@ -384,7 +384,7 @@ void main() {
             .get();
         expect(sardRecords.docs, hasLength(1));
         final sard = sardRecords.docs.first.data();
-        expect(sard['curriculum_session_id'], 'L1_J30_S67');
+        expect(sard['curriculum_session_id'], 'L1_J30_S69');
         expect(sard['tier'], 'juz');
         expect(sard['juz_numbers'], [30]);
         expect(sard['hizb_number'], isNull);
@@ -420,7 +420,7 @@ void main() {
         final studentId = await env.addStudent(
           userId: studentUser.id,
           instituteId: instituteId,
-          sessionId: 'L1_J28_S66', // the level's cumulative سرد
+          sessionId: 'L1_J28_S68', // the level's cumulative سرد
         );
 
         await tester.pumpWidget(TestApp(overrides: env.overrides));
@@ -458,7 +458,7 @@ void main() {
             .get();
         expect(sardRecords.docs, hasLength(1));
         final sard = sardRecords.docs.first.data();
-        expect(sard['curriculum_session_id'], 'L1_J28_S66');
+        expect(sard['curriculum_session_id'], 'L1_J28_S68');
         expect(sard['tier'], 'cumulative');
         expect(sard['juz_numbers'], [28, 29, 30]);
         expect(
@@ -491,10 +491,10 @@ void main() {
         final studentId = await env.addStudent(
           userId: studentUser.id,
           instituteId: instituteId,
-          // The juz-30 اختبار is session 68. The queue finds them because their
+          // The juz-30 اختبار is session 70. The queue finds them because their
           // session's KIND is `exam` — the old `current_session == 36` filter
           // would have found nobody.
-          sessionId: 'L1_J30_S68',
+          sessionId: 'L1_J30_S70',
         );
 
         await tester.pumpWidget(TestApp(overrides: env.overrides));
@@ -524,7 +524,7 @@ void main() {
             .get();
         expect(examRecords.docs, hasLength(1));
         final exam = examRecords.docs.first.data();
-        expect(exam['curriculum_session_id'], 'L1_J30_S68');
+        expect(exam['curriculum_session_id'], 'L1_J30_S70');
         expect(exam['tier'], 'juz');
         expect(exam['juz_numbers'], [30]);
         expect(exam['hizb_number'], isNull);
@@ -561,7 +561,7 @@ void main() {
       await env.addStudent(
         userId: assignedStudent.id,
         instituteId: assignedInstitute,
-        sessionId: 'L1_J30_S68',
+        sessionId: 'L1_J30_S70',
       );
 
       // Create student in other institute
@@ -576,7 +576,7 @@ void main() {
       await env.addStudent(
         userId: otherStudent.id,
         instituteId: otherInstitute,
-        sessionId: 'L1_J30_S68',
+        sessionId: 'L1_J30_S70',
       );
 
       // Act

@@ -72,6 +72,15 @@
       "collectionGroup": "session_records",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "student_id", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" },
+        { "fieldPath": "order_in_level", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "session_records",
+      "queryScope": "COLLECTION",
+      "fields": [
         { "fieldPath": "teacher_id", "order": "ASCENDING" },
         { "fieldPath": "date", "order": "DESCENDING" }
       ]

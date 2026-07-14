@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// One juz of a level, as the curriculum catalog describes it.
 ///
-/// The session count is DATA (juz 30 has 68 sessions, juz 29 has 69, juz 28 has
-/// 67), never `36 × something`. [firstOrderInLevel] is where this juz starts in
+/// The session count is DATA (juz 30 has 70 sessions, juz 29 has 71, juz 28 has
+/// 69), never `36 × something`. [firstOrderInLevel] is where this juz starts in
 /// the level's continuous 1..sessionCount ordering.
 class LevelJuz {
   final int juzNumber;

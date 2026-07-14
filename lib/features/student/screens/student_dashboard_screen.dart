@@ -13,6 +13,7 @@ import '../../../shared/widgets/stat_card.dart';
 import '../../../shared/widgets/student_level_progress.dart';
 import '../../../shared/widgets/level_progression_widget.dart';
 import '../providers/student_provider.dart';
+import '../widgets/home_assignment_card.dart';
 
 class StudentDashboardScreen extends ConsumerStatefulWidget {
   const StudentDashboardScreen({super.key});
@@ -114,6 +115,13 @@ class _StudentDashboardScreenState
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Text('Error: $e'),
               ),
+
+              const SizedBox(height: 24),
+
+              // What the student owes at home — renders nothing when there is
+              // no assignment, so it is safe to always place here (spec §5:
+              // both the dashboard and the home-practice screen show it).
+              const HomeAssignmentCard(),
 
               const SizedBox(height: 24),
 
@@ -266,7 +274,7 @@ class _StudentDashboardScreenState
           ),
           const SizedBox(height: 20),
           // Progress through the level, against the level's real session count
-          // from the catalog (204 in level 1, 44 in level 10) — never `/ 36`.
+          // from the catalog (210 in level 1, 49 in level 10) — never `/ 36`.
           StudentLevelProgress(
             level: stats.currentLevel,
             orderInLevel: stats.currentOrderInLevel,
@@ -289,6 +297,72 @@ class _StudentDashboardScreenState
         if (session == null) {
           return const AppCard(
             child: Center(child: Text('لا توجد بيانات للحلقة')),
+          );
+        }
+
+        // The تلقين branch MUST come before isExam/isSard and the regular
+        // lesson fallthrough (see session_overview_screen.dart's identical
+        // ordering): a تلقين is neither graded nor new memorization for the
+        // student to recite alone, and falling through to the lesson card
+        // would tell him to memorize a passage the teacher has not yet read
+        // to him.
+        if (session.isTalqeen) {
+          return AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.record_voice_over,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'تلقين',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          Text(
+                            'الجزء ${session.juzNumber}',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'المقطع الجديد',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  session.currentLevelContent?.rangeAr ?? '',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'سيقرأ المعلّم هذا المقطع معك ويكرره معك. لا حفظ عليك ولا '
+                  'تسميع ولا تقييم في هذه الحلقة.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
           );
         }
 

@@ -268,16 +268,18 @@ class TestEnvironment {
   /// The old fixtures WERE the old bug: they synthesized session ids of the form
   /// `L1_J30_H59_S35` and declared `session 35 ⇒ سرد, 36 ⇒ اختبار`. In the real
   /// curriculum a session's identity is `L{level}_J{juz}_S{n}`, its kind is DATA
-  /// (`kind`), session numbers run 1..N continuously across a whole juz (68 in
+  /// (`kind`), session numbers run 1..N continuously across a whole juz (70 in
   /// juz 30 of level 1), and assessments come at three tiers, each carrying the
-  /// source's verbatim Arabic label.
+  /// source's verbatim Arabic label. Every unit also opens with a تلقين: the
+  /// teacher reads the next lesson's passage to the student, who memorizes and
+  /// recites nothing.
   ///
   /// Seeded (level 1, juz 30 unless noted):
-  /// - S1 / S5 / S10 — lessons;
-  /// - S30 — the hizb-59 سرد (unit tier), S31 its اختبار;
-  /// - S67 — the juz-30 سرد (juz tier), S68 its اختبار — the session the
+  /// - S1 — the تلقين that opens hizb 59; S5 / S10 — lessons;
+  /// - S31 — the hizb-59 سرد (unit tier), S32 its اختبار;
+  /// - S69 — the juz-30 سرد (juz tier), S70 its اختبار — the session the
   ///   supervisor's exam queue really finds (never "36");
-  /// - juz 28: S66 the level's cumulative سرد (juz 28-29-30), S67 its اختبار.
+  /// - juz 28: S68 the level's cumulative سرد (juz 28-29-30), S69 its اختبار.
   Future<void> seedCurriculumData() async {
     await fakeFirestore.collection('levels').doc('level_1').set({
       'id': 1,
@@ -286,7 +288,7 @@ class TestEnvironment {
       // Levels 1-9 teach their juz DESCENDING; the order is read, never
       // computed (level 10 ascends).
       'juz_numbers': [30, 29, 28],
-      'session_count': 204,
+      'session_count': 210,
       'order': 1,
     });
 
@@ -306,6 +308,34 @@ class TestEnvironment {
             'session_number': session,
             'order_in_level': orderInLevel,
             'kind': 'lesson',
+            'hizb_number': hizb,
+            'current_level_content': {
+              'from_surah': surah,
+              'from_verse': 1,
+              'to_surah': surah,
+              'to_verse': 11,
+            },
+          });
+    }
+
+    Future<void> talqeen({
+      required int juz,
+      required int session,
+      required int orderInLevel,
+      required int unitIndex,
+      int? hizb,
+      String surah = 'النبأ',
+    }) {
+      return fakeFirestore
+          .collection('sessions')
+          .doc('L1_J${juz}_S$session')
+          .set({
+            'level_id': 1,
+            'juz_number': juz,
+            'session_number': session,
+            'order_in_level': orderInLevel,
+            'kind': 'talqeen',
+            'unit_index': unitIndex,
             'hizb_number': hizb,
             'current_level_content': {
               'from_surah': surah,
@@ -346,15 +376,15 @@ class TestEnvironment {
           });
     }
 
-    await lesson(juz: 30, session: 1, orderInLevel: 1, hizb: 59);
+    await talqeen(juz: 30, session: 1, orderInLevel: 1, unitIndex: 1, hizb: 59);
     await lesson(juz: 30, session: 5, orderInLevel: 5, hizb: 59);
     await lesson(juz: 30, session: 10, orderInLevel: 10, hizb: 59);
 
-    // The unit-tier pair for hizb 59 — سرد at session 30, اختبار at 31.
+    // The unit-tier pair for hizb 59 — سرد at session 31, اختبار at 32.
     await assessment(
       juz: 30,
-      session: 30,
-      orderInLevel: 30,
+      session: 31,
+      orderInLevel: 31,
       kind: 'sard',
       tier: 'unit',
       labelAr: 'سرد الحزب رقم 59 كاملًا على المحفظ المتابع',
@@ -363,8 +393,8 @@ class TestEnvironment {
     );
     await assessment(
       juz: 30,
-      session: 31,
-      orderInLevel: 31,
+      session: 32,
+      orderInLevel: 32,
       kind: 'exam',
       tier: 'unit',
       labelAr: 'اختبار في الحزب رقم 59 كاملًا من قِبل إدارة الحلقات',
@@ -375,8 +405,8 @@ class TestEnvironment {
     // The juz-tier pair — the last two sessions of juz 30. Neither has a hizb.
     await assessment(
       juz: 30,
-      session: 67,
-      orderInLevel: 67,
+      session: 69,
+      orderInLevel: 69,
       kind: 'sard',
       tier: 'juz',
       labelAr: 'سرد الجزء رقم 30 كاملًا على المحفظ المتابع',
@@ -384,20 +414,21 @@ class TestEnvironment {
     );
     await assessment(
       juz: 30,
-      session: 68,
-      orderInLevel: 68,
+      session: 70,
+      orderInLevel: 70,
       kind: 'exam',
       tier: 'juz',
       labelAr: 'اختبار في الجزء رقم 30 كاملًا من قِبل إدارة الحلقات',
       juzNumbers: const [30],
     );
 
-    // The first session of juz 29 continues the level's ordering at 69 — a juz
-    // boundary crossed by `order_in_level` alone.
-    await lesson(
+    // The first session of juz 29 opens with its own تلقين and continues the
+    // level's ordering at 71 — a juz boundary crossed by `order_in_level` alone.
+    await talqeen(
       juz: 29,
       session: 1,
-      orderInLevel: 69,
+      orderInLevel: 71,
+      unitIndex: 1,
       hizb: 57,
       surah: 'الملك',
     );
@@ -406,8 +437,8 @@ class TestEnvironment {
     // three of its juz.
     await assessment(
       juz: 28,
-      session: 66,
-      orderInLevel: 203,
+      session: 68,
+      orderInLevel: 209,
       kind: 'sard',
       tier: 'cumulative',
       labelAr:
@@ -416,8 +447,8 @@ class TestEnvironment {
     );
     await assessment(
       juz: 28,
-      session: 67,
-      orderInLevel: 204,
+      session: 69,
+      orderInLevel: 210,
       kind: 'exam',
       tier: 'cumulative',
       labelAr:

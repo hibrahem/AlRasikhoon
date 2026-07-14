@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/utils/grade_calculator.dart';
+import 'session_model.dart';
 
 class SessionGrades {
   final int newMemorizationErrors;
@@ -57,17 +58,53 @@ class SessionRecordModel {
   final String curriculumSessionId;
   final int levelId;
 
+  /// What the session this record is FOR IS — a تلقين or a lesson, copied
+  /// verbatim from the session (via `student.currentSessionKind` at write
+  /// time), never inferred from [sessionNumber]. A تلقين is never graded, so
+  /// this is what tells the pass/fail statistics and the history/detail
+  /// screens to treat this record as attendance, not a graded pass.
+  final SessionKind kind;
+
+  /// The juz this record's session belongs to, copied verbatim from the
+  /// session this record is FOR — never the student's CURRENT juz, which may
+  /// already be a different one by the time this is read (the teacher may
+  /// have advanced the student across a juz boundary in between).
+  ///
+  /// Null only for records written before this field existed — those records
+  /// genuinely do not carry a juz, so this stays nullable rather than
+  /// defaulting to a sentinel like `0`, which is not a real juz and would be
+  /// written straight into a new document (e.g. home practice) by any caller
+  /// that read it with `??`.
+  final int? juzNumber;
+
   /// A LABEL, present only in levels 1-2 — and absent even there on juz- and
   /// level-tier sessions. It keys nothing: the record is identified by
   /// [curriculumSessionId]. It used to default to 59, which quietly filed every
   /// record of the curriculum under the first hizb of level 1.
   final int? hizbNumber;
   final int sessionNumber;
+
+  /// The curriculum's ordering key (1..M within [levelId]), copied verbatim
+  /// from the session this record is FOR — never recomputed, never inferred
+  /// from [sessionNumber]. It is the only thing that orders session records
+  /// within a level: juz numbers cannot (level 10 teaches juz 1 → 2 → 3), and
+  /// [date]/[createdAt] cannot either, since both come from the same
+  /// `DateTime.now()` at write time and can tie.
+  final int orderInLevel;
   final DateTime date;
   final int attemptNumber;
   final SessionGrades grades;
   final bool passed;
-  final int repetitions;
+
+  /// How many times teacher and student recited the passage through TOGETHER in
+  /// the session. Carried by the sessions that teach new content — a تلقين and
+  /// a lesson.
+  final int repetitionsWithTeacher;
+
+  /// How many repetitions the student owes at home before the next session. An
+  /// assignment, not a note: the student sees it and their home practice counts
+  /// against it.
+  final int homeRepetitionsRequired;
   final String? notes;
   final DateTime createdAt;
 
@@ -77,13 +114,17 @@ class SessionRecordModel {
     required this.teacherId,
     required this.curriculumSessionId,
     this.levelId = 1,
+    required this.kind,
+    required this.juzNumber,
     this.hizbNumber,
     this.sessionNumber = 1,
+    required this.orderInLevel,
     required this.date,
     required this.attemptNumber,
     required this.grades,
     required this.passed,
-    this.repetitions = 0,
+    this.repetitionsWithTeacher = 0,
+    this.homeRepetitionsRequired = 0,
     this.notes,
     required this.createdAt,
   });
@@ -96,13 +137,29 @@ class SessionRecordModel {
       teacherId: data['teacher_id'] ?? '',
       curriculumSessionId: data['curriculum_session_id'] ?? '',
       levelId: data['level_id'] ?? 1,
+      // Falls back to a lesson only for records written before `kind`
+      // existed — every one of them WAS a graded lesson attempt, since a
+      // تلقين could not be recorded before this field shipped.
+      kind: data['kind'] != null
+          ? SessionKindX.fromString(data['kind'] as String)
+          : SessionKind.lesson,
+      // Null only for records written before this field existed. Never a
+      // sentinel like 0 (not a real juz) and never guessed from the
+      // student's current juz — a caller that needs a juz for an absent
+      // record must fall back explicitly, the way `addPractice` falls back
+      // to the student's own current juz.
+      juzNumber: data['juz_number'] as int?,
       hizbNumber: data['hizb_number'] as int?,
       sessionNumber: data['session_number'] ?? 1,
+      // Falls back to 1 only for records written before this field existed —
+      // never recomputed from sessionNumber for records that do carry it.
+      orderInLevel: data['order_in_level'] as int? ?? 1,
       date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       attemptNumber: data['attempt_number'] ?? 1,
       grades: SessionGrades.fromJson(data['grades']),
       passed: data['passed'] ?? false,
-      repetitions: data['repetitions'] ?? 0,
+      repetitionsWithTeacher: data['repetitions_with_teacher'] ?? 0,
+      homeRepetitionsRequired: data['home_repetitions_required'] ?? 0,
       notes: data['notes'],
       createdAt: (data['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -114,17 +171,26 @@ class SessionRecordModel {
       'teacher_id': teacherId,
       'curriculum_session_id': curriculumSessionId,
       'level_id': levelId,
+      'kind': kind.value,
+      'juz_number': juzNumber,
       'hizb_number': hizbNumber,
       'session_number': sessionNumber,
+      'order_in_level': orderInLevel,
       'date': Timestamp.fromDate(date),
       'attempt_number': attemptNumber,
       'grades': grades.toJson(),
       'passed': passed,
-      'repetitions': repetitions,
+      'repetitions_with_teacher': repetitionsWithTeacher,
+      'home_repetitions_required': homeRepetitionsRequired,
       'notes': notes,
       'created_at': Timestamp.fromDate(createdAt),
     };
   }
+
+  /// A تلقين is never graded: it carries no pass/fail and no error counts, so
+  /// it must never be counted as a graded pass in statistics, and never
+  /// rendered with a pass/fail badge or grade in history/detail.
+  bool get isTalqeen => kind == SessionKind.talqeen;
 
   SessionRecordModel copyWith({
     String? id,
@@ -132,13 +198,17 @@ class SessionRecordModel {
     String? teacherId,
     String? curriculumSessionId,
     int? levelId,
+    SessionKind? kind,
+    int? juzNumber,
     int? hizbNumber,
     int? sessionNumber,
+    int? orderInLevel,
     DateTime? date,
     int? attemptNumber,
     SessionGrades? grades,
     bool? passed,
-    int? repetitions,
+    int? repetitionsWithTeacher,
+    int? homeRepetitionsRequired,
     String? notes,
     DateTime? createdAt,
   }) {
@@ -148,13 +218,19 @@ class SessionRecordModel {
       teacherId: teacherId ?? this.teacherId,
       curriculumSessionId: curriculumSessionId ?? this.curriculumSessionId,
       levelId: levelId ?? this.levelId,
+      kind: kind ?? this.kind,
+      juzNumber: juzNumber ?? this.juzNumber,
       hizbNumber: hizbNumber ?? this.hizbNumber,
       sessionNumber: sessionNumber ?? this.sessionNumber,
+      orderInLevel: orderInLevel ?? this.orderInLevel,
       date: date ?? this.date,
       attemptNumber: attemptNumber ?? this.attemptNumber,
       grades: grades ?? this.grades,
       passed: passed ?? this.passed,
-      repetitions: repetitions ?? this.repetitions,
+      repetitionsWithTeacher:
+          repetitionsWithTeacher ?? this.repetitionsWithTeacher,
+      homeRepetitionsRequired:
+          homeRepetitionsRequired ?? this.homeRepetitionsRequired,
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
     );

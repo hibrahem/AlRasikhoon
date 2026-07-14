@@ -211,8 +211,8 @@ class _ContentRow extends StatelessWidget {
   }
 }
 
-/// What a session IS — حلقة, سرد or اختبار — as the curriculum states it in the
-/// session's `kind`. Never inferred from the session number.
+/// What a session IS — تلقين, حلقة, سرد or اختبار — as the curriculum states it
+/// in the session's `kind`. Never inferred from the session number.
 class _SessionKindChip extends StatelessWidget {
   final SessionKind kind;
 
@@ -228,7 +228,10 @@ class _SessionKindChip extends StatelessWidget {
       case SessionKind.exam:
         color = AppColors.warning;
         break;
+      case SessionKind.talqeen:
       case SessionKind.lesson:
+        // A تلقين teaches new content like a lesson does and is never
+        // assessed, so it gets the same chip color.
         color = AppColors.primary;
         break;
     }

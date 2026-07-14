@@ -707,6 +707,80 @@ def build_juz_sessions(
 
 
 # --------------------------------------------------------------------------
+# Derived sessions: تلقين
+# --------------------------------------------------------------------------
+# A تلقين session is one where the teacher recites the new passage TO the
+# student and repeats it with him; the student memorizes nothing and is graded
+# on nothing. It opens every unit — equivalently, it opens every level and
+# follows every exam that is followed by new content.
+#
+# Nothing in the source spreadsheets is a تلقين row. These sessions are DERIVED,
+# and say so: their `source` names the lesson they were derived from, never a
+# file/sheet/row they did not come from.
+def talqeen_of(lesson: dict) -> dict:
+    """The تلقين session that introduces `lesson`.
+
+    It teaches exactly the passage the student will memorize in `lesson`, and
+    carries no review content, no scope and no assessor.
+
+    `derived_from` cannot be filled in here: at this point `lesson["id"]` is
+    still its PRE-renumbering id, and inserting this very talqeen shifts the
+    id/session_number of every session from here on. `insert_talqeen_sessions`
+    fills `derived_from` in once renumbering is done and every id is final.
+    """
+    return {
+        "id": None,             # assigned by insert_talqeen_sessions
+        "level_id": lesson["level_id"],
+        "juz_number": lesson["juz_number"],
+        "session_number": None,  # assigned by insert_talqeen_sessions
+        "order_in_level": None,  # filled by the caller, as for every session
+        "kind": "talqeen",
+        "assessed_by": None,
+        "unit_index": lesson["unit_index"],
+        "hizb_number": lesson["hizb_number"],
+        "scope": None,
+        "current_level_content": lesson["current_level_content"],
+        "recent_review_content": None,
+        "distant_review_content": None,
+        "source": {"derived_from": None},  # filled in below, once ids are final
+    }
+
+
+def insert_talqeen_sessions(sessions: list[dict]) -> list[dict]:
+    """Open every unit of one juz with a تلقين, and renumber the juz 1..N.
+
+    Renumbering is not bookkeeping: the document id and `session_number` are
+    the session's identity, and `order_in_level` (assigned by the caller from
+    the list this returns) is the sole advancement key.
+
+    A talqeen is inserted immediately before the lesson it introduces, so once
+    renumbering is done that lesson is always the very next session. Setting
+    `derived_from` is therefore a second pass, run only after every id in the
+    juz is final -- never the lesson's stale pre-renumbering id.
+    """
+    out: list[dict] = []
+    opened: set[int] = set()
+    for s in sessions:
+        unit = s["unit_index"]
+        if s["kind"] == "lesson" and unit is not None and unit not in opened:
+            opened.add(unit)
+            out.append(talqeen_of(s))
+        out.append(s)
+
+    level = out[0]["level_id"]
+    juz = out[0]["juz_number"]
+    for i, s in enumerate(out):
+        s["session_number"] = i + 1
+        s["id"] = f"L{level}_J{juz}_S{i + 1}"
+
+    for i, s in enumerate(out):
+        if s["kind"] == "talqeen":
+            s["source"]["derived_from"] = out[i + 1]["id"]
+
+    return out
+
+
+# --------------------------------------------------------------------------
 # Driver
 # --------------------------------------------------------------------------
 def extract() -> tuple[dict, dict, list[str], list[str], list[str]]:
@@ -747,6 +821,10 @@ def extract() -> tuple[dict, dict, list[str], list[str], list[str]]:
             juz_sessions = build_juz_sessions(
                 src, pos, list(taught), errors, warnings, anomalies
             )
+            # A تلقين opens every unit. Inserted BEFORE order_in_level is
+            # assigned, so the level ordering, the level session_count and
+            # first_order_in_level all account for them without a second pass.
+            juz_sessions = insert_talqeen_sessions(juz_sessions)
             first_order = len(level_sessions) + 1
             for s in juz_sessions:
                 s["order_in_level"] = len(level_sessions) + 1
@@ -799,18 +877,55 @@ def extract() -> tuple[dict, dict, list[str], list[str], list[str]]:
                 errors.append(f"{s['id']}: lesson with no Quran content at all")
             if s["kind"] in ("sard", "exam") and not s["scope"]:
                 errors.append(f"{s['id']}: assessment without a scope")
-            if not s["source"] or s["source"]["row"] is None:
+            if s["kind"] == "talqeen":
+                if not s["source"].get("derived_from"):
+                    errors.append(f"{s['id']}: talqeen without a derived_from")
+                if not s["current_level_content"]:
+                    errors.append(f"{s['id']}: talqeen teaches no passage")
+                if s["scope"] or s["assessed_by"]:
+                    errors.append(f"{s['id']}: talqeen is not an assessment")
+            elif not s["source"] or s["source"]["row"] is None:
                 errors.append(f"{s['id']}: missing source provenance")
         for juz, nums in by_juz.items():
             if nums != list(range(1, len(nums) + 1)):
                 errors.append(f"L{level} J{juz}: session numbers are not dense 1..N: {nums}")
+
+        # Every unit opens with a تلقين that teaches the passage of the lesson
+        # it precedes. A unit that opens with anything else is a derivation bug.
+        by_order = sorted(sessions, key=lambda s: s["order_in_level"])
+        units_opened: set[tuple[int, int]] = set()
+        for i, s in enumerate(by_order):
+            unit = s["unit_index"]
+            if unit is None:
+                continue
+            key = (s["juz_number"], unit)
+            if key in units_opened:
+                continue
+            units_opened.add(key)
+            if s["kind"] != "talqeen":
+                errors.append(
+                    f"L{level} J{s['juz_number']} unit {unit}: opens with "
+                    f"{s['kind']} ({s['id']}), not a talqeen"
+                )
+                continue
+            following = by_order[i + 1]
+            if s["current_level_content"] != following["current_level_content"]:
+                errors.append(
+                    f"{s['id']}: talqeen does not teach the passage of "
+                    f"{following['id']}"
+                )
+            if s["source"].get("derived_from") != following["id"]:
+                errors.append(
+                    f"{s['id']}: derived_from is {s['source'].get('derived_from')!r}, "
+                    f"expected the id of the session it introduces ({following['id']!r})"
+                )
 
     return levels, sessions_by_level, errors, warnings, anomalies
 
 
 def print_report(levels, sessions_by_level, errors, warnings, anomalies) -> None:
     print("\n" + "=" * 96)
-    print(f"{'level':>5} {'juz':>4} {'sessions':>9} {'lessons':>8} {'sard':>5} {'exam':>5}  tiers")
+    print(f"{'level':>5} {'juz':>4} {'sessions':>9} {'talqeen':>8} {'lessons':>8} {'sard':>5} {'exam':>5}  tiers")
     print("-" * 96)
     for level in sorted(levels):
         for juz_meta in levels[level]["juz"]:
@@ -822,6 +937,7 @@ def print_report(levels, sessions_by_level, errors, warnings, anomalies) -> None
             ]
             print(
                 f"{level:>5} {juz:>4} {len(ss):>9} "
+                f"{sum(1 for s in ss if s['kind'] == 'talqeen'):>8} "
                 f"{sum(1 for s in ss if s['kind'] == 'lesson'):>8} "
                 f"{sum(1 for s in ss if s['kind'] == 'sard'):>5} "
                 f"{sum(1 for s in ss if s['kind'] == 'exam'):>5}  {', '.join(tiers)}"
@@ -916,7 +1032,7 @@ def main() -> int:
                 "sessions_per_level": {
                     str(l): levels[l]["session_count"] for l in sorted(levels)
                 },
-                "schema_version": 2,
+                "schema_version": 3,
             },
             ensure_ascii=False,
             indent=2,

@@ -327,6 +327,30 @@ void main() {
       });
     });
 
+    group('a student standing on a talqeen session', () {
+      StudentModel onTalqeen({int attempt = 1}) => StudentModel(
+        id: 's1',
+        userId: 'u1',
+        instituteId: 'i1',
+        currentSessionId: 'L1_J30_S1',
+        currentSessionKind: SessionKind.talqeen,
+        currentAttempt: attempt,
+        createdAt: DateTime(2026, 1, 1),
+      );
+
+      test('is not on an assessment', () {
+        expect(onTalqeen().isOnAssessment, isFalse);
+        expect(onTalqeen().isOnTalqeen, isTrue);
+        expect(onTalqeen().canTakeSard, isFalse);
+        expect(onTalqeen().canTakeExam, isFalse);
+      });
+
+      test('can never exhaust attempts at a session that cannot be failed', () {
+        expect(onTalqeen(attempt: 9).hasReachedMaxAttempts, isFalse);
+        expect(onTalqeen(attempt: 9).canStartSession, isTrue);
+      });
+    });
+
     group('identity', () {
       test('students are equal by id', () {
         final a = StudentModel(

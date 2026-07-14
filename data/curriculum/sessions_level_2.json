@@ -5,6 +5,29 @@
     "juz_number": 27,
     "session_number": 1,
     "order_in_level": 1,
+    "kind": "talqeen",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 54,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الحديد",
+      "from_verse": 1,
+      "to_surah": "الحديد",
+      "to_verse": 3
+    },
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "derived_from": "L2_J27_S2"
+    }
+  },
+  {
+    "id": "L2_J27_S2",
+    "level_id": 2,
+    "juz_number": 27,
+    "session_number": 2,
+    "order_in_level": 2,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -31,11 +54,11 @@
     }
   },
   {
-    "id": "L2_J27_S2",
+    "id": "L2_J27_S3",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 2,
-    "order_in_level": 2,
+    "session_number": 3,
+    "order_in_level": 3,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -67,11 +90,11 @@
     }
   },
   {
-    "id": "L2_J27_S3",
+    "id": "L2_J27_S4",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 3,
-    "order_in_level": 3,
+    "session_number": 4,
+    "order_in_level": 4,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -103,11 +126,11 @@
     }
   },
   {
-    "id": "L2_J27_S4",
+    "id": "L2_J27_S5",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 4,
-    "order_in_level": 4,
+    "session_number": 5,
+    "order_in_level": 5,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -139,11 +162,11 @@
     }
   },
   {
-    "id": "L2_J27_S5",
+    "id": "L2_J27_S6",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 5,
-    "order_in_level": 5,
+    "session_number": 6,
+    "order_in_level": 6,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -175,11 +198,11 @@
     }
   },
   {
-    "id": "L2_J27_S6",
+    "id": "L2_J27_S7",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 6,
-    "order_in_level": 6,
+    "session_number": 7,
+    "order_in_level": 7,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -211,11 +234,11 @@
     }
   },
   {
-    "id": "L2_J27_S7",
+    "id": "L2_J27_S8",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 7,
-    "order_in_level": 7,
+    "session_number": 8,
+    "order_in_level": 8,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -247,11 +270,11 @@
     }
   },
   {
-    "id": "L2_J27_S8",
+    "id": "L2_J27_S9",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 8,
-    "order_in_level": 8,
+    "session_number": 9,
+    "order_in_level": 9,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -283,11 +306,11 @@
     }
   },
   {
-    "id": "L2_J27_S9",
+    "id": "L2_J27_S10",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 9,
-    "order_in_level": 9,
+    "session_number": 10,
+    "order_in_level": 10,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -319,11 +342,11 @@
     }
   },
   {
-    "id": "L2_J27_S10",
+    "id": "L2_J27_S11",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 10,
-    "order_in_level": 10,
+    "session_number": 11,
+    "order_in_level": 11,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -355,11 +378,11 @@
     }
   },
   {
-    "id": "L2_J27_S11",
+    "id": "L2_J27_S12",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 11,
-    "order_in_level": 11,
+    "session_number": 12,
+    "order_in_level": 12,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -391,11 +414,11 @@
     }
   },
   {
-    "id": "L2_J27_S12",
+    "id": "L2_J27_S13",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 12,
-    "order_in_level": 12,
+    "session_number": 13,
+    "order_in_level": 13,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -427,11 +450,11 @@
     }
   },
   {
-    "id": "L2_J27_S13",
+    "id": "L2_J27_S14",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 13,
-    "order_in_level": 13,
+    "session_number": 14,
+    "order_in_level": 14,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -463,11 +486,11 @@
     }
   },
   {
-    "id": "L2_J27_S14",
+    "id": "L2_J27_S15",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 14,
-    "order_in_level": 14,
+    "session_number": 15,
+    "order_in_level": 15,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -499,11 +522,11 @@
     }
   },
   {
-    "id": "L2_J27_S15",
+    "id": "L2_J27_S16",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 15,
-    "order_in_level": 15,
+    "session_number": 16,
+    "order_in_level": 16,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -535,11 +558,11 @@
     }
   },
   {
-    "id": "L2_J27_S16",
+    "id": "L2_J27_S17",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 16,
-    "order_in_level": 16,
+    "session_number": 17,
+    "order_in_level": 17,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -571,11 +594,11 @@
     }
   },
   {
-    "id": "L2_J27_S17",
+    "id": "L2_J27_S18",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 17,
-    "order_in_level": 17,
+    "session_number": 18,
+    "order_in_level": 18,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -607,11 +630,11 @@
     }
   },
   {
-    "id": "L2_J27_S18",
+    "id": "L2_J27_S19",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 18,
-    "order_in_level": 18,
+    "session_number": 19,
+    "order_in_level": 19,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -643,11 +666,11 @@
     }
   },
   {
-    "id": "L2_J27_S19",
+    "id": "L2_J27_S20",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 19,
-    "order_in_level": 19,
+    "session_number": 20,
+    "order_in_level": 20,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -679,11 +702,11 @@
     }
   },
   {
-    "id": "L2_J27_S20",
+    "id": "L2_J27_S21",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 20,
-    "order_in_level": 20,
+    "session_number": 21,
+    "order_in_level": 21,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -715,11 +738,11 @@
     }
   },
   {
-    "id": "L2_J27_S21",
+    "id": "L2_J27_S22",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 21,
-    "order_in_level": 21,
+    "session_number": 22,
+    "order_in_level": 22,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -751,11 +774,11 @@
     }
   },
   {
-    "id": "L2_J27_S22",
+    "id": "L2_J27_S23",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 22,
-    "order_in_level": 22,
+    "session_number": 23,
+    "order_in_level": 23,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -787,11 +810,11 @@
     }
   },
   {
-    "id": "L2_J27_S23",
+    "id": "L2_J27_S24",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 23,
-    "order_in_level": 23,
+    "session_number": 24,
+    "order_in_level": 24,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -823,11 +846,11 @@
     }
   },
   {
-    "id": "L2_J27_S24",
+    "id": "L2_J27_S25",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 24,
-    "order_in_level": 24,
+    "session_number": 25,
+    "order_in_level": 25,
     "kind": "sard",
     "assessed_by": "teacher",
     "unit_index": 1,
@@ -856,11 +879,11 @@
     }
   },
   {
-    "id": "L2_J27_S25",
+    "id": "L2_J27_S26",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 25,
-    "order_in_level": 25,
+    "session_number": 26,
+    "order_in_level": 26,
     "kind": "exam",
     "assessed_by": "supervisor",
     "unit_index": 1,
@@ -884,11 +907,34 @@
     }
   },
   {
-    "id": "L2_J27_S26",
+    "id": "L2_J27_S27",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 26,
-    "order_in_level": 26,
+    "session_number": 27,
+    "order_in_level": 27,
+    "kind": "talqeen",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 53,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "القمر",
+      "from_verse": 1,
+      "to_surah": "القمر",
+      "to_verse": 6
+    },
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "derived_from": "L2_J27_S28"
+    }
+  },
+  {
+    "id": "L2_J27_S28",
+    "level_id": 2,
+    "juz_number": 27,
+    "session_number": 28,
+    "order_in_level": 28,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -915,11 +961,11 @@
     }
   },
   {
-    "id": "L2_J27_S27",
+    "id": "L2_J27_S29",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 27,
-    "order_in_level": 27,
+    "session_number": 29,
+    "order_in_level": 29,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -951,11 +997,11 @@
     }
   },
   {
-    "id": "L2_J27_S28",
+    "id": "L2_J27_S30",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 28,
-    "order_in_level": 28,
+    "session_number": 30,
+    "order_in_level": 30,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -987,11 +1033,11 @@
     }
   },
   {
-    "id": "L2_J27_S29",
+    "id": "L2_J27_S31",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 29,
-    "order_in_level": 29,
+    "session_number": 31,
+    "order_in_level": 31,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1023,11 +1069,11 @@
     }
   },
   {
-    "id": "L2_J27_S30",
+    "id": "L2_J27_S32",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 30,
-    "order_in_level": 30,
+    "session_number": 32,
+    "order_in_level": 32,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1059,11 +1105,11 @@
     }
   },
   {
-    "id": "L2_J27_S31",
+    "id": "L2_J27_S33",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 31,
-    "order_in_level": 31,
+    "session_number": 33,
+    "order_in_level": 33,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1095,11 +1141,11 @@
     }
   },
   {
-    "id": "L2_J27_S32",
+    "id": "L2_J27_S34",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 32,
-    "order_in_level": 32,
+    "session_number": 34,
+    "order_in_level": 34,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1131,11 +1177,11 @@
     }
   },
   {
-    "id": "L2_J27_S33",
+    "id": "L2_J27_S35",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 33,
-    "order_in_level": 33,
+    "session_number": 35,
+    "order_in_level": 35,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1167,11 +1213,11 @@
     }
   },
   {
-    "id": "L2_J27_S34",
+    "id": "L2_J27_S36",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 34,
-    "order_in_level": 34,
+    "session_number": 36,
+    "order_in_level": 36,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1203,11 +1249,11 @@
     }
   },
   {
-    "id": "L2_J27_S35",
+    "id": "L2_J27_S37",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 35,
-    "order_in_level": 35,
+    "session_number": 37,
+    "order_in_level": 37,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1239,11 +1285,11 @@
     }
   },
   {
-    "id": "L2_J27_S36",
+    "id": "L2_J27_S38",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 36,
-    "order_in_level": 36,
+    "session_number": 38,
+    "order_in_level": 38,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1275,11 +1321,11 @@
     }
   },
   {
-    "id": "L2_J27_S37",
+    "id": "L2_J27_S39",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 37,
-    "order_in_level": 37,
+    "session_number": 39,
+    "order_in_level": 39,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1311,11 +1357,11 @@
     }
   },
   {
-    "id": "L2_J27_S38",
+    "id": "L2_J27_S40",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 38,
-    "order_in_level": 38,
+    "session_number": 40,
+    "order_in_level": 40,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1347,11 +1393,11 @@
     }
   },
   {
-    "id": "L2_J27_S39",
+    "id": "L2_J27_S41",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 39,
-    "order_in_level": 39,
+    "session_number": 41,
+    "order_in_level": 41,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1383,11 +1429,11 @@
     }
   },
   {
-    "id": "L2_J27_S40",
+    "id": "L2_J27_S42",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 40,
-    "order_in_level": 40,
+    "session_number": 42,
+    "order_in_level": 42,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1419,11 +1465,11 @@
     }
   },
   {
-    "id": "L2_J27_S41",
+    "id": "L2_J27_S43",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 41,
-    "order_in_level": 41,
+    "session_number": 43,
+    "order_in_level": 43,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1455,11 +1501,11 @@
     }
   },
   {
-    "id": "L2_J27_S42",
+    "id": "L2_J27_S44",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 42,
-    "order_in_level": 42,
+    "session_number": 44,
+    "order_in_level": 44,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1491,11 +1537,11 @@
     }
   },
   {
-    "id": "L2_J27_S43",
+    "id": "L2_J27_S45",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 43,
-    "order_in_level": 43,
+    "session_number": 45,
+    "order_in_level": 45,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1527,11 +1573,11 @@
     }
   },
   {
-    "id": "L2_J27_S44",
+    "id": "L2_J27_S46",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 44,
-    "order_in_level": 44,
+    "session_number": 46,
+    "order_in_level": 46,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1563,11 +1609,11 @@
     }
   },
   {
-    "id": "L2_J27_S45",
+    "id": "L2_J27_S47",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 45,
-    "order_in_level": 45,
+    "session_number": 47,
+    "order_in_level": 47,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1599,11 +1645,11 @@
     }
   },
   {
-    "id": "L2_J27_S46",
+    "id": "L2_J27_S48",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 46,
-    "order_in_level": 46,
+    "session_number": 48,
+    "order_in_level": 48,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1635,11 +1681,11 @@
     }
   },
   {
-    "id": "L2_J27_S47",
+    "id": "L2_J27_S49",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 47,
-    "order_in_level": 47,
+    "session_number": 49,
+    "order_in_level": 49,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -1671,11 +1717,11 @@
     }
   },
   {
-    "id": "L2_J27_S48",
+    "id": "L2_J27_S50",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 48,
-    "order_in_level": 48,
+    "session_number": 50,
+    "order_in_level": 50,
     "kind": "sard",
     "assessed_by": "teacher",
     "unit_index": 2,
@@ -1704,11 +1750,11 @@
     }
   },
   {
-    "id": "L2_J27_S49",
+    "id": "L2_J27_S51",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 49,
-    "order_in_level": 49,
+    "session_number": 51,
+    "order_in_level": 51,
     "kind": "exam",
     "assessed_by": "supervisor",
     "unit_index": 2,
@@ -1732,11 +1778,11 @@
     }
   },
   {
-    "id": "L2_J27_S50",
+    "id": "L2_J27_S52",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 50,
-    "order_in_level": 50,
+    "session_number": 52,
+    "order_in_level": 52,
     "kind": "sard",
     "assessed_by": "teacher",
     "unit_index": null,
@@ -1760,11 +1806,11 @@
     }
   },
   {
-    "id": "L2_J27_S51",
+    "id": "L2_J27_S53",
     "level_id": 2,
     "juz_number": 27,
-    "session_number": 51,
-    "order_in_level": 51,
+    "session_number": 53,
+    "order_in_level": 53,
     "kind": "exam",
     "assessed_by": "supervisor",
     "unit_index": null,
@@ -1792,7 +1838,30 @@
     "level_id": 2,
     "juz_number": 26,
     "session_number": 1,
-    "order_in_level": 52,
+    "order_in_level": 54,
+    "kind": "talqeen",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 52,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "ق",
+      "from_verse": 1,
+      "to_surah": "ق",
+      "to_verse": 8
+    },
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "derived_from": "L2_J26_S2"
+    }
+  },
+  {
+    "id": "L2_J26_S2",
+    "level_id": 2,
+    "juz_number": 26,
+    "session_number": 2,
+    "order_in_level": 55,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -1819,11 +1888,11 @@
     }
   },
   {
-    "id": "L2_J26_S2",
+    "id": "L2_J26_S3",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 2,
-    "order_in_level": 53,
+    "session_number": 3,
+    "order_in_level": 56,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -1855,11 +1924,11 @@
     }
   },
   {
-    "id": "L2_J26_S3",
+    "id": "L2_J26_S4",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 3,
-    "order_in_level": 54,
+    "session_number": 4,
+    "order_in_level": 57,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -1891,11 +1960,11 @@
     }
   },
   {
-    "id": "L2_J26_S4",
+    "id": "L2_J26_S5",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 4,
-    "order_in_level": 55,
+    "session_number": 5,
+    "order_in_level": 58,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -1927,11 +1996,11 @@
     }
   },
   {
-    "id": "L2_J26_S5",
+    "id": "L2_J26_S6",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 5,
-    "order_in_level": 56,
+    "session_number": 6,
+    "order_in_level": 59,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -1963,11 +2032,11 @@
     }
   },
   {
-    "id": "L2_J26_S6",
+    "id": "L2_J26_S7",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 6,
-    "order_in_level": 57,
+    "session_number": 7,
+    "order_in_level": 60,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -1999,11 +2068,11 @@
     }
   },
   {
-    "id": "L2_J26_S7",
+    "id": "L2_J26_S8",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 7,
-    "order_in_level": 58,
+    "session_number": 8,
+    "order_in_level": 61,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -2035,11 +2104,11 @@
     }
   },
   {
-    "id": "L2_J26_S8",
+    "id": "L2_J26_S9",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 8,
-    "order_in_level": 59,
+    "session_number": 9,
+    "order_in_level": 62,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -2071,11 +2140,11 @@
     }
   },
   {
-    "id": "L2_J26_S9",
+    "id": "L2_J26_S10",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 9,
-    "order_in_level": 60,
+    "session_number": 10,
+    "order_in_level": 63,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -2107,11 +2176,11 @@
     }
   },
   {
-    "id": "L2_J26_S10",
+    "id": "L2_J26_S11",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 10,
-    "order_in_level": 61,
+    "session_number": 11,
+    "order_in_level": 64,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -2143,11 +2212,11 @@
     }
   },
   {
-    "id": "L2_J26_S11",
+    "id": "L2_J26_S12",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 11,
-    "order_in_level": 62,
+    "session_number": 12,
+    "order_in_level": 65,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -2179,11 +2248,11 @@
     }
   },
   {
-    "id": "L2_J26_S12",
+    "id": "L2_J26_S13",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 12,
-    "order_in_level": 63,
+    "session_number": 13,
+    "order_in_level": 66,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -2215,11 +2284,11 @@
     }
   },
   {
-    "id": "L2_J26_S13",
+    "id": "L2_J26_S14",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 13,
-    "order_in_level": 64,
+    "session_number": 14,
+    "order_in_level": 67,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -2251,11 +2320,11 @@
     }
   },
   {
-    "id": "L2_J26_S14",
+    "id": "L2_J26_S15",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 14,
-    "order_in_level": 65,
+    "session_number": 15,
+    "order_in_level": 68,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -2287,11 +2356,11 @@
     }
   },
   {
-    "id": "L2_J26_S15",
+    "id": "L2_J26_S16",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 15,
-    "order_in_level": 66,
+    "session_number": 16,
+    "order_in_level": 69,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -2323,11 +2392,11 @@
     }
   },
   {
-    "id": "L2_J26_S16",
+    "id": "L2_J26_S17",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 16,
-    "order_in_level": 67,
+    "session_number": 17,
+    "order_in_level": 70,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -2359,11 +2428,11 @@
     }
   },
   {
-    "id": "L2_J26_S17",
+    "id": "L2_J26_S18",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 17,
-    "order_in_level": 68,
+    "session_number": 18,
+    "order_in_level": 71,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -2395,11 +2464,11 @@
     }
   },
   {
-    "id": "L2_J26_S18",
+    "id": "L2_J26_S19",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 18,
-    "order_in_level": 69,
+    "session_number": 19,
+    "order_in_level": 72,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -2431,11 +2500,11 @@
     }
   },
   {
-    "id": "L2_J26_S19",
+    "id": "L2_J26_S20",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 19,
-    "order_in_level": 70,
+    "session_number": 20,
+    "order_in_level": 73,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -2467,11 +2536,11 @@
     }
   },
   {
-    "id": "L2_J26_S20",
+    "id": "L2_J26_S21",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 20,
-    "order_in_level": 71,
+    "session_number": 21,
+    "order_in_level": 74,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -2503,11 +2572,11 @@
     }
   },
   {
-    "id": "L2_J26_S21",
+    "id": "L2_J26_S22",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 21,
-    "order_in_level": 72,
+    "session_number": 22,
+    "order_in_level": 75,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -2539,11 +2608,11 @@
     }
   },
   {
-    "id": "L2_J26_S22",
+    "id": "L2_J26_S23",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 22,
-    "order_in_level": 73,
+    "session_number": 23,
+    "order_in_level": 76,
     "kind": "sard",
     "assessed_by": "teacher",
     "unit_index": 1,
@@ -2572,11 +2641,11 @@
     }
   },
   {
-    "id": "L2_J26_S23",
+    "id": "L2_J26_S24",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 23,
-    "order_in_level": 74,
+    "session_number": 24,
+    "order_in_level": 77,
     "kind": "exam",
     "assessed_by": "supervisor",
     "unit_index": 1,
@@ -2600,11 +2669,34 @@
     }
   },
   {
-    "id": "L2_J26_S24",
+    "id": "L2_J26_S25",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 24,
-    "order_in_level": 75,
+    "session_number": 25,
+    "order_in_level": 78,
+    "kind": "talqeen",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 51,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "محمد",
+      "from_verse": 1,
+      "to_surah": "محمد",
+      "to_verse": 4
+    },
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "derived_from": "L2_J26_S26"
+    }
+  },
+  {
+    "id": "L2_J26_S26",
+    "level_id": 2,
+    "juz_number": 26,
+    "session_number": 26,
+    "order_in_level": 79,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -2631,11 +2723,11 @@
     }
   },
   {
-    "id": "L2_J26_S25",
+    "id": "L2_J26_S27",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 25,
-    "order_in_level": 76,
+    "session_number": 27,
+    "order_in_level": 80,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -2667,11 +2759,11 @@
     }
   },
   {
-    "id": "L2_J26_S26",
+    "id": "L2_J26_S28",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 26,
-    "order_in_level": 77,
+    "session_number": 28,
+    "order_in_level": 81,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -2703,11 +2795,11 @@
     }
   },
   {
-    "id": "L2_J26_S27",
+    "id": "L2_J26_S29",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 27,
-    "order_in_level": 78,
+    "session_number": 29,
+    "order_in_level": 82,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -2739,11 +2831,11 @@
     }
   },
   {
-    "id": "L2_J26_S28",
+    "id": "L2_J26_S30",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 28,
-    "order_in_level": 79,
+    "session_number": 30,
+    "order_in_level": 83,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -2775,11 +2867,11 @@
     }
   },
   {
-    "id": "L2_J26_S29",
+    "id": "L2_J26_S31",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 29,
-    "order_in_level": 80,
+    "session_number": 31,
+    "order_in_level": 84,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -2811,11 +2903,11 @@
     }
   },
   {
-    "id": "L2_J26_S30",
+    "id": "L2_J26_S32",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 30,
-    "order_in_level": 81,
+    "session_number": 32,
+    "order_in_level": 85,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -2847,11 +2939,11 @@
     }
   },
   {
-    "id": "L2_J26_S31",
+    "id": "L2_J26_S33",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 31,
-    "order_in_level": 82,
+    "session_number": 33,
+    "order_in_level": 86,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -2883,11 +2975,11 @@
     }
   },
   {
-    "id": "L2_J26_S32",
+    "id": "L2_J26_S34",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 32,
-    "order_in_level": 83,
+    "session_number": 34,
+    "order_in_level": 87,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -2919,11 +3011,11 @@
     }
   },
   {
-    "id": "L2_J26_S33",
+    "id": "L2_J26_S35",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 33,
-    "order_in_level": 84,
+    "session_number": 35,
+    "order_in_level": 88,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -2955,11 +3047,11 @@
     }
   },
   {
-    "id": "L2_J26_S34",
+    "id": "L2_J26_S36",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 34,
-    "order_in_level": 85,
+    "session_number": 36,
+    "order_in_level": 89,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -2991,11 +3083,11 @@
     }
   },
   {
-    "id": "L2_J26_S35",
+    "id": "L2_J26_S37",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 35,
-    "order_in_level": 86,
+    "session_number": 37,
+    "order_in_level": 90,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -3027,11 +3119,11 @@
     }
   },
   {
-    "id": "L2_J26_S36",
+    "id": "L2_J26_S38",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 36,
-    "order_in_level": 87,
+    "session_number": 38,
+    "order_in_level": 91,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -3063,11 +3155,11 @@
     }
   },
   {
-    "id": "L2_J26_S37",
+    "id": "L2_J26_S39",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 37,
-    "order_in_level": 88,
+    "session_number": 39,
+    "order_in_level": 92,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -3099,11 +3191,11 @@
     }
   },
   {
-    "id": "L2_J26_S38",
+    "id": "L2_J26_S40",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 38,
-    "order_in_level": 89,
+    "session_number": 40,
+    "order_in_level": 93,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -3135,11 +3227,11 @@
     }
   },
   {
-    "id": "L2_J26_S39",
+    "id": "L2_J26_S41",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 39,
-    "order_in_level": 90,
+    "session_number": 41,
+    "order_in_level": 94,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -3171,11 +3263,11 @@
     }
   },
   {
-    "id": "L2_J26_S40",
+    "id": "L2_J26_S42",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 40,
-    "order_in_level": 91,
+    "session_number": 42,
+    "order_in_level": 95,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -3207,11 +3299,11 @@
     }
   },
   {
-    "id": "L2_J26_S41",
+    "id": "L2_J26_S43",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 41,
-    "order_in_level": 92,
+    "session_number": 43,
+    "order_in_level": 96,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -3243,11 +3335,11 @@
     }
   },
   {
-    "id": "L2_J26_S42",
+    "id": "L2_J26_S44",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 42,
-    "order_in_level": 93,
+    "session_number": 44,
+    "order_in_level": 97,
     "kind": "sard",
     "assessed_by": "teacher",
     "unit_index": 2,
@@ -3276,11 +3368,11 @@
     }
   },
   {
-    "id": "L2_J26_S43",
+    "id": "L2_J26_S45",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 43,
-    "order_in_level": 94,
+    "session_number": 45,
+    "order_in_level": 98,
     "kind": "exam",
     "assessed_by": "supervisor",
     "unit_index": 2,
@@ -3304,11 +3396,11 @@
     }
   },
   {
-    "id": "L2_J26_S44",
+    "id": "L2_J26_S46",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 44,
-    "order_in_level": 95,
+    "session_number": 46,
+    "order_in_level": 99,
     "kind": "sard",
     "assessed_by": "teacher",
     "unit_index": null,
@@ -3332,11 +3424,11 @@
     }
   },
   {
-    "id": "L2_J26_S45",
+    "id": "L2_J26_S47",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 45,
-    "order_in_level": 96,
+    "session_number": 47,
+    "order_in_level": 100,
     "kind": "exam",
     "assessed_by": "supervisor",
     "unit_index": null,
@@ -3360,11 +3452,11 @@
     }
   },
   {
-    "id": "L2_J26_S46",
+    "id": "L2_J26_S48",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 46,
-    "order_in_level": 97,
+    "session_number": 48,
+    "order_in_level": 101,
     "kind": "sard",
     "assessed_by": "teacher",
     "unit_index": null,
@@ -3389,11 +3481,11 @@
     }
   },
   {
-    "id": "L2_J26_S47",
+    "id": "L2_J26_S49",
     "level_id": 2,
     "juz_number": 26,
-    "session_number": 47,
-    "order_in_level": 98,
+    "session_number": 49,
+    "order_in_level": 102,
     "kind": "exam",
     "assessed_by": "supervisor",
     "unit_index": null,
@@ -3422,7 +3514,30 @@
     "level_id": 2,
     "juz_number": 25,
     "session_number": 1,
-    "order_in_level": 99,
+    "order_in_level": 103,
+    "kind": "talqeen",
+    "assessed_by": null,
+    "unit_index": 1,
+    "hizb_number": 50,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الجاثية",
+      "from_verse": 1,
+      "to_surah": "الجاثية",
+      "to_verse": 8
+    },
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "derived_from": "L2_J25_S2"
+    }
+  },
+  {
+    "id": "L2_J25_S2",
+    "level_id": 2,
+    "juz_number": 25,
+    "session_number": 2,
+    "order_in_level": 104,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -3449,11 +3564,11 @@
     }
   },
   {
-    "id": "L2_J25_S2",
+    "id": "L2_J25_S3",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 2,
-    "order_in_level": 100,
+    "session_number": 3,
+    "order_in_level": 105,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -3485,11 +3600,11 @@
     }
   },
   {
-    "id": "L2_J25_S3",
+    "id": "L2_J25_S4",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 3,
-    "order_in_level": 101,
+    "session_number": 4,
+    "order_in_level": 106,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -3521,11 +3636,11 @@
     }
   },
   {
-    "id": "L2_J25_S4",
+    "id": "L2_J25_S5",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 4,
-    "order_in_level": 102,
+    "session_number": 5,
+    "order_in_level": 107,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -3557,11 +3672,11 @@
     }
   },
   {
-    "id": "L2_J25_S5",
+    "id": "L2_J25_S6",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 5,
-    "order_in_level": 103,
+    "session_number": 6,
+    "order_in_level": 108,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -3593,11 +3708,11 @@
     }
   },
   {
-    "id": "L2_J25_S6",
+    "id": "L2_J25_S7",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 6,
-    "order_in_level": 104,
+    "session_number": 7,
+    "order_in_level": 109,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -3629,11 +3744,11 @@
     }
   },
   {
-    "id": "L2_J25_S7",
+    "id": "L2_J25_S8",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 7,
-    "order_in_level": 105,
+    "session_number": 8,
+    "order_in_level": 110,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -3665,11 +3780,11 @@
     }
   },
   {
-    "id": "L2_J25_S8",
+    "id": "L2_J25_S9",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 8,
-    "order_in_level": 106,
+    "session_number": 9,
+    "order_in_level": 111,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -3701,11 +3816,11 @@
     }
   },
   {
-    "id": "L2_J25_S9",
+    "id": "L2_J25_S10",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 9,
-    "order_in_level": 107,
+    "session_number": 10,
+    "order_in_level": 112,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -3737,11 +3852,11 @@
     }
   },
   {
-    "id": "L2_J25_S10",
+    "id": "L2_J25_S11",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 10,
-    "order_in_level": 108,
+    "session_number": 11,
+    "order_in_level": 113,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -3773,11 +3888,11 @@
     }
   },
   {
-    "id": "L2_J25_S11",
+    "id": "L2_J25_S12",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 11,
-    "order_in_level": 109,
+    "session_number": 12,
+    "order_in_level": 114,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -3809,11 +3924,11 @@
     }
   },
   {
-    "id": "L2_J25_S12",
+    "id": "L2_J25_S13",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 12,
-    "order_in_level": 110,
+    "session_number": 13,
+    "order_in_level": 115,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -3845,11 +3960,11 @@
     }
   },
   {
-    "id": "L2_J25_S13",
+    "id": "L2_J25_S14",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 13,
-    "order_in_level": 111,
+    "session_number": 14,
+    "order_in_level": 116,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -3881,11 +3996,11 @@
     }
   },
   {
-    "id": "L2_J25_S14",
+    "id": "L2_J25_S15",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 14,
-    "order_in_level": 112,
+    "session_number": 15,
+    "order_in_level": 117,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -3917,11 +4032,11 @@
     }
   },
   {
-    "id": "L2_J25_S15",
+    "id": "L2_J25_S16",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 15,
-    "order_in_level": 113,
+    "session_number": 16,
+    "order_in_level": 118,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -3953,11 +4068,11 @@
     }
   },
   {
-    "id": "L2_J25_S16",
+    "id": "L2_J25_S17",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 16,
-    "order_in_level": 114,
+    "session_number": 17,
+    "order_in_level": 119,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -3989,11 +4104,11 @@
     }
   },
   {
-    "id": "L2_J25_S17",
+    "id": "L2_J25_S18",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 17,
-    "order_in_level": 115,
+    "session_number": 18,
+    "order_in_level": 120,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -4025,11 +4140,11 @@
     }
   },
   {
-    "id": "L2_J25_S18",
+    "id": "L2_J25_S19",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 18,
-    "order_in_level": 116,
+    "session_number": 19,
+    "order_in_level": 121,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -4061,11 +4176,11 @@
     }
   },
   {
-    "id": "L2_J25_S19",
+    "id": "L2_J25_S20",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 19,
-    "order_in_level": 117,
+    "session_number": 20,
+    "order_in_level": 122,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -4097,11 +4212,11 @@
     }
   },
   {
-    "id": "L2_J25_S20",
+    "id": "L2_J25_S21",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 20,
-    "order_in_level": 118,
+    "session_number": 21,
+    "order_in_level": 123,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -4133,11 +4248,11 @@
     }
   },
   {
-    "id": "L2_J25_S21",
+    "id": "L2_J25_S22",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 21,
-    "order_in_level": 119,
+    "session_number": 22,
+    "order_in_level": 124,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -4169,11 +4284,11 @@
     }
   },
   {
-    "id": "L2_J25_S22",
+    "id": "L2_J25_S23",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 22,
-    "order_in_level": 120,
+    "session_number": 23,
+    "order_in_level": 125,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -4205,11 +4320,11 @@
     }
   },
   {
-    "id": "L2_J25_S23",
+    "id": "L2_J25_S24",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 23,
-    "order_in_level": 121,
+    "session_number": 24,
+    "order_in_level": 126,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -4241,11 +4356,11 @@
     }
   },
   {
-    "id": "L2_J25_S24",
+    "id": "L2_J25_S25",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 24,
-    "order_in_level": 122,
+    "session_number": 25,
+    "order_in_level": 127,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -4277,11 +4392,11 @@
     }
   },
   {
-    "id": "L2_J25_S25",
+    "id": "L2_J25_S26",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 25,
-    "order_in_level": 123,
+    "session_number": 26,
+    "order_in_level": 128,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -4313,11 +4428,11 @@
     }
   },
   {
-    "id": "L2_J25_S26",
+    "id": "L2_J25_S27",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 26,
-    "order_in_level": 124,
+    "session_number": 27,
+    "order_in_level": 129,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -4349,11 +4464,11 @@
     }
   },
   {
-    "id": "L2_J25_S27",
+    "id": "L2_J25_S28",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 27,
-    "order_in_level": 125,
+    "session_number": 28,
+    "order_in_level": 130,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -4385,11 +4500,11 @@
     }
   },
   {
-    "id": "L2_J25_S28",
+    "id": "L2_J25_S29",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 28,
-    "order_in_level": 126,
+    "session_number": 29,
+    "order_in_level": 131,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 1,
@@ -4421,11 +4536,11 @@
     }
   },
   {
-    "id": "L2_J25_S29",
+    "id": "L2_J25_S30",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 29,
-    "order_in_level": 127,
+    "session_number": 30,
+    "order_in_level": 132,
     "kind": "sard",
     "assessed_by": "teacher",
     "unit_index": 1,
@@ -4454,11 +4569,11 @@
     }
   },
   {
-    "id": "L2_J25_S30",
+    "id": "L2_J25_S31",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 30,
-    "order_in_level": 128,
+    "session_number": 31,
+    "order_in_level": 133,
     "kind": "exam",
     "assessed_by": "supervisor",
     "unit_index": 1,
@@ -4482,11 +4597,34 @@
     }
   },
   {
-    "id": "L2_J25_S31",
+    "id": "L2_J25_S32",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 31,
-    "order_in_level": 129,
+    "session_number": 32,
+    "order_in_level": 134,
+    "kind": "talqeen",
+    "assessed_by": null,
+    "unit_index": 2,
+    "hizb_number": 49,
+    "scope": null,
+    "current_level_content": {
+      "from_surah": "الشورى",
+      "from_verse": 1,
+      "to_surah": "الشورى",
+      "to_verse": 6
+    },
+    "recent_review_content": null,
+    "distant_review_content": null,
+    "source": {
+      "derived_from": "L2_J25_S33"
+    }
+  },
+  {
+    "id": "L2_J25_S33",
+    "level_id": 2,
+    "juz_number": 25,
+    "session_number": 33,
+    "order_in_level": 135,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -4508,11 +4646,11 @@
     }
   },
   {
-    "id": "L2_J25_S32",
+    "id": "L2_J25_S34",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 32,
-    "order_in_level": 130,
+    "session_number": 34,
+    "order_in_level": 136,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -4544,11 +4682,11 @@
     }
   },
   {
-    "id": "L2_J25_S33",
+    "id": "L2_J25_S35",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 33,
-    "order_in_level": 131,
+    "session_number": 35,
+    "order_in_level": 137,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -4580,11 +4718,11 @@
     }
   },
   {
-    "id": "L2_J25_S34",
+    "id": "L2_J25_S36",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 34,
-    "order_in_level": 132,
+    "session_number": 36,
+    "order_in_level": 138,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -4616,11 +4754,11 @@
     }
   },
   {
-    "id": "L2_J25_S35",
+    "id": "L2_J25_S37",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 35,
-    "order_in_level": 133,
+    "session_number": 37,
+    "order_in_level": 139,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -4652,11 +4790,11 @@
     }
   },
   {
-    "id": "L2_J25_S36",
+    "id": "L2_J25_S38",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 36,
-    "order_in_level": 134,
+    "session_number": 38,
+    "order_in_level": 140,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -4688,11 +4826,11 @@
     }
   },
   {
-    "id": "L2_J25_S37",
+    "id": "L2_J25_S39",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 37,
-    "order_in_level": 135,
+    "session_number": 39,
+    "order_in_level": 141,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -4719,11 +4857,11 @@
     }
   },
   {
-    "id": "L2_J25_S38",
+    "id": "L2_J25_S40",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 38,
-    "order_in_level": 136,
+    "session_number": 40,
+    "order_in_level": 142,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -4750,11 +4888,11 @@
     }
   },
   {
-    "id": "L2_J25_S39",
+    "id": "L2_J25_S41",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 39,
-    "order_in_level": 137,
+    "session_number": 41,
+    "order_in_level": 143,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -4781,11 +4919,11 @@
     }
   },
   {
-    "id": "L2_J25_S40",
+    "id": "L2_J25_S42",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 40,
-    "order_in_level": 138,
+    "session_number": 42,
+    "order_in_level": 144,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -4812,11 +4950,11 @@
     }
   },
   {
-    "id": "L2_J25_S41",
+    "id": "L2_J25_S43",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 41,
-    "order_in_level": 139,
+    "session_number": 43,
+    "order_in_level": 145,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -4843,11 +4981,11 @@
     }
   },
   {
-    "id": "L2_J25_S42",
+    "id": "L2_J25_S44",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 42,
-    "order_in_level": 140,
+    "session_number": 44,
+    "order_in_level": 146,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -4874,11 +5012,11 @@
     }
   },
   {
-    "id": "L2_J25_S43",
+    "id": "L2_J25_S45",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 43,
-    "order_in_level": 141,
+    "session_number": 45,
+    "order_in_level": 147,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -4905,11 +5043,11 @@
     }
   },
   {
-    "id": "L2_J25_S44",
+    "id": "L2_J25_S46",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 44,
-    "order_in_level": 142,
+    "session_number": 46,
+    "order_in_level": 148,
     "kind": "lesson",
     "assessed_by": null,
     "unit_index": 2,
@@ -4936,11 +5074,11 @@
     }
   },
   {
-    "id": "L2_J25_S45",
+    "id": "L2_J25_S47",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 45,
-    "order_in_level": 143,
+    "session_number": 47,
+    "order_in_level": 149,
     "kind": "sard",
     "assessed_by": "teacher",
     "unit_index": 2,
@@ -4969,11 +5107,11 @@
     }
   },
   {
-    "id": "L2_J25_S46",
+    "id": "L2_J25_S48",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 46,
-    "order_in_level": 144,
+    "session_number": 48,
+    "order_in_level": 150,
     "kind": "exam",
     "assessed_by": "supervisor",
     "unit_index": 2,
@@ -4997,11 +5135,11 @@
     }
   },
   {
-    "id": "L2_J25_S47",
+    "id": "L2_J25_S49",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 47,
-    "order_in_level": 145,
+    "session_number": 49,
+    "order_in_level": 151,
     "kind": "sard",
     "assessed_by": "teacher",
     "unit_index": null,
@@ -5025,11 +5163,11 @@
     }
   },
   {
-    "id": "L2_J25_S48",
+    "id": "L2_J25_S50",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 48,
-    "order_in_level": 146,
+    "session_number": 50,
+    "order_in_level": 152,
     "kind": "exam",
     "assessed_by": "supervisor",
     "unit_index": null,
@@ -5053,11 +5191,11 @@
     }
   },
   {
-    "id": "L2_J25_S49",
+    "id": "L2_J25_S51",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 49,
-    "order_in_level": 147,
+    "session_number": 51,
+    "order_in_level": 153,
     "kind": "sard",
     "assessed_by": "teacher",
     "unit_index": null,
@@ -5083,11 +5221,11 @@
     }
   },
   {
-    "id": "L2_J25_S50",
+    "id": "L2_J25_S52",
     "level_id": 2,
     "juz_number": 25,
-    "session_number": 50,
-    "order_in_level": 148,
+    "session_number": 52,
+    "order_in_level": 154,
     "kind": "exam",
     "assessed_by": "supervisor",
     "unit_index": null,

@@ -209,6 +209,47 @@ final homePracticeStatsProvider = FutureProvider<HomePracticeStats>((
   );
 });
 
+/// The home assignment the student is currently working off: the passage, how
+/// many repetitions they owe, and how many they have logged against it.
+class HomeAssignment {
+  final String curriculumSessionId;
+  final int repetitionsRequired;
+  final int repetitionsDone;
+
+  const HomeAssignment({
+    required this.curriculumSessionId,
+    required this.repetitionsRequired,
+    required this.repetitionsDone,
+  });
+
+  bool get isComplete => repetitionsDone >= repetitionsRequired;
+}
+
+/// Null when the student has no record yet, or when their last session assigned
+/// no home repetitions.
+final homeAssignmentProvider = FutureProvider<HomeAssignment?>((ref) async {
+  final student = await ref.watch(currentStudentProvider.future);
+  if (student == null) return null;
+
+  final sessionRepo = ref.watch(sessionRepositoryProvider);
+  final record = await sessionRepo.getLatestSessionRecord(student.id);
+  if (record == null || record.homeRepetitionsRequired <= 0) return null;
+
+  final practices = await ref
+      .watch(homePracticeRepositoryProvider)
+      .getHomePracticesForStudent(student.id);
+
+  final done = practices
+      .where((p) => p.curriculumSessionId == record.curriculumSessionId)
+      .fold<int>(0, (total, p) => total + p.repetitions);
+
+  return HomeAssignment(
+    curriculumSessionId: record.curriculumSessionId,
+    repetitionsRequired: record.homeRepetitionsRequired,
+    repetitionsDone: done,
+  );
+});
+
 /// Notifier for creating home practice
 class HomePracticeNotifier extends Notifier<AsyncValue<void>> {
   @override
@@ -224,22 +265,43 @@ class HomePracticeNotifier extends Notifier<AsyncValue<void>> {
         return false;
       }
 
+      // The practice belongs to the session it was ASSIGNED in, which is the
+      // student's last completed session — NOT the session they now stand on.
+      // The teacher advanced them when that session ended.
+      final sessionRepo = ref.read(sessionRepositoryProvider);
+      final lastRecord = await sessionRepo.getLatestSessionRecord(student.id);
+
       final repo = ref.read(homePracticeRepositoryProvider);
       await repo.createHomePractice(
         studentId: student.id,
-        levelId: student.currentLevel,
-        juzNumber: student.currentJuz,
-        hizbNumber: student.currentHizb,
-        sessionNumber: student.currentSession,
+        // Falls back to the student's OWN current_session_id — never ''.
+        // With no session record yet, the student's current position is the
+        // closest thing to an assignment there is, and every other field
+        // below already falls back to that same position: an empty id would
+        // make the document internally inconsistent (level/hizb/session say
+        // one thing, the id says nothing) and could never match
+        // `homeAssignmentProvider`'s equality filter.
+        curriculumSessionId:
+            lastRecord?.curriculumSessionId ?? student.currentSessionId,
+        levelId: lastRecord?.levelId ?? student.currentLevel,
+        // The record's OWN juz — never the student's CURRENT juz, which may
+        // already be a different one by the time this practice is logged
+        // (the teacher may have advanced the student across a juz boundary
+        // in between, e.g. finishing juz 30's last lesson and being moved
+        // into juz 29 before the student logs practice against the juz-30
+        // session they were actually assigned).
+        juzNumber: lastRecord?.juzNumber ?? student.currentJuz,
+        hizbNumber: lastRecord?.hizbNumber ?? student.currentHizb,
+        sessionNumber: lastRecord?.sessionNumber ?? student.currentSession,
         repetitions: repetitions,
         notes: notes,
       );
 
-      // Invalidate providers to refresh data
       ref.invalidate(studentHomePracticesProvider);
       ref.invalidate(todaysPracticesProvider);
       ref.invalidate(thisWeeksPracticesProvider);
       ref.invalidate(homePracticeStatsProvider);
+      ref.invalidate(homeAssignmentProvider);
 
       state = const AsyncValue.data(null);
       return true;

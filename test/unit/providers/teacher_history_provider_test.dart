@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/session_record_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
@@ -80,7 +81,10 @@ SessionRecordModel _record({
     teacherId: teacherId,
     curriculumSessionId: 'cs1',
     levelId: 1,
+    juzNumber: 30,
     sessionNumber: 1,
+    orderInLevel: 1,
+    kind: SessionKind.lesson,
     date: date,
     attemptNumber: 1,
     grades: const SessionGrades(
