@@ -18,12 +18,14 @@ import '../features/admin/screens/teacher_detail_screen.dart';
 import '../features/admin/screens/curriculum_screen.dart';
 import '../features/admin/screens/level_detail_screen.dart';
 import '../features/admin/screens/all_students_screen.dart';
-import '../features/admin/screens/admin_student_progress_screen.dart';
+import '../features/admin/providers/admin_provider.dart';
+import '../shared/screens/student_progress_screen.dart';
 import '../features/supervisor/screens/supervisor_dashboard_screen.dart';
 import '../features/supervisor/screens/exam_queue_screen.dart';
 import '../features/supervisor/screens/exam_session_screen.dart';
 import '../features/supervisor/screens/exam_result_screen.dart';
 import '../features/supervisor/screens/supervisor_students_screen.dart';
+import '../features/supervisor/providers/supervisor_provider.dart';
 import '../features/teacher/screens/sard_session_screen.dart';
 import '../features/teacher/screens/sard_result_screen.dart';
 import '../features/teacher/screens/teacher_students_screen.dart';
@@ -70,13 +72,11 @@ class AppRoutes {
   // Supervisor student management (teacher-parity, institute-scoped — #28)
   static const String supervisorStudents = '/supervisor/students';
   static const String supervisorAddStudent = '/supervisor/students/add';
-  // Supervisor session-overview — the supervisor-shell twin of the teacher's
-  // sessionOverview. Lives under /supervisor so the supervisor's whole
-  // Students → session-overview → Sard flow stays in ONE shell; pushing the
-  // teacher-shell sessionOverview from the supervisor shell and then the
-  // supervisor-shell Sard route trips a go_router duplicate-page-key crash
-  // (#45). Resolves the student institute-scoped (AgDR-0003).
-  static const String supervisorSessionOverview =
+  // Supervisor student detail — READ-ONLY progress (al_rasikhoon-801). The
+  // session-overview twin that used to live here existed only as the doorway
+  // into Sard; سرد is teacher-conducted now, so the supervisor gets progress,
+  // never an action.
+  static const String supervisorStudentProgress =
       '/supervisor/students/:studentId';
   static const String supervisorSettings = '/supervisor/settings';
 
@@ -175,7 +175,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: AppRoutes.adminStudentProgress,
                 builder: (context, state) {
                   final id = state.pathParameters['id']!;
-                  return AdminStudentProgressScreen(studentId: id);
+                  return StudentProgressScreen(
+                    studentId: id,
+                    studentProvider: adminStudentProvider,
+                    currentSessionProvider: adminStudentCurrentSessionProvider,
+                    sessionHistoryProvider: adminStudentSessionHistoryProvider,
+                  );
                 },
               ),
             ],
@@ -308,17 +313,19 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) =>
                     const AddStudentScreen(asSupervisor: true),
               ),
-              // Supervisor session-overview — same screen as the teacher's, but
-              // institute-scoped (asSupervisor) and inside the supervisor shell.
-              // Registered AFTER the literal `add` route so `/students/add`
-              // still matches AddStudentScreen, not this :studentId route.
+              // Read-only progress — registered AFTER the literal `add` route so
+              // `/supervisor/students/add` still matches AddStudentScreen.
               GoRoute(
-                path: AppRoutes.supervisorSessionOverview,
+                path: AppRoutes.supervisorStudentProgress,
                 builder: (context, state) {
                   final studentId = state.pathParameters['studentId']!;
-                  return SessionOverviewScreen(
+                  return StudentProgressScreen(
                     studentId: studentId,
-                    asSupervisor: true,
+                    studentProvider: supervisorStudentProvider,
+                    currentSessionProvider:
+                        supervisorStudentCurrentSessionProvider,
+                    sessionHistoryProvider:
+                        supervisorStudentSessionHistoryProvider,
                   );
                 },
               ),

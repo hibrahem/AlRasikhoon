@@ -325,5 +325,54 @@ void main() {
       expect(find.text('طالب المعهد المخصص'), findsOneWidget);
       expect(find.text('طالب معهد آخر'), findsNothing);
     });
+
+    testWidgets(
+      'a supervisor cannot conduct a Sard: tapping a student shows read-only '
+      'progress, with no سرد action anywhere (al_rasikhoon-801)',
+      (tester) async {
+        // سرد is teacher-conducted (al_rasikhoon-801). The supervisor keeps its
+        // institute-scoped roster (#28) but has NO Sard doorway: tapping a
+        // student lands on the read-only progress screen, which never offers an
+        // action that would start, advance, or end a session.
+        const instituteId = 'sard_denied_institute';
+        final supervisor = env.createSupervisor().copyWith(
+          instituteId: instituteId,
+        );
+        await env.setUp(authenticatedUser: supervisor);
+        await env.addInstitute(id: instituteId);
+        await env.assignSupervisorToInstitute(supervisor.id, instituteId);
+
+        final studentUser = env.createStudent(
+          id: 'sup_sard_denied_student',
+          name: 'طالب المشرف',
+        );
+        await env.fakeFirestore
+            .collection('users')
+            .doc(studentUser.id)
+            .set(studentUser.toFirestore());
+        await env.addStudent(
+          userId: studentUser.id,
+          instituteId: instituteId,
+          // The hizb-59 سرد — the exact session a supervisor used to be able to
+          // conduct under #29.
+          sessionId: 'L1_J30_S30',
+        );
+
+        // Act
+        await tester.pumpWidget(TestApp(overrides: env.overrides));
+        supervisorRobot = SupervisorRobot(tester);
+
+        await supervisorRobot.verifyDashboard();
+        await supervisorRobot.goToStudents();
+        await supervisorRobot.verifyStudentsScreen();
+        await supervisorRobot.tapStudent('طالب المشرف');
+        await supervisorRobot.pumpAndSettle();
+
+        // Assert — the read-only progress screen, and no Sard action at all.
+        expect(find.text('تقدم الطالب'), findsOneWidget);
+        expect(find.text('بدء السرد'), findsNothing);
+        expect(find.text('بدء الحلقة'), findsNothing);
+      },
+    );
   });
 }
