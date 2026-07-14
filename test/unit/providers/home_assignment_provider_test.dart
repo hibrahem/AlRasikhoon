@@ -5,7 +5,34 @@ import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/repositories/home_practice_repository.dart';
 import 'package:al_rasikhoon/data/repositories/session_repository.dart';
+import 'package:al_rasikhoon/domain/curriculum/curriculum_pace.dart';
+import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/features/student/providers/student_provider.dart';
+
+/// A one-session meeting standing in for whatever `PacedSessionComposer`
+/// would have produced — these tests exercise `homeAssignmentProvider`, not
+/// composition, so the content blocks are irrelevant and left empty.
+PacedSession _meeting({
+  required String id,
+  required int sessionNumber,
+  required int orderInLevel,
+  int levelId = 1,
+}) {
+  final session = SessionModel(
+    id: id,
+    levelId: levelId,
+    juzNumber: 30,
+    sessionNumber: sessionNumber,
+    orderInLevel: orderInLevel,
+    kind: SessionKind.talqeen,
+  );
+  return PacedSession(
+    sessions: [session],
+    newContent: const [],
+    recentReview: const [],
+    distantReview: const [],
+  );
+}
 
 /// Exercises `homeAssignmentProvider` through a real Riverpod container with
 /// `SessionRepository` and `HomePracticeRepository` backed by a fake
@@ -73,15 +100,14 @@ void main() {
       await sessionRepository.createTalqeenRecord(
         studentId: 'student-1',
         teacherId: 'teacher-1',
-        curriculumSessionId: 'L1_J30_S2',
+        meeting: _meeting(id: 'L1_J30_S2', sessionNumber: 2, orderInLevel: 2),
         levelId: 1,
         kind: SessionKind.talqeen,
         juzNumber: 30,
         hizbNumber: 59,
-        sessionNumber: 2,
-        orderInLevel: 2,
         repetitionsWithTeacher: 5,
         homeRepetitionsRequired: 0,
+        pace: CurriculumPace.standard,
       );
 
       final container = makeContainer(buildStudent());
@@ -101,15 +127,14 @@ void main() {
     await sessionRepository.createTalqeenRecord(
       studentId: 'student-1',
       teacherId: 'teacher-1',
-      curriculumSessionId: 'L1_J30_S1',
+      meeting: _meeting(id: 'L1_J30_S1', sessionNumber: 1, orderInLevel: 1),
       levelId: 1,
       kind: SessionKind.talqeen,
       juzNumber: 30,
       hizbNumber: 59,
-      sessionNumber: 1,
-      orderInLevel: 1,
       repetitionsWithTeacher: 5,
       homeRepetitionsRequired: 8,
+      pace: CurriculumPace.standard,
       now: DateTime(2026, 1, 1),
     );
 
@@ -117,15 +142,14 @@ void main() {
     await sessionRepository.createTalqeenRecord(
       studentId: 'student-1',
       teacherId: 'teacher-1',
-      curriculumSessionId: 'L1_J30_S2',
+      meeting: _meeting(id: 'L1_J30_S2', sessionNumber: 2, orderInLevel: 2),
       levelId: 1,
       kind: SessionKind.talqeen,
       juzNumber: 30,
       hizbNumber: 59,
-      sessionNumber: 2,
-      orderInLevel: 2,
       repetitionsWithTeacher: 5,
       homeRepetitionsRequired: 10,
+      pace: CurriculumPace.standard,
       now: DateTime(2026, 1, 2),
     );
 
@@ -181,15 +205,14 @@ void main() {
       await sessionRepository.createTalqeenRecord(
         studentId: 'student-1',
         teacherId: 'teacher-1',
-        curriculumSessionId: 'L1_J30_S2',
+        meeting: _meeting(id: 'L1_J30_S2', sessionNumber: 2, orderInLevel: 2),
         levelId: 1,
         kind: SessionKind.talqeen,
         juzNumber: 30,
         hizbNumber: 59,
-        sessionNumber: 2,
-        orderInLevel: 2,
         repetitionsWithTeacher: 5,
         homeRepetitionsRequired: 5,
+        pace: CurriculumPace.standard,
       );
 
       await homePracticeRepository.createHomePractice(

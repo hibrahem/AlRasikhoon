@@ -1,18 +1,76 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
-import 'package:al_rasikhoon/data/models/session_record_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
+import 'package:al_rasikhoon/data/repositories/curriculum_repository.dart';
 import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
+import 'package:al_rasikhoon/data/repositories/user_repository.dart';
+import 'package:al_rasikhoon/data/services/firebase_service.dart';
+import 'package:al_rasikhoon/domain/curriculum/curriculum_pace.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 
 class MockStudentRepository extends Mock implements StudentRepository {}
 
-class MockSessionRepository extends Mock implements SessionRepository {}
+class _MockFirebaseService extends Mock implements FirebaseService {}
+
+/// A unit shaped like the real curriculum — the same fixture
+/// `paced_session_test.dart` composes from: a تلقين that opens it, six
+/// lessons whose recent review slides over the previous two, a سرد, a filler
+/// lesson, an اختبار, and another filler lesson so the assessments' "stands
+/// alone" behaviour is load-bearing.
+///
+/// order 1  تلقين
+/// order 2-6 lesson
+/// order 7  سرد     — a doubled student starting at order 6 must stop here.
+/// order 8  lesson
+/// order 9  اختبار
+/// order 10 lesson
+SessionModel _session({
+  required int order,
+  SessionKind kind = SessionKind.lesson,
+}) => SessionModel(
+  id: 'L1_J30_S$order',
+  levelId: 1,
+  juzNumber: 30,
+  sessionNumber: order,
+  orderInLevel: order,
+  kind: kind,
+  currentLevelContent: kind == SessionKind.lesson || kind == SessionKind.talqeen
+      ? QuranContent(
+          fromSurah: 'النبأ',
+          fromVerse: order,
+          toSurah: 'النبأ',
+          toVerse: order + 1,
+        )
+      : null,
+);
+
+Future<void> _seedUnit(FakeFirebaseFirestore firestore) async {
+  final sessions = [
+    _session(order: 1, kind: SessionKind.talqeen),
+    _session(order: 2),
+    _session(order: 3),
+    _session(order: 4),
+    _session(order: 5),
+    _session(order: 6),
+    _session(order: 7, kind: SessionKind.sard),
+    _session(order: 8),
+    _session(order: 9, kind: SessionKind.exam),
+    _session(order: 10),
+  ];
+  for (final session in sessions) {
+    await firestore
+        .collection('sessions')
+        .doc(session.id)
+        .set(session.toFirestore());
+  }
+}
 
 /// Tests for the teacher-facing Riverpod providers (TEST_CASES.md §5.2):
 /// `teacherStudentsProvider` and the `activeSessionProvider`
@@ -21,17 +79,9 @@ class MockSessionRepository extends Mock implements SessionRepository {}
 /// increment-on-fail behaviour.
 void main() {
   late MockStudentRepository mockStudentRepository;
-  late MockSessionRepository mockSessionRepository;
-
-  setUpAll(() {
-    // mocktail needs a fallback instance to match `any(named: 'kind')`
-    // against `createSessionRecord`'s new `SessionKind kind` parameter.
-    registerFallbackValue(SessionKind.lesson);
-  });
 
   setUp(() {
     mockStudentRepository = MockStudentRepository();
-    mockSessionRepository = MockSessionRepository();
   });
 
   UserModel buildTeacher({String id = 'teacher-1'}) {
@@ -90,33 +140,11 @@ void main() {
     );
   }
 
-  SessionRecordModel buildRecord({required bool passed}) {
-    return SessionRecordModel(
-      id: 'record-1',
-      studentId: 'student-1',
-      teacherId: 'teacher-1',
-      curriculumSessionId: 'L1_J30_H59_S5',
-      kind: SessionKind.lesson,
-      juzNumber: 30,
-      orderInLevel: 5,
-      date: DateTime(2026, 1, 2),
-      attemptNumber: 1,
-      grades: SessionGrades(
-        newMemorizationErrors: passed ? 1 : 5,
-        recentReviewErrors: 0,
-        distantReviewErrors: 0,
-      ),
-      passed: passed,
-      createdAt: DateTime(2026, 1, 2),
-    );
-  }
-
   ProviderContainer makeContainer({UserModel? user}) {
     final container = ProviderContainer(
       overrides: [
         currentUserProvider.overrideWithValue(user),
         studentRepositoryProvider.overrideWithValue(mockStudentRepository),
-        sessionRepositoryProvider.overrideWithValue(mockSessionRepository),
       ],
     );
     addTearDown(container.dispose);
@@ -325,36 +353,97 @@ void main() {
     );
   });
 
+  // `completeSession` now composes a meeting from the curriculum before
+  // writing anything (Task 7), so `curriculumRepositoryProvider` and
+  // `sessionRepositoryProvider` must be REAL, fake-Firestore-backed
+  // implementations rather than mocks — a mocked `createSessionRecord` can no
+  // longer stand in for the whole `PacedSessionComposer` → `createSessionRecord`
+  // → `advanceStudentSession` pipeline these tests exercise.
   group('ActiveSessionNotifier.completeSession', () {
-    test('advances the student session when the record passes', () async {
-      when(
-        () => mockStudentRepository.getStudentsForTeacher('teacher-1'),
-      ).thenAnswer((_) async => [buildStudentWithUser()]);
-      when(
-        () => mockSessionRepository.createSessionRecord(
-          studentId: any(named: 'studentId'),
-          teacherId: any(named: 'teacherId'),
-          curriculumSessionId: any(named: 'curriculumSessionId'),
-          levelId: any(named: 'levelId'),
-          kind: any(named: 'kind'),
-          juzNumber: any(named: 'juzNumber'),
-          hizbNumber: any(named: 'hizbNumber'),
-          sessionNumber: any(named: 'sessionNumber'),
-          orderInLevel: any(named: 'orderInLevel'),
-          attemptNumber: any(named: 'attemptNumber'),
-          newMemorizationErrors: any(named: 'newMemorizationErrors'),
-          recentReviewErrors: any(named: 'recentReviewErrors'),
-          distantReviewErrors: any(named: 'distantReviewErrors'),
-          repetitionsWithTeacher: any(named: 'repetitionsWithTeacher'),
-          homeRepetitionsRequired: any(named: 'homeRepetitionsRequired'),
-          notes: any(named: 'notes'),
-        ),
-      ).thenAnswer((_) async => buildRecord(passed: true));
-      when(
-        () => mockStudentRepository.advanceStudentSession('student-1'),
-      ).thenAnswer((_) async => StudentAdvanceOutcome.advanced);
+    late FakeFirebaseFirestore firestore;
+    late CurriculumRepository curriculumRepository;
+    late SessionRepository sessionRepository;
+    late StudentRepository studentRepository;
 
-      final container = makeContainer(user: buildTeacher());
+    setUp(() async {
+      firestore = FakeFirebaseFirestore();
+      curriculumRepository = CurriculumRepository(firestore: firestore);
+      sessionRepository = SessionRepository(firestore: firestore);
+      studentRepository = StudentRepository(
+        firestore: firestore,
+        firebaseService: _MockFirebaseService(),
+        userRepository: UserRepository(firestore: firestore),
+        curriculumRepository: curriculumRepository,
+      );
+
+      await _seedUnit(firestore);
+      await firestore.collection('users').doc('user-1').set({
+        'username': 'pupil',
+        'email': 'pupil@alrasikhoon.local',
+        'name': 'طالب',
+        'role': 'student',
+        'is_active': true,
+        'created_at': Timestamp.now(),
+      });
+      // Level 1's catalog says the level runs far past order 10 — the seeded
+      // unit above is a deliberately incomplete slice of it, which is exactly
+      // what the "surfaces curriculumDataMissing" test needs.
+      await firestore.collection('levels').doc('level_1').set({
+        'id': 1,
+        'session_count': 210,
+        'order': 1,
+      });
+    });
+
+    Future<void> seedStudent({
+      String id = 'student-1',
+      int currentOrderInLevel = 8,
+      int currentAttempt = 1,
+      CurriculumPace? pace,
+    }) async {
+      final session = await curriculumRepository.getSessionByOrderInLevel(
+        level: 1,
+        orderInLevel: currentOrderInLevel,
+      );
+      await firestore.collection('students').doc(id).set({
+        'user_id': 'user-1',
+        'institute_id': 'institute-1',
+        'teacher_id': 'teacher-1',
+        'current_level': 1,
+        'current_juz': session!.juzNumber,
+        'current_session': session.sessionNumber,
+        'current_order_in_level': currentOrderInLevel,
+        'current_hizb': null,
+        'current_session_id': session.id,
+        'current_session_kind': session.kind.value,
+        'current_session_tier': session.scope?.tier.value,
+        'current_session_label_ar': session.scope?.labelAr,
+        'current_attempt': currentAttempt,
+        'completed_levels': <int>[],
+        'unlocked_levels': const [1],
+        'is_active': true,
+        'created_at': Timestamp.now(),
+        'pace': (pace ?? CurriculumPace.standard).toJson(),
+      });
+    }
+
+    ProviderContainer makeRealContainer({UserModel? user}) {
+      final container = ProviderContainer(
+        overrides: [
+          currentUserProvider.overrideWithValue(user),
+          studentRepositoryProvider.overrideWithValue(studentRepository),
+          sessionRepositoryProvider.overrideWithValue(sessionRepository),
+          curriculumRepositoryProvider.overrideWithValue(curriculumRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+      return container;
+    }
+
+    test('advances the student session when the record passes', () async {
+      await seedStudent();
+
+      final container = makeRealContainer(user: buildTeacher());
       final notifier = container.read(activeSessionProvider.notifier);
       notifier.startSession('student-1');
       notifier.setPartErrors(1, 1);
@@ -365,40 +454,20 @@ void main() {
 
       expect(record, isNotNull);
       expect(record!.passed, isTrue);
-      verify(
-        () => mockStudentRepository.advanceStudentSession('student-1'),
-      ).called(1);
-      verifyNever(() => mockStudentRepository.incrementStudentAttempt(any()));
       expect(container.read(activeSessionProvider)!.isComplete, isTrue);
       expect(
         container.read(activeSessionProvider)!.advanceOutcome,
         StudentAdvanceOutcome.advanced,
       );
 
-      // The student's OWN currentOrderInLevel (8, set by buildStudent) must
-      // reach the repository call verbatim — never a hardcoded or
-      // recomputed value.
-      final capturedOrderInLevel = verify(
-        () => mockSessionRepository.createSessionRecord(
-          studentId: any(named: 'studentId'),
-          teacherId: any(named: 'teacherId'),
-          curriculumSessionId: any(named: 'curriculumSessionId'),
-          levelId: any(named: 'levelId'),
-          kind: any(named: 'kind'),
-          juzNumber: any(named: 'juzNumber'),
-          hizbNumber: any(named: 'hizbNumber'),
-          sessionNumber: any(named: 'sessionNumber'),
-          orderInLevel: captureAny(named: 'orderInLevel'),
-          attemptNumber: any(named: 'attemptNumber'),
-          newMemorizationErrors: any(named: 'newMemorizationErrors'),
-          recentReviewErrors: any(named: 'recentReviewErrors'),
-          distantReviewErrors: any(named: 'distantReviewErrors'),
-          repetitionsWithTeacher: any(named: 'repetitionsWithTeacher'),
-          homeRepetitionsRequired: any(named: 'homeRepetitionsRequired'),
-          notes: any(named: 'notes'),
-        ),
-      ).captured;
-      expect(capturedOrderInLevel.single, 8);
+      // The student's OWN currentOrderInLevel (8, seeded above) must reach
+      // the written record verbatim — never a hardcoded or recomputed value.
+      expect(record.fromOrderInLevel, 8);
+      expect(record.toOrderInLevel, 8);
+      expect(container.read(activeSessionProvider)!.meeting!.toOrderInLevel, 8);
+
+      final student = await studentRepository.getStudentById('student-1');
+      expect(student!.currentOrderInLevel, 9);
     });
 
     // hibrahem/AlRasikhoon final-review finding #2: advanceStudentSession can
@@ -410,34 +479,12 @@ void main() {
     test(
       'surfaces curriculumDataMissing instead of silently reporting success',
       () async {
-        when(
-          () => mockStudentRepository.getStudentsForTeacher('teacher-1'),
-        ).thenAnswer((_) async => [buildStudentWithUser()]);
-        when(
-          () => mockSessionRepository.createSessionRecord(
-            studentId: any(named: 'studentId'),
-            teacherId: any(named: 'teacherId'),
-            curriculumSessionId: any(named: 'curriculumSessionId'),
-            levelId: any(named: 'levelId'),
-            kind: any(named: 'kind'),
-            juzNumber: any(named: 'juzNumber'),
-            hizbNumber: any(named: 'hizbNumber'),
-            sessionNumber: any(named: 'sessionNumber'),
-            orderInLevel: any(named: 'orderInLevel'),
-            attemptNumber: any(named: 'attemptNumber'),
-            newMemorizationErrors: any(named: 'newMemorizationErrors'),
-            recentReviewErrors: any(named: 'recentReviewErrors'),
-            distantReviewErrors: any(named: 'distantReviewErrors'),
-            repetitionsWithTeacher: any(named: 'repetitionsWithTeacher'),
-            homeRepetitionsRequired: any(named: 'homeRepetitionsRequired'),
-            notes: any(named: 'notes'),
-          ),
-        ).thenAnswer((_) async => buildRecord(passed: true));
-        when(
-          () => mockStudentRepository.advanceStudentSession('student-1'),
-        ).thenAnswer((_) async => StudentAdvanceOutcome.curriculumDataMissing);
+        // Order 10 is the last session seeded by `_seedUnit`; the catalog
+        // says level 1 keeps going past it, so the walk cannot tell whether
+        // order 11 is really the end of the level or just unseeded.
+        await seedStudent(currentOrderInLevel: 10);
 
-        final container = makeContainer(user: buildTeacher());
+        final container = makeRealContainer(user: buildTeacher());
         final notifier = container.read(activeSessionProvider.notifier);
         notifier.startSession('student-1');
         notifier.setPartErrors(1, 1);
@@ -456,38 +503,17 @@ void main() {
           container.read(activeSessionProvider)!.advanceOutcome,
           StudentAdvanceOutcome.curriculumDataMissing,
         );
+
+        // Nothing was written: the student's position is untouched.
+        final student = await studentRepository.getStudentById('student-1');
+        expect(student!.currentOrderInLevel, 10);
       },
     );
 
     test('increments the attempt when the record fails', () async {
-      when(
-        () => mockStudentRepository.getStudentsForTeacher('teacher-1'),
-      ).thenAnswer((_) async => [buildStudentWithUser()]);
-      when(
-        () => mockSessionRepository.createSessionRecord(
-          studentId: any(named: 'studentId'),
-          teacherId: any(named: 'teacherId'),
-          curriculumSessionId: any(named: 'curriculumSessionId'),
-          levelId: any(named: 'levelId'),
-          kind: any(named: 'kind'),
-          juzNumber: any(named: 'juzNumber'),
-          hizbNumber: any(named: 'hizbNumber'),
-          sessionNumber: any(named: 'sessionNumber'),
-          orderInLevel: any(named: 'orderInLevel'),
-          attemptNumber: any(named: 'attemptNumber'),
-          newMemorizationErrors: any(named: 'newMemorizationErrors'),
-          recentReviewErrors: any(named: 'recentReviewErrors'),
-          distantReviewErrors: any(named: 'distantReviewErrors'),
-          repetitionsWithTeacher: any(named: 'repetitionsWithTeacher'),
-          homeRepetitionsRequired: any(named: 'homeRepetitionsRequired'),
-          notes: any(named: 'notes'),
-        ),
-      ).thenAnswer((_) async => buildRecord(passed: false));
-      when(
-        () => mockStudentRepository.incrementStudentAttempt('student-1'),
-      ).thenAnswer((_) async {});
+      await seedStudent();
 
-      final container = makeContainer(user: buildTeacher());
+      final container = makeRealContainer(user: buildTeacher());
       final notifier = container.read(activeSessionProvider.notifier);
       notifier.startSession('student-1');
       notifier.setPartErrors(1, 5);
@@ -496,14 +522,18 @@ void main() {
 
       expect(record, isNotNull);
       expect(record!.passed, isFalse);
-      verify(
-        () => mockStudentRepository.incrementStudentAttempt('student-1'),
-      ).called(1);
-      verifyNever(() => mockStudentRepository.advanceStudentSession(any()));
+
+      final student = await studentRepository.getStudentById('student-1');
+      expect(student!.currentAttempt, 2, reason: 'incremented, not reset');
+      expect(
+        student.currentOrderInLevel,
+        8,
+        reason: 'unchanged — a failed session never advances',
+      );
     });
 
     test('returns null when there is no active session state', () async {
-      final container = makeContainer(user: buildTeacher());
+      final container = makeRealContainer(user: buildTeacher());
       final notifier = container.read(activeSessionProvider.notifier);
 
       final record = await notifier.completeSession();
@@ -512,14 +542,184 @@ void main() {
     });
 
     test('returns null when no user is authenticated', () async {
-      final container = makeContainer(user: null);
+      await seedStudent();
+
+      final container = makeRealContainer(user: null);
       final notifier = container.read(activeSessionProvider.notifier);
       notifier.startSession('student-1');
 
       final record = await notifier.completeSession();
 
       expect(record, isNull);
-      verifyNever(() => mockStudentRepository.advanceStudentSession(any()));
+      final student = await studentRepository.getStudentById('student-1');
+      expect(student!.currentOrderInLevel, 8, reason: 'nothing was written');
+    });
+  });
+
+  // Task 7: the teacher composes and grades the whole MEETING a paced
+  // student is due — possibly several curriculum sessions at once — writes
+  // ONE record spanning it, and advances the student past everything it
+  // covered.
+  group('paced meetings — completeSession at the student\'s live pace', () {
+    late FakeFirebaseFirestore firestore;
+    late CurriculumRepository curriculumRepository;
+    late SessionRepository sessionRepository;
+    late StudentRepository studentRepository;
+
+    setUp(() async {
+      firestore = FakeFirebaseFirestore();
+      curriculumRepository = CurriculumRepository(firestore: firestore);
+      sessionRepository = SessionRepository(firestore: firestore);
+      studentRepository = StudentRepository(
+        firestore: firestore,
+        firebaseService: _MockFirebaseService(),
+        userRepository: UserRepository(firestore: firestore),
+        curriculumRepository: curriculumRepository,
+      );
+
+      await _seedUnit(firestore);
+      await firestore.collection('users').doc('user-1').set({
+        'username': 'pupil',
+        'email': 'pupil@alrasikhoon.local',
+        'name': 'طالب',
+        'role': 'student',
+        'is_active': true,
+        'created_at': Timestamp.now(),
+      });
+    });
+
+    Future<void> seedStudent({
+      String id = 'student-1',
+      required int currentOrderInLevel,
+      required CurriculumPace pace,
+      int currentAttempt = 1,
+    }) async {
+      final session = await curriculumRepository.getSessionByOrderInLevel(
+        level: 1,
+        orderInLevel: currentOrderInLevel,
+      );
+      await firestore.collection('students').doc(id).set({
+        'user_id': 'user-1',
+        'institute_id': 'institute-1',
+        'teacher_id': 'teacher-1',
+        'current_level': 1,
+        'current_juz': session!.juzNumber,
+        'current_session': session.sessionNumber,
+        'current_order_in_level': currentOrderInLevel,
+        'current_hizb': null,
+        'current_session_id': session.id,
+        'current_session_kind': session.kind.value,
+        'current_session_tier': session.scope?.tier.value,
+        'current_session_label_ar': session.scope?.labelAr,
+        'current_attempt': currentAttempt,
+        'completed_levels': <int>[],
+        'unlocked_levels': const [1],
+        'is_active': true,
+        'created_at': Timestamp.now(),
+        'pace': pace.toJson(),
+      });
+    }
+
+    ProviderContainer makeRealContainer({UserModel? user}) {
+      final container = ProviderContainer(
+        overrides: [
+          currentUserProvider.overrideWithValue(user),
+          studentRepositoryProvider.overrideWithValue(studentRepository),
+          sessionRepositoryProvider.overrideWithValue(sessionRepository),
+          curriculumRepositoryProvider.overrideWithValue(curriculumRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+      return container;
+    }
+
+    test("a doubled student's meeting discharges two sessions and advances "
+        'past both', () async {
+      // Student at order 5 of level 1, pace 2. Orders 5 and 6 are lessons.
+      // One recitation → one record covering both → next meeting starts
+      // at 7.
+      await seedStudent(currentOrderInLevel: 5, pace: CurriculumPace(2));
+
+      final container = makeRealContainer(user: buildTeacher());
+      final notifier = container.read(activeSessionProvider.notifier);
+      notifier.startSession('student-1');
+      notifier.setPartErrors(1, 1);
+      notifier.setPartErrors(2, 0);
+      notifier.setPartErrors(3, 0);
+
+      final record = await notifier.completeSession();
+
+      expect(record!.coversSessionIds, ['L1_J30_S5', 'L1_J30_S6']);
+      expect(record.fromOrderInLevel, 5);
+      expect(record.toOrderInLevel, 6);
+      expect(record.paceAtTime, 2);
+      expect(record.passed, isTrue);
+
+      final student = await studentRepository.getStudentById('student-1');
+      expect(student!.currentOrderInLevel, 7);
+    });
+
+    test(
+      'a doubled student who fails repeats the whole meeting, not half of it',
+      () async {
+        // Errors high enough to fail at level 1.
+        await seedStudent(currentOrderInLevel: 5, pace: CurriculumPace(2));
+
+        final container = makeRealContainer(user: buildTeacher());
+        final notifier = container.read(activeSessionProvider.notifier);
+        notifier.startSession('student-1');
+        notifier.setPartErrors(1, 5);
+
+        final record = await notifier.completeSession();
+
+        expect(record!.passed, isFalse);
+        final student = await studentRepository.getStudentById('student-1');
+        expect(
+          student!.currentOrderInLevel,
+          5,
+          reason: 'he stays on the meeting',
+        );
+        expect(student.currentAttempt, 2);
+      },
+    );
+
+    test('a standard student is completely unaffected', () async {
+      await seedStudent(currentOrderInLevel: 5, pace: CurriculumPace.standard);
+
+      final container = makeRealContainer(user: buildTeacher());
+      final notifier = container.read(activeSessionProvider.notifier);
+      notifier.startSession('student-1');
+      notifier.setPartErrors(1, 1);
+      notifier.setPartErrors(2, 0);
+      notifier.setPartErrors(3, 0);
+
+      final record = await notifier.completeSession();
+
+      expect(record!.coversSessionIds, ['L1_J30_S5']);
+      expect(record.fromOrderInLevel, 5);
+      expect(record.toOrderInLevel, 5);
+      expect(record.paceAtTime, 1);
+
+      final student = await studentRepository.getStudentById('student-1');
+      expect(student!.currentOrderInLevel, 6);
+    });
+
+    test('a doubled student still meets the سرد alone', () async {
+      // Student at order 6; order 7 is the سرد. The batch takes only order 6.
+      await seedStudent(currentOrderInLevel: 6, pace: CurriculumPace(2));
+
+      final container = makeRealContainer(user: buildTeacher());
+      final notifier = container.read(activeSessionProvider.notifier);
+      notifier.startSession('student-1');
+      notifier.setPartErrors(1, 1);
+      notifier.setPartErrors(2, 0);
+      notifier.setPartErrors(3, 0);
+
+      final record = await notifier.completeSession();
+
+      expect(record!.coversSessionIds, ['L1_J30_S6']);
+      final student = await studentRepository.getStudentById('student-1');
+      expect(student!.currentOrderInLevel, 7, reason: 'he lands ON the سرد');
     });
   });
 }

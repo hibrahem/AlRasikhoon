@@ -34,3 +34,34 @@ Task 3: complete (commit dedb615, review clean) — 952 real sessions walked; pa
   today's new" assertion compares discrete blocks; merging inside the composer would make it never match and
   silently go toothless). Domain keeps truth; presentation merges. Merge rule = the curriculum's own:
   span(first.from -> last.to) per contiguous run, after de-dupe. No verse number is ever computed.
+Task 4: complete (commit 214fb91, review clean) — StudentModel.pace + StudentRepository.setStudentPace
+  Extracted StudentModel.fromJson from fromFirestore (mirrors SessionModel); dropped `const` from the ctor
+  (no call sites used it — grep-verified). Legacy safety MUTATION-PROVEN: defaulting a missing pace to 2
+  fails 'a student created before paced curricula runs at the standard pace'. Full suite 672/672.
+Task 5: complete (commit 12acd2d, review clean) — CurriculumRepository.getSessionsForLevel, ordered by order_in_level
+  Ordering MUTATION-PROVEN: switching to orderBy('juz_number') fails both tests.
+Task 6: complete (commits a0b71de, 5e04f95 — impl + fix, review clean) — SessionRecordModel spans the meeting
+  BACKWARD COMPAT PROVEN BY EXECUTION: legacy docs (order_in_level, no span) read back as single-session pace-1.
+  toFirestore keeps writing order_in_level = toOrderInLevel (the compat mirror a composite Firestore index
+  depends on); reviewer proved writing `from` instead would corrupt getLatestSessionRecord.
+  Fixed: batching had NO repo test (mutations survived all 313); paceAtTime recorded sessions.length (redundant,
+  and LIED when a batch truncates at a boundary) -> now takes an explicit CurriculumPace and records
+  pace.multiplier; coversSessionIds `const []` ctor default (a latent trap that bypassed the legacy fallback).
+  NOTE for Task 7 — createSessionRecord/createTalqeenRecord now BOTH require `required CurriculumPace pace`.
+Task 7: complete (commit TBD, full suite 682/682) — teacher_provider composes the meeting, restores compilation
+  StudentRepository.advanceStudentSession(studentId, {fromOrderInLevel}) — defaults to student.currentOrderInLevel
+  (unchanged behaviour); threaded into _nextSession's two currentOrderInLevel reads. completeSession/
+  completeTalqeenSession both: read curriculumRepo.getSessionsForLevel, compose via PacedSessionComposer from the
+  student's LIVE pace, pass `meeting` + `pace: student.pace` to the record factory, advance with
+  `fromOrderInLevel: meeting.toOrderInLevel` on pass, leave position untouched (repeat the whole meeting) on fail.
+  ActiveSessionState carries `meeting` for Task 8/9's screens.
+  PINNED (test/unit/providers/teacher_provider_test.dart, new group "paced meetings"): 2x discharges two sessions
+  in ONE record and lands on order 7; 2x FAIL repeats the whole meeting (position unchanged, attempt+1); 1x
+  student unaffected (one session, one record, +1); 2x still meets the سرد ALONE (batch stops before it, lands ON
+  it). All four use REAL CurriculumRepository/SessionRepository/StudentRepository against one FakeFirebaseFirestore
+  (mocking StudentRepository can't prove a real position write).
+  Also fixed (Task 6 left broken, not explicitly listed but required for the suite to compile):
+  test/unit/providers/home_practice_notifier_test.dart, test/widget/session_history_listing_test.dart,
+  test/widget/session_summary_screen_test.dart (all constructed SessionRecordModel/called the record factories
+  with the removed orderInLevel/curriculumSessionId/sessionNumber params, or never overrode
+  curriculumRepositoryProvider now that completeSession reads it).

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
+import 'package:al_rasikhoon/data/repositories/curriculum_repository.dart';
 import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
@@ -16,21 +17,43 @@ class MockStudentRepository extends Mock implements StudentRepository {}
 /// teacher recites the new passage to the student — never graded, never
 /// failed, never attempt-limited, and it must ALWAYS advance the student.
 ///
-/// `SessionRepository` is the REAL implementation backed by a fake Firestore
-/// (not a mock), so the record assertions below prove an actual document was
-/// written with the right shape — not just that a stub returned a canned
-/// value. `StudentRepository` is mocked, mocktail-style, exactly like
+/// `SessionRepository` AND `CurriculumRepository` are the REAL
+/// implementations backed by a fake Firestore (not mocks), so the record
+/// assertions below prove an actual document was written with the right
+/// shape — not just that a stub returned a canned value, and so
+/// `completeTalqeenSession`'s meeting composition (which reads the level's
+/// sessions from the curriculum) has real data to compose from.
+/// `StudentRepository` is mocked, mocktail-style, exactly like
 /// `teacher_provider_test.dart`'s `completeSession` tests, so the
 /// advance/never-increment claims can be verified precisely.
 void main() {
   late MockStudentRepository mockStudentRepository;
   late FakeFirebaseFirestore firestore;
   late SessionRepository sessionRepository;
+  late CurriculumRepository curriculumRepository;
 
-  setUp(() {
+  setUp(() async {
     mockStudentRepository = MockStudentRepository();
     firestore = FakeFirebaseFirestore();
     sessionRepository = SessionRepository(firestore: firestore);
+    curriculumRepository = CurriculumRepository(firestore: firestore);
+
+    // The single curriculum session the student stands on — a تلقين at order
+    // 7 of level 1. Its id is deliberately NOT of the `L{level}_J{juz}_S{n}`
+    // shape a rebuild from level/juz/session/hizb numbers would produce, so
+    // the test can tell "the record names the session the composer found at
+    // the student's own order_in_level" apart from "reconstructed it".
+    await firestore
+        .collection('sessions')
+        .doc('CUSTOM_SESSION_ID_NOT_REBUILT')
+        .set({
+          'level_id': 1,
+          'juz_number': 30,
+          'session_number': 1,
+          'order_in_level': 7,
+          'kind': 'talqeen',
+          'hizb_number': 59,
+        });
   });
 
   UserModel buildTeacher({String id = 'teacher-1'}) {
@@ -105,6 +128,7 @@ void main() {
         currentUserProvider.overrideWithValue(user),
         studentRepositoryProvider.overrideWithValue(mockStudentRepository),
         sessionRepositoryProvider.overrideWithValue(sessionRepository),
+        curriculumRepositoryProvider.overrideWithValue(curriculumRepository),
       ],
     );
     addTearDown(container.dispose);
@@ -120,7 +144,10 @@ void main() {
           () => mockStudentRepository.getStudentsForTeacher('teacher-1'),
         ).thenAnswer((_) async => [buildStudentWithUser()]);
         when(
-          () => mockStudentRepository.advanceStudentSession('student-1'),
+          () => mockStudentRepository.advanceStudentSession(
+            'student-1',
+            fromOrderInLevel: 7,
+          ),
         ).thenAnswer((_) async => StudentAdvanceOutcome.advanced);
 
         final container = makeContainer(user: buildTeacher());
@@ -141,7 +168,7 @@ void main() {
         expect(record.homeRepetitionsRequired, 15);
         // The student's OWN currentOrderInLevel (7, set by buildStudent) —
         // never a hardcoded or recomputed value.
-        expect(record.orderInLevel, 7);
+        expect(record.toOrderInLevel, 7);
 
         // Not just the returned value — a real document, fetched back through
         // the (real, fake-Firestore-backed) repository.
@@ -152,7 +179,7 @@ void main() {
         expect(stored.grades.totalErrors, 0);
         expect(stored.repetitionsWithTeacher, 6);
         expect(stored.homeRepetitionsRequired, 15);
-        expect(stored.orderInLevel, 7);
+        expect(stored.toOrderInLevel, 7);
       },
     );
 
@@ -164,7 +191,10 @@ void main() {
           () => mockStudentRepository.getStudentsForTeacher('teacher-1'),
         ).thenAnswer((_) async => [buildStudentWithUser(currentAttempt: 3)]);
         when(
-          () => mockStudentRepository.advanceStudentSession('student-1'),
+          () => mockStudentRepository.advanceStudentSession(
+            'student-1',
+            fromOrderInLevel: 7,
+          ),
         ).thenAnswer((_) async => StudentAdvanceOutcome.advanced);
 
         final container = makeContainer(user: buildTeacher());
@@ -175,7 +205,10 @@ void main() {
 
         expect(record, isNotNull);
         verify(
-          () => mockStudentRepository.advanceStudentSession('student-1'),
+          () => mockStudentRepository.advanceStudentSession(
+            'student-1',
+            fromOrderInLevel: 7,
+          ),
         ).called(1);
         verifyNever(() => mockStudentRepository.incrementStudentAttempt(any()));
         expect(
@@ -191,7 +224,10 @@ void main() {
         () => mockStudentRepository.getStudentsForTeacher('teacher-1'),
       ).thenAnswer((_) async => [buildStudentWithUser()]);
       when(
-        () => mockStudentRepository.advanceStudentSession('student-1'),
+        () => mockStudentRepository.advanceStudentSession(
+          'student-1',
+          fromOrderInLevel: 7,
+        ),
       ).thenAnswer((_) async => StudentAdvanceOutcome.advanced);
 
       final container = makeContainer(user: buildTeacher());
