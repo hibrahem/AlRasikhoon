@@ -116,25 +116,55 @@ class TestEnvironment {
   }
 
   Future<void> _setupAuthenticatedUser(UserModel user) async {
-    // Add user to fake Firestore
+    overrides.addAll(await _authOverridesFor(user));
+  }
+
+  /// Auth-dependent provider overrides for [user], plus the two fixture
+  /// writes (`users/{uid}` doc, sharedPreferences session) every authenticated
+  /// user needs — WITHOUT touching `overrides` or recreating [fakeFirestore].
+  ///
+  /// Used both by [_setupAuthenticatedUser] (the normal single-user setup)
+  /// and by [overridesForUser] (switching identity mid-test on the SAME
+  /// fixture data — e.g. asserting that a supervisor's action becomes visible
+  /// to a teacher, al_rasikhoon-6bw) — the two must stay in lockstep or the
+  /// second identity would silently behave differently from the first.
+  Future<List<dynamic>> _authOverridesFor(UserModel user) async {
     await fakeFirestore
         .collection('users')
         .doc(user.id)
         .set(user.toFirestore());
 
-    // Set user ID in shared preferences
     await sharedPreferences.setString('user_id', user.id);
     await sharedPreferences.setString('user_role', user.role.value);
 
-    // Override all auth-dependent providers with test values
-    overrides.addAll([
+    return [
       authRepositoryProvider.overrideWith(
         () => _TestAuthRepository(appUser: user),
       ),
       currentUserProvider.overrideWith((ref) => user),
       isAuthenticatedProvider.overrideWith((ref) => true),
       currentUserRoleProvider.overrideWith((ref) => user.role),
-    ]);
+    ];
+  }
+
+  /// A full set of provider overrides — Firestore/SharedPreferences plumbing
+  /// included — for a DIFFERENT authenticated user, reusing this
+  /// environment's existing [fakeFirestore] and [sharedPreferences] rather
+  /// than recreating them. Pump a NEW [TestApp] with a fresh [Key] and these
+  /// overrides to switch identity mid-test: `ProviderScope` only diffs
+  /// overrides on an EXISTING container when the same widget is rebuilt
+  /// (`didUpdateWidget`), which would leave the router's own navigation stack
+  /// stale — a fresh key forces a full remount instead, exactly as a real
+  /// re-login would.
+  Future<List<dynamic>> overridesForUser(UserModel user) async {
+    return [
+      firestoreProvider.overrideWithValue(fakeFirestore),
+      sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+      firebaseServiceProvider.overrideWithValue(
+        _TestFirebaseService(firestore: fakeFirestore),
+      ),
+      ...await _authOverridesFor(user),
+    ];
   }
 
   /// Create a test super admin user

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../data/models/student_model.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/student_card.dart';
 import '../providers/supervisor_provider.dart';
+import '../widgets/assign_teacher_dialog.dart';
 
 /// Supervisor's institute-scoped student management (#28 / AgDR-0003).
 /// Teacher-parity: view, add, and evaluate the students of the supervisor's
@@ -56,6 +58,7 @@ class SupervisorStudentsScreen extends ConsumerWidget {
                       context,
                       studentWithUser.user.id,
                       studentWithUser.user.name,
+                      studentWithUser.student,
                     ),
                     child: StudentCard(
                       studentWithUser: studentWithUser,
@@ -91,6 +94,7 @@ class SupervisorStudentsScreen extends ConsumerWidget {
     BuildContext context,
     String userId,
     String userName,
+    StudentModel student,
   ) {
     showModalBottomSheet<void>(
       context: context,
@@ -98,6 +102,26 @@ class SupervisorStudentsScreen extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Only offered for a teacher-less student (al_rasikhoon-6bw) —
+            // the rescue path for the state creation can no longer produce.
+            if (student.teacherId == null)
+              ListTile(
+                leading: const Icon(
+                  Icons.person_add_alt,
+                  color: AppColors.warning,
+                ),
+                title: const Text('تعيين معلم'),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  showDialog<void>(
+                    context: context,
+                    builder: (_) => AssignTeacherDialog(
+                      studentId: student.id,
+                      studentDisplayName: userName,
+                    ),
+                  );
+                },
+              ),
             ListTile(
               leading: const Icon(Icons.lock_reset),
               title: const Text('إعادة تعيين كلمة المرور'),

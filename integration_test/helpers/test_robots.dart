@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/shared/widgets/app_card.dart';
 import 'package:al_rasikhoon/features/teacher/screens/teacher_students_screen.dart';
 import 'package:al_rasikhoon/features/teacher/screens/teacher_history_screen.dart';
@@ -866,5 +867,33 @@ class SupervisorRobot extends TestRobot {
   /// Tap on a student to open their session overview.
   Future<void> tapStudent(String name) async {
     await tapByText(name);
+  }
+
+  // --- Assign a teacher to a teacher-less student (al_rasikhoon-6bw) -------
+
+  /// Long-press a student card to open its actions sheet.
+  Future<void> longPressStudent(String name) async {
+    await tester.longPress(find.text(name));
+    await pumpAndSettle();
+  }
+
+  /// Tap the "تعيين معلم" action in the (already open) actions sheet — only
+  /// offered for a teacher-less student.
+  Future<void> tapAssignTeacherAction() async {
+    await tapByText('تعيين معلم');
+  }
+
+  /// Open the assign-teacher dialog's teacher dropdown and pick [teacherName].
+  Future<void> selectTeacherInAssignDialog(String teacherName) async {
+    await tester.tap(find.byType(DropdownButton<UserModel>));
+    await pumpAndSettle();
+    await tester.tap(find.text(teacherName).last);
+    await pumpAndSettle();
+  }
+
+  /// Confirm the assign-teacher dialog with its "تعيين معلم" button (the
+  /// sheet's ListTile of the same name is already closed by this point).
+  Future<void> confirmAssignTeacher() async {
+    await tapByText('تعيين معلم');
   }
 }
