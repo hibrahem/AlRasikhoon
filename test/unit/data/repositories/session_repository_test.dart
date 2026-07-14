@@ -3,6 +3,33 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/repositories/session_repository.dart';
+import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
+
+/// A one-session meeting standing in for whatever `PacedSessionComposer`
+/// would have produced — these tests exercise `SessionRepository`, not
+/// composition, so the content blocks are irrelevant and left empty.
+PacedSession _meeting({
+  required String id,
+  required int sessionNumber,
+  required int orderInLevel,
+  int levelId = 1,
+  SessionKind kind = SessionKind.lesson,
+}) {
+  final session = SessionModel(
+    id: id,
+    levelId: levelId,
+    juzNumber: 30,
+    sessionNumber: sessionNumber,
+    orderInLevel: orderInLevel,
+    kind: kind,
+  );
+  return PacedSession(
+    sessions: [session],
+    newContent: const [],
+    recentReview: const [],
+    distantReview: const [],
+  );
+}
 
 void main() {
   group('SessionRepository', () {
@@ -19,13 +46,9 @@ void main() {
         final record = await sessionRepository.createSessionRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
-          curriculumSessionId: 'cs1',
+          meeting: _meeting(id: 'cs1', sessionNumber: 5, orderInLevel: 5),
           levelId: 1,
-          kind: SessionKind.lesson,
-          juzNumber: 30,
           hizbNumber: 59,
-          sessionNumber: 5,
-          orderInLevel: 5,
           attemptNumber: 1,
           newMemorizationErrors: 2,
           recentReviewErrors: 1,
@@ -51,13 +74,9 @@ void main() {
           final record = await sessionRepository.createSessionRecord(
             studentId: 'student1',
             teacherId: 'teacher1',
-            curriculumSessionId: 'cs1',
+            meeting: _meeting(id: 'cs1', sessionNumber: 5, orderInLevel: 5),
             levelId: 1,
-            kind: SessionKind.lesson,
-            juzNumber: 30,
             hizbNumber: 59,
-            sessionNumber: 5,
-            orderInLevel: 5,
             attemptNumber: 1,
             newMemorizationErrors: 4, // محب at level 1
             recentReviewErrors: 1,
@@ -76,13 +95,9 @@ void main() {
           final record = await sessionRepository.createSessionRecord(
             studentId: 'student1',
             teacherId: 'teacher1',
-            curriculumSessionId: 'cs1',
+            meeting: _meeting(id: 'cs1', sessionNumber: 5, orderInLevel: 5),
             levelId: 1,
-            kind: SessionKind.lesson,
-            juzNumber: 30,
             hizbNumber: 59,
-            sessionNumber: 5,
-            orderInLevel: 5,
             attemptNumber: 1,
             newMemorizationErrors: 3,
             recentReviewErrors: 3,
@@ -103,13 +118,9 @@ void main() {
           final record = await sessionRepository.createSessionRecord(
             studentId: 'student1',
             teacherId: 'teacher1',
-            curriculumSessionId: 'cs1',
+            meeting: _meeting(id: 'cs1', sessionNumber: 5, orderInLevel: 5),
             levelId: 9,
-            kind: SessionKind.lesson,
-            juzNumber: 30,
             hizbNumber: 59,
-            sessionNumber: 5,
-            orderInLevel: 5,
             attemptNumber: 1,
             newMemorizationErrors: 4,
             recentReviewErrors: 4,
@@ -126,13 +137,9 @@ void main() {
         final record = await sessionRepository.createSessionRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
-          curriculumSessionId: 'cs1',
+          meeting: _meeting(id: 'cs1', sessionNumber: 5, orderInLevel: 5),
           levelId: 1,
-          kind: SessionKind.lesson,
-          juzNumber: 30,
           hizbNumber: 59,
-          sessionNumber: 5,
-          orderInLevel: 5,
           attemptNumber: 1,
           newMemorizationErrors: 0,
           recentReviewErrors: 0,
@@ -155,13 +162,9 @@ void main() {
         final record = await sessionRepository.createSessionRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
-          curriculumSessionId: 'cs1',
+          meeting: _meeting(id: 'cs1', sessionNumber: 5, orderInLevel: 5),
           levelId: 1,
-          kind: SessionKind.lesson,
-          juzNumber: 30,
           hizbNumber: 59,
-          sessionNumber: 5,
-          orderInLevel: 5,
           attemptNumber: 1,
           newMemorizationErrors: 0,
           recentReviewErrors: 0,
@@ -182,13 +185,14 @@ void main() {
           final record = await sessionRepository.createTalqeenRecord(
             studentId: 'student1',
             teacherId: 'teacher1',
-            curriculumSessionId: 'L1_J30_S1',
+            meeting: _meeting(
+              id: 'L1_J30_S1',
+              sessionNumber: 1,
+              orderInLevel: 1,
+              kind: SessionKind.talqeen,
+            ),
             levelId: 1,
-            kind: SessionKind.talqeen,
-            juzNumber: 30,
             hizbNumber: 59,
-            sessionNumber: 1,
-            orderInLevel: 1,
             repetitionsWithTeacher: 4,
             homeRepetitionsRequired: 10,
           );
@@ -219,12 +223,13 @@ void main() {
           await sessionRepository.createTalqeenRecord(
             studentId: 'student1',
             teacherId: 'teacher1',
-            curriculumSessionId: 'L1_J30_S1',
+            meeting: _meeting(
+              id: 'L1_J30_S1',
+              sessionNumber: 1,
+              orderInLevel: 1,
+              kind: SessionKind.talqeen,
+            ),
             levelId: 1,
-            kind: SessionKind.talqeen,
-            juzNumber: 30,
-            sessionNumber: 1,
-            orderInLevel: 1,
             repetitionsWithTeacher: 3,
             homeRepetitionsRequired: 7,
             now: DateTime(2026, 1, 1, 10, 0, 0),
@@ -232,12 +237,13 @@ void main() {
           final newer = await sessionRepository.createTalqeenRecord(
             studentId: 'student1',
             teacherId: 'teacher1',
-            curriculumSessionId: 'L1_J30_S2',
+            meeting: _meeting(
+              id: 'L1_J30_S2',
+              sessionNumber: 2,
+              orderInLevel: 2,
+              kind: SessionKind.talqeen,
+            ),
             levelId: 1,
-            kind: SessionKind.talqeen,
-            juzNumber: 30,
-            sessionNumber: 2,
-            orderInLevel: 2,
             repetitionsWithTeacher: 2,
             homeRepetitionsRequired: 12,
             now: DateTime(2026, 1, 1, 10, 0, 1),
@@ -281,12 +287,13 @@ void main() {
         await sessionRepository.createTalqeenRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
-          curriculumSessionId: 'L1_J30_S1',
+          meeting: _meeting(
+            id: 'L1_J30_S1',
+            sessionNumber: 1,
+            orderInLevel: 1,
+            kind: SessionKind.talqeen,
+          ),
           levelId: 1,
-          kind: SessionKind.talqeen,
-          juzNumber: 30,
-          sessionNumber: 1,
-          orderInLevel: 1,
           repetitionsWithTeacher: 1,
           homeRepetitionsRequired: 7,
           now: tiedInstant,
@@ -294,12 +301,13 @@ void main() {
         final furtherAlong = await sessionRepository.createTalqeenRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
-          curriculumSessionId: 'L1_J30_S3',
+          meeting: _meeting(
+            id: 'L1_J30_S3',
+            sessionNumber: 3,
+            orderInLevel: 3,
+            kind: SessionKind.talqeen,
+          ),
           levelId: 1,
-          kind: SessionKind.talqeen,
-          juzNumber: 30,
-          sessionNumber: 3,
-          orderInLevel: 3,
           repetitionsWithTeacher: 1,
           homeRepetitionsRequired: 12,
           now: tiedInstant,
@@ -310,7 +318,7 @@ void main() {
         );
 
         expect(latest!.id, furtherAlong.id);
-        expect(latest.orderInLevel, 3);
+        expect(latest.toOrderInLevel, 3);
         expect(latest.homeRepetitionsRequired, 12);
       });
 
@@ -811,13 +819,13 @@ void main() {
           await sessionRepository.createSessionRecord(
             studentId: 'student1',
             teacherId: 'teacher1',
-            curriculumSessionId: 'L1_J30_S$i',
+            meeting: _meeting(
+              id: 'L1_J30_S$i',
+              sessionNumber: i,
+              orderInLevel: i,
+            ),
             levelId: 1,
-            kind: SessionKind.lesson,
-            juzNumber: 30,
             hizbNumber: 59,
-            sessionNumber: i,
-            orderInLevel: i,
             attemptNumber: 1,
             newMemorizationErrors: 5, // محب at level 1 — always fails
             recentReviewErrors: 0,
@@ -832,13 +840,14 @@ void main() {
         await sessionRepository.createTalqeenRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
-          curriculumSessionId: 'L1_J30_S7',
+          meeting: _meeting(
+            id: 'L1_J30_S7',
+            sessionNumber: 7,
+            orderInLevel: 7,
+            kind: SessionKind.talqeen,
+          ),
           levelId: 1,
-          kind: SessionKind.talqeen,
-          juzNumber: 30,
           hizbNumber: 59,
-          sessionNumber: 7,
-          orderInLevel: 7,
           repetitionsWithTeacher: 4,
           homeRepetitionsRequired: 10,
         );
