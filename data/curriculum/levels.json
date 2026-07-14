@@ -27,7 +27,7 @@
           "منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx"
         ],
         "notes": [
-          "single workbook; sheets used: ['Sheet1']",
+          "SINGLE workbook; authoritative tab 'Sheet1'",
           "tiers: unit1, unit2, juz"
         ]
       },
@@ -47,7 +47,7 @@
           "منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx"
         ],
         "notes": [
-          "single workbook; sheets used: ['Sheet1']",
+          "SINGLE workbook; authoritative tab 'Sheet1'",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       },
@@ -67,7 +67,7 @@
           "منهج الراسخون المستوى الاول الجزء  رقم  3 بدون تعديلات.xlsx"
         ],
         "notes": [
-          "single workbook; sheets used: ['Sheet1']",
+          "SINGLE workbook; authoritative tab 'Sheet1'",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       }
@@ -102,7 +102,7 @@
           "منهج الراسخون المستوى الثاني الجزء  رقم  1  الــ 53.xlsx"
         ],
         "notes": [
-          "two half-workbooks; teaching order [54, 53] (hizb descending), corroborated by the juz-tier pair living in the last half ('منهج الراسخون المستوى الثاني الجزء  رقم  1  الــ 53.xlsx')",
+          "CONCATENATED: two half-workbooks, each renumbering from scratch over different content; teaching order [54, 53] (hizb descending), corroborated by the juz-tier pair living in the last half ('منهج الراسخون المستوى الثاني الجزء  رقم  1  الــ 53.xlsx')",
           "tiers: unit1, unit2, juz"
         ]
       },
@@ -123,7 +123,7 @@
           "منهج الراسخون المستوى الثاني الحزب الــ  51.xlsx"
         ],
         "notes": [
-          "two half-workbooks; teaching order [52, 51] (hizb descending), corroborated by the juz-tier pair living in the last half ('منهج الراسخون المستوى الثاني الحزب الــ  51.xlsx')",
+          "CONCATENATED: two half-workbooks, each renumbering from scratch over different content; teaching order [52, 51] (hizb descending), corroborated by the juz-tier pair living in the last half ('منهج الراسخون المستوى الثاني الحزب الــ  51.xlsx')",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       },
@@ -144,7 +144,7 @@
           "منهج الراسخون المستوى الثاني الجزء رقم 3 الحزب الـــ  49.xlsx"
         ],
         "notes": [
-          "two half-workbooks; teaching order [50, 49] (hizb descending), corroborated by the juz-tier pair living in the last half ('منهج الراسخون المستوى الثاني الجزء رقم 3 الحزب الـــ  49.xlsx')",
+          "CONCATENATED: two half-workbooks, each renumbering from scratch over different content; teaching order [50, 49] (hizb descending), corroborated by the juz-tier pair living in the last half ('منهج الراسخون المستوى الثاني الجزء رقم 3 الحزب الـــ  49.xlsx')",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       }
@@ -160,7 +160,7 @@
       23,
       22
     ],
-    "session_count": 99,
+    "session_count": 100,
     "juz": [
       {
         "juz_number": 24,
@@ -172,11 +172,10 @@
         "hizb_numbers": null,
         "first_order_in_level": 1,
         "source_files": [
-          "الحزب  47.xlsx",
-          "الحزب  48.xlsx"
+          "الحزب  47.xlsx"
         ],
         "notes": [
-          "two workbooks with identical Sheet1* content ('الحزب  47.xlsx' == 'الحزب  48.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "CONTAINED: 'الحزب  47.xlsx' holds the whole juz; 'الحزب  48.xlsx' is a renumbered copy of 19 of its rows and is dropped",
           "tiers: unit1, unit2, juz"
         ]
       },
@@ -190,17 +189,17 @@
         "hizb_numbers": null,
         "first_order_in_level": 36,
         "source_files": [
-          "الحزب  45.xlsx",
-          "الحزب  46.xlsx"
+          "الحزب  46.xlsx",
+          "الحزب  45.xlsx"
         ],
         "notes": [
-          "two workbooks with identical Sheet1* content ('الحزب  45.xlsx' == 'الحزب  46.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "CONCATENATED: two half-workbooks, each renumbering from scratch over different content; teaching order [46, 45] (hizb descending), corroborated by the juz-tier pair living in the last half ('الحزب  45.xlsx')",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       },
       {
         "juz_number": 22,
-        "session_count": 34,
+        "session_count": 35,
         "unit_labels": [
           "سرد سورتي سبأ وفاطرعلى المحفظ المتابع",
           "سرد سورة الأحزاب على المحفظ المتابع"
@@ -208,11 +207,11 @@
         "hizb_numbers": null,
         "first_order_in_level": 66,
         "source_files": [
-          "الحزب  43.xlsx",
-          "الحزب  44.xlsx"
+          "الحزب  44.xlsx",
+          "الحزب  43.xlsx"
         ],
         "notes": [
-          "two workbooks with identical Sheet1* content ('الحزب  43.xlsx' == 'الحزب  44.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "CONCATENATED: two half-workbooks, each renumbering from scratch over different content; teaching order [44, 43] (hizb descending), corroborated by the juz-tier pair living in the last half ('الحزب  43.xlsx')",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       }
@@ -228,29 +227,29 @@
       20,
       19
     ],
-    "session_count": 93,
+    "session_count": 94,
     "juz": [
       {
         "juz_number": 21,
         "session_count": 32,
         "unit_labels": [
-          "سرد سور الروم ولقمان والسجدة لى المحفظ المتابع",
+          "سرد من أول الروم إلى أخر السجدة على المحفظ المتابع",
           "سرد سورة العنكبوت على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 1,
         "source_files": [
-          "منهج الراسخون المستوى الرابع الجزء  الحزب 41.xlsx",
-          "منهج الراسخون المستوى الرابع الجزء  الحزب 42.xlsx"
+          "منهج الراسخون المستوى الرابع الجزء  الحزب 42.xlsx",
+          "منهج الراسخون المستوى الرابع الجزء  الحزب 41.xlsx"
         ],
         "notes": [
-          "two workbooks with identical Sheet1* content ('منهج الراسخون المستوى الرابع الجزء  الحزب 41.xlsx' == 'منهج الراسخون المستوى الرابع الجزء  الحزب 42.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "MERGED: two workbooks holding disjoint halves of one continuous numbering {'منهج الراسخون المستوى الرابع الجزء  الحزب 42.xlsx': (1, 16), 'منهج الراسخون المستوى الرابع الجزء  الحزب 41.xlsx': (17, 30)}; ordered by session number",
           "tiers: unit1, unit2, juz"
         ]
       },
       {
         "juz_number": 20,
-        "session_count": 32,
+        "session_count": 33,
         "unit_labels": [
           "سرد سورة القصص كاملةَ على المحفظ المتابع",
           "سرد سورة النمل على المحفظ المتابع"
@@ -258,11 +257,11 @@
         "hizb_numbers": null,
         "first_order_in_level": 33,
         "source_files": [
-          "الحزب 39.xlsx",
-          "الحزب 40.xlsx"
+          "الحزب 40.xlsx",
+          "الحزب 39.xlsx"
         ],
         "notes": [
-          "two workbooks with identical Sheet1* content ('الحزب 39.xlsx' == 'الحزب 40.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "MERGED: two workbooks holding disjoint halves of one continuous numbering {'الحزب 40.xlsx': (1, 15), 'الحزب 39.xlsx': (16, 31)}; ordered by session number",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       },
@@ -274,13 +273,13 @@
           "سرد سورة الفرقان على المحفظ المتابع"
         ],
         "hizb_numbers": null,
-        "first_order_in_level": 65,
+        "first_order_in_level": 66,
         "source_files": [
-          "الحزب 37.xlsx",
-          "الحزب 38.xlsx"
+          "الحزب 38.xlsx",
+          "الحزب 37.xlsx"
         ],
         "notes": [
-          "two workbooks with identical Sheet1* content ('الحزب 37.xlsx' == 'الحزب 38.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "MERGED: two workbooks holding disjoint halves of one continuous numbering {'الحزب 38.xlsx': (1, 13), 'الحزب 37.xlsx': (14, 27)}; ordered by session number",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       }
@@ -303,16 +302,16 @@
         "session_count": 22,
         "unit_labels": [
           "سرد سورة النور كاملة على المحفظ المتابع",
-          "سرد سورة المؤمنون على المحفظ المتابع"
+          "سرد سورة المؤمنون كاملةَ على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 1,
         "source_files": [
-          "الحزب 35.xlsx",
-          "الحزب 36.xlsx"
+          "الحزب 36.xlsx",
+          "الحزب 35.xlsx"
         ],
         "notes": [
-          "two workbooks with identical Sheet1* content ('الحزب 35.xlsx' == 'الحزب 36.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "MERGED: two workbooks holding disjoint halves of one continuous numbering {'الحزب 36.xlsx': (1, 10), 'الحزب 35.xlsx': (11, 20)}; ordered by session number",
           "tiers: unit1, unit2, juz"
         ]
       },
@@ -321,16 +320,16 @@
         "session_count": 26,
         "unit_labels": [
           "سرد سورة الحج كاملةَ على المحفظ المتابع",
-          "سرد سورة الأنبياء على المحفظ المتابع"
+          "سرد سورة الأنبياء كاملةَ على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 23,
         "source_files": [
-          "الحزب 33.xlsx",
-          "الحزب 34.xlsx"
+          "الحزب 34.xlsx",
+          "الحزب 33.xlsx"
         ],
         "notes": [
-          "two workbooks with identical Sheet1* content ('الحزب 33.xlsx' == 'الحزب 34.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "MERGED: two workbooks holding disjoint halves of one continuous numbering {'الحزب 34.xlsx': (1, 10), 'الحزب 33.xlsx': (11, 24)}; ordered by session number",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       },
@@ -339,16 +338,16 @@
         "session_count": 23,
         "unit_labels": [
           "سرد سورة طه كاملةً على المحفظ المتابع",
-          "سرد سورة مريم على المحفظ المتابع"
+          "سرد سورة مريم كاملةَ على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 49,
         "source_files": [
-          "الحزب 31.xlsx",
-          "الحزب 32.xlsx"
+          "الحزب 32.xlsx",
+          "الحزب 31.xlsx"
         ],
         "notes": [
-          "two workbooks with identical Sheet1* content ('الحزب 31.xlsx' == 'الحزب 32.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "MERGED: two workbooks holding disjoint halves of one continuous numbering {'الحزب 32.xlsx': (1, 10), 'الحزب 31.xlsx': (11, 21)}; ordered by session number",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       }
@@ -376,11 +375,11 @@
         "hizb_numbers": null,
         "first_order_in_level": 1,
         "source_files": [
-          "الحزب 29-.xlsx",
-          "الحزب 30.xlsx"
+          "الحزب 30.xlsx",
+          "الحزب 29-.xlsx"
         ],
         "notes": [
-          "two workbooks with identical Sheet1* content ('الحزب 29-.xlsx' == 'الحزب 30.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "MERGED: two workbooks holding disjoint halves of one continuous numbering {'الحزب 30.xlsx': (1, 11), 'الحزب 29-.xlsx': (12, 24)}; ordered by session number",
           "tiers: unit1, unit2, juz"
         ]
       },
@@ -394,11 +393,11 @@
         "hizb_numbers": null,
         "first_order_in_level": 27,
         "source_files": [
-          "الحزب 27-.xlsx",
-          "الحزب 28.xlsx"
+          "الحزب 28.xlsx",
+          "الحزب 27-.xlsx"
         ],
         "notes": [
-          "two workbooks with identical Sheet1* content ('الحزب 27-.xlsx' == 'الحزب 28.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "MERGED: two workbooks holding disjoint halves of one continuous numbering {'الحزب 28.xlsx': (1, 10), 'الحزب 27-.xlsx': (11, 24)}; ordered by session number",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       },
@@ -406,17 +405,17 @@
         "juz_number": 13,
         "session_count": 30,
         "unit_labels": [
-          "سرد سورتي الرعد وإبراهيم على المحفظ المتابع",
-          "سرد سورة يوسف على المحفظ المتابع"
+          "سرد من أول الرعد إلى أخر إبراهيم على المحفظ المتابع",
+          "سرد سورة يوسف كاملةَ على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 53,
         "source_files": [
-          "الحزب 25.xlsx",
-          "الحزب 26.xlsx"
+          "الحزب 26.xlsx",
+          "الحزب 25.xlsx"
         ],
         "notes": [
-          "two workbooks with identical Sheet1* content ('الحزب 25.xlsx' == 'الحزب 26.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "MERGED: two workbooks holding disjoint halves of one continuous numbering {'الحزب 26.xlsx': (1, 12), 'الحزب 25.xlsx': (13, 28)}; ordered by session number",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       }
@@ -438,17 +437,17 @@
         "juz_number": 12,
         "session_count": 17,
         "unit_labels": [
-          "سرد المقرر من سورة هود على المحفظ المتابع",
-          "سرد المقرر من سورة هود على المحفظ المتابع"
+          "سرد المقرر من سورة هود [من 1 : 49] على المحفظ المتابع",
+          "سرد المقرر من سورة هود [من 50 : 123] على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 1,
         "source_files": [
-          "الحزب 23.xlsx",
-          "الحزب 24.xlsx"
+          "الحزب 24.xlsx",
+          "الحزب 23.xlsx"
         ],
         "notes": [
-          "two workbooks with identical Sheet1* content ('الحزب 23.xlsx' == 'الحزب 24.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "MERGED: two workbooks holding disjoint halves of one continuous numbering {'الحزب 24.xlsx': (1, 6), 'الحزب 23.xlsx': (7, 15)}; ordered by session number",
           "tiers: unit1, unit2, juz"
         ]
       },
@@ -456,17 +455,17 @@
         "juz_number": 11,
         "session_count": 19,
         "unit_labels": [
-          "سرد المقرر من سورة يونس على المحفظ المتابع",
-          "سرد المقرر من سورة يونس على المحفظ المتابع"
+          "سرد المقرر من سورة يونس[من 1 : 61] على المحفظ المتابع",
+          "سرد المقرر من سورة يونس[من 62 : 109] على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 18,
         "source_files": [
-          "الحزب 21.xlsx",
-          "الحزب 22.xlsx"
+          "الحزب 22.xlsx",
+          "الحزب 21.xlsx"
         ],
         "notes": [
-          "two workbooks with identical Sheet1* content ('الحزب 21.xlsx' == 'الحزب 22.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "MERGED: two workbooks holding disjoint halves of one continuous numbering {'الحزب 22.xlsx': (1, 7), 'الحزب 21.xlsx': (8, 17)}; ordered by session number",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       },
@@ -474,17 +473,17 @@
         "juz_number": 10,
         "session_count": 24,
         "unit_labels": [
-          "سرد المقرر من سورة التوبة على المحفظ المتابع",
-          "سرد المقرر من سورة التوبة على المحفظ المتابع"
+          "سرد المقرر من سورة التوبة من [ 1 : 61 ] على المحفظ المتابع",
+          "سرد المقرر من سورة التوبة من [ 62 : 129 ] على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 37,
         "source_files": [
-          "الحزب 19.xlsx",
-          "الحزب 20.xlsx"
+          "الحزب 20.xlsx",
+          "الحزب 19.xlsx"
         ],
         "notes": [
-          "two workbooks with identical Sheet1* content ('الحزب 19.xlsx' == 'الحزب 20.xlsx'); using the first, ignoring the stale per-file Sheet2 drafts",
+          "MERGED: two workbooks holding disjoint halves of one continuous numbering {'الحزب 20.xlsx': (1, 8), 'الحزب 19.xlsx': (9, 22)}; ordered by session number",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       }
@@ -506,8 +505,8 @@
         "juz_number": 9,
         "session_count": 16,
         "unit_labels": [
-          "سرد المقرر من سورة الأنفال على المحفظ المتابع",
-          "سرد المقرر من سورة الأنفال على المحفظ المتابع"
+          "سرد المقرر من سورة الأنفال من [ 1 : 40 ] على المحفظ المتابع",
+          "سرد المقرر من سورة الأنفال من [ 41 : 75 ] على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 1,
@@ -515,7 +514,7 @@
           "منهج الراسخون المستوى الثامن الجزء  ال 1 للمحفظين.xlsx"
         ],
         "notes": [
-          "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+          "SINGLE workbook; authoritative tab 'Sheet2'",
           "tiers: unit1, unit2, juz"
         ]
       },
@@ -523,8 +522,8 @@
         "juz_number": 8,
         "session_count": 26,
         "unit_labels": [
-          "سرد المقرر من سورة الأعراف على المحفظ المتابع",
-          "سرد المقرر من سورة الأعراف على المحفظ المتابع"
+          "سرد المقرر من سورة الأعراف من [ 1 : 104 ] على المحفظ المتابع",
+          "سرد المقرر من سورة الأعراف من [ 105 : 206 ] على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 17,
@@ -532,7 +531,7 @@
           "منهج الراسخون المستوى الثامن الجزء  ال  2  للمحفظين.xlsx"
         ],
         "notes": [
-          "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+          "SINGLE workbook; authoritative tab 'Sheet2'",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       },
@@ -540,8 +539,8 @@
         "juz_number": 7,
         "session_count": 25,
         "unit_labels": [
-          "سرد المقرر من سورة الأنعام على المحفظ المتابع",
-          "سرد المقرر من سورة الأنعام على المحفظ المتابع"
+          "سرد المقرر من سورة الأنعام من [ 1 : 94 ] على المحفظ المتابع",
+          "سرد المقرر من سورة الأنعام من [ 95 : 165 ] على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 43,
@@ -549,7 +548,7 @@
           "منهج الراسخون المستوى الثامن الجزء  ال  3 للمحفظين.xlsx"
         ],
         "notes": [
-          "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+          "SINGLE workbook; authoritative tab 'Sheet2'",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       }
@@ -571,8 +570,8 @@
         "juz_number": 6,
         "session_count": 19,
         "unit_labels": [
-          "سرد المقرر من سورة المائدة على المحفظ المتابع",
-          "سرد المقرر من سورة المائدة على المحفظ المتابع"
+          "سرد المقرر من سورة المائدة من [ 1 : 64 ] على المحفظ المتابع",
+          "سرد المقرر من سورة المائدة من [ 65 : 120 ] على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 1,
@@ -580,7 +579,7 @@
           "منهج الراسخون المستوى التاسع الجزء  ال 1.xlsx"
         ],
         "notes": [
-          "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+          "SINGLE workbook; authoritative tab 'Sheet2'",
           "tiers: unit1, unit2, juz"
         ]
       },
@@ -588,8 +587,8 @@
         "juz_number": 5,
         "session_count": 24,
         "unit_labels": [
-          "سرد المقرر من سورة النساء على المحفظ المتابع",
-          "سرد المقرر من سورة النساء على المحفظ المتابع"
+          "سرد المقرر من سورة النساء من [ 1 : 86 ] على المحفظ المتابع",
+          "سرد المقرر من سورة النساء من [ 87 : 176 ] على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 20,
@@ -597,7 +596,7 @@
           "منهج الراسخون المستوى التاسع الجزء  ال  2.xlsx"
         ],
         "notes": [
-          "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+          "SINGLE workbook; authoritative tab 'Sheet2'",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       },
@@ -605,8 +604,8 @@
         "juz_number": 4,
         "session_count": 24,
         "unit_labels": [
-          "سرد المقرر من سورة آل عمران على المحفظ المتابع",
-          "سرد المقرر من سورة آل عمران على المحفظ المتابع"
+          "سرد المقرر من سورة آل عمران من [ 1 : 115 ] على المحفظ المتابع",
+          "سرد المقرر من سورة آل عمران من [ 116 : 200 ] على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 44,
@@ -614,7 +613,7 @@
           "منهج الراسخون المستوى التاسع الجزء  ال  3.xlsx"
         ],
         "notes": [
-          "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+          "SINGLE workbook; authoritative tab 'Sheet2'",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       }
@@ -630,14 +629,14 @@
       2,
       3
     ],
-    "session_count": 49,
+    "session_count": 50,
     "juz": [
       {
         "juz_number": 1,
         "session_count": 18,
         "unit_labels": [
-          "سرد المقرر من سورة البقرة على المحفظ المتابع",
-          "سرد المقرر من سورة البقرة على المحفظ المتابع"
+          "سرد المقرر من سورة البقرة من [ 1 : 76 ] على المحفظ المتابع",
+          "سرد المقرر من سورة البقرة من [ 77 : 141 ] على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 1,
@@ -645,7 +644,7 @@
           "منهج الراسخون المستوى العاشر الجزء  ال 1 للمحفظين.xlsx"
         ],
         "notes": [
-          "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+          "SINGLE workbook; authoritative tab 'Sheet2'",
           "tiers: unit1, unit2, juz"
         ]
       },
@@ -653,8 +652,8 @@
         "juz_number": 2,
         "session_count": 21,
         "unit_labels": [
-          "سرد المقرر من سورة البقرة من 142 : 202 على المحفظ المتابع",
-          "سرد المقرر من سورة البقرة 203 : 252 على المحفظ المتابع"
+          "سرد المقرر من سورة البقرة من [ 142 : 202 ] على المحفظ المتابع",
+          "سرد المقرر من سورة البقرة [ 203 : 252 ]على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 19,
@@ -662,15 +661,15 @@
           "منهج الراسخون المستوى العاشر الجزء  ال  2  للمحفظين.xlsx"
         ],
         "notes": [
-          "single workbook; sheets used: ['Sheet1', 'Sheet1 (2)']",
+          "SINGLE workbook; authoritative tab 'Sheet2'",
           "tiers: unit1, unit2, juz, cumulative"
         ]
       },
       {
         "juz_number": 3,
-        "session_count": 10,
+        "session_count": 11,
         "unit_labels": [
-          "سرد المقرر من سورة البقرة 253 : 286 على المحفظ المتابع"
+          "سرد المقرر من سورة البقرة [ 253 : 286 ] على المحفظ المتابع"
         ],
         "hizb_numbers": null,
         "first_order_in_level": 40,
@@ -678,7 +677,7 @@
           "منهج الراسخون المستوى العاشر الجزء  ال  3 للمحفظين.xlsx"
         ],
         "notes": [
-          "single workbook; sheets used: ['Sheet1 (2)']",
+          "SINGLE workbook; authoritative tab 'Sheet2'",
           "tiers: unit1, cumulative"
         ]
       }

@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass, field
@@ -27,10 +28,35 @@ from pathlib import Path
 from typing import Any, Optional
 
 import pandas as pd
+from openpyxl import load_workbook
 
 REPO_ROOT = Path(__file__).resolve().parents[2]          # al_rasikhoon/
-CURRICULUM_DIR = REPO_ROOT.parent / "curriculum"          # ../curriculum (read-only source)
 OUTPUT_DIR = REPO_ROOT / "data" / "curriculum"
+
+
+class Abort(Exception):
+    pass
+
+
+def _find_curriculum_dir() -> Path:
+    """The read-only source tree. Never written to.
+
+    Normally `../curriculum` next to the repo. When the extractor is run from a
+    git worktree (`al_rasikhoon/.claude/worktrees/<x>/`) that sibling does not
+    exist, so we walk up until we find the real one. `AL_RASIKHOON_CURRICULUM_DIR`
+    overrides both.
+    """
+    override = os.environ.get("AL_RASIKHOON_CURRICULUM_DIR")
+    if override:
+        return Path(override).resolve()
+    for base in [REPO_ROOT, *REPO_ROOT.parents]:
+        candidate = base.parent / "curriculum"
+        if candidate.is_dir():
+            return candidate
+    raise Abort("cannot locate the read-only curriculum/ source tree")
+
+
+CURRICULUM_DIR = _find_curriculum_dir()
 
 # --------------------------------------------------------------------------
 # Level definitions
@@ -111,24 +137,23 @@ EXPECTED_EXCEPTIONS: dict[tuple[int, int], dict[str, Any]] = {
         "cumulative_pairs": 1,
         "second_pair_tier": "cumulative",
         "reason": (
-            "Source juz 3 of level 10 has a single teaching block (سورة البقرة 253:286, "
-            "5 lessons) followed by ONE unit pair and then a pair over the whole of "
-            "سورة البقرة 1:286 (= juz 1+2+3), i.e. the level cumulative. There is no "
-            "second unit block and no juz-tier pair. Its first sheet is stamped 'لاغي' "
-            "(void) and is empty."
+            "The colour-filled tab of juz 3 of level 10 has a single teaching block "
+            "(سورة البقرة 253:286, 4 new-memorisation lessons then 2 review-only ones) "
+            "followed by ONE unit pair over البقرة 253:286 and then a pair over the whole "
+            "of سورة البقرة 1:286 (= juz 1+2+3), i.e. the level cumulative. There is no "
+            "second unit block and no juz-tier pair."
         ),
     },
 }
 
 # Raw (as-printed) session numbering that is not a clean +1 run. Renumbering is
 # dense regardless; these are the ones we tolerate instead of aborting.
-EXPECTED_NUMBERING_GAPS: dict[tuple[int, int], str] = {
-    (10, 2): (
-        "Raw 'الحصة رقم' column jumps 7 -> 11 and 16 -> 19 (sheet 'Sheet1 (2)' of the "
-        "level-10 juz-2 workbook, which is additionally mis-titled 'المستوى التاسع'). "
-        "Rows are otherwise in order; sessions are renumbered densely 1..N."
-    ),
-}
+#
+# Empty since the extractor started reading the COLOUR-FILLED tabs: the two gaps
+# that used to live here (level 10 juz 2, 7 -> 11 and 16 -> 19) were defects of
+# the abandoned draft tabs. Every authoritative tab numbers its sessions in a
+# clean +1 run. The mechanism stays; there is simply nothing to excuse.
+EXPECTED_NUMBERING_GAPS: dict[tuple[int, int], str] = {}
 
 # Level 2's in-sheet hizb markers contradict the workbook they sit in (the file
 # whose content is hizb 53 carries 'سرد الحزب رقم 54' and vice versa). We take the
@@ -175,6 +200,53 @@ def as_int(value: Any) -> Optional[int]:
 
 def is_marker(text: Optional[str]) -> bool:
     return bool(text) and bool(MARKER_RE.match(text)) and len(text) > 6
+
+
+# --------------------------------------------------------------------------
+# The 114 surahs, in mushaf order. Every surah name the source names must be one
+# of these — a name that is not is a TYPO IN THE SOURCE. We report it and store
+# it verbatim; we never silently "correct" curriculum content.
+# --------------------------------------------------------------------------
+SURAH_NAMES: tuple[str, ...] = (
+    "الفاتحة", "البقرة", "آل عمران", "النساء", "المائدة", "الأنعام", "الأعراف", "الأنفال",
+    "التوبة", "يونس", "هود", "يوسف", "الرعد", "إبراهيم", "الحجر", "النحل", "الإسراء",
+    "الكهف", "مريم", "طه", "الأنبياء", "الحج", "المؤمنون", "النور", "الفرقان", "الشعراء",
+    "النمل", "القصص", "العنكبوت", "الروم", "لقمان", "السجدة", "الأحزاب", "سبأ", "فاطر",
+    "يس", "الصافات", "ص", "الزمر", "غافر", "فصلت", "الشورى", "الزخرف", "الدخان", "الجاثية",
+    "الأحقاف", "محمد", "الفتح", "الحجرات", "ق", "الذاريات", "الطور", "النجم", "القمر",
+    "الرحمن", "الواقعة", "الحديد", "المجادلة", "الحشر", "الممتحنة", "الصف", "الجمعة",
+    "المنافقون", "التغابن", "الطلاق", "التحريم", "الملك", "القلم", "الحاقة", "المعارج",
+    "نوح", "الجن", "المزمل", "المدثر", "القيامة", "الإنسان", "المرسلات", "النبأ",
+    "النازعات", "عبس", "التكوير", "الإنفطار", "المطففين", "الإنشقاق", "البروج", "الطارق",
+    "الأعلى", "الغاشية", "الفجر", "البلد", "الشمس", "الليل", "الضحى", "الشرح", "التين",
+    "العلق", "القدر", "البينة", "الزلزلة", "العاديات", "القارعة", "التكاثر", "العصر",
+    "الهمزة", "الفيل", "قريش", "الماعون", "الكوثر", "الكافرون", "النصر", "المسد",
+    "الإخلاص", "الفلق", "الناس",
+)
+
+_DIACRITICS_RE = re.compile(r"[ً-ْـ]")  # harakat, sukun, tatweel
+
+
+def normalise_surah(name: str) -> str:
+    """Fold the orthographic variation the source legitimately uses.
+
+    Hamza carriers and ta-marbuta are written inconsistently across the
+    workbooks (سبأ/سبا, الانشقاق/الإنشقاق) and both spellings are the same surah.
+    WHITESPACE IS NOT COLLAPSED AWAY: 'المعار ج' is a typo, not a variant, and
+    must not be normalised into 'المعارج'.
+    """
+    text = _DIACRITICS_RE.sub("", name)
+    for src, dst in (("أ", "ا"), ("إ", "ا"), ("آ", "ا"), ("ٱ", "ا"),
+                     ("ة", "ه"), ("ى", "ي"), ("ئ", "ي"), ("ؤ", "و")):
+        text = text.replace(src, dst)
+    return " ".join(text.split())
+
+
+KNOWN_SURAH_NAMES = {normalise_surah(n) for n in SURAH_NAMES}
+
+
+def is_known_surah(name: str) -> bool:
+    return normalise_surah(name) in KNOWN_SURAH_NAMES
 
 
 # --------------------------------------------------------------------------
@@ -306,24 +378,70 @@ def parse_sheet(path: Path, sheet: str, df: pd.DataFrame, anomalies: list[str]) 
     return rows
 
 
-def content_sheets(path: Path) -> list[tuple[str, pd.DataFrame]]:
-    """The canonical sheets of a workbook are the 'Sheet1*' ones, in book order.
+# --------------------------------------------------------------------------
+# Authoritative-tab selection
+# --------------------------------------------------------------------------
+# A workbook carries several tabs. Exactly ONE of them is the corrected,
+# authoritative table; the others are abandoned drafts. The authoritative tab is
+# the one that has been FORMATTED: its cells are colour-filled (200-900 filled
+# cells), while a draft carries at most a handful of stray fills.
+#
+# The tab CANNOT be picked by name or by position: it is 'Sheet2' for levels
+# 3-10 and 'Sheet1' for levels 1-2. Nor by xlsx tab colour: no workbook in the
+# corpus sets sheetPr/tabColor. So we count fills, and demand a decisive winner.
+MIN_AUTHORITATIVE_FILLS = 50   # every real tab in the corpus has >= 100
+FILL_DOMINANCE = 5             # ... and beats every draft by far more than 5x
 
-    Levels 3-10 split one juz across 'Sheet1' and 'Sheet1 (2)' with continuous
-    session numbering. Every such workbook also carries a stale 'Sheet2' draft
-    (different content between the two files of a pair, wrong titles, partial
-    numbering); it is deliberately ignored.
-    """
-    xl = pd.ExcelFile(path)
-    out = []
-    for name in xl.sheet_names:
-        if not name.startswith("Sheet1"):
-            continue
-        df = pd.read_excel(path, sheet_name=name, header=None)
-        if df.empty:
-            continue
-        out.append((name, df))
-    return out
+
+def fill_count(worksheet) -> int:
+    """Cells carrying a real (non-white, non-transparent) background fill."""
+    n = 0
+    for row in worksheet.iter_rows():
+        for cell in row:
+            fill = cell.fill
+            if fill is None or fill.patternType is None:
+                continue
+            colour = fill.fgColor
+            if colour is None:
+                continue
+            if colour.type in ("theme", "indexed"):
+                n += 1
+            elif colour.type == "rgb" and colour.rgb not in (None, "00000000", "FFFFFFFF"):
+                n += 1
+    return n
+
+
+def authoritative_sheet(path: Path) -> tuple[str, pd.DataFrame]:
+    """The single colour-filled tab of a workbook, chosen by fill count."""
+    workbook = load_workbook(path)
+    try:
+        counts = [(worksheet.title, fill_count(worksheet)) for worksheet in workbook.worksheets]
+    finally:
+        workbook.close()
+
+    if not counts:
+        raise Abort(f"{path.name}: workbook has no worksheets")
+
+    counts.sort(key=lambda tc: tc[1], reverse=True)
+    (winner, best), runners_up = counts[0], counts[1:]
+    second = runners_up[0][1] if runners_up else 0
+
+    if best < MIN_AUTHORITATIVE_FILLS:
+        raise Abort(
+            f"{path.name}: no colour-filled tab (best is {winner!r} with {best} filled "
+            f"cells, below the {MIN_AUTHORITATIVE_FILLS} floor). Refusing to guess which "
+            f"tab is authoritative. Fills: {counts}"
+        )
+    if second * FILL_DOMINANCE >= best:
+        raise Abort(
+            f"{path.name}: two tabs look equally formatted ({counts[0]} vs {counts[1]}); "
+            f"cannot tell which is authoritative. Refusing to guess."
+        )
+
+    df = pd.read_excel(path, sheet_name=winner, header=None)
+    if df.empty:
+        raise Abort(f"{path.name} / {winner}: the colour-filled tab is empty")
+    return winner, df
 
 
 def hizb_from_filename(name: str) -> Optional[int]:
@@ -345,93 +463,196 @@ class JuzSource:
     juz: int
     rows: list[RawRow]
     files: list[str]
+    assembly: str = "single"  # single | merged | concatenated
     notes: list[str] = field(default_factory=list)
-    half_hizbs: Optional[list[int]] = None  # teaching-ordered hizb numbers, level 2 only
-
-
-class Abort(Exception):
-    pass
+    half_hizbs: Optional[list[int]] = None  # teaching-ordered hizb numbers, concatenated only
 
 
 def rows_signature(rows: list[RawRow]) -> list[tuple]:
+    """What a row SAYS, independent of what it is numbered.
+
+    The session number is deliberately left out: a redundant copy of a run of
+    sessions is still a redundant copy when it is renumbered (L3 juz 24 is
+    exactly that — see `_contained_in`).
+    """
     return [
-        (r.raw_session_number, r.marker_text, json.dumps(r.current, ensure_ascii=False),
+        (r.marker_text, json.dumps(r.current, ensure_ascii=False),
          json.dumps(r.recent, ensure_ascii=False), json.dumps(r.distant, ensure_ascii=False))
         for r in rows
     ]
 
 
+def _contained_in(inner: list[RawRow], outer: list[RawRow]) -> bool:
+    """True when every row of `inner` also appears, in order and adjacent, in `outer`."""
+    a, b = rows_signature(inner), rows_signature(outer)
+    if not a or len(a) >= len(b):
+        return False
+    return any(b[i:i + len(a)] == a for i in range(len(b) - len(a) + 1))
+
+
+def _load_concatenated(
+    level: int, juz: int, files: list[Path], parsed: dict[Path, list[RawRow]], notes: list[str]
+) -> JuzSource:
+    """Two workbooks that each renumber FROM SCRATCH: two hizbs, taught in turn.
+
+    Their session numbers overlap but carry DIFFERENT content, so the two runs
+    are two separate halves of the juz and are CONCATENATED in teaching order.
+    A set-union keyed on session number would silently destroy one of them.
+    """
+    hizbs = {f: hizb_from_filename(f.name) for f in files}
+    if any(h is None for h in hizbs.values()):
+        raise Abort(
+            f"Level {level} juz {juz}: two workbooks with overlapping-but-differing session "
+            f"numbering, but no hizb number in the filenames to order them by: "
+            f"{[f.name for f in files]}"
+        )
+    # Teaching order: level 1 ascends hizb, levels 2+ descend.
+    ordered = sorted(files, key=lambda f: hizbs[f], reverse=(level != 1))
+    # Corroboration, structural rather than textual (levels 3+ never name a juz
+    # in their labels): a half carries the unit pair over its OWN hizb, and the
+    # half taught LAST additionally carries the juz-tier pair (and, where the juz
+    # is not the level's first, the cumulative pair). So exactly one half holds
+    # more than one assessment, and it must be the one hizb order puts last.
+    sards = {f: sum(1 for r in parsed[f] if kind_of(r) == "sard") for f in files}
+    carriers = [f for f in files if sards[f] > 1]
+    if len(carriers) != 1:
+        raise Abort(
+            f"Level {level} juz {juz}: expected exactly one half to carry more than its own "
+            f"unit pair, found {len(carriers)}. sard counts: "
+            f"{ {f.name: n for f, n in sards.items()} }"
+        )
+    if carriers[0] != ordered[-1]:
+        raise Abort(
+            f"Level {level} juz {juz}: teaching order by hizb says {ordered[-1].name!r} is "
+            f"last, but the juz-tier pair lives in {carriers[0].name!r}. Refusing to guess."
+        )
+    notes.append(
+        "CONCATENATED: two half-workbooks, each renumbering from scratch over different "
+        f"content; teaching order {[hizbs[f] for f in ordered]} "
+        f"(hizb {'ascending' if level == 1 else 'descending'}), corroborated by the "
+        f"juz-tier pair living in the last half ({carriers[0].name!r})"
+    )
+    return JuzSource(
+        level, juz,
+        [r for f in ordered for r in parsed[f]],
+        [f.name for f in ordered],
+        "concatenated",
+        notes,
+        half_hizbs=[hizbs[f] for f in ordered],
+    )
+
+
+def _load_merged(
+    level: int, juz: int, files: list[Path], parsed: dict[Path, list[RawRow]], notes: list[str]
+) -> JuzSource:
+    """Two workbooks holding DISJOINT halves of ONE continuous session numbering.
+
+    e.g. 16-31 in one file and 1-15 in the other. The session number, not the
+    file, is the order — the file with the LOWER hizb in its name routinely
+    holds the HIGHER range.
+    """
+    rows = [r for f in files for r in parsed[f]]
+    rows.sort(key=lambda r: r.raw_session_number)
+    numbers = [r.raw_session_number for r in rows]
+    if numbers != list(range(numbers[0], numbers[0] + len(numbers))):
+        raise Abort(
+            f"Level {level} juz {juz}: the two workbooks' session numbers are disjoint but do "
+            f"not form one contiguous run: {numbers}"
+        )
+    ordered = sorted(files, key=lambda f: min(r.raw_session_number for r in parsed[f]))
+    ranges = {
+        f.name: (min(r.raw_session_number for r in parsed[f]),
+                 max(r.raw_session_number for r in parsed[f]))
+        for f in ordered
+    }
+    notes.append(
+        "MERGED: two workbooks holding disjoint halves of one continuous numbering "
+        f"{ranges}; ordered by session number"
+    )
+    return JuzSource(level, juz, rows, [f.name for f in ordered], "merged", notes)
+
+
 def load_juz(level: int, juz: int, juz_dir: Path, anomalies: list[str]) -> JuzSource:
+    """Assemble the sessions of one juz from the workbooks of its folder.
+
+    Four layouts exist in the corpus, and we DETECT which one applies rather
+    than keying off the level number:
+
+      * single       — one workbook (levels 1, 8, 9, 10).
+      * contained    — two workbooks, one of whose colour-filled tabs holds the
+                       WHOLE juz and the other a renumbered copy of a run of it
+                       (L3 juz 24 only). The containing tab is the juz; the copy
+                       is redundant and is reported and dropped.
+      * merged       — two workbooks whose session numbers are DISJOINT halves of
+                       one continuous run (levels 4, 5, 6, 7).
+      * concatenated — two workbooks whose session numbers OVERLAP but whose
+                       content differs: two hizbs, each renumbering from scratch
+                       (levels 2, 3).
+
+    Anything else aborts. In particular we never take a set-union on session
+    number: that would dedupe the distinct-but-identically-numbered sessions of
+    the concatenated layout and destroy half the juz.
+    """
     files = sorted(f for f in juz_dir.glob("*.xlsx") if not f.name.startswith("~$"))
     if not files:
         raise Abort(f"Level {level} juz {juz}: no .xlsx files in {juz_dir}")
 
-    parsed = {}
+    parsed: dict[Path, list[RawRow]] = {}
     for f in files:
-        rows: list[RawRow] = []
-        for sheet, df in content_sheets(f):
-            rows.extend(parse_sheet(f, sheet, df, anomalies))
-        parsed[f] = rows
+        sheet, df = authoritative_sheet(f)
+        parsed[f] = parse_sheet(f, sheet, df, anomalies)
+        if not parsed[f]:
+            raise Abort(f"Level {level} juz {juz}: {f.name} / {sheet} produced no rows")
 
     notes: list[str] = []
 
     if len(files) == 1:
         f = files[0]
-        if not parsed[f]:
-            raise Abort(f"Level {level} juz {juz}: {f.name} produced no rows")
-        notes.append(f"single workbook; sheets used: {sorted({r.sheet for r in parsed[f]})}")
-        return JuzSource(level, juz, parsed[f], [f.name], notes)
-
-    if len(files) == 2:
-        a, b = files
-        if rows_signature(parsed[a]) == rows_signature(parsed[b]):
-            # Same content in both files -> that IS the full-juz sheet.
-            notes.append(
-                f"two workbooks with identical Sheet1* content ({a.name!r} == {b.name!r}); "
-                "using the first, ignoring the stale per-file Sheet2 drafts"
-            )
-            return JuzSource(level, juz, parsed[a], [a.name, b.name], notes)
-
-        # Genuinely different -> the two halves of the juz (level 2).
-        hizbs = {f: hizb_from_filename(f.name) for f in files}
-        if any(h is None for h in hizbs.values()):
-            raise Abort(
-                f"Level {level} juz {juz}: two differing workbooks but no hizb number in the "
-                f"filenames: {[f.name for f in files]}"
-            )
-        # Teaching order: level 1 ascends hizb, levels 2+ descend.
-        ordered = sorted(files, key=lambda f: hizbs[f], reverse=(level != 1))
-        # Corroboration: the half that carries the juz-tier pair must come LAST.
-        carriers = [f for f in files if any(
-            r.marker_text and JUZ_WORD_RE.search(r.marker_text) for r in parsed[f]
-        )]
-        if len(carriers) != 1:
-            raise Abort(
-                f"Level {level} juz {juz}: expected exactly one half to carry the juz-tier "
-                f"pair, found {len(carriers)}: {[f.name for f in carriers]}"
-            )
-        if carriers[0] != ordered[-1]:
-            raise Abort(
-                f"Level {level} juz {juz}: teaching order by hizb says {ordered[-1].name!r} is "
-                f"last, but the juz-tier pair lives in {carriers[0].name!r}. Refusing to guess."
-            )
         notes.append(
-            "two half-workbooks; teaching order "
-            f"{[hizbs[f] for f in ordered]} (hizb {'ascending' if level == 1 else 'descending'}), "
-            f"corroborated by the juz-tier pair living in the last half ({carriers[0].name!r})"
+            f"SINGLE workbook; authoritative tab {sorted({r.sheet for r in parsed[f]})[0]!r}"
         )
-        return JuzSource(
-            level, juz,
-            [r for f in ordered for r in parsed[f]],
-            [f.name for f in ordered],
-            notes,
-            half_hizbs=[hizbs[f] for f in ordered],
+        return JuzSource(level, juz, parsed[f], [f.name], "single", notes)
+
+    if len(files) != 2:
+        raise Abort(
+            f"Level {level} juz {juz}: {len(files)} workbooks found, cannot decide layout: "
+            f"{[f.name for f in files]}"
         )
 
-    raise Abort(
-        f"Level {level} juz {juz}: {len(files)} workbooks found, cannot decide layout: "
-        f"{[f.name for f in files]}"
-    )
+    a, b = files
+    numbers_a = [r.raw_session_number for r in parsed[a]]
+    numbers_b = [r.raw_session_number for r in parsed[b]]
+    for f, numbers in ((a, numbers_a), (b, numbers_b)):
+        if len(set(numbers)) != len(numbers):
+            raise Abort(
+                f"Level {level} juz {juz}: {f.name} repeats a session number: {numbers}"
+            )
+
+    # One tab holding the whole juz, the other a renumbered copy of part of it.
+    for whole, part in ((a, b), (b, a)):
+        if _contained_in(parsed[part], parsed[whole]):
+            anomalies.append(
+                f"L{level} J{juz}: {part.name!r}'s colour-filled tab is a renumbered COPY of "
+                f"{len(parsed[part])} of the {len(parsed[whole])} rows of {whole.name!r}'s, "
+                f"which holds the whole juz on its own. The copy is redundant and is dropped; "
+                f"concatenating it would have taught its sessions twice."
+            )
+            notes.append(
+                f"CONTAINED: {whole.name!r} holds the whole juz; {part.name!r} is a renumbered "
+                f"copy of {len(parsed[part])} of its rows and is dropped"
+            )
+            return JuzSource(level, juz, parsed[whole], [whole.name], "contained", notes)
+
+    if not (set(numbers_a) & set(numbers_b)):
+        return _load_merged(level, juz, files, parsed, notes)
+
+    if rows_signature(parsed[a]) == rows_signature(parsed[b]):
+        raise Abort(
+            f"Level {level} juz {juz}: the two workbooks' authoritative tabs are IDENTICAL "
+            f"({a.name!r} == {b.name!r}). That is neither a merge nor two hizbs; refusing to "
+            f"guess which half of the juz is missing."
+        )
+    return _load_concatenated(level, juz, files, parsed, notes)
 
 
 # --------------------------------------------------------------------------
@@ -580,18 +801,25 @@ def build_juz_sessions(
         return None
 
     # --- hizb labels --------------------------------------------------------
-    # Level 1: the unit pair's own text names the hizb.
-    # Level 2: the text is KNOWN-BAD (swapped between the two half files), so the
-    #          structural filename order is truth; the text is reported.
-    # Levels 3-10: the source never names a hizb -> null.
+    # A unit is attributed to a hizb only where the SOURCE says so, i.e. where
+    # its sard label names one ("سرد الحزب رقم 59 ..."). That is levels 1 and 2.
+    # Level 2 additionally splits the juz across two per-hizb workbooks whose
+    # labels are KNOWN-BAD (swapped between the halves), so there the structural
+    # filename order is truth and the text is reported as a contradiction.
+    # Levels 3-10 label their units by SURAH and never name a hizb -> null, even
+    # where their workbooks happen to be named after one (the file names are
+    # approximate; the taught unit is a surah, not a hizb).
+    unit_pairs = [p for p in pairs if p.tier == "unit"]
+    source_labels_units_by_hizb = any(
+        hizb_in_text(rows[p.sard].marker_text or "") for p in unit_pairs
+    )
     unit_hizb: dict[int, Optional[int]] = {1: None, 2: None}
-    if src.half_hizbs:
+    if src.half_hizbs and source_labels_units_by_hizb:
         for n, h in enumerate(src.half_hizbs, start=1):
             unit_hizb[n] = h
     else:
-        for p in pairs:
-            if p.tier == "unit":
-                unit_hizb[p.unit_index] = hizb_in_text(rows[p.sard].marker_text or "")
+        for p in unit_pairs:
+            unit_hizb[p.unit_index] = hizb_in_text(rows[p.sard].marker_text or "")
 
     for p in pairs:
         if p.tier != "unit":
@@ -641,8 +869,17 @@ def build_juz_sessions(
         pair_of_row[p.exam] = p
 
     # --- raw numbering sanity ----------------------------------------------
-    raw = [r.raw_session_number for r in rows]
-    if len(src.files) == 1 or src.half_hizbs is None:
+    # `single` and `merged` juz are ONE run and must increment by 1 throughout.
+    # A `concatenated` juz is two runs, each restarting from scratch; each run is
+    # checked on its own and the restart between them is expected, not a break.
+    runs: list[list[int]] = []
+    if src.assembly == "concatenated":
+        for file_name in src.files:
+            runs.append([r.raw_session_number for r in rows if r.file.endswith(file_name)])
+    else:
+        runs.append([r.raw_session_number for r in rows])
+
+    for raw in runs:
         breaks = [
             (raw[i - 1], raw[i]) for i in range(1, len(raw)) if raw[i] != raw[i - 1] + 1
         ]
@@ -858,8 +1095,38 @@ def extract() -> tuple[dict, dict, list[str], list[str], list[str]]:
         sessions_by_level[level] = level_sessions
 
     # ---- corpus-wide validation -------------------------------------------
+    CONTENT_BLOCKS = (
+        "current_level_content", "recent_review_content", "distant_review_content",
+    )
     seen_ids: set[str] = set()
     for level, sessions in sessions_by_level.items():
+        for s in sessions:
+            for block in CONTENT_BLOCKS:
+                passage = s[block]
+                if not passage:
+                    continue
+                # A passage that starts and ends in the same surah cannot run
+                # BACKWARDS. Every such inversion in the old output came from
+                # reading a draft tab; the authoritative tabs have none, so this
+                # is an error, not a tolerated anomaly.
+                if (
+                    normalise_surah(passage["from_surah"])
+                    == normalise_surah(passage["to_surah"])
+                    and passage["to_verse"] < passage["from_verse"]
+                ):
+                    errors.append(
+                        f"{s['id']} {block}: inverted range — {passage['from_surah']} "
+                        f"{passage['from_verse']} : {passage['to_verse']}"
+                    )
+                # A name that is not one of the 114 surahs is a TYPO IN THE
+                # SOURCE. Reported, stored verbatim, never corrected here.
+                for key in ("from_surah", "to_surah"):
+                    if not is_known_surah(passage[key]):
+                        anomalies.append(
+                            f"{s['id']} {block}.{key}: {passage[key]!r} is not the name of any "
+                            f"surah — SOURCE TYPO, stored verbatim (from {s['source'].get('file')} "
+                            f"/ {s['source'].get('sheet')} row {s['source'].get('row')})"
+                        )
         if len(levels[level]["juz"]) != 3:
             errors.append(f"L{level}: has {len(levels[level]['juz'])} juz, expected 3")
         for juz_meta in levels[level]["juz"]:

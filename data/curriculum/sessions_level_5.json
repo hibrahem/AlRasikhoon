@@ -40,16 +40,11 @@
       "to_verse": 14
     },
     "recent_review_content": null,
-    "distant_review_content": {
-      "from_surah": "الفرقان",
-      "from_verse": 1,
-      "to_surah": "الفرقان",
-      "to_verse": 67
-    },
+    "distant_review_content": null,
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1",
-      "row": 5,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 36.xlsx",
+      "sheet": "Sheet2",
+      "row": 8,
       "raw_session_number": 1
     }
   },
@@ -78,14 +73,14 @@
     },
     "distant_review_content": {
       "from_surah": "الفرقان",
-      "from_verse": 68,
-      "to_surah": "الشعراء",
-      "to_verse": 111
+      "from_verse": 1,
+      "to_surah": "الفرقان",
+      "to_verse": 77
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1",
-      "row": 6,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 36.xlsx",
+      "sheet": "Sheet2",
+      "row": 9,
       "raw_session_number": 2
     }
   },
@@ -114,14 +109,14 @@
     },
     "distant_review_content": {
       "from_surah": "الشعراء",
-      "from_verse": 112,
-      "to_surah": "النمل",
-      "to_verse": 13
+      "from_verse": 1,
+      "to_surah": "الشعراء",
+      "to_verse": 159
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1",
-      "row": 7,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 36.xlsx",
+      "sheet": "Sheet2",
+      "row": 10,
       "raw_session_number": 3
     }
   },
@@ -149,15 +144,15 @@
       "to_verse": 33
     },
     "distant_review_content": {
-      "from_surah": "النمل",
-      "from_verse": 14,
+      "from_surah": "الشعراء",
+      "from_verse": 160,
       "to_surah": "النمل",
-      "to_verse": 76
+      "to_verse": 44
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1",
-      "row": 8,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 36.xlsx",
+      "sheet": "Sheet2",
+      "row": 11,
       "raw_session_number": 4
     }
   },
@@ -186,14 +181,14 @@
     },
     "distant_review_content": {
       "from_surah": "النمل",
-      "from_verse": 77,
+      "from_verse": 45,
       "to_surah": "القصص",
-      "to_verse": 35
+      "to_verse": 21
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1",
-      "row": 9,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 36.xlsx",
+      "sheet": "Sheet2",
+      "row": 12,
       "raw_session_number": 5
     }
   },
@@ -222,14 +217,14 @@
     },
     "distant_review_content": {
       "from_surah": "القصص",
-      "from_verse": 36,
+      "from_verse": 22,
       "to_surah": "القصص",
-      "to_verse": 84
+      "to_verse": 77
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1",
-      "row": 10,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 36.xlsx",
+      "sheet": "Sheet2",
+      "row": 13,
       "raw_session_number": 6
     }
   },
@@ -258,14 +253,14 @@
     },
     "distant_review_content": {
       "from_surah": "القصص",
-      "from_verse": 85,
+      "from_verse": 78,
       "to_surah": "العنكبوت",
       "to_verse": 45
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1",
-      "row": 11,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 36.xlsx",
+      "sheet": "Sheet2",
+      "row": 14,
       "raw_session_number": 7
     }
   },
@@ -296,12 +291,12 @@
       "from_surah": "العنكبوت",
       "from_verse": 46,
       "to_surah": "الروم",
-      "to_verse": 32
+      "to_verse": 41
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1",
-      "row": 12,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 36.xlsx",
+      "sheet": "Sheet2",
+      "row": 15,
       "raw_session_number": 8
     }
   },
@@ -332,9 +327,9 @@
     },
     "distant_review_content": null,
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1",
-      "row": 13,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 36.xlsx",
+      "sheet": "Sheet2",
+      "row": 16,
       "raw_session_number": 9
     }
   },
@@ -360,9 +355,9 @@
     "recent_review_content": null,
     "distant_review_content": null,
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1",
-      "row": 14,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 36.xlsx",
+      "sheet": "Sheet2",
+      "row": 17,
       "raw_session_number": 10
     }
   },
@@ -407,16 +402,11 @@
       "to_verse": 33
     },
     "recent_review_content": null,
-    "distant_review_content": {
-      "from_surah": "الروم",
-      "from_verse": 33,
-      "to_surah": "لقمان",
-      "to_verse": 28
-    },
+    "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 5,
+      "sheet": "Sheet2",
+      "row": 8,
       "raw_session_number": 11
     }
   },
@@ -444,15 +434,15 @@
       "to_verse": 33
     },
     "distant_review_content": {
-      "from_surah": "لقمان",
-      "from_verse": 29,
-      "to_surah": "الأحزاب",
-      "to_verse": 15
+      "from_surah": "الروم",
+      "from_verse": 42,
+      "to_surah": "السجدة",
+      "to_verse": 11
     },
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 6,
+      "sheet": "Sheet2",
+      "row": 9,
       "raw_session_number": 12
     }
   },
@@ -480,15 +470,15 @@
       "to_verse": 59
     },
     "distant_review_content": {
-      "from_surah": "الأحزاب",
-      "from_verse": 16,
+      "from_surah": "السجدة",
+      "from_verse": 12,
       "to_surah": "الأحزاب",
-      "to_verse": 54
+      "to_verse": 35
     },
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 7,
+      "sheet": "Sheet2",
+      "row": 10,
       "raw_session_number": 13
     }
   },
@@ -517,14 +507,14 @@
     },
     "distant_review_content": {
       "from_surah": "الأحزاب",
-      "from_verse": 55,
+      "from_verse": 36,
       "to_surah": "سبأ",
-      "to_verse": 31
+      "to_verse": 14
     },
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 8,
+      "sheet": "Sheet2",
+      "row": 11,
       "raw_session_number": 14
     }
   },
@@ -553,14 +543,14 @@
     },
     "distant_review_content": {
       "from_surah": "سبأ",
-      "from_verse": 32,
+      "from_verse": 15,
       "to_surah": "فاطر",
-      "to_verse": 30
+      "to_verse": 18
     },
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 9,
+      "sheet": "Sheet2",
+      "row": 12,
       "raw_session_number": 15
     }
   },
@@ -589,14 +579,14 @@
     },
     "distant_review_content": {
       "from_surah": "فاطر",
-      "from_verse": 31,
+      "from_verse": 19,
       "to_surah": "يس",
       "to_verse": 54
     },
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 10,
+      "sheet": "Sheet2",
+      "row": 13,
       "raw_session_number": 16
     }
   },
@@ -612,7 +602,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "سرد سورة المؤمنون على المحفظ المتابع",
+      "label_ar": "سرد سورة المؤمنون كاملةَ على المحفظ المتابع",
       "hizb_number": null,
       "juz_numbers": [
         18
@@ -628,8 +618,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 11,
+      "sheet": "Sheet2",
+      "row": 14,
       "raw_session_number": 17
     }
   },
@@ -645,7 +635,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "اختبار في سورة المؤمنون من قِبل إدارة الحلقات",
+      "label_ar": "اختبار في سورة المؤمنون كاملةَ من قِبل إدارة الحلقات",
       "hizb_number": null,
       "juz_numbers": [
         18
@@ -656,8 +646,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 12,
+      "sheet": "Sheet2",
+      "row": 15,
       "raw_session_number": 18
     }
   },
@@ -673,7 +663,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "juz",
-      "label_ar": "سرد سورتي المؤمنون والنور على المحفظ المتابع",
+      "label_ar": "سرد من أول المؤمنون إلى أخر النورعلى المحفظ المتابع",
       "hizb_number": null,
       "juz_numbers": [
         18
@@ -684,8 +674,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 13,
+      "sheet": "Sheet2",
+      "row": 16,
       "raw_session_number": 19
     }
   },
@@ -701,7 +691,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "juz",
-      "label_ar": "اختبار في سورتي المؤمنون والنور من قِبل إدارة الحلقات",
+      "label_ar": "اختبار من أول المؤمنون إلى أخر النور من قِبل إدارة الحلقات",
       "hizb_number": null,
       "juz_numbers": [
         18
@@ -712,8 +702,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 18جاهز للمنسق/الحزب 35.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 14,
+      "sheet": "Sheet2",
+      "row": 17,
       "raw_session_number": 20
     }
   },
@@ -758,16 +748,11 @@
       "to_verse": 11
     },
     "recent_review_content": null,
-    "distant_review_content": {
-      "from_surah": "يس",
-      "from_verse": 55,
-      "to_surah": "الصافات",
-      "to_verse": 102
-    },
+    "distant_review_content": null,
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1",
-      "row": 5,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 34.xlsx",
+      "sheet": "Sheet2",
+      "row": 6,
       "raw_session_number": 1
     }
   },
@@ -795,15 +780,15 @@
       "to_verse": 11
     },
     "distant_review_content": {
-      "from_surah": "الصافات",
-      "from_verse": 103,
-      "to_surah": "ص",
-      "to_verse": 42
+      "from_surah": "يس",
+      "from_verse": 55,
+      "to_surah": "الصافات",
+      "to_verse": 126
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1",
-      "row": 6,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 34.xlsx",
+      "sheet": "Sheet2",
+      "row": 7,
       "raw_session_number": 2
     }
   },
@@ -831,15 +816,15 @@
       "to_verse": 23
     },
     "distant_review_content": {
-      "from_surah": "ص",
-      "from_verse": 43,
-      "to_surah": "الزمر",
-      "to_verse": 31
+      "from_surah": "الصافات",
+      "from_verse": 127,
+      "to_surah": "ص",
+      "to_verse": 88
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1",
-      "row": 7,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 34.xlsx",
+      "sheet": "Sheet2",
+      "row": 8,
       "raw_session_number": 3
     }
   },
@@ -868,14 +853,14 @@
     },
     "distant_review_content": {
       "from_surah": "الزمر",
-      "from_verse": 32,
-      "to_surah": "غافر",
-      "to_verse": 2
+      "from_verse": 1,
+      "to_surah": "الزمر",
+      "to_verse": 56
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1",
-      "row": 8,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 34.xlsx",
+      "sheet": "Sheet2",
+      "row": 9,
       "raw_session_number": 4
     }
   },
@@ -903,15 +888,15 @@
       "to_verse": 46
     },
     "distant_review_content": {
-      "from_surah": "غافر",
-      "from_verse": 3,
+      "from_surah": "الزمر",
+      "from_verse": 57,
       "to_surah": "غافر",
-      "to_verse": 58
+      "to_verse": 40
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1",
-      "row": 9,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 34.xlsx",
+      "sheet": "Sheet2",
+      "row": 10,
       "raw_session_number": 5
     }
   },
@@ -940,14 +925,14 @@
     },
     "distant_review_content": {
       "from_surah": "غافر",
-      "from_verse": 59,
+      "from_verse": 41,
       "to_surah": "فصلت",
-      "to_verse": 29
+      "to_verse": 20
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1",
-      "row": 10,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 34.xlsx",
+      "sheet": "Sheet2",
+      "row": 11,
       "raw_session_number": 6
     }
   },
@@ -976,14 +961,14 @@
     },
     "distant_review_content": {
       "from_surah": "فصلت",
-      "from_verse": 30,
+      "from_verse": 21,
       "to_surah": "الشورى",
       "to_verse": 22
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1",
-      "row": 11,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 34.xlsx",
+      "sheet": "Sheet2",
+      "row": 12,
       "raw_session_number": 7
     }
   },
@@ -1014,12 +999,12 @@
       "from_surah": "الشورى",
       "from_verse": 23,
       "to_surah": "الزخرف",
-      "to_verse": 29
+      "to_verse": 40
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1",
-      "row": 12,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 34.xlsx",
+      "sheet": "Sheet2",
+      "row": 13,
       "raw_session_number": 8
     }
   },
@@ -1050,9 +1035,9 @@
     },
     "distant_review_content": null,
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1",
-      "row": 13,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 34.xlsx",
+      "sheet": "Sheet2",
+      "row": 14,
       "raw_session_number": 9
     }
   },
@@ -1078,9 +1063,9 @@
     "recent_review_content": null,
     "distant_review_content": null,
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1",
-      "row": 14,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 34.xlsx",
+      "sheet": "Sheet2",
+      "row": 15,
       "raw_session_number": 10
     }
   },
@@ -1125,16 +1110,11 @@
       "to_verse": 24
     },
     "recent_review_content": null,
-    "distant_review_content": {
-      "from_surah": "الزخرف",
-      "from_verse": 30,
-      "to_surah": "الدخان",
-      "to_verse": 29
-    },
+    "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 5,
+      "sheet": "Sheet2",
+      "row": 6,
       "raw_session_number": 11
     }
   },
@@ -1162,15 +1142,15 @@
       "to_verse": 24
     },
     "distant_review_content": {
-      "from_surah": "الدخان",
-      "from_verse": 30,
-      "to_surah": "الأحقاف",
-      "to_verse": 2
+      "from_surah": "الزخرف",
+      "from_verse": 41,
+      "to_surah": "الجاثية",
+      "to_verse": 8
     },
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 6,
+      "sheet": "Sheet2",
+      "row": 7,
       "raw_session_number": 12
     }
   },
@@ -1198,15 +1178,15 @@
       "to_verse": 40
     },
     "distant_review_content": {
-      "from_surah": "الأحقاف",
-      "from_verse": 3,
-      "to_surah": "محمد",
-      "to_verse": 24
+      "from_surah": "الجاثية",
+      "from_verse": 9,
+      "to_surah": "الأحقاف",
+      "to_verse": 32
     },
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 7,
+      "sheet": "Sheet2",
+      "row": 8,
       "raw_session_number": 13
     }
   },
@@ -1234,15 +1214,15 @@
       "to_verse": 57
     },
     "distant_review_content": {
-      "from_surah": "محمد",
-      "from_verse": 25,
+      "from_surah": "الأحقاف",
+      "from_verse": 33,
       "to_surah": "الفتح",
-      "to_verse": 29
+      "to_verse": 18
     },
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 8,
+      "sheet": "Sheet2",
+      "row": 9,
       "raw_session_number": 14
     }
   },
@@ -1270,15 +1250,15 @@
       "to_verse": 77
     },
     "distant_review_content": {
-      "from_surah": "الحجرات",
-      "from_verse": 1,
+      "from_surah": "الفتح",
+      "from_verse": 19,
       "to_surah": "ق",
-      "to_verse": 45
+      "to_verse": 40
     },
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 9,
+      "sheet": "Sheet2",
+      "row": 10,
       "raw_session_number": 15
     }
   },
@@ -1297,7 +1277,7 @@
       "from_surah": "الأنبياء",
       "from_verse": 91,
       "to_surah": "الأنبياء",
-      "to_verse": 106
+      "to_verse": 101
     },
     "recent_review_content": {
       "from_surah": "الأنبياء",
@@ -1306,15 +1286,15 @@
       "to_verse": 90
     },
     "distant_review_content": {
-      "from_surah": "الذاريات",
-      "from_verse": 1,
-      "to_surah": "الطور",
-      "to_verse": 49
+      "from_surah": "ق",
+      "from_verse": 41,
+      "to_surah": "النجم",
+      "to_verse": 32
     },
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 10,
+      "sheet": "Sheet2",
+      "row": 11,
       "raw_session_number": 16
     }
   },
@@ -1331,7 +1311,7 @@
     "scope": null,
     "current_level_content": {
       "from_surah": "الأنبياء",
-      "from_verse": 107,
+      "from_verse": 102,
       "to_surah": "الأنبياء",
       "to_verse": 112
     },
@@ -1339,18 +1319,18 @@
       "from_surah": "الأنبياء",
       "from_verse": 78,
       "to_surah": "الأنبياء",
-      "to_verse": 106
+      "to_verse": 101
     },
     "distant_review_content": {
       "from_surah": "النجم",
-      "from_verse": 1,
-      "to_surah": "القمر",
-      "to_verse": 55
+      "from_verse": 33,
+      "to_surah": "الرحمن",
+      "to_verse": 78
     },
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 11,
+      "sheet": "Sheet2",
+      "row": 12,
       "raw_session_number": 17
     }
   },
@@ -1367,7 +1347,7 @@
     "scope": null,
     "current_level_content": {
       "from_surah": "الأنبياء",
-      "from_verse": 107,
+      "from_verse": 102,
       "to_surah": "الأنبياء",
       "to_verse": 112
     },
@@ -1378,15 +1358,15 @@
       "to_verse": 112
     },
     "distant_review_content": {
-      "from_surah": "الرحمن",
+      "from_surah": "الواقعة",
       "from_verse": 1,
-      "to_surah": "الواقعة",
-      "to_verse": 96
+      "to_surah": "الحديد",
+      "to_verse": 24
     },
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 12,
+      "sheet": "Sheet2",
+      "row": 13,
       "raw_session_number": 18
     }
   },
@@ -1402,7 +1382,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "سرد سورة الأنبياء على المحفظ المتابع",
+      "label_ar": "سرد سورة الأنبياء كاملةَ على المحفظ المتابع",
       "hizb_number": null,
       "juz_numbers": [
         17
@@ -1411,15 +1391,15 @@
     "current_level_content": null,
     "recent_review_content": {
       "from_surah": "الأنبياء",
-      "from_verse": 107,
+      "from_verse": 102,
       "to_surah": "الأنبياء",
       "to_verse": 112
     },
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 13,
+      "sheet": "Sheet2",
+      "row": 14,
       "raw_session_number": 19
     }
   },
@@ -1435,7 +1415,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "اختبار في سورة الأنبياء من قِبل إدارة الحلقات",
+      "label_ar": "اختبار في سورة الأنبياء كاملةَ من قِبل إدارة الحلقات",
       "hizb_number": null,
       "juz_numbers": [
         17
@@ -1446,8 +1426,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 14,
+      "sheet": "Sheet2",
+      "row": 15,
       "raw_session_number": 20
     }
   },
@@ -1463,7 +1443,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "juz",
-      "label_ar": "سرد من أول سورة الأنبياء إلى أخر سورة الحج على المحفظ المتابع",
+      "label_ar": "سرد من أول  الأنبياء إلى أخر  الحج على المحفظ المتابع",
       "hizb_number": null,
       "juz_numbers": [
         17
@@ -1474,8 +1454,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 15,
+      "sheet": "Sheet2",
+      "row": 16,
       "raw_session_number": 21
     }
   },
@@ -1491,7 +1471,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "juz",
-      "label_ar": "اختبار من أول سورة الأنبياء إلى أخر سورة الحج من قِبل إدارة الحلقات",
+      "label_ar": "اختبار من أول  الأنبياء إلى أخر الحج من قِبل إدارة الحلقات",
       "hizb_number": null,
       "juz_numbers": [
         17
@@ -1502,8 +1482,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 16,
+      "sheet": "Sheet2",
+      "row": 17,
       "raw_session_number": 22
     }
   },
@@ -1519,7 +1499,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "cumulative",
-      "label_ar": "سرد من أول سورة الأنبياء إلى أخر سورة النور على المحفظ المتابع",
+      "label_ar": "سرد من أول الأنبياء إلى أخر النور على المحفظ المتابع",
       "hizb_number": null,
       "juz_numbers": [
         17,
@@ -1531,8 +1511,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 17,
+      "sheet": "Sheet2",
+      "row": 18,
       "raw_session_number": 23
     }
   },
@@ -1548,7 +1528,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "cumulative",
-      "label_ar": "اختبار من أول سورة الأنبياء إلى أخر سورة النور  من قِبل إدارة الحلقات",
+      "label_ar": "اختبار من أول الأنبياء إلى أخر النور من قِبل إدارة الحلقات",
       "hizb_number": null,
       "juz_numbers": [
         17,
@@ -1560,8 +1540,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 17جاهز للمنسق/الحزب 33.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 18,
+      "sheet": "Sheet2",
+      "row": 19,
       "raw_session_number": 24
     }
   },
@@ -1606,16 +1586,11 @@
       "to_verse": 37
     },
     "recent_review_content": null,
-    "distant_review_content": {
-      "from_surah": "الحديد",
-      "from_verse": 1,
-      "to_surah": "الحديد",
-      "to_verse": 29
-    },
+    "distant_review_content": null,
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1",
-      "row": 5,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 32.xlsx",
+      "sheet": "Sheet2",
+      "row": 6,
       "raw_session_number": 1
     }
   },
@@ -1643,15 +1618,15 @@
       "to_verse": 37
     },
     "distant_review_content": {
-      "from_surah": "المجادلة",
-      "from_verse": 1,
+      "from_surah": "الحديد",
+      "from_verse": 25,
       "to_surah": "الحشر",
-      "to_verse": 24
+      "to_verse": 16
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1",
-      "row": 6,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 32.xlsx",
+      "sheet": "Sheet2",
+      "row": 7,
       "raw_session_number": 2
     }
   },
@@ -1679,15 +1654,15 @@
       "to_verse": 58
     },
     "distant_review_content": {
-      "from_surah": "الممتحنة",
-      "from_verse": 1,
-      "to_surah": "الجمعة",
-      "to_verse": 11
+      "from_surah": "الحشر",
+      "from_verse": 17,
+      "to_surah": "المنافقون",
+      "to_verse": 4
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1",
-      "row": 7,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 32.xlsx",
+      "sheet": "Sheet2",
+      "row": 8,
       "raw_session_number": 3
     }
   },
@@ -1716,14 +1691,14 @@
     },
     "distant_review_content": {
       "from_surah": "المنافقون",
-      "from_verse": 1,
-      "to_surah": "الطلاق",
+      "from_verse": 5,
+      "to_surah": "التحريم",
       "to_verse": 12
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1",
-      "row": 8,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 32.xlsx",
+      "sheet": "Sheet2",
+      "row": 9,
       "raw_session_number": 4
     }
   },
@@ -1751,15 +1726,15 @@
       "to_verse": 94
     },
     "distant_review_content": {
-      "from_surah": "التحريم",
+      "from_surah": "الملك",
       "from_verse": 1,
-      "to_surah": "القلم",
-      "to_verse": 52
+      "to_surah": "المعارج",
+      "to_verse": 10
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1",
-      "row": 9,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 32.xlsx",
+      "sheet": "Sheet2",
+      "row": 10,
       "raw_session_number": 5
     }
   },
@@ -1787,15 +1762,15 @@
       "to_verse": 113
     },
     "distant_review_content": {
-      "from_surah": "الحاقة",
-      "from_verse": 1,
-      "to_surah": "نوح",
-      "to_verse": 28
+      "from_surah": "المعارج",
+      "from_verse": 11,
+      "to_surah": "المدثر",
+      "to_verse": 17
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1",
-      "row": 10,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 32.xlsx",
+      "sheet": "Sheet2",
+      "row": 11,
       "raw_session_number": 6
     }
   },
@@ -1823,15 +1798,15 @@
       "to_verse": 130
     },
     "distant_review_content": {
-      "from_surah": "الجن",
-      "from_verse": 1,
-      "to_surah": "المدثر",
-      "to_verse": 56
+      "from_surah": "المدثر",
+      "from_verse": 18,
+      "to_surah": "النبأ",
+      "to_verse": 30
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1",
-      "row": 11,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 32.xlsx",
+      "sheet": "Sheet2",
+      "row": 12,
       "raw_session_number": 7
     }
   },
@@ -1859,15 +1834,15 @@
       "to_verse": 11
     },
     "distant_review_content": {
-      "from_surah": "القيامة",
-      "from_verse": 1,
-      "to_surah": "النبأ",
-      "to_verse": 40
+      "from_surah": "النبأ",
+      "from_verse": 31,
+      "to_surah": "الإنشقاق",
+      "to_verse": 25
     },
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1",
-      "row": 12,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 32.xlsx",
+      "sheet": "Sheet2",
+      "row": 13,
       "raw_session_number": 8
     }
   },
@@ -1898,9 +1873,9 @@
     },
     "distant_review_content": null,
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1",
-      "row": 13,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 32.xlsx",
+      "sheet": "Sheet2",
+      "row": 14,
       "raw_session_number": 9
     }
   },
@@ -1926,9 +1901,9 @@
     "recent_review_content": null,
     "distant_review_content": null,
     "source": {
-      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1",
-      "row": 14,
+      "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 32.xlsx",
+      "sheet": "Sheet2",
+      "row": 15,
       "raw_session_number": 10
     }
   },
@@ -1973,16 +1948,11 @@
       "to_verse": 31
     },
     "recent_review_content": null,
-    "distant_review_content": {
-      "from_surah": "النازعات",
-      "from_verse": 1,
-      "to_surah": "المطففين",
-      "to_verse": 36
-    },
+    "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 5,
+      "sheet": "Sheet2",
+      "row": 6,
       "raw_session_number": 11
     }
   },
@@ -2010,15 +1980,15 @@
       "to_verse": 31
     },
     "distant_review_content": {
-      "from_surah": "الانشقاق",
+      "from_surah": "البروج",
       "from_verse": 1,
-      "to_surah": "البلد",
-      "to_verse": 20
+      "to_surah": "القدر",
+      "to_verse": 5
     },
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 6,
+      "sheet": "Sheet2",
+      "row": 7,
       "raw_session_number": 12
     }
   },
@@ -2046,15 +2016,15 @@
       "to_verse": 51
     },
     "distant_review_content": {
-      "from_surah": "الشمس",
+      "from_surah": "البينة",
       "from_verse": 1,
-      "to_surah": "العاديات",
-      "to_verse": 11
+      "to_surah": "الناس",
+      "to_verse": 6
     },
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 7,
+      "sheet": "Sheet2",
+      "row": 8,
       "raw_session_number": 13
     }
   },
@@ -2081,16 +2051,11 @@
       "to_surah": "مريم",
       "to_verse": 72
     },
-    "distant_review_content": {
-      "from_surah": "القارعة",
-      "from_verse": 1,
-      "to_surah": "الناس",
-      "to_verse": 6
-    },
+    "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 8,
+      "sheet": "Sheet2",
+      "row": 9,
       "raw_session_number": 14
     }
   },
@@ -2120,8 +2085,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 9,
+      "sheet": "Sheet2",
+      "row": 10,
       "raw_session_number": 15
     }
   },
@@ -2137,7 +2102,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "سرد سورة مريم على المحفظ المتابع",
+      "label_ar": "سرد سورة مريم كاملةَ على المحفظ المتابع",
       "hizb_number": null,
       "juz_numbers": [
         16
@@ -2153,8 +2118,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 10,
+      "sheet": "Sheet2",
+      "row": 11,
       "raw_session_number": 16
     }
   },
@@ -2170,7 +2135,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "unit",
-      "label_ar": "اختبار في سورة مريم من قِبل إدارة الحلقات",
+      "label_ar": "اختبار في سورة مريم كاملةَ من قِبل إدارة الحلقات",
       "hizb_number": null,
       "juz_numbers": [
         16
@@ -2181,8 +2146,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 11,
+      "sheet": "Sheet2",
+      "row": 12,
       "raw_session_number": 17
     }
   },
@@ -2198,7 +2163,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "juz",
-      "label_ar": "سرد سورتي مريم وطه على المحفظ المتابع",
+      "label_ar": "سرد من أول مريم إلى أخر طه على المحفظ المتابع",
       "hizb_number": null,
       "juz_numbers": [
         16
@@ -2209,8 +2174,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 12,
+      "sheet": "Sheet2",
+      "row": 13,
       "raw_session_number": 18
     }
   },
@@ -2226,7 +2191,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "juz",
-      "label_ar": "اختبار في سورتي مريم وطه من قِبل إدارة الحلقات",
+      "label_ar": "اختبار من أول مريم إلى أخر طه من قِبل إدارة الحلقات",
       "hizb_number": null,
       "juz_numbers": [
         16
@@ -2237,8 +2202,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 13,
+      "sheet": "Sheet2",
+      "row": 14,
       "raw_session_number": 19
     }
   },
@@ -2267,8 +2232,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 14,
+      "sheet": "Sheet2",
+      "row": 15,
       "raw_session_number": 20
     }
   },
@@ -2284,7 +2249,7 @@
     "hizb_number": null,
     "scope": {
       "tier": "cumulative",
-      "label_ar": "اختبار من أول مريم إلى أخر النور  من قِبل إدارة الحلقات",
+      "label_ar": "اختبار من أول مريم إلى أخر النور من قِبل إدارة الحلقات",
       "hizb_number": null,
       "juz_numbers": [
         16,
@@ -2297,8 +2262,8 @@
     "distant_review_content": null,
     "source": {
       "file": "curriculum/المستوى الخامس جاهز للمنسق/الجزء الــــ 16جاهز للمنسق/الحزب 31.xlsx",
-      "sheet": "Sheet1 (2)",
-      "row": 15,
+      "sheet": "Sheet2",
+      "row": 16,
       "raw_session_number": 21
     }
   }

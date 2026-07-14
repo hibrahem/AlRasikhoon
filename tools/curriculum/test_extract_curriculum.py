@@ -1,10 +1,20 @@
-"""Golden tests over three real juz that exercise all three source layouts.
+"""Golden tests over real juz that exercise every source layout.
 
-  * Level 1 juz 30  — one merged sheet, halves ascending by hizb (59 then 60).
-  * Level 2 juz 27  — two half-workbooks, DESCENDING (hizb 54 taught first),
-                      carrying the known contradictory hizb marker text.
-  * Level 3 juz 22  — the duplicate-workbook layout (Sheet1 + 'Sheet1 (2)' are
-                      identical in both files) with surah-scoped labels.
+The authoritative table of a workbook is its COLOUR-FILLED tab, whatever it is
+called: 'Sheet1' for levels 1-2, 'Sheet2' for levels 3-10. The other tabs are
+abandoned drafts (al_rasikhoon-hk0).
+
+  * Level 1 juz 30  — SINGLE workbook, both halves on one tab, ascending by hizb
+                      (59 then 60).
+  * Level 2 juz 27  — CONCATENATED: two half-workbooks, each renumbering from
+                      scratch, DESCENDING (hizb 54 taught first), carrying the
+                      known contradictory hizb marker text.
+  * Level 3 juz 22  — CONCATENATED with surah-scoped labels.
+  * Level 3 juz 24  — CONTAINED: one workbook holds the whole juz, the other a
+                      renumbered copy of part of it.
+  * Level 4 juz 19  — MERGED: two workbooks holding disjoint halves of ONE
+                      continuous numbering, the LOWER hizb holding the HIGHER
+                      session range.
 
 Every number asserted here was read off the source spreadsheets, not assumed.
 """
@@ -34,9 +44,107 @@ def by_number(sessions):
     return {s["session_number"]: s for s in sessions}
 
 
+# ------------------------------------------------- authoritative tab selection
+def test_the_authoritative_tab_is_the_colour_filled_one_whatever_it_is_called():
+    """al_rasikhoon-hk0: the corrected table is the tab that was FORMATTED, and
+    it is 'Sheet1' in levels 1-2 but 'Sheet2' in levels 3-10. Selecting by name
+    (the old `content_sheets()` took 'Sheet1*' and discarded 'Sheet2') read the
+    abandoned drafts for eight levels out of ten. Nor can the tab be selected by
+    xlsx tab colour: no workbook in the corpus sets one.
+    """
+    from openpyxl import load_workbook
+
+    cases = {
+        1: ("المستوى الأول جاهز للمنسق/الجزء الــــ 30 جاهز للمنسق/"
+            "منهج الراسخون المستوى الاول الجزء  رقم  1.xlsx", "Sheet1"),
+        4: ("المستوى الرابع جاهز للمنسق/الجزء الــــ 19جاهز للمنسق/"
+            "الحزب 37.xlsx", "Sheet2"),
+    }
+    for level, (relative, expected) in cases.items():
+        path = ex.CURRICULUM_DIR / relative
+        chosen, _ = ex.authoritative_sheet(path)
+        assert chosen == expected, f"level {level}"
+
+        workbook = load_workbook(path)
+        fills = {ws.title: ex.fill_count(ws) for ws in workbook.worksheets}
+        assert all(ws.sheet_properties.tabColor is None for ws in workbook.worksheets)
+        workbook.close()
+        # the winner is not merely first: it is formatted, and the drafts are not
+        assert fills[expected] >= ex.MIN_AUTHORITATIVE_FILLS
+        others = [n for t, n in fills.items() if t != expected]
+        assert max(others) * ex.FILL_DOMINANCE < fills[expected]
+
+
+def test_no_session_comes_from_a_draft_tab(corpus):
+    """Levels 1-2 are authored on 'Sheet1' and levels 3-10 on 'Sheet2'. Nothing
+    may come off 'Sheet1 (2)', which exists only on the drafts."""
+    for level, sessions in corpus["sessions"].items():
+        expected = "Sheet1" if level <= 2 else "Sheet2"
+        sheets = {s["source"]["sheet"] for s in sessions if s["kind"] != "talqeen"}
+        assert sheets == {expected}, f"level {level}"
+
+
 # ---------------------------------------------------------------- corpus-wide
 def test_extraction_of_the_whole_curriculum_is_valid(corpus):
     assert corpus["errors"] == []
+
+
+def test_no_passage_runs_backwards_within_one_surah(corpus):
+    """The draft tabs were full of inverted ranges (e.g. الحشر 13 : 12). The
+    authoritative tabs have NONE, corpus-wide. This is the regression oracle for
+    al_rasikhoon-hk0: if a passage ever starts and ends in the same surah with
+    `to_verse < from_verse`, we are reading a draft again."""
+    inverted = []
+    for sessions in corpus["sessions"].values():
+        for s in sessions:
+            for block in (
+                "current_level_content", "recent_review_content", "distant_review_content",
+            ):
+                passage = s[block]
+                if not passage:
+                    continue
+                if (
+                    ex.normalise_surah(passage["from_surah"])
+                    == ex.normalise_surah(passage["to_surah"])
+                    and passage["to_verse"] < passage["from_verse"]
+                ):
+                    inverted.append((s["id"], block, passage))
+    assert inverted == []
+
+
+def test_every_surah_named_by_the_curriculum_is_one_of_the_114(corpus):
+    """Four cells across the whole corpus name something that is not a surah.
+    They are TYPOS IN THE SOURCE: reported, stored verbatim, never corrected
+    here. Pinning the exact set means a fifth one cannot slip in unnoticed."""
+    assert len(ex.SURAH_NAMES) == 114
+    unknown = set()
+    for sessions in corpus["sessions"].values():
+        for s in sessions:
+            for block in (
+                "current_level_content", "recent_review_content", "distant_review_content",
+            ):
+                passage = s[block]
+                if not passage:
+                    continue
+                for key in ("from_surah", "to_surah"):
+                    if not ex.is_known_surah(passage[key]):
+                        unknown.add(passage[key])
+    assert unknown == {
+        "المعار ج",   # المعارج with a stray space  (level 1, 5 rows)
+        "النااس",     # الناس                        (level 1, 1 row)
+        "النكبوت",    # العنكبوت                     (level 4, 1 row)
+        "الش",        # truncated الشورى             (level 4, 1 row)
+    }
+    for name in unknown:
+        assert any(repr(name) in a for a in corpus["anomalies"])
+
+
+def test_orthographic_variants_of_a_surah_name_are_not_typos():
+    """The workbooks spell hamza and ta-marbuta inconsistently. Those are the
+    same surah. A stray SPACE is not: 'المعار ج' must stay a reported typo."""
+    for variant in ("سبا", "الانشقاق", "الانفطار", "الانعام"):
+        assert ex.is_known_surah(variant)
+    assert not ex.is_known_surah("المعار ج")
 
 
 def test_document_ids_are_unique_across_the_corpus(corpus):
@@ -177,47 +285,108 @@ def test_level_2_hizb_label_contradiction_is_reported(corpus):
     assert all("L2 " in w for w in contradictions)
 
 
-# ------------------------------- Level 3, juz 22 (duplicate workbooks, surah labels)
-def test_level_3_juz_22_reads_both_sheet1_pages_of_one_workbook(corpus):
+# --------------------------- Level 3, juz 22 (concatenated, surah labels)
+def test_level_3_juz_22_reads_only_the_colour_filled_tab_of_each_workbook(corpus):
     sessions = juz_sessions(corpus, 3, 22)
-    assert len(sessions) == 34  # 32 from the source + 2 derived talqeen
+    assert len(sessions) == 35  # 33 from the source + 2 derived talqeen
     extracted = [s for s in sessions if s["kind"] != "talqeen"]
-    assert {s["source"]["sheet"] for s in extracted} == {"Sheet1", "Sheet1 (2)"}
-    # the stale per-file Sheet2 drafts are never read
-    assert all(s["source"]["sheet"].startswith("Sheet1") for s in extracted)
-    # both workbooks of the pair carry identical Sheet1* content; one is used
-    assert len({s["source"]["file"] for s in extracted}) == 1
+    # ONE tab per workbook: the colour-filled one, which for levels 3-10 is
+    # 'Sheet2'. The 'Sheet1' / 'Sheet1 (2)' drafts are never read.
+    assert {s["source"]["sheet"] for s in extracted} == {"Sheet2"}
+    # ... and both workbooks of the juz contribute: they are two hizbs.
+    files = {s["source"]["file"].rsplit("/", 1)[-1] for s in extracted}
+    assert files == {"الحزب  43.xlsx", "الحزب  44.xlsx"}
+
+
+def test_level_3_juz_22_concatenates_hizb_44_before_hizb_43(corpus):
+    """Two colour-filled tabs, each renumbering FROM SCRATCH (raw 2..17 and
+    2..18) over DIFFERENT content. They are two hizbs and are concatenated in
+    teaching order, never unioned on session number — a union would have kept
+    one of each identically-numbered pair and thrown half the juz away."""
+    extracted = [s for s in juz_sessions(corpus, 3, 22) if s["kind"] != "talqeen"]
+    assert "44" in extracted[0]["source"]["file"].rsplit("/", 1)[-1]
+    assert "43" in extracted[-1]["source"]["file"].rsplit("/", 1)[-1]
+    # each half restarts its raw numbering at 2
+    raw_44 = [s["source"]["raw_session_number"] for s in extracted
+              if "44" in s["source"]["file"].rsplit("/", 1)[-1]]
+    raw_43 = [s["source"]["raw_session_number"] for s in extracted
+              if "43" in s["source"]["file"].rsplit("/", 1)[-1]]
+    assert raw_44 == list(range(2, 18))
+    assert raw_43 == list(range(2, 19))
 
 
 def test_level_3_juz_22_tiers_are_derived_structurally(corpus):
     s = by_number(juz_sessions(corpus, 3, 22))
-    assert (s[15]["kind"], s[15]["scope"]["tier"], s[15]["unit_index"]) == ("sard", "unit", 1)
-    assert (s[16]["kind"], s[16]["scope"]["tier"]) == ("exam", "unit")
-    assert (s[29]["kind"], s[29]["scope"]["tier"], s[29]["unit_index"]) == ("sard", "unit", 2)
-    assert (s[30]["kind"], s[30]["scope"]["tier"]) == ("exam", "unit")
-    assert (s[31]["kind"], s[31]["scope"]["tier"]) == ("sard", "juz")
-    assert (s[32]["kind"], s[32]["scope"]["tier"]) == ("exam", "juz")
-    assert (s[33]["kind"], s[33]["scope"]["tier"]) == ("sard", "cumulative")
-    assert (s[34]["kind"], s[34]["scope"]["tier"]) == ("exam", "cumulative")
+    assert (s[16]["kind"], s[16]["scope"]["tier"], s[16]["unit_index"]) == ("sard", "unit", 1)
+    assert (s[17]["kind"], s[17]["scope"]["tier"]) == ("exam", "unit")
+    assert (s[30]["kind"], s[30]["scope"]["tier"], s[30]["unit_index"]) == ("sard", "unit", 2)
+    assert (s[31]["kind"], s[31]["scope"]["tier"]) == ("exam", "unit")
+    assert (s[32]["kind"], s[32]["scope"]["tier"]) == ("sard", "juz")
+    assert (s[33]["kind"], s[33]["scope"]["tier"]) == ("exam", "juz")
+    assert (s[34]["kind"], s[34]["scope"]["tier"]) == ("sard", "cumulative")
+    assert (s[35]["kind"], s[35]["scope"]["tier"]) == ("exam", "cumulative")
 
 
 def test_level_3_juz_22_labels_are_stored_verbatim_and_name_no_hizb(corpus):
     s = by_number(juz_sessions(corpus, 3, 22))
-    assert s[15]["scope"]["label_ar"] == "سرد سورتي سبأ وفاطرعلى المحفظ المتابع"
-    assert s[29]["scope"]["label_ar"] == "سرد سورة الأحزاب على المحفظ المتابع"
-    assert s[31]["scope"]["label_ar"] == "سرد سور الأحزاب وسبأ وفاطرعلى المحفظ المتابع"
-    for n in (15, 29, 31, 33):
+    assert s[16]["scope"]["label_ar"] == "سرد سورتي سبأ وفاطرعلى المحفظ المتابع"
+    assert s[30]["scope"]["label_ar"] == "سرد سورة الأحزاب على المحفظ المتابع"
+    assert s[32]["scope"]["label_ar"] == "سرد سور الأحزاب وسبأ وفاطرعلى المحفظ المتابع"
+    for n in (16, 30, 32, 34):
         assert s[n]["scope"]["hizb_number"] is None
-        assert s[n]["hizb_number"] is None  # levels 3-10 never name a hizb
+        # Levels 3-10 teach SURAHS: their labels never name a hizb, and the hizb
+        # number in the workbook's FILENAME is not attributed to the sessions.
+        assert s[n]["hizb_number"] is None
 
 
 def test_level_3_juz_22_cumulative_covers_the_whole_level(corpus):
     s = by_number(juz_sessions(corpus, 3, 22))
-    assert s[33]["scope"]["juz_numbers"] == [22, 23, 24]
+    assert s[34]["scope"]["juz_numbers"] == [22, 23, 24]
     assert corpus["levels"][3]["juz_numbers"] == [24, 23, 22]
     # juz 24 is taught first and therefore has no cumulative pair
     first = juz_sessions(corpus, 3, 24)
     assert not any(s["scope"] and s["scope"]["tier"] == "cumulative" for s in first)
+
+
+# ------------------------------------- Level 3, juz 24 (contained workbook)
+def test_level_3_juz_24_drops_the_workbook_that_merely_copies_the_other(corpus):
+    """The colour-filled tab of 'الحزب  48' is a renumbered copy of the first 19
+    of the 33 rows of 'الحزب  47''s, which holds the WHOLE juz (both units and
+    the juz pair). Concatenating the two would teach فصلت/غافر twice."""
+    sessions = juz_sessions(corpus, 3, 24)
+    assert len(sessions) == 35  # 33 from the source + 2 derived talqeen
+    extracted = [s for s in sessions if s["kind"] != "talqeen"]
+    assert {s["source"]["file"].rsplit("/", 1)[-1] for s in extracted} == {"الحزب  47.xlsx"}
+    assert [s["source"]["raw_session_number"] for s in extracted] == list(range(1, 34))
+
+    juz_meta = next(j for j in corpus["levels"][3]["juz"] if j["juz_number"] == 24)
+    assert juz_meta["source_files"] == ["الحزب  47.xlsx"]
+    assert any("CONTAINED" in note for note in juz_meta["notes"])
+    assert any("renumbered COPY" in a and "L3 J24" in a for a in corpus["anomalies"])
+
+
+# --------------------------------------- Level 4, juz 19 (merged workbooks)
+def test_level_4_juz_19_merges_two_disjoint_halves_of_one_numbering(corpus):
+    """The two colour-filled tabs hold DISJOINT halves of ONE continuous run:
+    raw 1-13 and raw 14-27. The session number is the order, not the file — the
+    workbook with the LOWER hizb in its name (37) holds the HIGHER range."""
+    sessions = juz_sessions(corpus, 4, 19)
+    assert len(sessions) == 29  # 27 from the source + 2 derived talqeen
+    extracted = [s for s in sessions if s["kind"] != "talqeen"]
+    assert [s["source"]["raw_session_number"] for s in extracted] == list(range(1, 28))
+
+    def name(session):
+        return session["source"]["file"].rsplit("/", 1)[-1]
+
+    assert {name(s) for s in extracted if s["source"]["raw_session_number"] <= 13} == {
+        "الحزب 38.xlsx"
+    }
+    assert {name(s) for s in extracted if s["source"]["raw_session_number"] >= 14} == {
+        "الحزب 37.xlsx"
+    }
+    juz_meta = next(j for j in corpus["levels"][4]["juz"] if j["juz_number"] == 19)
+    assert juz_meta["source_files"] == ["الحزب 38.xlsx", "الحزب 37.xlsx"]
+    assert any("MERGED" in note for note in juz_meta["notes"])
 
 
 # ------------------------------------------------------------- documentation
@@ -230,7 +399,7 @@ def test_level_3_cumulative_labels_name_no_juz(corpus):
     made the old `juz_teaching_order()` comment's claim false.
     """
     s = by_number(juz_sessions(corpus, 3, 22))
-    cumulative = [s[31], s[32], s[33], s[34]]
+    cumulative = [s[32], s[33], s[34], s[35]]
     for session in cumulative:
         assert not ex.JUZ_WORD_RE.search(session["scope"]["label_ar"])
 
@@ -320,15 +489,15 @@ def test_a_talqeen_declares_itself_derived_not_extracted(corpus):
     assert seen == 59  # must not pass vacuously on a corpus with no talqeen
 
 
-def test_the_curriculum_has_952_sessions(corpus):
+def test_the_curriculum_has_955_sessions(corpus):
     per_level = {
         level: len(sessions) for level, sessions in corpus["sessions"].items()
     }
     assert per_level == {
-        1: 210, 2: 154, 3: 99, 4: 93, 5: 71,
-        6: 82, 7: 60, 8: 67, 9: 67, 10: 49,
+        1: 210, 2: 154, 3: 100, 4: 94, 5: 71,
+        6: 82, 7: 60, 8: 67, 9: 67, 10: 50,
     }
-    assert sum(per_level.values()) == 952
+    assert sum(per_level.values()) == 955
     for level, sessions in corpus["sessions"].items():
         assert corpus["levels"][level]["session_count"] == len(sessions)
         assert [s["order_in_level"] for s in sessions] == list(
