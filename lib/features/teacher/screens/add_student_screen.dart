@@ -9,6 +9,7 @@ import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/institute_repository.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/models/institute_model.dart';
+import '../../../data/models/user_model.dart';
 import '../../../domain/curriculum/curriculum_position.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -20,8 +21,11 @@ import '../../supervisor/providers/supervisor_provider.dart';
 class AddStudentScreen extends ConsumerStatefulWidget {
   /// When true, the screen runs in supervisor mode: the institute list is the
   /// supervisor's single bound institute (read off users/{uid}.institute_id,
-  /// AgDR-0003) and the created student carries no teacher_id (institute-scoped,
-  /// not teacher-owned). When false (default) it is the teacher flow.
+  /// AgDR-0003), and the supervisor must pick a teacher from that institute
+  /// before the form can be submitted (al_rasikhoon-6bw) — a teacher-less
+  /// student sits in no teacher's list, so nobody could ever conduct their
+  /// حلقة or their سرد. When false (default) it is the teacher flow, and the
+  /// created student is assigned to the creating teacher.
   final bool asSupervisor;
 
   const AddStudentScreen({super.key, this.asSupervisor = false});
@@ -41,6 +45,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
   final _guardianPasswordController = TextEditingController();
   final _guardianPhoneController = TextEditingController();
   InstituteModel? _selectedInstitute;
+  UserModel? _selectedTeacher;
   CurriculumPosition? _startingPosition = CurriculumPosition.start;
   bool _isLoading = false;
   List<InstituteModel> _institutes = [];
@@ -103,6 +108,21 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('يرجى اختيار المعهد'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    // A supervisor MUST pick a teacher from their institute (al_rasikhoon-6bw):
+    // a teacher-less student is invisible to every teacher's
+    // getStudentsForTeacher query, so nobody could ever conduct their حلقة or
+    // their سرد. The teacher-flow path never hits this — it always assigns
+    // the creating teacher below.
+    if (widget.asSupervisor && _selectedTeacher == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('يرجى اختيار المعلم'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -174,10 +194,10 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
         password: _passwordController.text,
         phone: phone,
         instituteId: _selectedInstitute!.id,
-        // Supervisor-created students are institute-scoped, not teacher-owned
-        // (AgDR-0003): no teacher_id. Teacher-created students are assigned to
-        // the creating teacher.
-        teacherId: widget.asSupervisor ? null : currentUser.id,
+        // A supervisor-created student is assigned the teacher chosen above
+        // (al_rasikhoon-6bw, guarded non-null by the check above). A
+        // teacher-created student is assigned to the creating teacher.
+        teacherId: widget.asSupervisor ? _selectedTeacher!.id : currentUser.id,
         guardianUsername: guardianUsername,
         guardianPassword: guardianPassword,
         guardianPhone: guardianPhone,
@@ -372,6 +392,15 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                   ),
                 ],
               ),
+              if (widget.asSupervisor) ...[
+                const SizedBox(height: 24),
+                _TeacherPicker(
+                  selectedTeacher: _selectedTeacher,
+                  onChanged: (teacher) {
+                    setState(() => _selectedTeacher = teacher);
+                  },
+                ),
+              ],
               const SizedBox(height: 24),
               StartingPointPicker(
                 // Only seeds the picker's initial selection — the picker
@@ -420,6 +449,59 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// The required teacher picker shown only in supervisor mode
+/// (al_rasikhoon-6bw). Lists the teachers of the supervisor's own institute
+/// via [supervisorInstituteTeachersProvider] — the pool a teacher-less student
+/// can be rescued into, and the ONLY teachers a supervisor is scoped to
+/// assign at creation.
+class _TeacherPicker extends ConsumerWidget {
+  final UserModel? selectedTeacher;
+  final ValueChanged<UserModel?> onChanged;
+
+  const _TeacherPicker({
+    required this.selectedTeacher,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final teachersAsync = ref.watch(supervisorInstituteTeachersProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('المعلم', style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<UserModel>(
+              isExpanded: true,
+              value: selectedTeacher,
+              hint: Text(
+                teachersAsync.isLoading ? 'جارٍ التحميل...' : 'اختر المعلم',
+              ),
+              items: (teachersAsync.value ?? const <UserModel>[]).map((
+                teacher,
+              ) {
+                return DropdownMenuItem(
+                  value: teacher,
+                  child: Text(teacher.name),
+                );
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
