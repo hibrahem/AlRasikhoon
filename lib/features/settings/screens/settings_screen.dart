@@ -24,7 +24,7 @@ class SettingsScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الإعدادات')),
+      appBar: AppBar(title: const Text('الملف الشخصي')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
