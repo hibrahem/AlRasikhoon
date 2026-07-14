@@ -25,9 +25,20 @@ streams follow **completely different** rules.
 
 `recent(K) = new(K-2) ∪ new(K-1)` — the previous two sessions' new content.
 
-Verified mechanically across all ten levels: **659 of 672** sessions that carry a
-recent block match this exactly. The 13 exceptions are unit boundaries, where the
-window resets after an exam and has fewer than two prior sessions to draw on.
+Verified mechanically across all ten levels: of the 672 sessions carrying a recent
+block, **659 match this exactly**. The 13 that do not are **noise in the source
+spreadsheet**, not structural exceptions:
+
+| | count | example |
+|---|---|---|
+| surah-name typos (match once whitespace/spelling is normalized) | 5 | `المعار ج` with a stray space; `النكبوت` for `العنكبوت` |
+| duplicated lesson rows in the source | 2 | L5 order 32: `new(K-2) == new(K-1)` |
+| genuine ±1 verse drift in the source | 6 | L3 order 9: authored recent starts فصلت 48, `new(K-2)` starts فصلت 47 |
+| unit resets | **0** | — |
+
+This matters for the design: because ~8 rows of the source disagree with its own
+rule, a composed block would **not** equal the authored block on those rows. See
+[At N=1, do not compose](#at-n1-do-not-compose).
 
 Level 1, orders 3-6:
 
@@ -73,7 +84,7 @@ For a meeting batching N lessons starting at `orderInLevel = K`:
 |---|---|
 | **new** | ∪ `current_level_content` of the N batched lessons |
 | **distant** | ∪ `distant_review_content` of the N batched lessons |
-| **recent** | ∪ `current_level_content` of sessions `[K-2N, K-1]` — the previous **two meetings'** new content — clamped at the unit boundary |
+| **recent** | ∪ `current_level_content` of sessions `[K-2N, K-1]` — the previous **two meetings'** new content — clamped at the unit boundary and excluding any session whose new content this meeting is itself teaching |
 
 All three streams double at 2x: the student memorizes two sessions' new content,
 reviews four sessions' worth as recent, and sweeps two distant chunks. The whole
@@ -86,17 +97,44 @@ codebase's standing rule that the app never authors curriculum content — the s
 reason `titleAr` returns the source's verbatim label rather than rebuilding
 `'سرد الحزب $hizb'` from numbers.
 
-### The load-bearing invariant
+### At N=1, do not compose
 
-**At N=1 the rule reproduces the authored curriculum exactly.**
+**A pace of 1 reads the session's authored blocks verbatim. Composition runs only
+when N > 1.**
 
-`new(K-2) ∪ new(K-1)` *is* the authored recent block — that is the 659/672 result.
-The batch of one lesson is the lesson itself. So the NX rule is a strict
-generalization of the existing curriculum, not a parallel system running beside
-it. A 1x student is provably unaffected.
+The tempting alternative — "composition is a strict generalization, so just always
+compose" — is *wrong on this data*. Because ~8 source rows disagree with the
+source's own rule (see the table above), always-composing would silently rewrite
+those 8 rows for every 1x student in the system: a stray-space surah name would be
+corrected, a ±1 verse boundary would shift. That is the app authoring curriculum
+content, which is precisely what this codebase forbids.
 
-This must be pinned by a test that walks every session of every level at N=1 and
-asserts the composed blocks equal the authored blocks.
+So the guarantee for a 1x student is **structural, not statistical**: their content
+is untouched because the composition code never runs for them, not because a rule
+happens to hold for 98.8% of rows.
+
+The 659/672 figure is therefore *evidence that the window rule is the right
+generalization to N > 1* — it is not an invariant the implementation leans on.
+
+Pin it with a test: `compose(startOrder: K, pace: 1)` returns exactly the blocks of
+the row at K, for every session of every level, by construction.
+
+### Reproducing the unit reset
+
+A lesson at the start of a unit carries **no recent block at all** — level 1's
+order 34 is a lesson with `recent: —`. You cannot review what you are learning
+right now: the تلقين at order 33 taught the very same passage the lesson at 34 is
+teaching.
+
+Composition must reproduce this. The recent window therefore excludes:
+
+1. sessions with no new content (a سرد or an اختبار contributes nothing);
+2. sessions before the تلقين that opens the current unit — the window never
+   reaches back into the previous unit. At N=1 the سرد/اختبار pair naturally
+   blocks the window, but at N≥3 it would otherwise reach past them;
+3. **sessions whose new content is already part of this meeting's own new
+   content** — this is what zeroes the recent block for the unit's first lesson,
+   whose window would otherwise pull in the تلقين's duplicate of its own passage.
 
 ## Batching rules
 
@@ -188,8 +226,9 @@ fed the batch's last order instead of the single session's order.
 
 ## Testing
 
-- **Domain, no mocks:** `compose` at N=1 over every session of every level equals
-  the authored blocks (the strict-generalization invariant).
+- **Domain, no mocks:** `compose` at N=1 returns the row's authored blocks
+  verbatim, for every session of every level — including the ~8 rows where the
+  source disagrees with its own window rule, which must pass through unchanged.
 - **Domain, no mocks:** at N=2, recent review never intersects the meeting's own
   new content — the bug that naive concatenation would introduce.
 - **Domain:** batching stops at a تلقين, a سرد, an اختبار, and a level boundary.
@@ -202,6 +241,11 @@ fed the batch's last order instead of the single session's order.
 
 ## Out of scope
 
+- **Cleaning the ~8 noisy source rows.** The surah-name typos (`المعار ج`), the
+  duplicated lesson rows, and the ±1 verse drift are real defects in the source
+  spreadsheet, surfaced by this analysis. They are tracked separately; this
+  feature is designed to be correct without them being fixed, and reads authored
+  blocks verbatim at N=1 precisely so it does not paper over them.
 - Any change to curriculum data or the extractor.
 - Changing the scope or content of a سرد or an اختبار.
 - Per-teacher or per-institute default pace. Pace is per-student.
