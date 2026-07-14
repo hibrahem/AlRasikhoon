@@ -56,8 +56,7 @@
         "firebase-debug.log",
         "firebase-debug.*.log",
         "*.local"
-      ],
-      "predeploy": ["cd \"$RESOURCE_DIR\" && ./node_modules/.bin/tsc"]
+      ]
     }
   ],
   "emulators": {
