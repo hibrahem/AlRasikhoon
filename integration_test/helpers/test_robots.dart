@@ -779,9 +779,23 @@ class SupervisorRobot extends TestRobot {
     }
   }
 
-  /// Submit exam result
+  /// Submit exam result.
+  ///
+  /// The exam session screen scrolls (#59), so "إنهاء الاختبار" can sit below
+  /// the fold on a phone. A bare tap then FINDS the button but misses it — the
+  /// hit test lands outside the viewport, the tap does nothing, and the failure
+  /// surfaces later and misleadingly as "the result screen never appeared".
+  /// Scroll it into view first, exactly as [saveExamResult] does.
   Future<void> submitExamResult() async {
-    await tapByText('إنهاء الاختبار');
+    final finder = find.text('إنهاء الاختبار');
+    await tester.scrollUntilVisible(
+      finder,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await pumpAndSettle();
+    await tester.tap(finder);
+    await pumpAndSettle();
   }
 
   /// Verify exam result screen

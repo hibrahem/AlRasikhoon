@@ -111,7 +111,10 @@ void main() {
         userId: studentUser.id,
         instituteId: instituteId,
         teacherId: teacher.id,
-        sessionId: 'L1_J30_S1',
+        // An ordinary graded lesson (one seedCurriculumData really seeds).
+        // NOT L1_J30_S1 — session 1 of a juz is a تلقين, which the teacher
+        // attends rather than grades, so it offers no "بدء الحلقة" at all.
+        sessionId: 'L1_J30_S5',
       );
 
       // Act
@@ -164,7 +167,10 @@ void main() {
         userId: studentUser.id,
         instituteId: instituteId,
         teacherId: teacher.id,
-        sessionId: 'L1_J30_S1',
+        // An ordinary graded lesson (one seedCurriculumData really seeds).
+        // NOT L1_J30_S1 — session 1 of a juz is a تلقين, which the teacher
+        // attends rather than grades, so it offers no "بدء الحلقة" at all.
+        sessionId: 'L1_J30_S5',
       );
 
       // Act
@@ -214,7 +220,10 @@ void main() {
         userId: studentUser.id,
         instituteId: instituteId,
         teacherId: teacher.id,
-        sessionId: 'L1_J30_S1',
+        // An ordinary graded lesson (one seedCurriculumData really seeds).
+        // NOT L1_J30_S1 — session 1 of a juz is a تلقين, which the teacher
+        // attends rather than grades, so it offers no "بدء الحلقة" at all.
+        sessionId: 'L1_J30_S5',
       );
 
       // Act
