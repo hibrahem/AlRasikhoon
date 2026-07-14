@@ -250,6 +250,104 @@ def is_known_surah(name: str) -> bool:
 
 
 # --------------------------------------------------------------------------
+# Source-cell corrections (al_rasikhoon-n85)
+# --------------------------------------------------------------------------
+# Four cells on the authoritative tabs name a surah that does not exist. The
+# spreadsheets are the institute's, not ours, so we do NOT edit them — we
+# correct the four cells HERE, on the way in, each one pinned to its exact
+# source cell and justified by what the curriculum's own structure demands.
+#
+# This is the ONLY place curriculum content is ever rewritten, and it is
+# deliberately not a fuzzy spell-corrector: a correction fires only when the
+# cell still holds precisely the wrong value we recorded, and the run ABORTS if
+# it does not. If the institute fixes a sheet, the stale entry fails loudly
+# instead of silently masking whatever the new value is.
+#
+# Keyed by (workbook file name, sheet name, Excel cell) -> (wrong, right, why).
+CELL_CORRECTIONS: dict[tuple[str, str, str], tuple[str, str, str]] = {
+    # 'المعارج' with a stray space. The from_surah in the SAME block already
+    # reads 'المعارج' correctly, so the intended name is not in doubt.
+    **{
+        ("منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx", "Sheet1", cell):
+            ("المعار ج", "المعارج", "stray space; from_surah of the same block reads المعارج")
+        for cell in ("F26", "F27", "F28", "F29", "F30")
+    },
+    # 'الناس' with a doubled alif. The block is الإخلاص 1 → ? 6, and الناس has
+    # exactly 6 verses.
+    ("منهج الراسخون المستوى الاول الجزء  رقم  2 بدون تعديلات-.xlsx", "Sheet1", "N68"):
+        ("النااس", "الناس", "doubled alif; block ends at verse 6 and الناس has 6 verses"),
+    # NOT العنكبوت, despite the spelling. This is the recent-review window of
+    # L4_J21_S16, whose content is the two preceding sessions' new material —
+    # الروم 51-60 — and الروم has exactly 60 verses. Reading it as العنكبوت
+    # would give 'الروم 51 → العنكبوت 60', a range running BACKWARDS through the
+    # mushaf (العنكبوت #29 precedes الروم #30). Confirmed by the curriculum owner.
+    ("منهج الراسخون المستوى الرابع الجزء  الحزب 42.xlsx", "Sheet2", "J22"):
+        ("النكبوت", "الروم", "recent window is الروم 51-60; الروم has 60 verses (NOT العنكبوت — that runs backwards)"),
+    # Truncated 'الشورى'. The preceding distant block ends at الشورى 19 and the
+    # next opens at الشورى 52, so this one is الشورى 20 → الشورى 51.
+    ("منهج الراسخون المستوى الرابع الجزء  الحزب 41.xlsx", "Sheet2", "L15"):
+        ("الش", "الشورى", "truncated; neighbouring distant blocks end at الشورى 19 and open at الشورى 52"),
+}
+
+
+def _cell_to_indices(cell: str) -> tuple[int, int]:
+    """'F26' -> (25, 5): the 0-based (row, column) pandas reads it at."""
+    match = re.fullmatch(r"([A-Z]+)(\d+)", cell)
+    if not match:
+        raise Abort(f"CELL_CORRECTIONS: {cell!r} is not an Excel cell reference")
+    letters, digits = match.groups()
+    col = 0
+    for ch in letters:
+        col = col * 26 + (ord(ch) - ord("A") + 1)
+    return int(digits) - 1, col - 1
+
+
+APPLIED_CORRECTIONS: set[tuple[str, str, str]] = set()
+
+
+def assert_every_correction_fired() -> None:
+    """A correction that never fired is a correction silently doing nothing.
+
+    A typo'd file name or sheet name in CELL_CORRECTIONS would otherwise leave
+    the bad cell in the output while the table claims it is handled.
+    """
+    missed = sorted(set(CELL_CORRECTIONS) - APPLIED_CORRECTIONS)
+    if missed:
+        raise Abort(
+            "CELL_CORRECTIONS never fired for: "
+            + "; ".join(f"{f} / {s} {c}" for f, s, c in missed)
+            + " — the file/sheet name is wrong, or the sheet is no longer read."
+        )
+
+
+def apply_cell_corrections(
+    path: Path, sheet: str, df: pd.DataFrame, anomalies: list[str]
+) -> None:
+    """Rewrite the known-bad surah cells in place, loudly. See CELL_CORRECTIONS."""
+    for (file_name, sheet_name, cell), (wrong, right, why) in CELL_CORRECTIONS.items():
+        if file_name != path.name or sheet_name != sheet:
+            continue
+        APPLIED_CORRECTIONS.add((file_name, sheet_name, cell))
+        row, col = _cell_to_indices(cell)
+        if row >= len(df) or col >= df.shape[1]:
+            raise Abort(
+                f"CELL_CORRECTIONS: {path.name} / {sheet} has no cell {cell} — "
+                "the workbook changed shape; re-verify this correction."
+            )
+        found = norm_cell(df.iat[row, col])
+        if found != wrong:
+            raise Abort(
+                f"CELL_CORRECTIONS: {path.name} / {sheet} {cell} holds {found!r}, "
+                f"expected the known typo {wrong!r}. The source changed — re-verify "
+                "this correction instead of letting it mask the new value."
+            )
+        df.iat[row, col] = right
+        anomalies.append(
+            f"{path.name} / {sheet} {cell}: corrected {wrong!r} -> {right!r} ({why})"
+        )
+
+
+# --------------------------------------------------------------------------
 # Sheet parsing
 # --------------------------------------------------------------------------
 @dataclass
@@ -334,6 +432,8 @@ def parse_sheet(path: Path, sheet: str, df: pd.DataFrame, anomalies: list[str]) 
             f"{path.name} / {sheet}: sheet is stamped 'لاغي' (void) in its title — skipped"
         )
         return []
+
+    apply_cell_corrections(path, sheet, df, anomalies)
 
     rows: list[RawRow] = []
     for idx in range(cols["header_row"] + 1, len(df)):
@@ -1095,6 +1195,8 @@ def extract() -> tuple[dict, dict, list[str], list[str], list[str]]:
         sessions_by_level[level] = level_sessions
 
     # ---- corpus-wide validation -------------------------------------------
+    assert_every_correction_fired()
+
     CONTENT_BLOCKS = (
         "current_level_content", "recent_review_content", "distant_review_content",
     )

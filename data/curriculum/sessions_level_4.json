@@ -538,7 +538,7 @@
     "recent_review_content": {
       "from_surah": "الروم",
       "from_verse": 51,
-      "to_surah": "النكبوت",
+      "to_surah": "الروم",
       "to_verse": 60
     },
     "distant_review_content": null,
@@ -866,7 +866,7 @@
       "to_verse": 52
     },
     "distant_review_content": {
-      "from_surah": "الش",
+      "from_surah": "الشورى",
       "from_verse": 20,
       "to_surah": "الشورى",
       "to_verse": 51

@@ -113,9 +113,11 @@ def test_no_passage_runs_backwards_within_one_surah(corpus):
 
 
 def test_every_surah_named_by_the_curriculum_is_one_of_the_114(corpus):
-    """Four cells across the whole corpus name something that is not a surah.
-    They are TYPOS IN THE SOURCE: reported, stored verbatim, never corrected
-    here. Pinning the exact set means a fifth one cannot slip in unnoticed."""
+    """No passage may name something that is not a surah.
+
+    Eight cells in the source did; all eight are repaired on the way in by
+    CELL_CORRECTIONS (al_rasikhoon-n85), so the corpus itself must now be clean.
+    """
     assert len(ex.SURAH_NAMES) == 114
     unknown = set()
     for sessions in corpus["sessions"].values():
@@ -129,14 +131,47 @@ def test_every_surah_named_by_the_curriculum_is_one_of_the_114(corpus):
                 for key in ("from_surah", "to_surah"):
                     if not ex.is_known_surah(passage[key]):
                         unknown.add(passage[key])
-    assert unknown == {
-        "المعار ج",   # المعارج with a stray space  (level 1, 5 rows)
-        "النااس",     # الناس                        (level 1, 1 row)
-        "النكبوت",    # العنكبوت                     (level 4, 1 row)
-        "الش",        # truncated الشورى             (level 4, 1 row)
+    assert unknown == set()
+
+
+def test_the_four_source_typos_are_corrected_to_what_the_curriculum_demands(corpus):
+    """The repaired cells, and WHY each reads what it reads (al_rasikhoon-n85).
+
+    الروم is the one that matters. Its cell reads 'النكبوت', which looks like
+    العنكبوت — but the recent window carries the two preceding sessions' new
+    content (الروم 51-60), and الروم has exactly 60 verses. 'العنكبوت 60' would
+    run BACKWARDS through the mushaf (العنكبوت #29 precedes الروم #30).
+    """
+    by_id = {s["id"]: s for sessions in corpus["sessions"].values() for s in sessions}
+    expected = {
+        # id, block, (from_surah, from_verse, to_surah, to_verse)
+        ("L1_J29_S22", "current_level_content"): ("المعارج", 1, "المعارج", 10),
+        ("L1_J29_S26", "current_level_content"): ("المعارج", 40, "المعارج", 44),
+        ("L1_J29_S65", "distant_review_content"): ("الإخلاص", 1, "الناس", 6),
+        ("L4_J21_S16", "recent_review_content"): ("الروم", 51, "الروم", 60),
+        ("L4_J21_S26", "distant_review_content"): ("الشورى", 20, "الشورى", 51),
     }
-    for name in unknown:
-        assert any(repr(name) in a for a in corpus["anomalies"])
+    for (session_id, block), want in expected.items():
+        passage = by_id[session_id][block]
+        got = (
+            passage["from_surah"], passage["from_verse"],
+            passage["to_surah"], passage["to_verse"],
+        )
+        assert got == want, f"{session_id}.{block}"
+
+
+def test_every_declared_correction_actually_fires(corpus):
+    """A correction whose file/sheet/cell no longer matches would silently do
+    nothing, leaving the typo in the output while the table claims it is fixed.
+    Extraction aborts in that case — this pins that the guard is wired in."""
+    assert ex.APPLIED_CORRECTIONS == set(ex.CELL_CORRECTIONS)
+    ex.assert_every_correction_fired()  # must not raise
+    # Every correction is also reported, so a silent rewrite is impossible.
+    for wrong, right, _why in ex.CELL_CORRECTIONS.values():
+        assert any(
+            repr(wrong) in a and repr(right) in a and "corrected" in a
+            for a in corpus["anomalies"]
+        ), f"{wrong!r} -> {right!r} was not reported as an anomaly"
 
 
 def test_orthographic_variants_of_a_surah_name_are_not_typos():
