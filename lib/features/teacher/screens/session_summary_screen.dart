@@ -9,6 +9,7 @@ import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/grade_display.dart';
 import '../providers/teacher_provider.dart';
+import '../recitation_parts.dart';
 import '../widgets/recitation_counts_card.dart';
 
 class SessionSummaryScreen extends ConsumerStatefulWidget {
@@ -182,6 +183,8 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
               data: (_) {
                 // level/sessionGrade are guaranteed non-null in the data state.
                 final resolvedLevel = level!;
+                final presentParts =
+                    activeSession.meeting?.presentParts ?? const [1, 2, 3];
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -203,23 +206,14 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    _PartResultCard(
-                      title: 'الحفظ الجديد',
-                      errors: activeSession.part1Errors,
-                      level: resolvedLevel,
-                    ),
-                    const SizedBox(height: 8),
-                    _PartResultCard(
-                      title: 'المراجعة القريبة',
-                      errors: activeSession.part2Errors,
-                      level: resolvedLevel,
-                    ),
-                    const SizedBox(height: 8),
-                    _PartResultCard(
-                      title: 'المراجعة البعيدة',
-                      errors: activeSession.part3Errors,
-                      level: resolvedLevel,
-                    ),
+                    for (final p in presentParts) ...[
+                      _PartResultCard(
+                        title: recitationPartTitleAr(p),
+                        errors: recitationPartErrors(activeSession, p),
+                        level: resolvedLevel,
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                   ],
                 );
               },
