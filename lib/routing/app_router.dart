@@ -18,14 +18,16 @@ import '../features/admin/screens/teacher_detail_screen.dart';
 import '../features/admin/screens/curriculum_screen.dart';
 import '../features/admin/screens/level_detail_screen.dart';
 import '../features/admin/screens/all_students_screen.dart';
-import '../features/admin/screens/admin_student_progress_screen.dart';
+import '../features/admin/providers/admin_provider.dart';
+import '../shared/screens/student_progress_screen.dart';
 import '../features/supervisor/screens/supervisor_dashboard_screen.dart';
 import '../features/supervisor/screens/exam_queue_screen.dart';
 import '../features/supervisor/screens/exam_session_screen.dart';
 import '../features/supervisor/screens/exam_result_screen.dart';
 import '../features/supervisor/screens/supervisor_students_screen.dart';
-import '../features/supervisor/screens/sard_session_screen.dart';
-import '../features/supervisor/screens/sard_result_screen.dart';
+import '../features/supervisor/providers/supervisor_provider.dart';
+import '../features/teacher/screens/sard_session_screen.dart';
+import '../features/teacher/screens/sard_result_screen.dart';
 import '../features/teacher/screens/teacher_students_screen.dart';
 import '../features/teacher/screens/teacher_history_screen.dart';
 import '../features/teacher/screens/session_overview_screen.dart';
@@ -70,18 +72,12 @@ class AppRoutes {
   // Supervisor student management (teacher-parity, institute-scoped — #28)
   static const String supervisorStudents = '/supervisor/students';
   static const String supervisorAddStudent = '/supervisor/students/add';
-  // Supervisor session-overview — the supervisor-shell twin of the teacher's
-  // sessionOverview. Lives under /supervisor so the supervisor's whole
-  // Students → session-overview → Sard flow stays in ONE shell; pushing the
-  // teacher-shell sessionOverview from the supervisor shell and then the
-  // supervisor-shell Sard route trips a go_router duplicate-page-key crash
-  // (#45). Resolves the student institute-scoped (AgDR-0003).
-  static const String supervisorSessionOverview =
+  // Supervisor student detail — READ-ONLY progress (al_rasikhoon-801). The
+  // session-overview twin that used to live here existed only as the doorway
+  // into Sard; سرد is teacher-conducted now, so the supervisor gets progress,
+  // never an action.
+  static const String supervisorStudentProgress =
       '/supervisor/students/:studentId';
-  // Sard (السرد) — supervisor-only (#29). Lives under /supervisor so a teacher
-  // (in the teacher shell) cannot reach it; the router redirect guards it too.
-  static const String sardSession = '/supervisor/sard/:studentId';
-  static const String sardResult = '/supervisor/sard/:studentId/result';
   static const String supervisorSettings = '/supervisor/settings';
 
   // Teacher
@@ -95,6 +91,13 @@ class AppRoutes {
   static const String newMemorization = '/teacher/session/:studentId/new';
   static const String sessionSummary = '/teacher/session/:studentId/summary';
   static const String talqeenSession = '/teacher/session/:studentId/talqeen';
+  // Sard (السرد) — TEACHER-conducted (al_rasikhoon-801, reversing #29). Lives
+  // in the teacher shell alongside the rest of the session flow, so the whole
+  // الطلاب → session-overview → السرد path is ONE shell (no #45 cross-shell
+  // duplicate-page-key crash). The router redirect guards it; Firestore rules
+  // are the true backstop.
+  static const String sardSession = '/teacher/session/:studentId/sard';
+  static const String sardResult = '/teacher/session/:studentId/sard/result';
   static const String teacherHistory = '/teacher/history';
   static const String teacherSettings = '/teacher/settings';
 
@@ -105,6 +108,15 @@ class AppRoutes {
   static const String homePractice = '/student/practice';
   static const String studentSettings = '/student/settings';
 }
+
+// Matches the literal `/sard` PATH SEGMENT (followed by `/` or end-of-string),
+// not any substring occurrence. `matchedLocation` carries substituted path
+// params, so a naive `.contains('/sard')` also fires for e.g. a student whose
+// doc id merely begins with "sard" (`/supervisor/students/sardOoPs123`),
+// bouncing legitimate navigation. Anchoring to a real path segment excludes
+// that false positive while still catching both real Sard routes
+// (`/teacher/session/:studentId/sard` and `.../sard/result`).
+final RegExp _sardPathSegment = RegExp(r'/sard(?:/|$)');
 
 final routerProvider = Provider<GoRouter>((ref) {
   final isAuthenticated = ref.watch(isAuthenticatedProvider);
@@ -128,12 +140,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         return _getDashboardRoute(userRole);
       }
 
-      // Sard (السرد) is supervisor-only (#29). Block any non-supervisor that
-      // reaches a /supervisor/sard/* path (e.g. a teacher crafting the URL):
+      // Sard (السرد) is teacher-only (al_rasikhoon-801). Block any non-teacher
+      // that reaches a teacher Sard path (e.g. a supervisor crafting the URL):
       // bounce them to their own dashboard. UI hides the entry point; this is
       // the navigation-level backstop. Firestore rules are the true backstop.
-      if (state.matchedLocation.startsWith('/supervisor/sard') &&
-          userRole != UserRole.supervisor) {
+      if (_sardPathSegment.hasMatch(state.matchedLocation) &&
+          userRole != UserRole.teacher) {
         return _getDashboardRoute(userRole);
       }
 
@@ -172,7 +184,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: AppRoutes.adminStudentProgress,
                 builder: (context, state) {
                   final id = state.pathParameters['id']!;
-                  return AdminStudentProgressScreen(studentId: id);
+                  return StudentProgressScreen(
+                    studentId: id,
+                    studentProvider: adminStudentProvider,
+                    currentSessionProvider: adminStudentCurrentSessionProvider,
+                    sessionHistoryProvider: adminStudentSessionHistoryProvider,
+                  );
                 },
               ),
             ],
@@ -305,39 +322,19 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) =>
                     const AddStudentScreen(asSupervisor: true),
               ),
-              // Supervisor session-overview — same screen as the teacher's, but
-              // institute-scoped (asSupervisor) and inside the supervisor shell
-              // so the Sard push that follows does NOT cross shells (#45).
-              // Registered AFTER the literal `add` route so `/students/add`
-              // still matches AddStudentScreen, not this :studentId route.
+              // Read-only progress — registered AFTER the literal `add` route so
+              // `/supervisor/students/add` still matches AddStudentScreen.
               GoRoute(
-                path: AppRoutes.supervisorSessionOverview,
+                path: AppRoutes.supervisorStudentProgress,
                 builder: (context, state) {
                   final studentId = state.pathParameters['studentId']!;
-                  return SessionOverviewScreen(
+                  return StudentProgressScreen(
                     studentId: studentId,
-                    asSupervisor: true,
-                  );
-                },
-              ),
-              // Sard (السرد) — supervisor-only (#29). Relocated here from the
-              // teacher shell so a teacher cannot navigate to it; the router
-              // redirect below blocks any non-supervisor that crafts the path.
-              GoRoute(
-                path: AppRoutes.sardSession,
-                builder: (context, state) {
-                  final studentId = state.pathParameters['studentId']!;
-                  return SardSessionScreen(studentId: studentId);
-                },
-              ),
-              GoRoute(
-                path: AppRoutes.sardResult,
-                builder: (context, state) {
-                  final studentId = state.pathParameters['studentId']!;
-                  final errorCount = state.extra as int? ?? 0;
-                  return SardResultScreen(
-                    studentId: studentId,
-                    errorCount: errorCount,
+                    studentProvider: supervisorStudentProvider,
+                    currentSessionProvider:
+                        supervisorStudentCurrentSessionProvider,
+                    sessionHistoryProvider:
+                        supervisorStudentSessionHistoryProvider,
                   );
                 },
               ),
@@ -418,6 +415,27 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) {
                   final studentId = state.pathParameters['studentId']!;
                   return TalqeenSessionScreen(studentId: studentId);
+                },
+              ),
+              // Sard (السرد) — teacher-conducted (al_rasikhoon-801). Registered
+              // in the teacher shell's Students branch, so the push from the
+              // session overview never crosses a shell boundary.
+              GoRoute(
+                path: AppRoutes.sardSession,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  return SardSessionScreen(studentId: studentId);
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.sardResult,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  final errorCount = state.extra as int? ?? 0;
+                  return SardResultScreen(
+                    studentId: studentId,
+                    errorCount: errorCount,
+                  );
                 },
               ),
             ],

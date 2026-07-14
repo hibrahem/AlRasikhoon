@@ -1,30 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show FutureProviderFamily;
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../data/models/session_model.dart';
-import '../../../data/models/session_record_model.dart';
-import '../../../data/models/student_model.dart';
-import '../../../data/models/user_model.dart';
-import '../../../data/repositories/student_repository.dart';
-import '../../../routing/app_router.dart';
-import '../../../shared/curriculum/assessment_copy.dart';
-import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/student_level_progress.dart';
-import '../providers/admin_provider.dart';
+import '../../core/constants/app_colors.dart';
+import '../../data/models/session_model.dart';
+import '../../data/models/session_record_model.dart';
+import '../../data/models/student_model.dart';
+import '../../data/models/user_model.dart';
+import '../../data/repositories/student_repository.dart';
+import '../../routing/app_router.dart';
+import '../curriculum/assessment_copy.dart';
+import '../widgets/app_card.dart';
+import '../widgets/student_level_progress.dart';
 
-/// Read-only student progress view for admins. Mirrors what a teacher sees
-/// for their own student in [SessionOverviewScreen], but never offers any
-/// action that would start, advance, or end a session.
-class AdminStudentProgressScreen extends ConsumerWidget {
+/// Read-only student progress view. Mirrors what a teacher sees for their own
+/// student in `SessionOverviewScreen`, but never offers any action that would
+/// start, advance, or end a session.
+///
+/// Role-agnostic by construction: the three providers it reads are INJECTED by
+/// the router (the composition root), so the admin gets its unscoped providers
+/// and the supervisor its institute-scoped ones (AgDR-0003) without this screen
+/// importing either feature.
+class StudentProgressScreen extends ConsumerWidget {
   final String studentId;
+  final FutureProviderFamily<StudentWithUser?, String> studentProvider;
+  final FutureProviderFamily<SessionModel?, String> currentSessionProvider;
+  final FutureProviderFamily<List<SessionRecordModel>, String>
+  sessionHistoryProvider;
 
-  const AdminStudentProgressScreen({super.key, required this.studentId});
+  const StudentProgressScreen({
+    super.key,
+    required this.studentId,
+    required this.studentProvider,
+    required this.currentSessionProvider,
+    required this.sessionHistoryProvider,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final studentAsync = ref.watch(adminStudentProvider(studentId));
+    final studentAsync = ref.watch(studentProvider(studentId));
 
     return Scaffold(
       appBar: AppBar(title: const Text('تقدم الطالب')),
@@ -35,14 +50,18 @@ class AdminStudentProgressScreen extends ConsumerWidget {
           }
           return RefreshIndicator(
             onRefresh: () async {
-              ref.invalidate(adminStudentProvider(studentId));
-              ref.invalidate(adminStudentCurrentSessionProvider(studentId));
-              ref.invalidate(adminStudentSessionHistoryProvider(studentId));
+              ref.invalidate(studentProvider(studentId));
+              ref.invalidate(currentSessionProvider(studentId));
+              ref.invalidate(sessionHistoryProvider(studentId));
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
-              child: _ProgressBody(studentWithUser: studentWithUser),
+              child: _ProgressBody(
+                studentWithUser: studentWithUser,
+                currentSessionProvider: currentSessionProvider,
+                sessionHistoryProvider: sessionHistoryProvider,
+              ),
             ),
           );
         },
@@ -55,19 +74,22 @@ class AdminStudentProgressScreen extends ConsumerWidget {
 
 class _ProgressBody extends ConsumerWidget {
   final StudentWithUser studentWithUser;
+  final FutureProviderFamily<SessionModel?, String> currentSessionProvider;
+  final FutureProviderFamily<List<SessionRecordModel>, String>
+  sessionHistoryProvider;
 
-  const _ProgressBody({required this.studentWithUser});
+  const _ProgressBody({
+    required this.studentWithUser,
+    required this.currentSessionProvider,
+    required this.sessionHistoryProvider,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final student = studentWithUser.student;
     final user = studentWithUser.user;
-    final sessionAsync = ref.watch(
-      adminStudentCurrentSessionProvider(student.id),
-    );
-    final historyAsync = ref.watch(
-      adminStudentSessionHistoryProvider(student.id),
-    );
+    final sessionAsync = ref.watch(currentSessionProvider(student.id));
+    final historyAsync = ref.watch(sessionHistoryProvider(student.id));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

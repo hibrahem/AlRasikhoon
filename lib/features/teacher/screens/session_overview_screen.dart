@@ -10,36 +10,17 @@ import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/student_level_progress.dart';
-import '../../../shared/providers/user_provider.dart';
-import '../../supervisor/providers/supervisor_provider.dart';
 import '../providers/teacher_provider.dart';
 
 class SessionOverviewScreen extends ConsumerWidget {
   final String studentId;
 
-  /// When true, the student + current-session are resolved through the
-  /// supervisor's institute scope (AgDR-0003) instead of the teacher-scoped
-  /// `getStudentsForTeacher` lookup. A supervisor reaches this screen entirely
-  /// within the supervisor shell (route `/supervisor/students/:studentId`), so
-  /// the whole Students → session-overview → Sard flow stays in one shell — no
-  /// cross-shell push (which trips the go_router duplicate-page-key crash, #45)
-  /// — and supervisor-created students with `teacher_id: null` resolve.
-  final bool asSupervisor;
-
-  const SessionOverviewScreen({
-    super.key,
-    required this.studentId,
-    this.asSupervisor = false,
-  });
+  const SessionOverviewScreen({super.key, required this.studentId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final studentAsync = asSupervisor
-        ? ref.watch(supervisorStudentProvider(studentId))
-        : ref.watch(studentProvider(studentId));
-    final sessionAsync = asSupervisor
-        ? ref.watch(supervisorStudentCurrentSessionProvider(studentId))
-        : ref.watch(studentCurrentSessionProvider(studentId));
+    final studentAsync = ref.watch(studentProvider(studentId));
+    final sessionAsync = ref.watch(studentCurrentSessionProvider(studentId));
 
     return Scaffold(
       appBar: AppBar(title: const Text('الحلقة')),
@@ -154,18 +135,9 @@ class SessionOverviewScreen extends ConsumerWidget {
                     }
 
                     if (session.isSard) {
-                      // Sard (السرد) is supervisor-only (#29). This screen is
-                      // shared by teacher and supervisor students lists, so the
-                      // entry point is gated by role: supervisors get the
-                      // "Start Sard" action; teachers see a read-only notice
-                      // and cannot start or navigate to a Sard session.
-                      final isSupervisor = ref.watch(isSupervisorProvider);
-                      return _buildSardCard(
-                        context,
-                        session,
-                        studentId,
-                        isSupervisor,
-                      );
+                      // سرد is conducted by the TEACHER (al_rasikhoon-801), and
+                      // only a teacher reaches this screen.
+                      return _buildSardCard(context, session, studentId);
                     }
 
                     return _buildRegularSessionCard(
@@ -437,7 +409,6 @@ class SessionOverviewScreen extends ConsumerWidget {
     BuildContext context,
     SessionModel session,
     String studentId,
-    bool isSupervisor,
   ) {
     return AppCard(
       backgroundColor: AppColors.info.withValues(alpha: 0.05),
@@ -477,48 +448,18 @@ class SessionOverviewScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
-          // Sard (السرد) is supervisor-only (#29). A teacher sees a read-only
-          // notice — no "Start Sard" action, no navigation. Only a supervisor
-          // gets the action. Assessments have UNLIMITED retries, so there is no
-          // attempt cap to gate on here — a student who cannot yet recite a juz
-          // keeps working at it.
-          if (!isSupervisor)
-            _buildSardSupervisorOnlyMessage(context)
-          else
-            AppButton(
-              text: 'بدء السرد',
-              onPressed: () {
-                context.push(
-                  AppRoutes.sardSession.replaceFirst(':studentId', studentId),
-                );
-              },
-              isFullWidth: true,
-              backgroundColor: AppColors.info,
-              icon: Icons.play_arrow,
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSardSupervisorOnlyMessage(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.warning.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.info_outline, color: AppColors.warning, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'السرد يُجرى مع المشرف فقط',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.warning),
-            ),
+          // Assessments have UNLIMITED retries, so there is no attempt cap to
+          // gate on here — a student who cannot yet recite a juz keeps at it.
+          AppButton(
+            text: 'بدء السرد',
+            onPressed: () {
+              context.push(
+                AppRoutes.sardSession.replaceFirst(':studentId', studentId),
+              );
+            },
+            isFullWidth: true,
+            backgroundColor: AppColors.info,
+            icon: Icons.play_arrow,
           ),
         ],
       ),

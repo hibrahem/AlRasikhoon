@@ -5,6 +5,7 @@ import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/models/exam_record_model.dart';
 import '../../../data/models/session_model.dart';
+import '../../../data/models/session_record_model.dart';
 import '../../../shared/providers/user_provider.dart';
 
 /// The canonical institute a supervisor is scoped to, read off
@@ -67,6 +68,20 @@ final supervisorStudentCurrentSessionProvider =
       // The student carries the id of the session they stand on
       // (`L{level}_J{juz}_S{n}`) — a direct read, no id rebuilding.
       return curriculumRepo.getSessionById(student.currentSessionId);
+    });
+
+/// Recent session records for a student in the supervisor's institute — the
+/// history half of the supervisor's read-only progress view (al_rasikhoon-801).
+/// Reads are not institute-scoped at the repository level (al_rasikhoon-bpk);
+/// the SCREEN only ever asks for a student the institute-scoped
+/// [supervisorStudentProvider] already resolved.
+final supervisorStudentSessionHistoryProvider =
+    FutureProvider.family<List<SessionRecordModel>, String>((
+      ref,
+      studentId,
+    ) async {
+      final repo = ref.watch(sessionRepositoryProvider);
+      return repo.getSessionRecordsForStudent(studentId, limit: 50);
     });
 
 /// The curriculum session a student in the supervisor's EXAM QUEUE stands on.
