@@ -134,20 +134,20 @@ service cloud.firestore {
          isSupervisorOfRecordStudent(request.resource.data));
     }
 
-    // Sard records — SUPERVISOR-ONLY (#29, epic #26). Sard (السرد) is
-    // exclusively a supervisor activity; teachers cannot write Sard records.
-    // The teacher write that existed after #28 has been REMOVED — only a
-    // supervisor scoped to the student's institute may create/update a Sard
-    // record. The dual-check (old AND new student in-institute) on update
-    // prevents repointing a sard record's student_id to another institute —
-    // same shape as session_records. Reads stay open (authenticated).
-    // session_records is deliberately untouched: regular sessions remain
-    // teacher-writable.
+    // Sard records — TEACHER-ONLY (al_rasikhoon-801). سرد is conducted by the
+    // TEACHER; the supervisor conducts الاختبار (see exam_records below). This
+    // REVERSES #29, which had made Sard supervisor-only: the supervisor write
+    // is removed and the teacher write restored. SardRecordModel always named
+    // its author `teacher_id` — model and rule now agree again.
+    //
+    // Teacher writes are unscoped, identical to session_records above: any
+    // teacher may write any student's sard record. That is a real gap, tracked
+    // in al_rasikhoon-ob7 (which tightens session_records and sard_records
+    // together); it is NOT new here. Reads stay open (authenticated).
     match /sard_records/{sardId} {
       allow read: if isAuthenticated();
-      allow create: if isSupervisorOfRecordStudent(request.resource.data);
-      allow update: if isSupervisorOfRecordStudent(resource.data) &&
-        isSupervisorOfRecordStudent(request.resource.data);
+      allow create: if isTeacher();
+      allow update: if isTeacher();
     }
 
     // Exam records
