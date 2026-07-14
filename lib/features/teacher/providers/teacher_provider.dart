@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/institute_repository.dart';
 import '../../../data/repositories/student_repository.dart';
@@ -213,6 +214,12 @@ class ActiveSessionState {
 class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
   @override
   ActiveSessionState? build() => null;
+
+  /// Seeds an active session directly, bypassing `startSession` and Firestore.
+  /// Test-only: widget tests for the recitation/summary/talqeen screens need a
+  /// composed meeting in state without a full session start.
+  @visibleForTesting
+  void seedForTest(ActiveSessionState state) => this.state = state;
 
   /// Starts a session and — while the teacher is teaching it, not only once
   /// it is graded — composes and stores the meeting being taught.
