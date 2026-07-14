@@ -259,13 +259,9 @@ class SessionOverviewScreen extends ConsumerWidget {
 
     // The student stores where a meeting STARTS, never how far it extends —
     // the new pace only widens the pending meeting once the student is
-    // re-read, so invalidate now rather than leaving the teacher/supervisor
-    // staring at the pre-change meeting until a manual reload.
-    if (asSupervisor) {
-      ref.invalidate(supervisorStudentProvider(studentId));
-    } else {
-      ref.invalidate(studentProvider(studentId));
-    }
+    // re-read, so invalidate now rather than leaving the teacher staring at
+    // the pre-change meeting until a manual reload.
+    ref.invalidate(studentProvider(studentId));
   }
 
   Widget _buildRegularSessionCard(
