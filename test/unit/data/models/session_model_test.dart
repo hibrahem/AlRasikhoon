@@ -252,6 +252,20 @@ void main() {
       );
       expect(session.titleAr, 'الحلقة 5 - الجزء 30');
     });
+
+    // A تلقين is neither a lesson nor an assessment: calling it 'الحلقة 1' —
+    // the fallthrough this used to hit — would misname it as an ordinary
+    // lesson in the exact placement screen a teacher relies on to see which
+    // of two identical-range entries is the one they must actually decide
+    // about.
+    test('a تلقين is titled as a تلقين, never as a حلقة', () {
+      final session = SessionModel.fromJson(
+        'L1_J30_S1',
+        lessonJson(sessionNumber: 1, orderInLevel: 1, kind: 'talqeen'),
+      );
+      expect(session.titleAr, 'تلقين - الجزء 30');
+      expect(session.titleAr, isNot(contains('الحلقة')));
+    });
   });
 
   group('ordering', () {

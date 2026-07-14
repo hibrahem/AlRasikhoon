@@ -156,12 +156,18 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
   }
 
   /// What a session IS, in the curriculum's own words: an assessment by its
-  /// verbatim label (`سرد الجزء رقم 30 كاملًا على المحفظ المتابع`), a lesson by
-  /// its Qur'an range. Never `session == 35 ? 'السرد' : …`.
+  /// verbatim label (`سرد الجزء رقم 30 كاملًا على المحفظ المتابع`), a تلقين
+  /// named as a تلقين (never as 'الحلقة N', which would make it
+  /// indistinguishable from the ordinary lesson it introduces — both teach the
+  /// identical range), a lesson by its Qur'an range. Never
+  /// `session == 35 ? 'السرد' : …`.
   String _sessionLabel(SessionModel session) {
     if (session.isAssessment) return session.titleAr;
 
     final range = session.currentLevelContent?.rangeAr ?? '';
+    if (session.isTalqeen) {
+      return range.isEmpty ? session.titleAr : '${session.titleAr} — $range';
+    }
     if (range.isEmpty) return 'الحلقة ${session.sessionNumber}';
     return 'الحلقة ${session.sessionNumber} — $range';
   }
@@ -235,9 +241,10 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
     );
   }
 
-  /// The chosen starting point, said briefly: the assessment's own label, or
-  /// the lesson's number.
-  String _startingPointAr(SessionModel session) => session.isAssessment
+  /// The chosen starting point, said briefly: the assessment's own label, the
+  /// تلقين's own name, or the lesson's number.
+  String _startingPointAr(SessionModel session) =>
+      (session.isAssessment || session.isTalqeen)
       ? session.titleAr
       : 'الحلقة ${session.sessionNumber}';
 

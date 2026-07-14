@@ -363,6 +363,11 @@ class SessionModel {
   String get titleAr {
     final label = scope?.labelAr;
     if (label != null && label.isNotEmpty) return label;
+    // A تلقين is neither a lesson nor an assessment: 'الحلقة $sessionNumber'
+    // would misname it as an ordinary lesson in the exact placement screen a
+    // teacher relies on to tell the two apart (see StudentCard's badge,
+    // which solves this same misnaming for the same reason).
+    if (isTalqeen) return 'تلقين - الجزء $juzNumber';
     return 'الحلقة $sessionNumber - الجزء $juzNumber';
   }
 

@@ -185,7 +185,75 @@ Future<void> _pumpPicker(
   await tester.pumpAndSettle();
 }
 
+/// A minimal juz holding a تلقين followed immediately by the lesson it
+/// introduces — both teaching the exact same range, exactly the scenario a
+/// placing teacher must be able to tell apart.
+Future<FakeFirebaseFirestore> _seedTalqeenThenLesson() async {
+  final firestore = FakeFirebaseFirestore();
+
+  await firestore.collection('levels').doc('level_1').set({
+    'id': 1,
+    'name_ar': 'المستوى الأول',
+    'name_en': 'Level 1',
+    'juz_numbers': [30],
+    'session_count': 2,
+    'order': 1,
+  });
+
+  Future<void> session(int number, int orderInLevel, String kind) {
+    return firestore.collection('sessions').doc('L1_J30_S$number').set({
+      'level_id': 1,
+      'juz_number': 30,
+      'session_number': number,
+      'order_in_level': orderInLevel,
+      'kind': kind,
+      'current_level_content': {
+        'from_surah': 'النبأ',
+        'from_verse': 1,
+        'to_surah': 'النبأ',
+        'to_verse': 11,
+      },
+    });
+  }
+
+  await session(1, 1, 'talqeen');
+  await session(2, 2, 'lesson');
+
+  return firestore;
+}
+
 void main() {
+  testWidgets(
+    'a تلقين is offered distinguishably from the lesson it introduces, even '
+    'though both teach the identical range',
+    (tester) async {
+      final firestore = await _seedTalqeenThenLesson();
+      await _pumpPicker(tester, firestore, (_) {});
+
+      await tester.tap(find.byKey(const Key('starting_point_session')));
+      await tester.pumpAndSettle();
+
+      // The تلقين reads as a تلقين, not as 'الحلقة 1' — the exact
+      // misnaming that made it indistinguishable from the lesson beneath it.
+      expect(find.textContaining('تلقين'), findsWidgets);
+      expect(find.text('الحلقة 1 — النبأ: 1 - 11'), findsNothing);
+      // The lesson it introduces is still offered as an ordinary lesson.
+      expect(find.textContaining('الحلقة 2 — النبأ'), findsWidgets);
+    },
+  );
+
+  testWidgets(
+    'placing a student directly onto a تلقين states it as a تلقين in the '
+    'consequence banner, not as a حلقة',
+    (tester) async {
+      final firestore = await _seedTalqeenThenLesson();
+      await _pumpPicker(tester, firestore, (_) {});
+
+      // The picker defaults to the first session in the juz — the تلقين.
+      expect(find.textContaining('سيبدأ الطالب من تلقين'), findsOneWidget);
+    },
+  );
+
   testWidgets('defaults to the first session of the curriculum', (
     tester,
   ) async {
