@@ -40,8 +40,8 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final sessionAsync = ref.watch(
-      studentCurrentSessionProvider(widget.studentId),
+    final meetingAsync = ref.watch(
+      studentCurrentMeetingProvider(widget.studentId),
     );
     // Distinct accent per memorization mode (hibrahem/AlRasikhoon#25).
     // The Arabic label (_partTitle) is always shown alongside, so the mode is
@@ -60,30 +60,37 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
           },
         ),
       ),
-      body: sessionAsync.when(
-        data: (session) {
+      body: meetingAsync.when(
+        data: (meeting) {
           // A تلقين is never graded, failed, or attempt-limited — it has no
           // entry point to this screen in-app (session_overview_screen.dart
           // branches on isTalqeen before ever reaching the regular-session
           // card), but a hand-edited URL could still land here directly.
           // Mirror the guard in talqeen_session_screen.dart: refuse to run
           // the grading flow unless the student is actually on a lesson.
-          if (session == null || !session.isLesson) {
+          //
+          // A meeting batches lessons and nothing else, so its FIRST session
+          // decides: if that is not a lesson, the meeting is a lone تلقين,
+          // سرد or اختبار and has no business here.
+          if (meeting == null || !meeting.first.isLesson) {
             return const Center(child: Text('لا توجد بيانات للتسميع'));
           }
 
           // A content block is legitimately absent on review-only lessons —
-          // absence is data, and reads as an empty range, not a crash.
+          // absence is data, and reads as an empty range, not a crash. A
+          // batched meeting's stream may cover more than one session, which
+          // is exactly why these are strings the meeting already merged
+          // rather than a single session's own content block.
           String content;
           switch (widget.part) {
             case 1:
-              content = session.currentLevelContent?.rangeAr ?? '';
+              content = meeting.newContentAr;
               break;
             case 2:
-              content = session.recentReviewContent?.rangeAr ?? '';
+              content = meeting.recentReviewAr;
               break;
             case 3:
-              content = session.distantReviewContent?.rangeAr ?? '';
+              content = meeting.distantReviewAr;
               break;
             default:
               content = '';

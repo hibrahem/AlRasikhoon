@@ -5,6 +5,7 @@ import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
+import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/features/teacher/screens/session_overview_screen.dart';
 
@@ -56,9 +57,27 @@ void main() {
           studentProvider('s1').overrideWith(
             (ref) async => StudentWithUser(student: student, user: user),
           ),
-          studentCurrentSessionProvider(
-            's1',
-          ).overrideWith((ref) async => talqeenSession),
+          // A تلقين always stands alone (`PacedSessionComposer` never
+          // batches one), so its meeting is a single-session `PacedSession`
+          // built from the same row — the screen now reads the MEETING, not
+          // the session directly.
+          studentCurrentMeetingProvider('s1').overrideWith(
+            (ref) async => PacedSession(
+              sessions: [talqeenSession],
+              newContent: [
+                if (talqeenSession.currentLevelContent != null)
+                  talqeenSession.currentLevelContent!,
+              ],
+              recentReview: [
+                if (talqeenSession.recentReviewContent != null)
+                  talqeenSession.recentReviewContent!,
+              ],
+              distantReview: [
+                if (talqeenSession.distantReviewContent != null)
+                  talqeenSession.distantReviewContent!,
+              ],
+            ),
+          ),
         ],
         child: const MaterialApp(
           home: Directionality(

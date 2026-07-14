@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:al_rasikhoon/core/constants/app_colors.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
+import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/features/teacher/screens/recitation_screen.dart';
 
@@ -45,12 +46,29 @@ Future<void> _pumpRecitation(WidgetTester tester, int part) async {
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
 
+  // The session stands alone (not batched), so its meeting is a
+  // single-session `PacedSession` built from the same row — the screen now
+  // reads the MEETING, not the session directly.
+  final session = _session();
+  final meeting = PacedSession(
+    sessions: [session],
+    newContent: [
+      if (session.currentLevelContent != null) session.currentLevelContent!,
+    ],
+    recentReview: [
+      if (session.recentReviewContent != null) session.recentReviewContent!,
+    ],
+    distantReview: [
+      if (session.distantReviewContent != null) session.distantReviewContent!,
+    ],
+  );
+
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        studentCurrentSessionProvider(
+        studentCurrentMeetingProvider(
           'student1',
-        ).overrideWith((ref) async => _session()),
+        ).overrideWith((ref) async => meeting),
       ],
       child: MaterialApp(
         home: RecitationScreen(studentId: 'student1', part: part),

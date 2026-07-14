@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/student_model.dart';
+import '../../../domain/curriculum/paced_session.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -19,8 +20,12 @@ class SessionOverviewScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // The supervisor no longer reaches this screen: as of al_rasikhoon-801 the
+    // TEACHER conducts the سرد in the teacher shell, and a supervisor gets the
+    // read-only StudentProgressScreen instead. So there is no `asSupervisor`
+    // branch to keep here — this screen is the teacher's.
     final studentAsync = ref.watch(studentProvider(studentId));
-    final sessionAsync = ref.watch(studentCurrentSessionProvider(studentId));
+    final meetingAsync = ref.watch(studentCurrentMeetingProvider(studentId));
 
     return Scaffold(
       appBar: AppBar(title: const Text('الحلقة')),
@@ -105,26 +110,30 @@ class SessionOverviewScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
 
-                sessionAsync.when(
-                  data: (session) {
-                    if (session == null) {
+                meetingAsync.when(
+                  data: (meeting) {
+                    if (meeting == null) {
                       return const AppCard(
                         child: Center(child: Text('لا توجد بيانات للحلقة')),
                       );
                     }
 
-                    // What this session IS comes from the curriculum's own
-                    // `kind`, never from its number: session 35 of juz 30 is
-                    // an ordinary lesson, and the juz-30 اختبار is session 68.
+                    // The meeting's KIND is the kind of the session it
+                    // starts on — a batch is all lessons, so they agree. What
+                    // this session IS comes from the curriculum's own `kind`,
+                    // never from its number: session 35 of juz 30 is an
+                    // ordinary lesson, and the juz-30 اختبار is session 68.
                     //
                     // The تلقين branch MUST come before isExam/isSard and the
                     // regular-lesson fallthrough: a تلقين is neither an
                     // assessment nor a graded lesson, and falling through would
                     // start it as one.
+                    final session = meeting.first;
+
                     if (session.isTalqeen) {
                       return _buildTalqeenCard(
                         context,
-                        session,
+                        meeting,
                         studentId,
                         ref,
                       );
@@ -142,7 +151,7 @@ class SessionOverviewScreen extends ConsumerWidget {
 
                     return _buildRegularSessionCard(
                       context,
-                      session,
+                      meeting,
                       student,
                       studentId,
                       ref,
@@ -180,11 +189,12 @@ class SessionOverviewScreen extends ConsumerWidget {
 
   Widget _buildRegularSessionCard(
     BuildContext context,
-    SessionModel session,
+    PacedSession meeting,
     StudentModel student,
     String studentId,
     WidgetRef ref,
   ) {
+    final session = meeting.first;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,21 +245,21 @@ class SessionOverviewScreen extends ConsumerWidget {
           _SessionPartTile(
             number: 1,
             title: 'الحفظ الجديد',
-            content: session.currentLevelContent?.rangeAr ?? '',
+            content: meeting.newContentAr,
             accent: AppColors.forMemorizationPart(1),
           ),
           const SizedBox(height: 8),
           _SessionPartTile(
             number: 2,
             title: 'المراجعة القريبة',
-            content: session.recentReviewContent?.rangeAr ?? '',
+            content: meeting.recentReviewAr,
             accent: AppColors.forMemorizationPart(2),
           ),
           const SizedBox(height: 8),
           _SessionPartTile(
             number: 3,
             title: 'المراجعة البعيدة',
-            content: session.distantReviewContent?.rangeAr ?? '',
+            content: meeting.distantReviewAr,
             accent: AppColors.forMemorizationPart(3),
           ),
 
@@ -286,10 +296,11 @@ class SessionOverviewScreen extends ConsumerWidget {
   /// either: it cannot be exhausted.
   Widget _buildTalqeenCard(
     BuildContext context,
-    SessionModel session,
+    PacedSession meeting,
     String studentId,
     WidgetRef ref,
   ) {
+    final session = meeting.first;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -338,7 +349,7 @@ class SessionOverviewScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            session.currentLevelContent?.rangeAr ?? '',
+            meeting.newContentAr,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 12),

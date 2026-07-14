@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../data/models/session_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/auth_repository.dart';
+import '../../../domain/curriculum/paced_session.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/providers/user_provider.dart';
@@ -29,7 +29,7 @@ class _StudentDashboardScreenState
   Widget build(BuildContext context) {
     final currentUser = ref.watch(currentUserProvider);
     final statsAsync = ref.watch(studentStatsProvider);
-    final sessionAsync = ref.watch(studentDashboardSessionProvider);
+    final meetingAsync = ref.watch(studentDashboardMeetingProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -48,13 +48,13 @@ class _StudentDashboardScreenState
           // Invalidate all providers
           ref.invalidate(currentStudentProvider);
           ref.invalidate(studentStatsProvider);
-          ref.invalidate(studentDashboardSessionProvider);
+          ref.invalidate(studentDashboardMeetingProvider);
           ref.invalidate(homePracticeStatsProvider);
 
           // Wait for providers to reload
           await Future.wait([
             ref.read(studentStatsProvider.future),
-            ref.read(studentDashboardSessionProvider.future),
+            ref.read(studentDashboardMeetingProvider.future),
             ref.read(homePracticeStatsProvider.future),
           ]);
         },
@@ -110,8 +110,8 @@ class _StudentDashboardScreenState
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 12),
-              sessionAsync.when(
-                data: (session) => _buildCurrentSessionCard(session),
+              meetingAsync.when(
+                data: (meeting) => _buildCurrentSessionCard(meeting),
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Text('Error: $e'),
               ),
@@ -284,21 +284,24 @@ class _StudentDashboardScreenState
     );
   }
 
-  /// The student's current session, as the curriculum describes it. What the
-  /// session IS comes from its `kind`, and an assessment is named by the
+  /// The student's current meeting, as the curriculum describes it. What the
+  /// meeting IS comes from the `kind` of the session it starts on — a batch is
+  /// all lessons, so they agree — and an assessment is named by the
   /// curriculum's own label — never `'سرد الحزب $hizb'`, which cannot name a
   /// juz- or level-tier سرد at all.
-  Widget _buildCurrentSessionCard(SessionModel? session) {
+  Widget _buildCurrentSessionCard(PacedSession? meeting) {
     final studentAsync = ref.watch(currentStudentProvider);
 
     return studentAsync.when(
       data: (student) {
         if (student == null) return const SizedBox();
-        if (session == null) {
+        if (meeting == null) {
           return const AppCard(
             child: Center(child: Text('لا توجد بيانات للحلقة')),
           );
         }
+
+        final session = meeting.first;
 
         // The تلقين branch MUST come before isExam/isSard and the regular
         // lesson fallthrough (see session_overview_screen.dart's identical
@@ -352,7 +355,7 @@ class _StudentDashboardScreenState
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  session.currentLevelContent?.rangeAr ?? '',
+                  meeting.newContentAr,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 12),
@@ -480,10 +483,7 @@ class _StudentDashboardScreenState
                 ],
               ),
               const SizedBox(height: 16),
-              _ContentRow(
-                title: 'الحفظ الجديد',
-                content: session.currentLevelContent?.rangeAr ?? '',
-              ),
+              _ContentRow(title: 'الحفظ الجديد', content: meeting.newContentAr),
             ],
           ),
         );

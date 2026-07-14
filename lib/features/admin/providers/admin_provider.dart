@@ -8,6 +8,8 @@ import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/institute_model.dart';
+import '../../../domain/curriculum/paced_session.dart';
+import '../../../shared/providers/meeting_provider.dart' show composeMeetingFor;
 
 class AdminStats {
   final int institutesCount;
@@ -150,6 +152,21 @@ final adminStudentCurrentSessionProvider =
       // The student carries the id of the session they stand on
       // (`L{level}_J{juz}_S{n}`) — a direct read, no id rebuilding.
       return curriculumRepo.getSessionById(student.currentSessionId);
+    });
+
+/// The MEETING a student stands on (admin-only view) — the admin twin of
+/// `studentCurrentMeetingProvider`. Resolves the student via
+/// [adminStudentProvider] (the admin's own read-only lookup, scoped to no
+/// teacher/institute — an admin sees every student), then composes the
+/// meeting through the one shared rule in [composeMeetingFor].
+final adminStudentCurrentMeetingProvider =
+    FutureProvider.family<PacedSession?, String>((ref, studentId) async {
+      final studentWithUser = await ref.watch(
+        adminStudentProvider(studentId).future,
+      );
+      if (studentWithUser == null) return null;
+
+      return composeMeetingFor(ref, studentWithUser.student);
     });
 
 /// Recent session records for a student (admin-only view).

@@ -74,8 +74,8 @@ class _TalqeenSessionScreenState extends ConsumerState<TalqeenSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final sessionAsync = ref.watch(
-      studentCurrentSessionProvider(widget.studentId),
+    final meetingAsync = ref.watch(
+      studentCurrentMeetingProvider(widget.studentId),
     );
     final activeSession = ref.watch(activeSessionProvider);
 
@@ -84,9 +84,9 @@ class _TalqeenSessionScreenState extends ConsumerState<TalqeenSessionScreen> {
         title: const Text('تلقين'),
         automaticallyImplyLeading: false,
       ),
-      body: sessionAsync.when(
-        data: (session) {
-          if (session == null || !session.isTalqeen) {
+      body: meetingAsync.when(
+        data: (meeting) {
+          if (meeting == null || !meeting.first.isTalqeen) {
             return const Center(child: Text('لا توجد بيانات للتلقين'));
           }
 
@@ -105,13 +105,13 @@ class _TalqeenSessionScreenState extends ConsumerState<TalqeenSessionScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        session.currentLevelContent?.rangeAr ?? '',
+                        meeting.newContentAr,
                         style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(color: AppColors.primary),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'الجزء ${session.juzNumber}',
+                        'الجزء ${meeting.first.juzNumber}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textSecondary,
                         ),
