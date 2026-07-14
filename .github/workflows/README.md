@@ -18,7 +18,23 @@ toolchain failing does not mask the other):
 | Set up Flutter | `subosito/flutter-action@v2` | Pinned to Flutter **3.35.7** (stable) — bundles Dart 3.9.2 to satisfy `pubspec.yaml`'s `sdk: ^3.9.2`. |
 | Resolve deps | `flutter pub get` | |
 | Analyze | `flutter analyze` | Fails the job on any analyzer error/warning (default behaviour). |
-| Unit tests | `flutter test test/` | **Unit suite only.** Integration tests (`integration_test/`) need a device/emulator and are tracked separately under **issue #5** — intentionally not wired here. |
+| Unit tests | `flutter test test/` | **Unit suite only.** The integration suite needs a booted device, so it runs in the `integration` job below. |
+
+### Job: `integration` — integration suite on an iOS simulator
+
+Runs on `macos-15`, because `flutter test integration_test/` requires a real device
+and the Android emulator hangs on this suite (`al_rasikhoon-1fg`).
+
+| Step | Command | Notes |
+|------|---------|-------|
+| Boot iOS simulator | `xcrun simctl boot` + `bootstatus -b` | `simctl boot` returns immediately; `bootstatus` waits for a *fully* booted device. `flutter test -d` against a half-booted simulator fails in ways that look like test failures. |
+| Integration tests | `flutter test integration_test/<suite> -d $SIM_UDID` | One invocation **per suite**: a single run over the whole directory shares one app process, so a crash in one suite takes the rest down with it and hides which one broke. |
+
+This job closes **issue #5**. It exists because CI previously ran analyze + unit tests
+only, and nothing ran the integration suite — so it rotted unnoticed while two PRs merged
+green over six red integration tests (`al_rasikhoon-8oh`). Both breakages were real product
+changes the tests had not been told about, and no unit test could have caught either.
+macOS runners bill at a premium; that is the honest price of gating on this.
 
 ### Job: `functions` — build + lint
 

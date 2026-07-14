@@ -2,12 +2,13 @@
 #
 # Refs: issue #6 (this pipeline).
 #
-# Two independent jobs:
-#   - flutter:   analyze + UNIT tests for the Flutter/Dart app
-#   - functions: build (+ lint) for the Firebase Cloud Functions TypeScript package
+# Three independent jobs:
+#   - flutter:     analyze + UNIT tests for the Flutter/Dart app
+#   - integration: the integration suite, on a booted iOS simulator (issue #5)
+#   - functions:   build (+ lint) for the Firebase Cloud Functions TypeScript package
 #
 # The jobs are intentionally independent (no `needs:`) so a failure in one
-# does not mask the result of the other and both run in parallel.
+# does not mask the result of the other and all three run in parallel.
 #
 # Design rationale + options considered: docs/agdr/AgDR-0001-github-actions-ci.md
 # Job descriptions: .github/workflows/README.md
@@ -81,12 +82,79 @@ jobs:
       # does NOT pick up `integration_test/` — scoping to `test/` explicitly
       # documents the intent and keeps the boundary obvious.
       #
-      # FOLLOW-UP (issue #5): integration tests live in `integration_test/`
-      # and require a booted device/emulator (or the Firebase emulator suite).
-      # They are deliberately NOT wired here — that is tracked separately under
-      # issue #5. Do not add `flutter test integration_test` to this job.
+      # The integration suite needs a booted device, so it runs in the
+      # `integration` job below (macOS + iOS simulator), NOT here.
       - name: Unit tests
         run: flutter test test/
+
+  # ===========================================================================
+  # integration — the integration suite, on a booted iOS simulator (issue #5)
+  # ===========================================================================
+  #
+  # WHY THIS JOB EXISTS. Until now CI ran analyze + unit tests only, and the
+  # integration suite ran nowhere. It rotted silently: two PRs merged green
+  # while leaving six integration tests red (al_rasikhoon-8oh). Both breakages
+  # were real product changes the tests had not been told about — a تلقين
+  # session where a graded lesson used to be, and an exam button that moved
+  # below the fold once its screen learned to scroll. Unit tests could not see
+  # either. Only the integration suite could, and nothing ran it.
+  #
+  # macOS + iOS simulator, deliberately: `flutter test integration_test/`
+  # requires a real device, and the Android emulator hangs on this suite
+  # (al_rasikhoon-1fg). macOS runners bill at a premium, which is the honest
+  # cost of actually gating on this.
+  integration:
+    name: Flutter (integration tests, iOS simulator)
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      # Boot the first available iPhone simulator and wait until it is fully
+      # booted — `simctl boot` returns immediately, and `flutter test -d` on a
+      # half-booted simulator fails in ways that look like test failures.
+      - name: Boot iOS simulator
+        run: |
+          set -euo pipefail
+          UDID=$(xcrun simctl list devices available \
+            | grep -Eo 'iPhone[^(]*\(([0-9A-F-]{36})\)' \
+            | head -1 \
+            | grep -Eo '[0-9A-F-]{36}')
+          if [ -z "$UDID" ]; then
+            echo "::error::No iPhone simulator available on this runner"
+            xcrun simctl list devices available
+            exit 1
+          fi
+          echo "Booting simulator $UDID"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+
+      # One `flutter test` per suite, not one for the whole directory: a single
+      # invocation over integration_test/ shares one app process across suites,
+      # and a crash in one takes the rest down with it. Per-file keeps a failure
+      # attributable to the suite that caused it.
+      - name: Integration tests
+        run: |
+          set -euo pipefail
+          status=0
+          for suite in integration_test/*_test.dart; do
+            echo "::group::$suite"
+            flutter test "$suite" -d "$SIM_UDID" || status=1
+            echo "::endgroup::"
+          done
+          exit $status
 
   # ===========================================================================
   # functions — build (+ lint) for the Firebase Cloud Functions package
