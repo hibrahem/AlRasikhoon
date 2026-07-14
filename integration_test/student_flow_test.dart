@@ -163,8 +163,8 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        // The hizb-59 سرد — session 30, as the DATA says (never "35").
-        sessionId: 'L1_J30_S30',
+        // The hizb-59 سرد — session 31, as the DATA says (never "35").
+        sessionId: 'L1_J30_S31',
       );
 
       // Act
@@ -187,8 +187,8 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        // The juz-30 اختبار — session 68, as the DATA says (never "36").
-        sessionId: 'L1_J30_S68',
+        // The juz-30 اختبار — session 70, as the DATA says (never "36").
+        sessionId: 'L1_J30_S70',
       );
 
       // Act

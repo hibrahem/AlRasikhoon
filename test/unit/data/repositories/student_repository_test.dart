@@ -177,7 +177,7 @@ void main() {
           expect(result.student.currentSession, 1);
           expect(result.student.currentOrderInLevel, 1);
           expect(result.student.currentSessionId, 'L1_J30_S1');
-          expect(result.student.currentSessionKind, SessionKind.lesson);
+          expect(result.student.currentSessionKind, SessionKind.talqeen);
           expect(result.student.currentAttempt, 1);
           expect(result.student.completedLevels, isEmpty);
 
@@ -186,7 +186,7 @@ void main() {
               .doc(result.student.id)
               .get();
           expect(doc.data()?['current_session_id'], 'L1_J30_S1');
-          expect(doc.data()?['current_session_kind'], 'lesson');
+          expect(doc.data()?['current_session_kind'], 'talqeen');
           expect(doc.data()?['current_order_in_level'], 1);
         },
       );
@@ -201,12 +201,12 @@ void main() {
             password: 'pass123',
             instituteId: 'i1',
             teacherId: 't1',
-            // L1_J30_S67 is the juz-30 سرد — under the old 35/36 rule, session
-            // 67 could only ever have been read as an ordinary lesson.
+            // L1_J30_S69 is the juz-30 سرد — under the old 35/36 rule, session
+            // 69 could only ever have been read as an ordinary lesson.
             startingPosition: const CurriculumPosition(
               level: 1,
               juz: 30,
-              session: 67,
+              session: 69,
             ),
           );
 
@@ -216,7 +216,7 @@ void main() {
             result.student.currentSessionLabelAr,
             'سرد الجزء رقم 30 كاملًا على المحفظ المتابع',
           );
-          expect(result.student.currentOrderInLevel, 67);
+          expect(result.student.currentOrderInLevel, 69);
 
           final doc = await fakeFirestore
               .collection('students')
@@ -262,7 +262,7 @@ void main() {
 
       test('a starting position the curriculum holds no session at is rejected '
           'before any auth user is provisioned', () async {
-        // Juz 30 of level 1 has 68 sessions; there is no session 99. Whether
+        // Juz 30 of level 1 has 70 sessions; there is no session 99. Whether
         // a session exists is a DATA question — and a rejected placement must
         // never leave a half-provisioned user behind (an auth account with no
         // student document is worse than no student at all).
@@ -453,6 +453,7 @@ void main() {
           juz: 30,
           session: 1,
           order: 1,
+          kind: 'talqeen',
           hizb: 59,
           attempt: 3,
         );
@@ -476,33 +477,33 @@ void main() {
         'are read from the curriculum, never from its number',
         () async {
           await seedLevelOneJuz30(fakeFirestore);
-          // The student stands at order 66 — the last lesson of the juz. Order
-          // 67 is the juz-30 سرد. Nothing about the number 67 says so; the
-          // curriculum does.
+          // The student stands at order 30 — the last lesson before the
+          // hizb-59 سرد. Order 31 is the hizb-59 سرد. Nothing about the
+          // number 31 says so; the curriculum does.
           await seedStudent(
             level: 1,
             juz: 30,
-            session: 66,
-            order: 66,
-            hizb: 60,
+            session: 30,
+            order: 30,
+            hizb: 59,
           );
 
           await studentRepository.advanceStudentSession('s1');
 
           final student = await readStudent();
-          expect(student['current_session_id'], 'L1_J30_S67');
+          expect(student['current_session_id'], 'L1_J30_S31');
           expect(student['current_session_kind'], 'sard');
-          expect(student['current_session_tier'], 'juz');
+          expect(student['current_session_tier'], 'unit');
           expect(
             student['current_session_label_ar'],
-            'سرد الجزء رقم 30 كاملًا على المحفظ المتابع',
+            'سرد الحزب رقم 59 كاملًا على المحفظ المتابع',
           );
         },
       );
 
       test(
         'crosses a juz boundary within a level without touching hizb arithmetic '
-        '— order 68 of level 1 is the last of juz 30, order 69 the first of '
+        '— order 70 of level 1 is the last of juz 30, order 71 the first of '
         'juz 29',
         () async {
           await seedLevelOneJuz30(fakeFirestore);
@@ -510,8 +511,8 @@ void main() {
           await seedStudent(
             level: 1,
             juz: 30,
-            session: 68,
-            order: 68,
+            session: 70,
+            order: 70,
             kind: 'exam',
             tier: 'juz',
           );
@@ -523,19 +524,60 @@ void main() {
           expect(student['current_level'], 1, reason: 'still the same level');
           expect(student['current_juz'], 29);
           expect(student['current_session'], 1);
-          expect(student['current_order_in_level'], 69);
+          expect(student['current_order_in_level'], 71);
           expect(student['current_session_id'], 'L1_J29_S1');
-          expect(student['current_session_kind'], 'lesson');
+          expect(student['current_session_kind'], 'talqeen');
           expect(
             student['current_session_tier'],
             isNull,
-            reason: 'a lesson has no tier — the stale سرد tier must be cleared',
+            reason: 'a تلقين has no tier — the stale سرد tier must be cleared',
           );
           expect(
             student['completed_levels'],
             isEmpty,
             reason: 'finishing a juz does not finish the level',
           );
+        },
+      );
+
+      test(
+        'a student steps out of a talqeen into the lesson it introduces',
+        () async {
+          await seedSession(
+            fakeFirestore,
+            level: 1,
+            juz: 30,
+            session: 1,
+            order: 1,
+            kind: 'talqeen',
+            unitIndex: 1,
+            hizb: 59,
+          );
+          await seedSession(
+            fakeFirestore,
+            level: 1,
+            juz: 30,
+            session: 2,
+            order: 2,
+            kind: 'lesson',
+            unitIndex: 1,
+            hizb: 59,
+          );
+          await seedStudent(
+            level: 1,
+            juz: 30,
+            session: 1,
+            order: 1,
+            kind: 'talqeen',
+          );
+
+          final outcome = await studentRepository.advanceStudentSession('s1');
+          expect(outcome, StudentAdvanceOutcome.advanced);
+
+          final student = await studentRepository.getStudentById('s1');
+          expect(student!.currentSessionId, 'L1_J30_S2');
+          expect(student.currentSessionKind, SessionKind.lesson);
+          expect(student.currentOrderInLevel, 2);
         },
       );
 
@@ -575,8 +617,8 @@ void main() {
         await seedStudent(
           level: 1,
           juz: 28,
-          session: 67,
-          order: 204, // the level's session_count — its cumulative اختبار
+          session: 69,
+          order: 210, // the level's session_count — its cumulative اختبار
           kind: 'exam',
           tier: 'cumulative',
         );
@@ -610,8 +652,8 @@ void main() {
           await seedStudent(
             level: 1,
             juz: 28,
-            session: 67,
-            order: 204,
+            session: 69,
+            order: 210,
             kind: 'exam',
             tier: 'cumulative',
           );
@@ -688,8 +730,8 @@ void main() {
 
       test('a hole in the curriculum data reports curriculumDataMissing, not '
           'success, and leaves the student untouched', () async {
-        // The catalog says level 1 has 204 sessions; the student sits at
-        // order 2 and nothing is seeded at order 3. That is a data problem,
+        // The catalog says level 1 has 210 sessions; the student sits at
+        // order 3 and nothing is seeded at order 4. That is a data problem,
         // never "the level is finished" — a silent no-op reported as success
         // would leave the student re-taught the same session forever.
         await seedLevelOneJuz30(fakeFirestore);
@@ -697,8 +739,8 @@ void main() {
         await seedStudent(
           level: 1,
           juz: 30,
-          session: 2,
-          order: 2,
+          session: 3,
+          order: 3,
           hizb: 59,
           attempt: 2,
         );
@@ -707,8 +749,8 @@ void main() {
 
         expect(outcome, StudentAdvanceOutcome.curriculumDataMissing);
         final student = await readStudent();
-        expect(student['current_order_in_level'], 2);
-        expect(student['current_session_id'], 'L1_J30_S2');
+        expect(student['current_order_in_level'], 3);
+        expect(student['current_session_id'], 'L1_J30_S3');
         expect(student['current_attempt'], 2, reason: 'nothing was written');
         expect(student['completed_levels'], isEmpty);
         expect(student['unlocked_levels'], [1]);
@@ -728,14 +770,14 @@ void main() {
         'number',
         () async {
           await seedUser(id: 'u1', name: 'طالب على اختبار');
-          // The juz-30 اختبار of level 1 is session 68. The old query
+          // The juz-30 اختبار of level 1 is session 70. The old query
           // (current_session == 36) would have found nobody.
           await seedStudent(
             id: 'ready',
             level: 1,
             juz: 30,
-            session: 68,
-            order: 68,
+            session: 70,
+            order: 70,
             kind: 'exam',
             tier: 'juz',
             instituteId: 'institute1',
@@ -752,8 +794,8 @@ void main() {
             id: 'on_sard',
             level: 1,
             juz: 30,
-            session: 67,
-            order: 67,
+            session: 69,
+            order: 69,
             kind: 'sard',
             tier: 'juz',
             instituteId: 'institute1',
@@ -775,8 +817,8 @@ void main() {
           id: 'other_institute',
           level: 1,
           juz: 30,
-          session: 68,
-          order: 68,
+          session: 70,
+          order: 70,
           kind: 'exam',
           tier: 'juz',
           instituteId: 'institute2',
@@ -873,8 +915,8 @@ void main() {
           await seedStudent(
             level: 1,
             juz: 30,
-            session: 67,
-            order: 67,
+            session: 69,
+            order: 69,
             kind: 'sard',
             tier: 'juz',
             attempt: 9,

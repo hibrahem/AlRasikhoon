@@ -5,15 +5,19 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 /// The old fixtures WERE the old bug: they synthesized a session's kind from its
 /// number (`session == 35 ? 'sard' : session == 36 ? 'exam' : 'regular'`) and
 /// keyed everything on a hizb. The real curriculum numbers its sessions 1..N
-/// across a whole juz (68 in juz 30 of level 1, 69 in juz 29, 67 in juz 28),
+/// across a whole juz (70 in juz 30 of level 1, 71 in juz 29, 69 in juz 28),
 /// reads a session's kind from the source, and orders sessions by
 /// `order_in_level`.
 ///
 /// Level 1, juz 30 (as extracted):
-/// - S1..S29 lessons, S30 the hizb-59 سرد, S31 its اختبار,
-/// - S65/S66 the hizb-60 pair, S67 the juz-30 سرد, S68 its اختبار.
-/// Level 1's juz run 30 → 29 → 28 (orders 1-68, 69-137, 138-204).
+/// - S1 the تلقين that opens hizb 59, S2..S30 its lessons,
+/// - S31 the hizb-59 سرد, S32 its اختبار,
+/// - S33 the تلقين that opens hizb 60, S34..S66 its lessons,
+/// - S67/S68 the hizb-60 pair, S69 the juz-30 سرد, S70 its اختبار.
+/// Level 1's juz run 30 → 29 → 28 (orders 1-70, 71-141, 142-210).
 /// Level 10's juz run 1 → 2 → 3 — ASCENDING.
+/// A تلقين opens every unit: the teacher reads the next lesson's passage to the
+/// student, who memorizes and recites nothing.
 
 /// Seeds one curriculum session, in the document shape the extractor writes.
 Future<void> seedSession(
@@ -62,15 +66,19 @@ Future<void> seedSession(
   );
 }
 
-/// Juz 30 of level 1: orders 1..68. Seeds a representative spine — the first two
-/// lessons, the hizb-59 unit pair, and the juz-tier pair that closes the juz.
+/// Juz 30 of level 1: orders 1..70. Seeds a representative spine — the تلقين
+/// that opens the hizb, the first two lessons, the hizb-59 unit pair, and the
+/// juz-tier pair that closes the juz.
 Future<void> seedLevelOneJuz30(FakeFirebaseFirestore firestore) async {
+  // Every unit opens with a تلقين: the teacher reads the next lesson's passage
+  // to the student.
   await seedSession(
     firestore,
     level: 1,
     juz: 30,
     session: 1,
     order: 1,
+    kind: 'talqeen',
     hizb: 59,
     unitIndex: 1,
   );
@@ -87,8 +95,17 @@ Future<void> seedLevelOneJuz30(FakeFirebaseFirestore firestore) async {
     firestore,
     level: 1,
     juz: 30,
-    session: 30,
-    order: 30,
+    session: 3,
+    order: 3,
+    hizb: 59,
+    unitIndex: 1,
+  );
+  await seedSession(
+    firestore,
+    level: 1,
+    juz: 30,
+    session: 31,
+    order: 31,
     kind: 'sard',
     assessedBy: 'teacher',
     unitIndex: 1,
@@ -100,8 +117,8 @@ Future<void> seedLevelOneJuz30(FakeFirebaseFirestore firestore) async {
     firestore,
     level: 1,
     juz: 30,
-    session: 31,
-    order: 31,
+    session: 32,
+    order: 32,
     kind: 'exam',
     assessedBy: 'supervisor',
     unitIndex: 1,
@@ -109,12 +126,23 @@ Future<void> seedLevelOneJuz30(FakeFirebaseFirestore firestore) async {
     tier: 'unit',
     labelAr: 'اختبار في الحزب رقم 59 كاملًا من قِبل إدارة الحلقات',
   );
+  // The اختبار of hizb 59 is followed by the تلقين that opens hizb 60.
   await seedSession(
     firestore,
     level: 1,
     juz: 30,
-    session: 67,
-    order: 67,
+    session: 33,
+    order: 33,
+    kind: 'talqeen',
+    hizb: 60,
+    unitIndex: 2,
+  );
+  await seedSession(
+    firestore,
+    level: 1,
+    juz: 30,
+    session: 69,
+    order: 69,
     kind: 'sard',
     assessedBy: 'teacher',
     tier: 'juz',
@@ -124,8 +152,8 @@ Future<void> seedLevelOneJuz30(FakeFirebaseFirestore firestore) async {
     firestore,
     level: 1,
     juz: 30,
-    session: 68,
-    order: 68,
+    session: 70,
+    order: 70,
     kind: 'exam',
     assessedBy: 'supervisor',
     tier: 'juz',
@@ -134,14 +162,15 @@ Future<void> seedLevelOneJuz30(FakeFirebaseFirestore firestore) async {
 }
 
 /// Juz 29 of level 1: session numbers restart at 1, but the order runs on from
-/// 69 — which is the whole point of `order_in_level`.
+/// 71 — which is the whole point of `order_in_level`.
 Future<void> seedLevelOneJuz29(FakeFirebaseFirestore firestore) async {
   await seedSession(
     firestore,
     level: 1,
     juz: 29,
     session: 1,
-    order: 69,
+    order: 71,
+    kind: 'talqeen',
     hizb: 57,
     unitIndex: 1,
   );
@@ -150,21 +179,21 @@ Future<void> seedLevelOneJuz29(FakeFirebaseFirestore firestore) async {
     level: 1,
     juz: 29,
     session: 2,
-    order: 70,
+    order: 72,
     hizb: 57,
     unitIndex: 1,
   );
 }
 
 /// The tail of level 1: its last session is the cumulative اختبار over juz
-/// 28-29-30, at order 204.
+/// 28-29-30, at order 210.
 Future<void> seedLevelOneTail(FakeFirebaseFirestore firestore) async {
   await seedSession(
     firestore,
     level: 1,
     juz: 28,
-    session: 66,
-    order: 203,
+    session: 68,
+    order: 209,
     kind: 'sard',
     assessedBy: 'teacher',
     tier: 'cumulative',
@@ -176,8 +205,8 @@ Future<void> seedLevelOneTail(FakeFirebaseFirestore firestore) async {
     firestore,
     level: 1,
     juz: 28,
-    session: 67,
-    order: 204,
+    session: 69,
+    order: 210,
     kind: 'exam',
     assessedBy: 'supervisor',
     tier: 'cumulative',
@@ -195,6 +224,7 @@ Future<void> seedLevelTwoHead(FakeFirebaseFirestore firestore) async {
     juz: 27,
     session: 1,
     order: 1,
+    kind: 'talqeen',
     hizb: 54,
     unitIndex: 1,
   );
@@ -257,25 +287,25 @@ Future<void> seedLevels(FakeFirebaseFirestore firestore) async {
     'name_en': 'Level 1',
     'order': 1,
     'juz_numbers': [30, 29, 28],
-    'session_count': 204,
+    'session_count': 210,
     'juz': [
       {
         'juz_number': 30,
-        'session_count': 68,
+        'session_count': 70,
         'hizb_numbers': [59, 60],
         'first_order_in_level': 1,
       },
       {
         'juz_number': 29,
-        'session_count': 69,
+        'session_count': 71,
         'hizb_numbers': [57, 58],
-        'first_order_in_level': 69,
+        'first_order_in_level': 71,
       },
       {
         'juz_number': 28,
-        'session_count': 67,
+        'session_count': 69,
         'hizb_numbers': [55, 56],
-        'first_order_in_level': 138,
+        'first_order_in_level': 142,
       },
     ],
   });
@@ -285,11 +315,11 @@ Future<void> seedLevels(FakeFirebaseFirestore firestore) async {
     'name_en': 'Level 2',
     'order': 2,
     'juz_numbers': [27, 26, 25],
-    'session_count': 148,
+    'session_count': 154,
     'juz': [
       {
         'juz_number': 27,
-        'session_count': 51,
+        'session_count': 53,
         'hizb_numbers': [54, 53],
         'first_order_in_level': 1,
       },
