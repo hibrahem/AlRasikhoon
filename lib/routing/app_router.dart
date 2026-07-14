@@ -99,6 +99,10 @@ class AppRoutes {
   static const String sardSession = '/teacher/session/:studentId/sard';
   static const String sardResult = '/teacher/session/:studentId/sard/result';
   static const String teacherHistory = '/teacher/history';
+  // A past record the teacher heard, opened from السجل. Same screen as the
+  // student's session detail, but registered in the teacher shell so opening
+  // it never crosses a shell boundary (#45 duplicate-page-key crash).
+  static const String teacherSessionDetail = '/teacher/history/:recordId';
   static const String teacherSettings = '/teacher/settings';
 
   // Student
@@ -446,6 +450,13 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoutes.teacherHistory,
                 builder: (context, state) => const TeacherHistoryScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.teacherSessionDetail,
+                builder: (context, state) {
+                  final recordId = state.pathParameters['recordId']!;
+                  return SessionDetailScreen(recordId: recordId);
+                },
               ),
             ],
           ),
