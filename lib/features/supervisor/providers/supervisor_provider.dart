@@ -3,9 +3,11 @@ import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/institute_repository.dart';
 import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/curriculum_repository.dart';
+import '../../../data/repositories/user_repository.dart';
 import '../../../data/models/exam_record_model.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
+import '../../../data/models/user_model.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/providers/meeting_provider.dart' show composeMeetingFor;
@@ -33,6 +35,36 @@ final supervisorStudentsProvider = FutureProvider<List<StudentWithUser>>((
 
   final repo = ref.watch(studentRepositoryProvider);
   return repo.getStudentsForInstitute(instituteId);
+});
+
+/// Teachers of the supervisor's institute (al_rasikhoon-6bw) — the pool a
+/// supervisor picks from both when creating a student (a teacher is now
+/// REQUIRED at creation, so no new teacher-less student can exist) and when
+/// rescuing an already teacher-less one via [StudentRepository.assignTeacher].
+/// Composes `instituteRepository.getTeacherIdsForInstitute` with
+/// `userRepository.getUserById` — the same pattern as the admin's
+/// `teachersForInstituteProvider` (lib/features/admin/providers/admin_provider.dart)
+/// — but written here, scoped to [supervisorInstituteIdProvider], so
+/// supervisor code never reaches into the admin feature (al_rasikhoon-pz2).
+/// Empty when the supervisor has no institute bound.
+final supervisorInstituteTeachersProvider = FutureProvider<List<UserModel>>((
+  ref,
+) async {
+  final instituteId = ref.watch(supervisorInstituteIdProvider);
+  if (instituteId == null || instituteId.isEmpty) return [];
+
+  final instituteRepo = ref.watch(instituteRepositoryProvider);
+  final userRepo = ref.watch(userRepositoryProvider);
+
+  final teacherIds = await instituteRepo.getTeacherIdsForInstitute(instituteId);
+  final teachers = <UserModel>[];
+  for (final id in teacherIds) {
+    final teacher = await userRepo.getUserById(id);
+    if (teacher != null) {
+      teachers.add(teacher);
+    }
+  }
+  return teachers;
 });
 
 /// A single student within the supervisor's institute, looked up from
