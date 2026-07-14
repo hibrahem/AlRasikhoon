@@ -26,19 +26,6 @@ extension SessionKindX on SessionKind {
     }
   }
 
-  String get nameEn {
-    switch (this) {
-      case SessionKind.talqeen:
-        return 'Talqeen';
-      case SessionKind.lesson:
-        return 'Lesson';
-      case SessionKind.sard:
-        return 'Sard';
-      case SessionKind.exam:
-        return 'Exam';
-    }
-  }
-
   /// Parses a kind from the curriculum data.
   ///
   /// An unknown value is a corrupted or unmigrated document and MUST surface:
@@ -381,12 +368,6 @@ class SessionModel {
     // which solves this same misnaming for the same reason).
     if (isTalqeen) return 'تلقين - الجزء $juzNumber';
     return 'الحلقة $sessionNumber - الجزء $juzNumber';
-  }
-
-  String get titleEn {
-    if (isAssessment) return '${kind.nameEn} - Juz $juzNumber';
-    if (isTalqeen) return 'Talqeen - Juz $juzNumber';
-    return 'Session $sessionNumber - Juz $juzNumber';
   }
 
   @override
