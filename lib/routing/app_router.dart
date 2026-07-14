@@ -27,6 +27,7 @@ import '../features/supervisor/screens/supervisor_students_screen.dart';
 import '../features/supervisor/screens/sard_session_screen.dart';
 import '../features/supervisor/screens/sard_result_screen.dart';
 import '../features/teacher/screens/teacher_students_screen.dart';
+import '../features/teacher/screens/teacher_history_screen.dart';
 import '../features/teacher/screens/session_overview_screen.dart';
 import '../features/teacher/screens/recitation_screen.dart';
 import '../features/teacher/screens/recitation_result_screen.dart';
@@ -37,6 +38,7 @@ import '../features/student/screens/student_dashboard_screen.dart';
 import '../features/student/screens/session_history_screen.dart';
 import '../features/student/screens/session_detail_screen.dart';
 import '../features/student/screens/home_practice_screen.dart';
+import '../features/settings/screens/settings_screen.dart';
 
 // Route names
 class AppRoutes {
@@ -79,6 +81,7 @@ class AppRoutes {
   // (in the teacher shell) cannot reach it; the router redirect guards it too.
   static const String sardSession = '/supervisor/sard/:studentId';
   static const String sardResult = '/supervisor/sard/:studentId/result';
+  static const String supervisorSettings = '/supervisor/settings';
 
   // Teacher
   static const String teacherStudents = '/teacher';
@@ -90,12 +93,15 @@ class AppRoutes {
       '/teacher/session/:studentId/recitation/:part/result';
   static const String newMemorization = '/teacher/session/:studentId/new';
   static const String sessionSummary = '/teacher/session/:studentId/summary';
+  static const String teacherHistory = '/teacher/history';
+  static const String teacherSettings = '/teacher/settings';
 
   // Student
   static const String studentDashboard = '/student';
   static const String sessionHistory = '/student/history';
   static const String sessionDetail = '/student/history/:recordId';
   static const String homePractice = '/student/practice';
+  static const String studentSettings = '/student/settings';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -230,8 +236,9 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoutes.levelDetail,
                 builder: (context, state) {
-                  final levelNumber =
-                      int.parse(state.pathParameters['levelNumber']!);
+                  final levelNumber = int.parse(
+                    state.pathParameters['levelNumber']!,
+                  );
                   return LevelDetailScreen(levelNumber: levelNumber);
                 },
               ),
@@ -240,7 +247,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // Supervisor shell — Home / Exams (Students & Settings tabs are stubs)
+      // Supervisor shell — Home / Exams / Students / Settings
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => RoleShell(
           navigationShell: navigationShell,
@@ -334,14 +341,24 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          // Branch 3: Settings
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.supervisorSettings,
+                builder: (context, state) => const SettingsScreen(),
+              ),
+            ],
+          ),
         ],
       ),
 
-      // Teacher shell — single Students branch (Session/History/Settings stubs)
+      // Teacher shell — Students / History / Settings
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             RoleShell(navigationShell: navigationShell, role: UserRole.teacher),
         branches: [
+          // Branch 0: Students
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -396,10 +413,28 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          // Branch 1: History
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.teacherHistory,
+                builder: (context, state) => const TeacherHistoryScreen(),
+              ),
+            ],
+          ),
+          // Branch 2: Settings
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.teacherSettings,
+                builder: (context, state) => const SettingsScreen(),
+              ),
+            ],
+          ),
         ],
       ),
 
-      // Student shell — Home / Practice / History (Settings stub)
+      // Student shell — Home / Practice / History / Settings
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             RoleShell(navigationShell: navigationShell, role: UserRole.student),
@@ -435,6 +470,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                   final recordId = state.pathParameters['recordId']!;
                   return SessionDetailScreen(recordId: recordId);
                 },
+              ),
+            ],
+          ),
+          // Branch 3: Settings
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.studentSettings,
+                builder: (context, state) => const SettingsScreen(),
               ),
             ],
           ),
