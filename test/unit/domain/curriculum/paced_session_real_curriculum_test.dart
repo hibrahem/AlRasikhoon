@@ -8,10 +8,11 @@ import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 
 /// The curriculum as it ships, read from `data/curriculum/` — not fixtures.
 ///
-/// Fixtures cannot prove this: the claim is about the REAL 952 sessions, whose
-/// source data is known to contain ~8 rows that disagree with its own window
-/// rule (see al_rasikhoon-drw). Those rows are exactly the ones that would break
-/// if pace 1 ever started composing.
+/// Fixtures cannot prove this: the claim is about the REAL 955 sessions, read
+/// off the authoritative colour-filled tab of every source workbook
+/// (al_rasikhoon-hk0), which still contain a handful of rows that disagree with
+/// their own window rule. Those rows are exactly the ones that would break if
+/// pace 1 ever started composing.
 List<SessionModel> _sessionsOfLevel(int level) {
   final file = File('data/curriculum/sessions_level_$level.json');
   final decoded = jsonDecode(file.readAsStringSync());
