@@ -16,6 +16,11 @@ class _FakeSessionRepository implements SessionRepository {
 
   _FakeSessionRepository(this.records);
 
+  /// The `limit` the provider passed on its most recent call, so tests can
+  /// confirm the query is bounded (al_rasikhoon-256: an unbounded query
+  /// re-downloaded every session a teacher ever recorded on each refresh).
+  int? lastLimit;
+
   @override
   Future<List<SessionRecordModel>> getSessionRecordsForTeacher(
     String teacherId, {
@@ -23,6 +28,7 @@ class _FakeSessionRepository implements SessionRepository {
     DateTime? endDate,
     int? limit,
   }) async {
+    lastLimit = limit;
     return records.where((r) => r.teacherId == teacherId).toList();
   }
 
@@ -169,6 +175,25 @@ void main() {
     final entries = await container.read(teacherHistoryProvider.future);
 
     expect(entries, isEmpty);
+  });
+
+  test('bounds the query so a year of history is not re-downloaded on every '
+      'refresh (al_rasikhoon-256)', () async {
+    final fake = _FakeSessionRepository([
+      _record(id: 'r1', studentId: 's1', date: DateTime(2024, 3, 2)),
+    ]);
+    final container = ProviderContainer(
+      overrides: [
+        currentUserProvider.overrideWithValue(_teacher('teacher1')),
+        sessionRepositoryProvider.overrideWithValue(fake),
+        teacherStudentsProvider.overrideWith((ref) async => students),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(teacherHistoryProvider.future);
+
+    expect(fake.lastLimit, 20);
   });
 
   test('joins records by student id, not the student\'s user id', () async {

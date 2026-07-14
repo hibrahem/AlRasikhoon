@@ -303,7 +303,16 @@ final teacherHistoryProvider = FutureProvider<List<TeacherHistoryEntry>>((
   if (currentUser == null) return [];
 
   final repo = ref.watch(sessionRepositoryProvider);
-  final records = await repo.getSessionRecordsForTeacher(currentUser.id);
+  // Bounded the same way as studentSessionHistoryProvider: without a limit,
+  // a teacher who has recorded a year of sessions re-downloads every one of
+  // them on every tab open and pull-to-refresh. Note this limit applies
+  // BEFORE the roster/institute filtering below, so fewer than 20 entries can
+  // end up on screen — acceptable, since the student-facing provider has the
+  // same shape.
+  final records = await repo.getSessionRecordsForTeacher(
+    currentUser.id,
+    limit: 20,
+  );
 
   // Records carry a studentId only; the name and institute come from the
   // teacher's roster, which the students tab has already loaded.
