@@ -6,6 +6,7 @@ import '../../../data/repositories/session_repository.dart';
 import '../../../data/models/institute_model.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
+import '../../../data/models/student_model.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/user_provider.dart';
@@ -82,6 +83,48 @@ final studentCurrentSessionProvider =
       // The student carries the id of the session they stand on
       // (`L{level}_J{juz}_S{n}`) — a direct read, no id rebuilding.
       return curriculumRepo.getSessionById(student.currentSessionId);
+    });
+
+/// Composes the meeting [student] currently stands on.
+///
+/// Shared by the teacher, supervisor and student-dashboard meeting providers,
+/// which differ only in how they RESOLVE the student (teacher-scoped,
+/// institute-scoped per AgDR-0003, or the signed-in student). The composition
+/// itself is one rule and lives in one place.
+Future<PacedSession?> composeMeetingFor(Ref ref, StudentModel student) async {
+  final curriculumRepo = ref.watch(curriculumRepositoryProvider);
+
+  final levelSessions = await curriculumRepo.getSessionsForLevel(
+    level: student.currentLevel,
+  );
+  if (levelSessions.isEmpty) return null;
+
+  return PacedSessionComposer.compose(
+    levelSessions: levelSessions,
+    startOrderInLevel: student.currentOrderInLevel,
+    pace: student.pace,
+  );
+}
+
+/// The MEETING the student stands on: the N curriculum sessions their pace
+/// covers, and the three content streams composed from them.
+///
+/// This is what every screen that teaches or reports on a student must read.
+/// [studentCurrentSessionProvider] returns the single authored row and
+/// remains correct for anything that browses the CURRICULUM (the
+/// starting-point picker, the admin level detail) — but a student at 2x does
+/// not meet a row, he meets a meeting.
+///
+/// The meeting is composed on every read from the student's LIVE pace.
+/// Nothing about its extent is stored, which is exactly why a teacher can
+/// change a student's pace mid-level and have it land on the next meeting
+/// with nothing to migrate.
+final studentCurrentMeetingProvider =
+    FutureProvider.family<PacedSession?, String>((ref, studentId) async {
+      final studentAsync = await ref.watch(studentProvider(studentId).future);
+      if (studentAsync == null) return null;
+
+      return composeMeetingFor(ref, studentAsync.student);
     });
 
 /// Session state for recording a session

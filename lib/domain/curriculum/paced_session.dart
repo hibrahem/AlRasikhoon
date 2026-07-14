@@ -40,6 +40,82 @@ class PacedSession {
   /// content was composed rather than read verbatim.
   bool get isBatched => sessions.length > 1;
 
+  /// The passages of one stream on one line — what a screen shows where it
+  /// used to show a single range.
+  ///
+  /// A composed stream is DISCRETE (one block per session it drew from), and a
+  /// 2x meeting's recent window carries a block equal to what the unit's
+  /// opening تلقين already read out — genuinely duplicate content, not a
+  /// formatting accident. This is display-only cleanup, never authoring:
+  ///
+  /// 1. DE-DUPLICATE — drop a block equal to one already emitted.
+  /// 2. MERGE CONTIGUOUS RUNS — collapse a run into ONE range spanning the
+  ///    first block's start to the last block's end. A run breaks where
+  ///    `next.fromSurah != prev.toSurah` AND `next.fromVerse != prev.toVerse
+  ///    + 1`.
+  ///
+  /// A merged block's four fields are always copied from two blocks that are
+  /// already there — this computes no surah name and no verse number. A 1x
+  /// meeting has exactly one block per stream, so both steps are no-ops and
+  /// the line is byte-identical to what the screen rendered before paced
+  /// curricula.
+  static String _line(List<QuranContent> blocks) =>
+      _merge(_deduplicate(blocks)).map((block) => block.rangeAr).join(' • ');
+
+  static List<QuranContent> _deduplicate(List<QuranContent> blocks) {
+    final seen = <QuranContent>[];
+    for (final block in blocks) {
+      if (seen.contains(block)) continue;
+      seen.add(block);
+    }
+    return seen;
+  }
+
+  static bool _isContiguous(QuranContent prev, QuranContent next) =>
+      next.fromSurah == prev.toSurah || next.fromVerse == prev.toVerse + 1;
+
+  static List<QuranContent> _merge(List<QuranContent> blocks) {
+    if (blocks.isEmpty) return const [];
+
+    final merged = <QuranContent>[];
+    var runStart = blocks.first;
+    var runEnd = blocks.first;
+
+    for (final block in blocks.skip(1)) {
+      if (_isContiguous(runEnd, block)) {
+        runEnd = block;
+        continue;
+      }
+      merged.add(
+        QuranContent(
+          fromSurah: runStart.fromSurah,
+          fromVerse: runStart.fromVerse,
+          toSurah: runEnd.toSurah,
+          toVerse: runEnd.toVerse,
+        ),
+      );
+      runStart = block;
+      runEnd = block;
+    }
+    merged.add(
+      QuranContent(
+        fromSurah: runStart.fromSurah,
+        fromVerse: runStart.fromVerse,
+        toSurah: runEnd.toSurah,
+        toVerse: runEnd.toVerse,
+      ),
+    );
+    return merged;
+  }
+
+  String get newContentAr => _line(newContent);
+  String get recentReviewAr => _line(recentReview);
+  String get distantReviewAr => _line(distantReview);
+
+  bool get hasNewContent => newContent.isNotEmpty;
+  bool get hasRecentReview => recentReview.isNotEmpty;
+  bool get hasDistantReview => distantReview.isNotEmpty;
+
   @override
   String toString() =>
       'PacedSession($fromOrderInLevel..$toOrderInLevel, '

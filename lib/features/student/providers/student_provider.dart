@@ -8,7 +8,9 @@ import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
 import '../../../data/models/home_practice_model.dart';
 import '../../../data/models/user_model.dart';
+import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/user_provider.dart';
+import '../../teacher/providers/teacher_provider.dart' show composeMeetingFor;
 
 /// Selected child id for guardians who have multiple children.
 /// `null` means "show the first child" (default for single-child guardians).
@@ -67,6 +69,19 @@ final studentDashboardSessionProvider = FutureProvider<SessionModel?>((
   // The student carries the id of the session they stand on
   // (`L{level}_J{juz}_S{n}`) — a direct read, no id rebuilding.
   return repo.getSessionById(student.currentSessionId);
+});
+
+/// The MEETING the signed-in student (or a guardian's selected child) stands
+/// on — the dashboard's twin of `studentCurrentMeetingProvider`. Resolves the
+/// student via [currentStudentProvider], then composes the meeting through
+/// the one shared rule in [composeMeetingFor].
+final studentDashboardMeetingProvider = FutureProvider<PacedSession?>((
+  ref,
+) async {
+  final student = await ref.watch(currentStudentProvider.future);
+  if (student == null) return null;
+
+  return composeMeetingFor(ref, student);
 });
 
 /// Provider for student's session history

@@ -65,3 +65,22 @@ Task 7: complete (commit TBD, full suite 682/682) — teacher_provider composes 
   test/widget/session_summary_screen_test.dart (all constructed SessionRecordModel/called the record factories
   with the removed orderInLevel/curriculumSessionId/sessionNumber params, or never overrode
   curriculumRepositoryProvider now that completeSession reads it).
+Task 7: complete (commits e2f543b, d12b122 — impl + fix, review clean) — teacher provider teaches a paced meeting
+  advanceStudentSession(id, {fromOrderInLevel}); pass advances past the WHOLE meeting, fail repeats it whole.
+  Fixed: the level-boundary rollover had NO test (reverting the threaded data-hole check left all 682 green,
+  yet would STRAND every paced student at the end of every level — now mutation-proven); ActiveSessionState.meeting
+  was set when the meeting ENDED (must be at START — after a pass the student has advanced, so the summary screen
+  would show the NEXT meeting); compose-throws-before-write now explicit + tested. Suite 686/686.
+  Note: completeSession RE-composes from the live pace at completion (start-time meeting is display-only) —
+  correct: a pace change mid-session uses the live pace for grading/advance.
+  Minor (final review): stale doc comment on ActiveSessionState.meeting still says "Null until completeSession".
+Task 8: complete (suite 702/702) — the meeting exposed to the UI: display getters + three providers.
+  PacedSession gains newContentAr/recentReviewAr/distantReviewAr (de-duplicate, then merge contiguous runs —
+  display-only, PacedSessionComposer's discrete lists are untouched) and hasNewContent/hasRecentReview/
+  hasDistantReview. Shared composeMeetingFor(Ref, StudentModel) in teacher_provider.dart backs three three-line
+  twins of the existing "current session" providers: studentCurrentMeetingProvider (teacher),
+  supervisorStudentCurrentMeetingProvider (institute-scoped, AgDR-0003), studentDashboardMeetingProvider (the
+  student). Session providers kept — curriculum-browsing screens still want the authored row.
+  Note: a provider test asserting studentProvider('missing-id').future rejects (Riverpod's firstWhere-throws-in-
+  orElse pattern reading through .future) hangs rather than rejecting — pre-existing behavior, untested before
+  this task, out of scope; dropped that assertion rather than debug an unrelated Riverpod interaction.

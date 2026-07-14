@@ -6,7 +6,9 @@ import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/models/exam_record_model.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
+import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/user_provider.dart';
+import '../../teacher/providers/teacher_provider.dart' show composeMeetingFor;
 
 /// The canonical institute a supervisor is scoped to, read off
 /// `users/{uid}.institute_id` (AgDR-0003 — the single source of truth for
@@ -82,6 +84,22 @@ final supervisorStudentSessionHistoryProvider =
     ) async {
       final repo = ref.watch(sessionRepositoryProvider);
       return repo.getSessionRecordsForStudent(studentId, limit: 50);
+    });
+
+/// The MEETING a student in the supervisor's institute stands on — the
+/// institute-scoped twin of `studentCurrentMeetingProvider`. Resolves the
+/// student via [supervisorStudentProvider] (institute-scoped, AgDR-0003) so a
+/// supervisor-created student (null `teacher_id`) is not lost the same way
+/// [supervisorStudentCurrentSessionProvider] avoids it above, then composes
+/// the meeting through the one shared rule in [composeMeetingFor].
+final supervisorStudentCurrentMeetingProvider =
+    FutureProvider.family<PacedSession?, String>((ref, studentId) async {
+      final studentAsync = await ref.watch(
+        supervisorStudentProvider(studentId).future,
+      );
+      if (studentAsync == null) return null;
+
+      return composeMeetingFor(ref, studentAsync.student);
     });
 
 /// The curriculum session a student in the supervisor's EXAM QUEUE stands on.
