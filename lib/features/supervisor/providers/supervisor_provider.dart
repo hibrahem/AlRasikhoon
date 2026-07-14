@@ -8,7 +8,7 @@ import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/user_provider.dart';
-import '../../teacher/providers/teacher_provider.dart' show composeMeetingFor;
+import '../../../shared/providers/meeting_provider.dart' show composeMeetingFor;
 
 /// The canonical institute a supervisor is scoped to, read off
 /// `users/{uid}.institute_id` (AgDR-0003 — the single source of truth for

@@ -10,7 +10,7 @@ import '../../../data/models/home_practice_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/user_provider.dart';
-import '../../teacher/providers/teacher_provider.dart' show composeMeetingFor;
+import '../../../shared/providers/meeting_provider.dart' show composeMeetingFor;
 
 /// Selected child id for guardians who have multiple children.
 /// `null` means "show the first child" (default for single-child guardians).

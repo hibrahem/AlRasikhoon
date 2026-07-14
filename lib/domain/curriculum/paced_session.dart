@@ -50,9 +50,18 @@ class PacedSession {
   ///
   /// 1. DE-DUPLICATE — drop a block equal to one already emitted.
   /// 2. MERGE CONTIGUOUS RUNS — collapse a run into ONE range spanning the
-  ///    first block's start to the last block's end. A run breaks where
-  ///    `next.fromSurah != prev.toSurah` AND `next.fromVerse != prev.toVerse
-  ///    + 1`.
+  ///    first block's start to the last block's end. Two blocks are
+  ///    contiguous only when:
+  ///      - the SAME surah AND `next.fromVerse == prev.toVerse + 1`
+  ///        (adjacent verses within one surah), or
+  ///      - a DIFFERENT surah AND `next.fromVerse == 1` (the next block opens
+  ///        a new surah at its first verse, right after the previous one
+  ///        ended).
+  ///    Same-surah alone is NOT contiguous — two blocks in one surah with a
+  ///    verse gap between them (e.g. النبأ 1-11 then النبأ 30-40) must stay
+  ///    separate, or the merge would claim verses 12-29 that neither block
+  ///    covers. This code never authors content, so it must never invent a
+  ///    range wider than what's actually there.
   ///
   /// A merged block's four fields are always copied from two blocks that are
   /// already there — this computes no surah name and no verse number. A 1x
@@ -71,8 +80,11 @@ class PacedSession {
     return seen;
   }
 
-  static bool _isContiguous(QuranContent prev, QuranContent next) =>
-      next.fromSurah == prev.toSurah || next.fromVerse == prev.toVerse + 1;
+  static bool _isContiguous(QuranContent prev, QuranContent next) {
+    final sameSurah = next.fromSurah == prev.toSurah;
+    if (sameSurah) return next.fromVerse == prev.toVerse + 1;
+    return next.fromVerse == 1;
+  }
 
   static List<QuranContent> _merge(List<QuranContent> blocks) {
     if (blocks.isEmpty) return const [];

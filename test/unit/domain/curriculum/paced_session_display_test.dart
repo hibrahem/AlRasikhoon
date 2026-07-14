@@ -108,18 +108,18 @@ void main() {
         expect(meeting.newContentAr, 'النبأ: 31 - 40');
       });
 
-      test('two blocks across a SURAH BOUNDARY whose verse numbers run on are '
-          'contiguous — the curriculum merges these too', () {
-        // fromVerse (39) == prev.toVerse + 1 (38 + 1) even though the surah
-        // changes: contiguity is a run-on of the numbers, not a same-surah
-        // check.
+      test('two blocks across a SURAH BOUNDARY where the next one opens at '
+          'its first verse are contiguous — the curriculum merges these too '
+          '(e.g. النبأ 38 - النازعات 14)', () {
+        // Different surah, but next.fromVerse == 1: the next block starts a
+        // fresh surah right where the previous one ended.
         final meeting = PacedSession(
           sessions: [_session(order: 6), _session(order: 8)],
           newContent: [
             _content('النبأ', 38, 38),
             QuranContent(
               fromSurah: 'النازعات',
-              fromVerse: 39,
+              fromVerse: 1,
               toSurah: 'النازعات',
               toVerse: 14,
             ),
@@ -129,6 +129,44 @@ void main() {
         );
 
         expect(meeting.newContentAr, 'النبأ: 38 إلى النازعات: 14');
+      });
+
+      test('two blocks in the SAME surah with a verse GAP stay separate — '
+          'merging them would claim verses neither block covers', () {
+        // Same surah is NOT by itself contiguous: النبأ 1-11 then النبأ
+        // 30-40 leaves verses 12-29 unaccounted for. Merging would invent
+        // content nobody assigned. This is the bug the old
+        // `next.fromSurah == prev.toSurah` clause let through.
+        final meeting = PacedSession(
+          sessions: [_session(order: 1), _session(order: 6)],
+          newContent: [_content('النبأ', 1, 11), _content('النبأ', 30, 40)],
+          recentReview: const [],
+          distantReview: const [],
+        );
+
+        expect(meeting.newContentAr, 'النبأ: 1 - 11 • النبأ: 30 - 40');
+      });
+
+      test('two blocks across a SURAH BOUNDARY where the next one does NOT '
+          'open at verse 1 stay separate', () {
+        // Different surah, and next.fromVerse != 1: nothing says the second
+        // block picks up where the first left off.
+        final meeting = PacedSession(
+          sessions: [_session(order: 6), _session(order: 8)],
+          newContent: [
+            _content('النبأ', 38, 40),
+            QuranContent(
+              fromSurah: 'النازعات',
+              fromVerse: 5,
+              toSurah: 'النازعات',
+              toVerse: 14,
+            ),
+          ],
+          recentReview: const [],
+          distantReview: const [],
+        );
+
+        expect(meeting.newContentAr, 'النبأ: 38 - 40 • النازعات: 5 - 14');
       });
 
       test('two genuinely non-contiguous blocks stay separate', () {
