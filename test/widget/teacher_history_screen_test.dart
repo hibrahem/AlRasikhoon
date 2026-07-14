@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/session_record_model.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/features/teacher/screens/teacher_history_screen.dart';
+import 'package:al_rasikhoon/routing/app_router.dart';
 
 TeacherHistoryEntry _entry({
   required String id,
@@ -50,9 +52,81 @@ Future<void> _pump(WidgetTester tester, List<TeacherHistoryEntry> entries) {
   );
 }
 
+/// Where a tapped row landed. An imperative `push` leaves GoRouter's reported
+/// location on the base route, so the destination is captured from the route
+/// builders themselves — which is also what the screens really read.
+class _Landing {
+  String? detailRecordId;
+  String? overviewStudentId;
+}
+
+/// Pumps the history screen inside a router standing in for the teacher shell,
+/// so a row's tap can be followed to the route it actually opens.
+Future<_Landing> _pumpRouted(
+  WidgetTester tester,
+  List<TeacherHistoryEntry> entries,
+) async {
+  final landing = _Landing();
+  final router = GoRouter(
+    initialLocation: AppRoutes.teacherHistory,
+    routes: [
+      GoRoute(
+        path: AppRoutes.teacherHistory,
+        builder: (context, state) => const TeacherHistoryScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.teacherSessionDetail,
+        builder: (context, state) {
+          landing.detailRecordId = state.pathParameters['recordId'];
+          return const Scaffold(body: Text('detail'));
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.sessionOverview,
+        builder: (context, state) {
+          landing.overviewStudentId = state.pathParameters['studentId'];
+          return const Scaffold(body: Text('overview'));
+        },
+      ),
+    ],
+  );
+
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [teacherHistoryProvider.overrideWith((ref) async => entries)],
+      child: MaterialApp.router(routerConfig: router),
+    ),
+  );
+  await tester.pumpAndSettle();
+  return landing;
+}
+
 void main() {
   setUpAll(() async {
     await initializeDateFormatting('ar');
+  });
+
+  testWidgets('tapping a past record opens THAT record, not the live session', (
+    tester,
+  ) async {
+    // The row is a record of a session already heard. Routing by studentId
+    // lands on the student's *current* session overview — today's حلقة, not
+    // the one in the row. The record's own id is what identifies it.
+    final landing = await _pumpRouted(tester, [
+      _entry(
+        id: 'r1',
+        studentName: 'أحمد',
+        passed: true,
+        date: DateTime(2024, 3, 15),
+      ),
+    ]);
+
+    await tester.tap(find.text('أحمد'));
+    await tester.pumpAndSettle();
+
+    expect(landing.detailRecordId, 'r1');
+    expect(landing.overviewStudentId, isNull);
+    expect(find.text('detail'), findsOneWidget);
   });
 
   testWidgets('each row names the student, the session, and the outcome', (
