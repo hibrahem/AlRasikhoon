@@ -96,130 +96,158 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
               content = '';
           }
 
-          return Column(
-            children: [
-              // Content card
-              AppCard(
-                margin: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: modeColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            'الجزء ${widget.part} من 3',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: modeColor,
-                              fontWeight: FontWeight.w600,
+          // The content card, the error counter and the actions are taller than
+          // the viewport the teacher shell leaves on a phone, so the content
+          // scrolls. SliverFillRemaining keeps the Spacer honest: when there IS
+          // room, it still pushes the actions to the bottom.
+          return SafeArea(
+            child: CustomScrollView(
+              slivers: [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Column(
+                    children: [
+                      // Content card
+                      AppCard(
+                        margin: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: modeColor.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Text(
+                                    'الجزء ${widget.part} من 3',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: modeColor,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _partTitle,
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceVariant,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.menu_book, color: modeColor),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      content.isNotEmpty
+                                          ? content
+                                          : 'لا يوجد محتوى',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      _partTitle,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceVariant,
-                        borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.menu_book, color: modeColor),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              content.isNotEmpty ? content : 'لا يوجد محتوى',
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
-              const Spacer(),
+                      const Spacer(),
 
-              // Error counter
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: ErrorCounter(
-                  errorCount: _errorCount,
-                  onAddError: () {
-                    setState(() => _errorCount++);
-                  },
-                  onUndoError: () {
-                    if (_errorCount > 0) {
-                      setState(() => _errorCount--);
-                    }
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Action buttons
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    if (widget.part > 1)
-                      Expanded(
-                        child: AppButton(
-                          text: 'السابق',
-                          onPressed: () {
-                            // Save current part errors
-                            ref
-                                .read(activeSessionProvider.notifier)
-                                .setPartErrors(widget.part, _errorCount);
-
-                            context.pop();
+                      // Error counter
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: ErrorCounter(
+                          errorCount: _errorCount,
+                          onAddError: () {
+                            setState(() => _errorCount++);
                           },
-                          type: AppButtonType.outline,
+                          onUndoError: () {
+                            if (_errorCount > 0) {
+                              setState(() => _errorCount--);
+                            }
+                          },
                         ),
                       ),
-                    if (widget.part > 1) const SizedBox(width: 12),
-                    Expanded(
-                      flex: 2,
-                      child: AppButton(
-                        text: widget.part < 3 ? 'التالي' : 'إنهاء التسميع',
-                        onPressed: () {
-                          // Save current part errors
-                          ref
-                              .read(activeSessionProvider.notifier)
-                              .setPartErrors(widget.part, _errorCount);
 
-                          // Navigate to result or next part
-                          context.push(
-                            AppRoutes.recitationResult
-                                .replaceFirst(':studentId', widget.studentId)
-                                .replaceFirst(':part', '${widget.part}'),
-                            extra: _errorCount,
-                          );
-                        },
+                      const SizedBox(height: 24),
+
+                      // Action buttons
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            if (widget.part > 1)
+                              Expanded(
+                                child: AppButton(
+                                  text: 'السابق',
+                                  onPressed: () {
+                                    // Save current part errors
+                                    ref
+                                        .read(activeSessionProvider.notifier)
+                                        .setPartErrors(
+                                          widget.part,
+                                          _errorCount,
+                                        );
+
+                                    context.pop();
+                                  },
+                                  type: AppButtonType.outline,
+                                ),
+                              ),
+                            if (widget.part > 1) const SizedBox(width: 12),
+                            Expanded(
+                              flex: 2,
+                              child: AppButton(
+                                text: widget.part < 3
+                                    ? 'التالي'
+                                    : 'إنهاء التسميع',
+                                onPressed: () {
+                                  // Save current part errors
+                                  ref
+                                      .read(activeSessionProvider.notifier)
+                                      .setPartErrors(widget.part, _errorCount);
+
+                                  // Navigate to result or next part
+                                  context.push(
+                                    AppRoutes.recitationResult
+                                        .replaceFirst(
+                                          ':studentId',
+                                          widget.studentId,
+                                        )
+                                        .replaceFirst(
+                                          ':part',
+                                          '${widget.part}',
+                                        ),
+                                    extra: _errorCount,
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),

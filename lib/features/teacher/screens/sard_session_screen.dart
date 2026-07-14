@@ -53,118 +53,142 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
             );
           }
 
-          return Column(
-            children: [
-              // Info card
-              AppCard(
-                margin: const EdgeInsets.all(16),
-                backgroundColor: AppColors.info.withValues(alpha: 0.05),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.info.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.record_voice_over,
-                            color: AppColors.info,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // The curriculum's own words for this سرد.
-                              Text(
-                                session.titleAr,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              // And what it covers: this hizb, this juz, or the
-                              // level so far.
-                              Text(
-                                session.scopeAr,
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(color: AppColors.textSecondary),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.info_outline,
-                            size: 20,
-                            color: AppColors.info,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              session.assessmentInstructionAr,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: AppColors.info),
+          // The info card, the error counter and the action are taller than the
+          // viewport the teacher shell leaves on a phone, so the content scrolls.
+          // SliverFillRemaining keeps the Spacer honest: when there IS room, it
+          // still pushes "إنهاء السرد" to the bottom.
+          return SafeArea(
+            child: CustomScrollView(
+              slivers: [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Column(
+                    children: [
+                      // Info card
+                      AppCard(
+                        margin: const EdgeInsets.all(16),
+                        backgroundColor: AppColors.info.withValues(alpha: 0.05),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.info.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(
+                                    Icons.record_voice_over,
+                                    color: AppColors.info,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // The curriculum's own words for this سرد.
+                                      Text(
+                                        session.titleAr,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.titleMedium,
+                                      ),
+                                      // And what it covers: this hizb, this juz, or the
+                                      // level so far.
+                                      Text(
+                                        session.scopeAr,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: AppColors.textSecondary,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 16),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.info_outline,
+                                    size: 20,
+                                    color: AppColors.info,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      session.assessmentInstructionAr,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(color: AppColors.info),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
 
-              const Spacer(),
+                      const Spacer(),
 
-              // Error counter
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: ErrorCounter(
-                  errorCount: _errorCount,
-                  onAddError: () {
-                    setState(() => _errorCount++);
-                  },
-                  onUndoError: () {
-                    if (_errorCount > 0) {
-                      setState(() => _errorCount--);
-                    }
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Action button
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: AppButton(
-                  text: 'إنهاء السرد',
-                  onPressed: () {
-                    context.push(
-                      AppRoutes.sardResult.replaceFirst(
-                        ':studentId',
-                        widget.studentId,
+                      // Error counter
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: ErrorCounter(
+                          errorCount: _errorCount,
+                          onAddError: () {
+                            setState(() => _errorCount++);
+                          },
+                          onUndoError: () {
+                            if (_errorCount > 0) {
+                              setState(() => _errorCount--);
+                            }
+                          },
+                        ),
                       ),
-                      extra: _errorCount,
-                    );
-                  },
-                  isFullWidth: true,
-                  size: AppButtonSize.large,
+
+                      const SizedBox(height: 24),
+
+                      // Action button
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: AppButton(
+                          text: 'إنهاء السرد',
+                          onPressed: () {
+                            context.push(
+                              AppRoutes.sardResult.replaceFirst(
+                                ':studentId',
+                                widget.studentId,
+                              ),
+                              extra: _errorCount,
+                            );
+                          },
+                          isFullWidth: true,
+                          size: AppButtonSize.large,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),

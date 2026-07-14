@@ -64,3 +64,12 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    # Cairo, bundled — the app's whole type system (AppTheme) is Cairo, and
+    # google_fonts otherwise DOWNLOADS it on first launch. That made the type a
+    # cold-start dependency on connectivity (a halaqa may have none), and it
+    # made layout non-deterministic off-device: with no network the fallback
+    # font's metrics differ, text gets taller, and screens that fit on a phone
+    # overflow. Bundling pins the metrics everywhere — app and tests alike.
+    # `GoogleFonts.config.allowRuntimeFetching = false` (main.dart) makes a
+    # missing weight fail loudly here rather than silently fetch at runtime.
+    - google_fonts/

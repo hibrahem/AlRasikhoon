@@ -18,7 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
 import 'helpers/firebase_emulator_app.dart';
-import 'helpers/test_robots.dart';
+import '../test/e2e/helpers/test_robots.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
