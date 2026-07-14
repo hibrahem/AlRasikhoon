@@ -142,8 +142,14 @@ class CurriculumRepository {
     return numbers;
   }
 
-  /// Every session of [level], in teaching order (`order_in_level` ascending).
-  Future<List<SessionModel>> getSessionsForLevel(int level) async {
+  /// Every session of [level], ordered by `order_in_level` — the level's
+  /// teaching order, juz boundaries included.
+  ///
+  /// This is what a paced meeting is composed from: the composer needs the
+  /// sessions AROUND the student's position (the batch ahead of it, the recent
+  /// window behind it), and only the level holds all of them. Ordering by juz
+  /// would be wrong in both directions — levels 1-9 descend, level 10 ascends.
+  Future<List<SessionModel>> getSessionsForLevel({required int level}) async {
     final query = await _sessionsCollection
         .where('level_id', isEqualTo: level)
         .orderBy('order_in_level')
@@ -184,7 +190,7 @@ final levelSessionsProvider = FutureProvider.family<List<SessionModel>, int>((
   levelNumber,
 ) async {
   final repository = ref.watch(curriculumRepositoryProvider);
-  return repository.getSessionsForLevel(levelNumber);
+  return repository.getSessionsForLevel(level: levelNumber);
 });
 
 /// The sessions of one juz of one level, in teaching order — what the
