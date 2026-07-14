@@ -141,20 +141,23 @@ jobs:
           xcrun simctl bootstatus "$UDID" -b
           echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
 
-      # One `flutter test` per suite, not one for the whole directory: a single
-      # invocation over integration_test/ shares one app process across suites,
-      # and a crash in one takes the rest down with it. Per-file keeps a failure
-      # attributable to the suite that caused it.
+      # ONE invocation, via the aggregate entry point. `app_test.dart` imports
+      # and runs all five E2E suites (auth, admin, teacher, student, supervisor)
+      # in a single binary — which is the whole reason it exists.
+      #
+      # Do NOT loop `flutter test` over integration_test/*_test.dart instead:
+      # each invocation drives a fresh Xcode build of the app, which (a) took
+      # 37 minutes against 3 for this, and (b) collided on the shared
+      # DerivedData build.db — "Xcode build failed too many times due to
+      # concurrent builds" — failing suites for reasons that had nothing to do
+      # with the code under test.
+      #
+      # integration_test/firebase_emulator_flow_test.dart is deliberately NOT
+      # run here, and is not part of app_test.dart: it talks to a real Firestore
+      # via `firebase emulators:start`, which this job does not run. Every suite
+      # below it uses fake_cloud_firestore and needs no emulator.
       - name: Integration tests
-        run: |
-          set -euo pipefail
-          status=0
-          for suite in integration_test/*_test.dart; do
-            echo "::group::$suite"
-            flutter test "$suite" -d "$SIM_UDID" || status=1
-            echo "::endgroup::"
-          done
-          exit $status
+        run: flutter test integration_test/app_test.dart -d "$SIM_UDID"
 
   # ===========================================================================
   # functions — build (+ lint) for the Firebase Cloud Functions package

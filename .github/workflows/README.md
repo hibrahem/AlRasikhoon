@@ -28,7 +28,7 @@ and the Android emulator hangs on this suite (`al_rasikhoon-1fg`).
 | Step | Command | Notes |
 |------|---------|-------|
 | Boot iOS simulator | `xcrun simctl boot` + `bootstatus -b` | `simctl boot` returns immediately; `bootstatus` waits for a *fully* booted device. `flutter test -d` against a half-booted simulator fails in ways that look like test failures. |
-| Integration tests | `flutter test integration_test/<suite> -d $SIM_UDID` | One invocation **per suite**: a single run over the whole directory shares one app process, so a crash in one suite takes the rest down with it and hides which one broke. |
+| Integration tests | `flutter test integration_test/app_test.dart -d $SIM_UDID` | **One** invocation, via the aggregate entry point that runs all five E2E suites in a single binary. Do **not** loop over `integration_test/*_test.dart`: each invocation drives a fresh Xcode build (37 min vs 3) and they collide on the shared DerivedData `build.db` — *"Xcode build failed too many times due to concurrent builds"*. `firebase_emulator_flow_test.dart` is excluded on purpose: it needs a real `firebase emulators:start`, which this job does not run. |
 
 This job closes **issue #5**. It exists because CI previously ran analyze + unit tests
 only, and nothing ran the integration suite — so it rotted unnoticed while two PRs merged
