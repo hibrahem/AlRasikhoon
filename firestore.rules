@@ -45,7 +45,7 @@ service cloud.firestore {
     }
 
     // A supervisor scoped to the institute of the student referenced by a
-    // session/sard record. Single get() on the student doc to read its
+    // session record. Single get() on the student doc to read its
     // denormalized institute_id, compared against the supervisor's institute.
     function isSupervisorOfRecordStudent(recordData) {
       return isSupervisor() &&

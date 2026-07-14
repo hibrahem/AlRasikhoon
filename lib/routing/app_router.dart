@@ -109,6 +109,15 @@ class AppRoutes {
   static const String studentSettings = '/student/settings';
 }
 
+// Matches the literal `/sard` PATH SEGMENT (followed by `/` or end-of-string),
+// not any substring occurrence. `matchedLocation` carries substituted path
+// params, so a naive `.contains('/sard')` also fires for e.g. a student whose
+// doc id merely begins with "sard" (`/supervisor/students/sardOoPs123`),
+// bouncing legitimate navigation. Anchoring to a real path segment excludes
+// that false positive while still catching both real Sard routes
+// (`/teacher/session/:studentId/sard` and `.../sard/result`).
+final RegExp _sardPathSegment = RegExp(r'/sard(?:/|$)');
+
 final routerProvider = Provider<GoRouter>((ref) {
   final isAuthenticated = ref.watch(isAuthenticatedProvider);
   final userRole = ref.watch(currentUserRoleProvider);
@@ -135,7 +144,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // that reaches a teacher Sard path (e.g. a supervisor crafting the URL):
       // bounce them to their own dashboard. UI hides the entry point; this is
       // the navigation-level backstop. Firestore rules are the true backstop.
-      if (state.matchedLocation.contains('/sard') &&
+      if (_sardPathSegment.hasMatch(state.matchedLocation) &&
           userRole != UserRole.teacher) {
         return _getDashboardRoute(userRole);
       }

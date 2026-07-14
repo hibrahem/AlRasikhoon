@@ -374,5 +374,84 @@ void main() {
         expect(find.text('بدء الحلقة'), findsNothing);
       },
     );
+
+    testWidgets(
+      'a supervisor who crafts/pushes a teacher Sard URL is redirected away '
+      'and never sees the Sard session screen (guard regression, al_rasikhoon-801)',
+      (tester) async {
+        // The router redirect guard is the navigation-level backstop for Sard
+        // being teacher-only. This pins that the guard still fires on a real
+        // Sard route even after anchoring the match to a path segment (it
+        // used to be a loose `.contains('/sard')`).
+        final supervisor = env.createSupervisor();
+        await env.setUp(authenticatedUser: supervisor);
+        final instituteId = await env.addInstitute();
+        await env.assignSupervisorToInstitute(supervisor.id, instituteId);
+
+        await tester.pumpWidget(TestApp(overrides: env.overrides));
+        supervisorRobot = SupervisorRobot(tester);
+        await supervisorRobot.verifyDashboard();
+
+        // Craft the URL directly — no UI offers this path to a supervisor.
+        await supervisorRobot.pushLocation(
+          '/teacher/session/some_student/sard',
+        );
+
+        // Assert — bounced back to the supervisor dashboard, never the Sard
+        // session screen (whose app bar title is exactly 'السرد').
+        expect(find.text('السرد'), findsNothing);
+        expect(find.text('الراسخون - المشرف'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'a supervisor taps an institute student whose doc id merely STARTS WITH '
+      '"sard": the guard must not over-match and must still land on تقدم '
+      'الطالب (al_rasikhoon-801)',
+      (tester) async {
+        // Regression for the false positive in the old `.contains('/sard')`
+        // guard: `matchedLocation` carries substituted path params, so a
+        // student doc id beginning with "sard" made
+        // `/supervisor/students/sardOoPs123` contain "/sard" and the
+        // supervisor was wrongly bounced to their dashboard before تقدم
+        // الطالب ever rendered.
+        const instituteId = 'sard_id_prefix_institute';
+        final supervisor = env.createSupervisor().copyWith(
+          instituteId: instituteId,
+        );
+        await env.setUp(authenticatedUser: supervisor);
+        await env.addInstitute(id: instituteId);
+        await env.assignSupervisorToInstitute(supervisor.id, instituteId);
+
+        final studentUser = env.createStudent(
+          id: 'sardOoPs123_user',
+          name: 'طالب معرفه يبدأ بسرد',
+        );
+        await env.fakeFirestore
+            .collection('users')
+            .doc(studentUser.id)
+            .set(studentUser.toFirestore());
+        await env.addStudent(
+          id: 'sardOoPs123',
+          userId: studentUser.id,
+          instituteId: instituteId,
+          sessionId: 'L1_J30_S30',
+        );
+
+        // Act
+        await tester.pumpWidget(TestApp(overrides: env.overrides));
+        supervisorRobot = SupervisorRobot(tester);
+
+        await supervisorRobot.verifyDashboard();
+        await supervisorRobot.goToStudents();
+        await supervisorRobot.verifyStudentsScreen();
+        await supervisorRobot.tapStudent('طالب معرفه يبدأ بسرد');
+        await supervisorRobot.pumpAndSettle();
+
+        // Assert — the guard must NOT fire: the supervisor lands on the
+        // read-only progress screen exactly as for any other student.
+        expect(find.text('تقدم الطالب'), findsOneWidget);
+      },
+    );
   });
 }

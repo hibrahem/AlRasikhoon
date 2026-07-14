@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:al_rasikhoon/shared/widgets/app_card.dart';
 import 'package:al_rasikhoon/features/teacher/screens/teacher_students_screen.dart';
@@ -42,6 +43,18 @@ abstract class TestRobot {
   /// Tap a widget by icon
   Future<void> tapByIcon(IconData icon) async {
     await tester.tap(find.byIcon(icon));
+    await pumpAndSettle();
+  }
+
+  /// Push a raw location onto the router, as if the caller had crafted the
+  /// URL directly (bypassing any in-app navigation UI). Used to exercise the
+  /// router's redirect guard directly. Any on-screen widget works as the
+  /// BuildContext, since it is a descendant of the app's Router and can walk
+  /// up to find the GoRouter it belongs to; Scaffold is present on every
+  /// screen.
+  Future<void> pushLocation(String location) async {
+    final context = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(context).push(location);
     await pumpAndSettle();
   }
 
@@ -806,8 +819,8 @@ class SupervisorRobot extends TestRobot {
 
   // Sard (السرد) is now conducted from the TEACHER's Students tab
   // (al_rasikhoon-801, reversing #29). See TeacherRobot for the Sard flow.
-  // The supervisor keeps only the roster helpers below — Task 3 still needs
-  // them for the supervisor's own institute-scoped students list.
+  // The supervisor has NO Sard flow of its own, so it keeps only the roster
+  // helpers below — for viewing its own institute-scoped students list.
 
   /// Navigate to the supervisor's institute-scoped Students tab via bottom nav.
   Future<void> goToStudents() async {

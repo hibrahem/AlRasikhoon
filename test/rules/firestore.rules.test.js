@@ -78,12 +78,6 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
       institute_id: INST_A,
       name: "Supervisor A",
     });
-    // Supervisor bound to institute B (cross-institute Sard tests, #29).
-    await seed("users", "sup_b", {
-      role: "supervisor",
-      institute_id: INST_B,
-      name: "Supervisor B",
-    });
     // Teacher (no institute scoping on records — al_rasikhoon-ob7; used to
     // assert Sard is teacher-conducted, al_rasikhoon-801).
     await seed("users", "teacher_a", { role: "teacher", name: "Teacher A" });
@@ -261,6 +255,30 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
       setDoc(doc(db, "sard_records", "sard_anon"), {
         student_id: "stu_a",
         pages: 1,
+      })
+    );
+  });
+
+  // === al_rasikhoon-801 — Exam is SUPERVISOR-ONLY (unchanged) ===============
+  // الاختبار is conducted by the SUPERVISOR; the teacher conducts السرد
+  // (see sard_records above). Exclusive on BOTH sides.
+
+  it("DENIES a teacher creating an exam_record (Exam is supervisor-conducted, al_rasikhoon-801)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      setDoc(doc(db, "exam_records", "exam_new_teacher"), {
+        student_id: "stu_a",
+        errors: 2,
+      })
+    );
+  });
+
+  it("ALLOWS a supervisor creating an exam_record (al_rasikhoon-801)", async () => {
+    const db = asUser("sup_a");
+    await assertSucceeds(
+      setDoc(doc(db, "exam_records", "exam_new_sup"), {
+        student_id: "stu_a",
+        errors: 2,
       })
     );
   });
