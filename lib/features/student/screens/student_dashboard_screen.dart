@@ -274,7 +274,7 @@ class _StudentDashboardScreenState
           ),
           const SizedBox(height: 20),
           // Progress through the level, against the level's real session count
-          // from the catalog (204 in level 1, 44 in level 10) — never `/ 36`.
+          // from the catalog (210 in level 1, 49 in level 10) — never `/ 36`.
           StudentLevelProgress(
             level: stats.currentLevel,
             orderInLevel: stats.currentOrderInLevel,

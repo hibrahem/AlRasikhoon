@@ -9,8 +9,8 @@ import '../../domain/curriculum/curriculum_position.dart';
 /// The single authority on what the curriculum CONTAINS.
 ///
 /// A session is identified by `L{level}_J{juz}_S{n}`, where `n` runs 1..N
-/// continuously across a whole juz (68 sessions in juz 30 of level 1, 69 in juz
-/// 29, 67 in juz 28 — the counts are data). Sessions are ORDERED by
+/// continuously across a whole juz (70 sessions in juz 30 of level 1, 71 in juz
+/// 29, 69 in juz 28 — the counts are data). Sessions are ORDERED by
 /// `order_in_level` (1..M within the level), never by juz and never by
 /// arithmetic: levels 1-9 teach their juz descending, level 10 teaches them
 /// ASCENDING (juz 1 → 2 → 3), so any juz-based ordering rule is wrong somewhere.

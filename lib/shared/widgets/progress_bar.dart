@@ -75,8 +75,8 @@ class ProgressBar extends StatelessWidget {
 ///
 /// The denominator is the level's real session count, read from the levels
 /// catalog ([LevelModel.sessionCount]) — never `36`, and never `36 × hizbs`:
-/// session counts vary per juz (68 in juz 30 of level 1, 69 in juz 29) and per
-/// level (204 in level 1, 44 in level 10). The numerator is the session's
+/// session counts vary per juz (70 in juz 30 of level 1, 71 in juz 29) and per
+/// level (210 in level 1, 49 in level 10). The numerator is the session's
 /// `order_in_level`, the only key that orders sessions across a juz boundary.
 ///
 /// There is no "hizbs" bar: a hizb is a nullable LABEL of levels 1-2, not a

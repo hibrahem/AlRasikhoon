@@ -140,8 +140,8 @@ class CurriculumScreen extends ConsumerWidget {
                             value: '${level.juzNumbers.length}',
                             icon: Icons.menu_book,
                           ),
-                          // The session count is DATA, per level (204 in level
-                          // 1, 44 in level 10). A level has no fixed number of
+                          // The session count is DATA, per level (210 in level
+                          // 1, 49 in level 10). A level has no fixed number of
                           // "hizbs" — levels 3-10 have none at all — so the
                           // catalog's own count is what is shown.
                           _StatItem(
