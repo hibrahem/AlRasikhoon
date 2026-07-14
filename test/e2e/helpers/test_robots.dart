@@ -25,10 +25,36 @@ abstract class TestRobot {
     await pumpAndSettle();
   }
 
-  /// Tap a widget by text
+  /// Tap a widget by text, scrolling it into view first if it is off-screen.
+  ///
+  /// The scroll is not a nicety. A bare `tester.tap` on a widget that sits below
+  /// the fold FINDS the widget and MISSES it: the hit test lands outside the
+  /// viewport, flutter_test merely WARNS, the tap does nothing, and the test goes
+  /// on to fail somewhere else entirely — "the next screen never appeared". Three
+  /// separate bugs this suite was supposed to catch hid behind exactly that
+  /// (al_rasikhoon-8oh, and the paced-curriculum overview). Ensuring visibility
+  /// here makes the whole class impossible rather than fixing it one robot at a
+  /// time.
+  ///
+  /// A screen with no Scrollable (a dialog, a nav bar) has nothing to scroll and
+  /// nothing to reveal — tap it as-is.
   Future<void> tapByText(String text) async {
-    await tester.tap(find.text(text));
+    final finder = find.text(text);
+    await ensureVisible(finder);
+    await tester.tap(finder);
     await pumpAndSettle();
+  }
+
+  /// Scroll [finder] into view if it lives inside a Scrollable. A no-op when it
+  /// does not — which is not an error, just a screen that cannot scroll.
+  Future<void> ensureVisible(Finder finder) async {
+    if (find.byType(Scrollable).evaluate().isEmpty) return;
+    try {
+      await tester.ensureVisible(finder);
+      await pumpAndSettle();
+    } on StateError {
+      // Not inside a Scrollable — nothing to reveal.
+    }
   }
 
   /// Scroll the nearest Scrollable until [text] is visible, then tap it.

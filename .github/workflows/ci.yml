@@ -77,15 +77,26 @@ jobs:
       - name: Analyze
         run: flutter analyze --no-fatal-infos
 
-      # Unit suite only. `flutter test` defaults to the `test/` directory and
-      # does NOT pick up `integration_test/` — scoping to `test/` explicitly
-      # documents the intent and keeps the boundary obvious.
+      # Unit, widget AND the five E2E suites (test/e2e/) — all of it, on the
+      # Dart VM, in well under a minute. This closes issue #5.
       #
-      # FOLLOW-UP (issue #5): integration tests live in `integration_test/`
-      # and require a booted device/emulator (or the Firebase emulator suite).
-      # They are deliberately NOT wired here — that is tracked separately under
-      # issue #5. Do not add `flutter test integration_test` to this job.
-      - name: Unit tests
+      # The E2E suites used to demand a booted simulator, purely because they
+      # lived in `integration_test/` and used its binding. They never actually
+      # needed a device: they fake Firestore and override every provider, and
+      # nothing calls Firebase.initializeApp. The device cost a ~28-minute cold
+      # Xcode build of the Firebase iOS SDKs per CI run, which is why nothing
+      # ever ran them — and three separate breakages reached `main` unseen.
+      #
+      # They now run at a real phone's viewport, safe-area padding included
+      # (test/e2e/helpers/test_app.dart). That is not decoration: the host's
+      # default 800x600 surface hides exactly the below-the-fold bugs this suite
+      # exists to catch.
+      #
+      # `integration_test/` still holds firebase_emulator_flow_test.dart, which
+      # talks to a REAL Firestore via `firebase emulators:start`. It genuinely
+      # needs that emulator, so it is not run here — and `flutter test test/`
+      # does not pick it up.
+      - name: Unit, widget and E2E tests
         run: flutter test test/
 
   # ===========================================================================

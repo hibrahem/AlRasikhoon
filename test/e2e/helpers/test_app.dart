@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:al_rasikhoon/l10n/app_localizations.dart';
@@ -17,6 +22,99 @@ import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
+
+/// The E2E suites now run headless on the Dart VM (`flutter test
+/// integration_test/app_test.dart`) instead of on a booted device/simulator —
+/// see [TestEnvironment.setUp], which calls [pinPhoneViewport] and
+/// [stubHeadlessPlatformChannels] on every test's behalf so no individual
+/// test (or suite) has to remember to.
+
+/// Pins the test surface to a real phone's viewport: 390×844 logical pixels
+/// at devicePixelRatio 1.0 (an iPhone-12/13/14-mini-sized screen). The host's
+/// default test surface is 800×600 — roomy enough to hide "below the fold"
+/// bugs that only show up once the app bar and bottom nav eat into a real
+/// phone's ~651px of vertical content. Two of the bugs this suite exists to
+/// catch (the exam finish button, بدء الحلقة on the session overview) were
+/// exactly that: invisible at 800×600, real on a phone. Pin it here, once,
+/// so every test reproduces the same on-screen real estate a user actually
+/// has — not just the ones whose author remembered to ask for it.
+void pinPhoneViewport() {
+  final view =
+      TestWidgetsFlutterBinding.ensureInitialized()
+          .platformDispatcher
+          .implicitView!;
+  view.physicalSize = const Size(390, 844);
+  view.devicePixelRatio = 1.0;
+
+  // The SCREEN is 844 tall; the screen is not what the app gets. A real phone
+  // spends ~47px on the status bar and ~34px on the home indicator, and the app
+  // only ever lays out in what is left. Leave the padding at zero and the host
+  // hands every screen ~80px MORE room than the device does — enough for a
+  // button that really is below the fold on a phone to sit comfortably on
+  // screen here, so the suite passes while the user cannot reach it. That is
+  // precisely the bug class this suite exists to catch, so the padding is part
+  // of the viewport, not a detail.
+  view.padding = const FakeViewPadding(top: 47, bottom: 34);
+  view.viewPadding = const FakeViewPadding(top: 47, bottom: 34);
+
+  addTearDown(view.reset);
+}
+
+/// Stubs the platform channels the app touches that have no headless
+/// implementation on the Dart VM (no device, no simulator).
+///
+/// `google_fonts` (via `AppTextStyles`, built into every screen's theme)
+/// calls `path_provider`'s `getApplicationSupportDirectory` on first render
+/// to cache downloaded font files. On a device this resolves through a
+/// platform-specific plugin; on the host nothing registers one, so
+/// `PathProviderPlatform.instance` falls back to
+/// `MethodChannelPathProvider`, whose channel
+/// (`plugins.flutter.io/path_provider`) has no handler at all — every test
+/// would fail with `MissingPluginException` before it painted a single
+/// widget. A mock handler over a real (temp) directory is enough: the app
+/// only needs *a* writable path back, never the specific one a device would
+/// give it.
+///
+/// Registered once per binding (guarded by [_headlessChannelsStubbed]) —
+/// `setMockMethodCallHandler` persists for the life of the test binding, so
+/// re-registering on every test is unnecessary, not merely wasteful. For the
+/// same reason the backing directory is NOT torn down between tests via
+/// `addTearDown` — a per-test teardown would delete it out from under every
+/// test after the first one that shares this binding (e.g. the whole
+/// `app_test.dart` aggregate run). It is plain OS temp storage; the runner
+/// (CI or local) reclaims it same as any other `flutter test` scratch file.
+bool _headlessChannelsStubbed = false;
+
+void stubHeadlessPlatformChannels() {
+  if (_headlessChannelsStubbed) {
+    return;
+  }
+  _headlessChannelsStubbed = true;
+
+  // Cairo is bundled (pubspec `google_fonts/`); never let google_fonts reach for
+  // the network here. `main()` pins this for the app, and the tests never run
+  // `main()` — without it a test would silently fall back to a font whose metrics
+  // are NOT the app's, and every below-the-fold assertion in this suite would be
+  // measuring the wrong screen.
+  GoogleFonts.config.allowRuntimeFetching = false;
+
+  final tempDir = Directory.systemTemp.createTempSync('al_rasikhoon_test_');
+
+  const pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(pathProviderChannel, (MethodCall call) async {
+    switch (call.method) {
+      case 'getTemporaryDirectory':
+      case 'getApplicationSupportDirectory':
+      case 'getApplicationDocumentsDirectory':
+      case 'getApplicationCacheDirectory':
+      case 'getLibraryDirectory':
+        return tempDir.path;
+      default:
+        return null;
+    }
+  });
+}
 
 /// Test app wrapper that provides mocked dependencies
 class TestApp extends StatelessWidget {
@@ -83,6 +181,12 @@ class TestEnvironment {
   }
 
   Future<void> setUp({UserModel? authenticatedUser}) async {
+    // Every E2E test starts here, which is exactly why this is the one place
+    // that pins the phone viewport and stubs the host's missing platform
+    // channels — no suite, and no individual test, has to remember to.
+    pinPhoneViewport();
+    stubHeadlessPlatformChannels();
+
     fakeFirestore = FakeFirebaseFirestore();
     SharedPreferences.setMockInitialValues({});
     sharedPreferences = await SharedPreferences.getInstance();

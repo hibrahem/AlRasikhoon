@@ -154,9 +154,16 @@ class _StudentDashboardScreenState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'التكرار في المنزل',
-              style: Theme.of(context).textTheme.titleMedium,
+            // Flexible, not bare: the title and the action together are wider
+            // than a phone at this text size, and an unflexed Row would overflow
+            // (75px on a 390pt screen) — cutting the action off the edge where
+            // the student cannot reach it.
+            Flexible(
+              child: Text(
+                'التكرار في المنزل',
+                style: Theme.of(context).textTheme.titleMedium,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             TextButton.icon(
               onPressed: () => context.push(AppRoutes.homePractice),

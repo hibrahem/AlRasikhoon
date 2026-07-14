@@ -1,12 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:integration_test/integration_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'helpers/test_app.dart';
 import 'helpers/test_robots.dart';
 
 void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  // Headless on the Dart VM (`flutter test`) — no device/simulator.
+  // Safe because helpers/test_app.dart never touches Firebase.initializeApp
+  // (fake_cloud_firestore + provider overrides stand in for it) and stubs
+  // the one platform channel the app needs on the host (path_provider, for
+  // google_fonts' cache dir) — see stubHeadlessPlatformChannels there.
+  TestWidgetsFlutterBinding.ensureInitialized();
 
   group('Student E2E Flow', () {
     late TestEnvironment env;
