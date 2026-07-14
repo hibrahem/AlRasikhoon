@@ -554,6 +554,89 @@ void main() {
       final student = await studentRepository.getStudentById('student-1');
       expect(student!.currentOrderInLevel, 8, reason: 'nothing was written');
     });
+
+    // FIX 2 (Task 7 review): the meeting was previously only known once the
+    // session was GRADED — startSession built a bare ActiveSessionState.
+    // But the session-summary screen shows what was JUST taught, and by the
+    // time completeSession runs the student has already advanced, so
+    // composing from his then-current position would describe the NEXT
+    // meeting, not the one just recited.
+    test(
+      'the meeting being taught is on the state WHILE the session is in '
+      'progress — before completeSession runs, not only once it is graded',
+      () async {
+        await seedStudent();
+
+        final container = makeRealContainer(user: buildTeacher());
+        final notifier = container.read(activeSessionProvider.notifier);
+
+        await notifier.startSession('student-1');
+
+        final inProgress = container.read(activeSessionProvider);
+        expect(
+          inProgress!.meeting,
+          isNotNull,
+          reason:
+              'composing only on completion would describe the meeting '
+              'after the student has already moved past it',
+        );
+        expect(inProgress.meeting!.toOrderInLevel, 8);
+        expect(inProgress.isComplete, isFalse);
+        expect(inProgress.advanceOutcome, isNull);
+      },
+    );
+
+    // FIX 3 (Task 7 review): completeSession composes the meeting BEFORE
+    // writing the record. If the student's curriculum row is missing or
+    // renumbered, PacedSessionComposer.compose throws, and that throw must
+    // propagate — never be swallowed — so the recitation the teacher just
+    // heard is neither silently saved with a wrong scope nor silently
+    // discarded. See the doc comment on completeSession.
+    test('a composition failure propagates uncaught — the recitation is '
+        'never silently saved, and never silently discarded', () async {
+      // Order 999: nothing stands there for PacedSessionComposer to find.
+      await firestore.collection('students').doc('student-1').set({
+        'user_id': 'user-1',
+        'institute_id': 'institute-1',
+        'teacher_id': 'teacher-1',
+        'current_level': 1,
+        'current_juz': 30,
+        'current_session': 999,
+        'current_order_in_level': 999,
+        'current_hizb': null,
+        'current_session_id': 'L1_J30_S999',
+        'current_session_kind': 'lesson',
+        'current_session_tier': null,
+        'current_session_label_ar': null,
+        'current_attempt': 1,
+        'completed_levels': <int>[],
+        'unlocked_levels': const [1],
+        'is_active': true,
+        'created_at': Timestamp.now(),
+        'pace': CurriculumPace.standard.toJson(),
+      });
+
+      final container = makeRealContainer(user: buildTeacher());
+      final notifier = container.read(activeSessionProvider.notifier);
+      notifier.startSession('student-1');
+      notifier.setPartErrors(1, 1);
+      notifier.setPartErrors(2, 0);
+      notifier.setPartErrors(3, 0);
+
+      await expectLater(notifier.completeSession(), throwsArgumentError);
+
+      // Nothing was written: no record, no attempt change, no position
+      // change — a lost recitation is a decision the teacher SEES (the
+      // caller's catch(e)), never a silent accident.
+      final records = await sessionRepository.getSessionRecordsForStudent(
+        'student-1',
+        limit: 20,
+      );
+      expect(records, isEmpty);
+      final student = await studentRepository.getStudentById('student-1');
+      expect(student!.currentOrderInLevel, 999);
+      expect(student.currentAttempt, 1);
+    });
   });
 
   // Task 7: the teacher composes and grades the whole MEETING a paced

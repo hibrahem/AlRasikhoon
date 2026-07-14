@@ -190,8 +190,59 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
   @override
   ActiveSessionState? build() => null;
 
-  void startSession(String studentId) {
+  /// Starts a session and — while the teacher is teaching it, not only once
+  /// it is graded — composes and stores the meeting being taught.
+  ///
+  /// The session-summary screen shows what was JUST taught. By the time
+  /// `completeSession`/`completeTalqeenSession` run, the student has already
+  /// advanced past the meeting, so composing from his then-CURRENT position
+  /// would describe the NEXT meeting, not the one just recited.
+  /// `ActiveSessionState.meeting` is the only thing that can hold the
+  /// meeting being taught, so it must be populated here, at the start,
+  /// while the position it is composed from is still the one being taught —
+  /// not left null until completion.
+  ///
+  /// `state` is set synchronously first so every other notifier method
+  /// (`setPartErrors`, `setNotes`, ...) can be called immediately after,
+  /// exactly as before this method became asynchronous.
+  Future<void> startSession(String studentId) async {
     state = ActiveSessionState(studentId: studentId);
+    await _loadMeetingBeingTaught(studentId);
+  }
+
+  /// Best-effort composition of the meeting for [startSession]. This is a
+  /// display nicety for the in-progress screens, not the record of what
+  /// happened — nothing is graded or written here, so a failure has nothing
+  /// to lose. If the student or curriculum can't be read yet (unseeded
+  /// data, a provider still warming up, ...) the session still starts with
+  /// `meeting == null`. `completeSession` recomposes independently and is
+  /// the one place a composition failure must be surfaced — see its doc
+  /// comment — because that is where a grade would otherwise be silently
+  /// lost.
+  Future<void> _loadMeetingBeingTaught(String studentId) async {
+    try {
+      final studentAsync = await ref.read(studentProvider(studentId).future);
+      if (studentAsync == null) return;
+
+      final student = studentAsync.student;
+      final curriculumRepo = ref.read(curriculumRepositoryProvider);
+      final levelSessions = await curriculumRepo.getSessionsForLevel(
+        level: student.currentLevel,
+      );
+      final meeting = PacedSessionComposer.compose(
+        levelSessions: levelSessions,
+        startOrderInLevel: student.currentOrderInLevel,
+        pace: student.pace,
+      );
+
+      // The teacher may have started a different student's session, or
+      // ended this one, while this composition was in flight — don't
+      // resurrect a stale meeting onto the wrong (or a cleared) state.
+      if (state?.studentId != studentId) return;
+      state = state!.copyWith(meeting: meeting);
+    } catch (_) {
+      // See doc comment above: best-effort, nothing written, nothing lost.
+    }
   }
 
   void setPartErrors(int part, int errors) {
@@ -252,6 +303,21 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     state = state!.copyWith(homeRepetitionsRequired: repetitions);
   }
 
+  /// Grades and records the meeting, then advances the student past it on a
+  /// pass.
+  ///
+  /// Composition happens BEFORE the record is written, deliberately: if
+  /// `PacedSessionComposer.compose` cannot find a session at the student's
+  /// `currentOrderInLevel` (a curriculum row missing or renumbered under
+  /// him), it throws `ArgumentError` — and that throw propagates out of this
+  /// method uncaught, so NOTHING is written. The recitation the teacher just
+  /// heard is not silently saved with a wrong or empty scope, and it is not
+  /// silently discarded either — the caller sees the exception (the
+  /// `catch (e)` in `SessionSummaryScreen._saveSession`) and can tell the
+  /// teacher the save failed, rather than reporting an unqualified success.
+  /// This mirrors the posture `curriculumDataMissing` already enforces on
+  /// the advance side: a graded session is never lost without a signal to
+  /// someone.
   Future<SessionRecordModel?> completeSession() async {
     if (state == null) return null;
 
