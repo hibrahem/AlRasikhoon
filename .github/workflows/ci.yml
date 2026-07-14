@@ -141,6 +141,16 @@ jobs:
           xcrun simctl bootstatus "$UDID" -b
           echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
 
+      # Build the app in its OWN step. `flutter test` builds it otherwise, and
+      # that build runs INSIDE the first test's timeout: a cold Xcode build on
+      # a CI runner takes longer than flutter's default 12-minute per-test
+      # timeout, so the suite dies with "TimeoutException after 0:12:00" while
+      # still printing "Running Xcode build..." — a build cost wearing a test
+      # failure's clothes. Building here keeps the two honest: a build problem
+      # fails as a build problem, and the test step starts from a warm build.
+      - name: Build the app for the simulator
+        run: flutter build ios --simulator --debug
+
       # ONE invocation, via the aggregate entry point. `app_test.dart` imports
       # and runs all five E2E suites (auth, admin, teacher, student, supervisor)
       # in a single binary — which is the whole reason it exists.
@@ -152,12 +162,15 @@ jobs:
       # concurrent builds" — failing suites for reasons that had nothing to do
       # with the code under test.
       #
-      # integration_test/firebase_emulator_flow_test.dart is deliberately NOT
-      # run here, and is not part of app_test.dart: it talks to a real Firestore
-      # via `firebase emulators:start`, which this job does not run. Every suite
-      # below it uses fake_cloud_firestore and needs no emulator.
+      # integration_test/firebase_emulator_flow_test.dart is deliberately NOT run
+      # here, and is not part of app_test.dart: it talks to a real Firestore via
+      # `firebase emulators:start`, which this job does not run. Every suite
+      # app_test.dart does run uses fake_cloud_firestore and needs no emulator.
+      #
+      # --timeout is headroom over the default 12m: even warm, the first test
+      # pays for app install + launch on the simulator.
       - name: Integration tests
-        run: flutter test integration_test/app_test.dart -d "$SIM_UDID"
+        run: flutter test integration_test/app_test.dart -d "$SIM_UDID" --timeout 30m
 
   # ===========================================================================
   # functions — build (+ lint) for the Firebase Cloud Functions package
