@@ -36,7 +36,11 @@
 - `lib/data/repositories/student_repository.dart` — advance from a given order; set pace.
 
 **Presentation (modified):**
-- `lib/features/teacher/providers/teacher_provider.dart` — compose the meeting, write the spanning record, advance past it.
+- `lib/features/teacher/providers/teacher_provider.dart` — compose the meeting, write the spanning record, advance past it; `studentCurrentMeetingProvider`.
+- `lib/features/supervisor/providers/supervisor_provider.dart` — `supervisorStudentCurrentMeetingProvider` (institute-scoped).
+- `lib/features/student/providers/student_provider.dart` — `studentDashboardMeetingProvider`.
+- Screens that TEACH a student read the meeting: `teacher/screens/recitation_screen.dart`, `new_memorization_screen.dart`, `session_overview_screen.dart`, `talqeen_session_screen.dart`, `student/screens/student_dashboard_screen.dart`, `admin/screens/admin_student_progress_screen.dart`.
+- Screens that BROWSE the curriculum keep the authored row and are **not** touched: `admin/screens/level_detail_screen.dart`, `teacher/widgets/starting_point_picker.dart`.
 
 **Tests (new):**
 - `test/unit/domain/curriculum/curriculum_pace_test.dart`
@@ -1533,58 +1537,336 @@ Refs: al_rasikhoon-g63"
 
 ---
 
-### Task 8: Show the meeting, and let a teacher set the pace
+### Task 8: The meeting a student stands on — providers and display
 
 **Files:**
-- Modify: `lib/features/teacher/screens/session_overview_screen.dart`
-- Modify: `lib/features/teacher/screens/session_summary_screen.dart`
-- Modify: `lib/features/teacher/screens/talqeen_session_screen.dart`
-- Modify: `lib/features/student/screens/session_detail_screen.dart`
-- Test: `test/widget/` — follow the existing widget tests.
+- Modify: `lib/domain/curriculum/paced_session.dart` (display getters)
+- Modify: `lib/features/teacher/providers/teacher_provider.dart` (`studentCurrentMeetingProvider`)
+- Modify: `lib/features/supervisor/providers/supervisor_provider.dart` (`supervisorStudentCurrentMeetingProvider`)
+- Modify: `lib/features/student/providers/student_provider.dart` (`studentDashboardMeetingProvider`)
+- Test: `test/unit/providers/student_meeting_provider_test.dart` (create)
 
 **Interfaces:**
-- Consumes: `PacedSession` from `ActiveSessionState.meeting` (Task 7); `StudentRepository.setStudentPace` (Task 4).
-- Produces: no new public API.
+- Consumes: `PacedSessionComposer`, `CurriculumPace`, `CurriculumRepository.getSessionsForLevel` (Task 5), `StudentModel.pace` (Task 4).
+- Produces:
+  - On `PacedSession`: `String get newContentAr`, `String get recentReviewAr`, `String get distantReviewAr`, `bool get hasNewContent`, `bool get hasRecentReview`, `bool get hasDistantReview`.
+  - `studentCurrentMeetingProvider` → `FutureProvider.family<PacedSession?, String>` (teacher scope).
+  - `supervisorStudentCurrentMeetingProvider` → `FutureProvider.family<PacedSession?, String>` (institute scope).
+  - `studentDashboardMeetingProvider` → `FutureProvider<PacedSession?>` (the signed-in student).
 
-The screens today render a single `QuranContent` per stream (`session.currentLevelContent?.rangeAr`). A meeting carries a **list**. Every screen that shows a content block must render all of them.
+The screens render **strings** today (`session.currentLevelContent?.rangeAr ?? ''`). Giving `PacedSession` the same string-shaped API means each screen changes by one line and no layout is touched. That is the whole point of this task: make Task 9 a mechanical substitution.
 
-- [ ] **Step 1: Read the screens and find every content render**
+The three existing providers — `studentCurrentSessionProvider` (teacher), `supervisorStudentCurrentSessionProvider` (institute-scoped, AgDR-0003), `studentDashboardSessionProvider` (the student themself) — each resolve a student and return `getSessionById(student.currentSessionId)`. Each gains a **meeting** twin that composes instead. Do NOT delete the session providers: `starting_point_picker` and the admin curriculum screens legitimately want the authored row, not a student's meeting.
 
-```bash
-grep -rn "currentLevelContent\|recentReviewContent\|distantReviewContent\|rangeAr" lib/features/
-```
+- [ ] **Step 1: Write the failing test**
 
-Every hit is a place that assumes one block. Each must render `meeting.newContent` / `.recentReview` / `.distantReview` — a `Column` of the ranges, or a single joined line (`meeting.newContent.map((c) => c.rangeAr).join('، ')`). Match whatever the surrounding widget already does; do not restyle.
-
-- [ ] **Step 2: Write the failing widget test**
-
-Pin the one behaviour that matters — a doubled meeting shows both passages, and a standard one is unchanged:
+Create `test/unit/providers/student_meeting_provider_test.dart`. Follow `test/unit/providers/teacher_provider_test.dart` for the `ProviderContainer` + `FakeFirebaseFirestore` setup, and seed the curriculum with `seedSession` from `test/unit/data/repositories/curriculum_fixtures.dart`.
 
 ```dart
-    testWidgets('a doubled meeting shows both passages it teaches', (tester) async {
-      // Meeting covering orders 5 and 6: النبأ 31-37 and النبأ 38-40.
-      await tester.pumpWidget(/* ... session overview with the 2x meeting ... */);
+    test('a standard student\'s meeting is the single session he stands on', () async {
+      // Student at order 5 of level 1, no pace stored.
+      final meeting = await container.read(
+        studentCurrentMeetingProvider('s1').future,
+      );
 
-      expect(find.textContaining('النبأ: 31 - 37'), findsOneWidget);
-      expect(find.textContaining('النبأ: 38 - 40'), findsOneWidget);
+      expect(meeting!.coversSessionIds, ['L1_J30_S5']);
+      expect(meeting.isBatched, isFalse);
     });
 
-    testWidgets('a standard meeting shows exactly the one passage, as before', (tester) async {
-      await tester.pumpWidget(/* ... session overview with the 1x meeting ... */);
+    test('a doubled student\'s meeting covers the next two lessons', () async {
+      // Same student, pace 2.
+      final meeting = await container.read(
+        studentCurrentMeetingProvider('s1').future,
+      );
 
-      expect(find.textContaining('النبأ: 31 - 37'), findsOneWidget);
-      expect(find.textContaining('النبأ: 38 - 40'), findsNothing);
+      expect(meeting!.coversSessionIds, ['L1_J30_S5', 'L1_J30_S6']);
+      expect(meeting.toOrderInLevel, 6);
+    });
+
+    test('changing the pace mid-level recomposes the pending meeting', () async {
+      // The student stores where a meeting STARTS, never how far it extends.
+      // A pace change must therefore need no migration and no position fix-up:
+      // the very next read widens the meeting.
+      final before = await container.read(
+        studentCurrentMeetingProvider('s1').future,
+      );
+      expect(before!.coversSessionIds, ['L1_J30_S5']);
+
+      await studentRepo.setStudentPace('s1', CurriculumPace(2));
+      container.invalidate(studentProvider('s1'));
+
+      final after = await container.read(
+        studentCurrentMeetingProvider('s1').future,
+      );
+      expect(after!.coversSessionIds, ['L1_J30_S5', 'L1_J30_S6']);
+      expect(after.fromOrderInLevel, 5, reason: 'he did not move');
+    });
+
+    test('a meeting renders its passages as one line per stream', () async {
+      final meeting = await container.read(
+        studentCurrentMeetingProvider('s1').future,
+      );
+
+      expect(meeting!.newContentAr, 'النبأ: 31 - 37 • النبأ: 38 - 40');
     });
 ```
 
-- [ ] **Step 3: Run to verify it fails, then implement**
+- [ ] **Step 2: Run the test to verify it fails**
 
-Run: `flutter test test/widget/`
-Expected: FAIL — only the first passage renders.
+Run: `flutter test test/unit/providers/student_meeting_provider_test.dart`
+Expected: FAIL — `studentCurrentMeetingProvider` is not defined.
 
-Then update each screen found in Step 1.
+- [ ] **Step 3: Write the implementation**
 
-For the pace control: add it where a teacher already edits a student — find it with `grep -rn "updateStudent\|setStudent" lib/features/teacher/ lib/features/supervisor/`. A stepper or a small `1x / 2x / 3x` segmented control calling `setStudentPace`. Keep it minimal; it is a number, not a workflow.
+Add the display getters to `lib/domain/curriculum/paced_session.dart`:
+
+```dart
+  /// The passages of this stream on one line — what a screen shows where it used
+  /// to show a single range. A standard meeting has exactly one, so its line is
+  /// byte-identical to what the screen rendered before paced curricula.
+  static String _line(List<QuranContent> blocks) =>
+      blocks.map((block) => block.rangeAr).join(' • ');
+
+  String get newContentAr => _line(newContent);
+  String get recentReviewAr => _line(recentReview);
+  String get distantReviewAr => _line(distantReview);
+
+  bool get hasNewContent => newContent.isNotEmpty;
+  bool get hasRecentReview => recentReview.isNotEmpty;
+  bool get hasDistantReview => distantReview.isNotEmpty;
+```
+
+In `lib/features/teacher/providers/teacher_provider.dart`, beneath `studentCurrentSessionProvider`:
+
+```dart
+/// The MEETING the student stands on: the N curriculum sessions their pace
+/// covers, and the three content streams composed from them.
+///
+/// This is what every screen that teaches or reports on a student must read.
+/// [studentCurrentSessionProvider] returns the single authored row and remains
+/// correct for anything that browses the CURRICULUM (the starting-point picker,
+/// the admin level detail) — but a student at 2x does not meet a row, he meets a
+/// meeting.
+///
+/// The meeting is composed on every read from the student's LIVE pace. Nothing
+/// about its extent is stored, which is exactly why a teacher can change a
+/// student's pace mid-level and have it land on the next meeting with nothing to
+/// migrate.
+final studentCurrentMeetingProvider =
+    FutureProvider.family<PacedSession?, String>((ref, studentId) async {
+      final studentAsync = await ref.watch(studentProvider(studentId).future);
+      if (studentAsync == null) return null;
+
+      final student = studentAsync.student;
+      final curriculumRepo = ref.watch(curriculumRepositoryProvider);
+
+      final levelSessions = await curriculumRepo.getSessionsForLevel(
+        level: student.currentLevel,
+      );
+      if (levelSessions.isEmpty) return null;
+
+      return PacedSessionComposer.compose(
+        levelSessions: levelSessions,
+        startOrderInLevel: student.currentOrderInLevel,
+        pace: student.pace,
+      );
+    });
+```
+
+Mirror it in `lib/features/supervisor/providers/supervisor_provider.dart` as `supervisorStudentCurrentMeetingProvider`, resolving the student via `supervisorStudentProvider` (institute-scoped, AgDR-0003 — a supervisor-created student has a null `teacher_id` and the teacher-scoped provider would return "Student not found").
+
+Mirror it in `lib/features/student/providers/student_provider.dart` as `studentDashboardMeetingProvider`, a plain `FutureProvider<PacedSession?>` resolving via `currentStudentProvider`.
+
+All three are the same eight lines; the only difference is which provider resolves the student. That duplication already exists for the session providers — follow it rather than inventing a shared abstraction.
+
+- [ ] **Step 4: Run the tests to verify they pass**
+
+Run: `flutter test test/unit/providers/`
+Expected: PASS.
+
+- [ ] **Step 5: Analyze and commit**
+
+```bash
+dart analyze lib/domain/curriculum/paced_session.dart lib/features/teacher/providers/teacher_provider.dart lib/features/supervisor/providers/supervisor_provider.dart lib/features/student/providers/student_provider.dart
+git add -A
+git commit -m "feat(curriculum): expose the meeting a student stands on
+
+Three providers mirroring the three current-session providers — teacher,
+institute-scoped supervisor, and the student themself. The meeting is
+composed on every read from the live pace, so a mid-level pace change lands
+on the next meeting with nothing to migrate.
+
+The session providers stay: anything browsing the CURRICULUM (the
+starting-point picker, the admin level detail) still wants the authored row.
+
+Refs: al_rasikhoon-g63"
+```
+
+---
+
+### Task 9: Every screen that teaches shows the whole meeting
+
+**Files:**
+- Modify: `lib/features/teacher/screens/recitation_screen.dart:74-80`
+- Modify: `lib/features/teacher/screens/new_memorization_screen.dart:35`
+- Modify: `lib/features/teacher/screens/session_overview_screen.dart:266-280,369`
+- Modify: `lib/features/teacher/screens/talqeen_session_screen.dart:108`
+- Modify: `lib/features/student/screens/student_dashboard_screen.dart:347,477`
+- Modify: `lib/features/admin/screens/admin_student_progress_screen.dart:250-262`
+- Test: Create `test/widget/paced_meeting_rendering_test.dart`
+
+**Interfaces:**
+- Consumes: the meeting providers and `PacedSession`'s display getters (Task 8).
+- Produces: no new public API.
+
+**Do NOT touch these** — they render the CURRICULUM, not a student's meeting, and must keep showing the authored row:
+- `lib/features/admin/screens/level_detail_screen.dart` (browsing the curriculum catalog)
+- `lib/features/teacher/widgets/starting_point_picker.dart` (picking a curriculum position)
+
+Each site is a one-line substitution, because Task 8 gave `PacedSession` a string-shaped API:
+
+| screen | from | to |
+|---|---|---|
+| `recitation_screen.dart` part 1/2/3 | `session.currentLevelContent?.rangeAr ?? ''` | `meeting.newContentAr` / `.recentReviewAr` / `.distantReviewAr` |
+| `new_memorization_screen.dart` | `final content = session.currentLevelContent; if (content == null) …` | `if (!meeting.hasNewContent) …` then `meeting.newContentAr` |
+| `session_overview_screen.dart` | the three `content:` args | `meeting.newContentAr` etc. |
+| `talqeen_session_screen.dart` | `session.currentLevelContent?.rangeAr ?? ''` | `meeting.newContentAr` |
+| `student_dashboard_screen.dart` | same | `meeting.newContentAr` |
+| `admin_student_progress_screen.dart` | the three `content:` args | the three getters |
+
+Swap each screen's `ref.watch(studentCurrentSessionProvider(id))` for `ref.watch(studentCurrentMeetingProvider(id))` (or the supervisor / dashboard twin — `session_overview_screen.dart:40` branches on `asSupervisor` and needs both). Where a screen also needs the session's *kind* (the تلقين / سرد / اختبار branch at `session_overview_screen.dart`), read it from `meeting.first` — a batch is all lessons, so the first session's kind is the meeting's kind.
+
+`recitation_screen.dart` keeps its `switch (widget.part)`: parts 1/2/3 still map to new / recent / distant. Only the source of the string changes.
+
+- [ ] **Step 1: Write the failing widget test**
+
+Create `test/widget/paced_meeting_rendering_test.dart`, following `test/widget/session_overview_talqeen_branch_test.dart` exactly — same `ProviderScope` override style, same model construction.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:al_rasikhoon/data/models/session_model.dart';
+import 'package:al_rasikhoon/data/models/student_model.dart';
+import 'package:al_rasikhoon/data/models/user_model.dart';
+import 'package:al_rasikhoon/data/repositories/student_repository.dart';
+import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
+import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
+import 'package:al_rasikhoon/features/teacher/screens/session_overview_screen.dart';
+
+/// A 2x student meets TWO lessons in one sitting. Every screen that teaches him
+/// must show both passages — showing only the first would have him memorize half
+/// of what he was assigned, silently.
+void main() {
+  QuranContent content(String surah, int from, int to) => QuranContent(
+    fromSurah: surah,
+    fromVerse: from,
+    toSurah: surah,
+    toVerse: to,
+  );
+
+  SessionModel lesson(int order, QuranContent newContent) => SessionModel(
+    id: 'L1_J30_S$order',
+    levelId: 1,
+    juzNumber: 30,
+    sessionNumber: order,
+    orderInLevel: order,
+    kind: SessionKind.lesson,
+    currentLevelContent: newContent,
+  );
+
+  final student = StudentModel(
+    id: 's1',
+    userId: 'u1',
+    instituteId: 'inst1',
+    currentSessionId: 'L1_J30_S5',
+    currentSessionKind: SessionKind.lesson,
+    currentOrderInLevel: 5,
+    createdAt: DateTime(2026),
+  );
+
+  final user = UserModel(
+    id: 'u1',
+    email: 'student@example.com',
+    name: 'طالب',
+    role: UserRole.student,
+    createdAt: DateTime(2026),
+  );
+
+  Future<void> pump(WidgetTester tester, PacedSession meeting) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          studentProvider('s1').overrideWith(
+            (ref) async => StudentWithUser(student: student, user: user),
+          ),
+          studentCurrentMeetingProvider(
+            's1',
+          ).overrideWith((ref) async => meeting),
+        ],
+        child: const MaterialApp(
+          home: SessionOverviewScreen(studentId: 's1'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('a doubled meeting shows both passages it teaches', (
+    tester,
+  ) async {
+    final doubled = PacedSession(
+      sessions: [
+        lesson(5, content('النبأ', 31, 37)),
+        lesson(6, content('النبأ', 38, 40)),
+      ],
+      newContent: [content('النبأ', 31, 37), content('النبأ', 38, 40)],
+      recentReview: [content('النبأ', 12, 20), content('النبأ', 21, 30)],
+      distantReview: const [],
+    );
+
+    await pump(tester, doubled);
+
+    expect(find.textContaining('النبأ: 31 - 37'), findsOneWidget);
+    expect(find.textContaining('النبأ: 38 - 40'), findsOneWidget);
+  });
+
+  testWidgets('a standard meeting shows exactly the one passage, as before', (
+    tester,
+  ) async {
+    final standard = PacedSession(
+      sessions: [lesson(5, content('النبأ', 31, 37))],
+      newContent: [content('النبأ', 31, 37)],
+      recentReview: [content('النبأ', 12, 30)],
+      distantReview: const [],
+    );
+
+    await pump(tester, standard);
+
+    expect(find.textContaining('النبأ: 31 - 37'), findsOneWidget);
+    expect(find.textContaining('النبأ: 38 - 40'), findsNothing);
+  });
+}
+```
+
+`SessionOverviewScreen`'s constructor may take more than `studentId` (it has an `asSupervisor` flag) — read the file and match its actual signature.
+
+- [ ] **Step 2: Run the test to verify it fails**
+
+Run: `flutter test test/widget/paced_meeting_rendering_test.dart`
+Expected: FAIL — `studentCurrentMeetingProvider` is not read by the screen; only one passage renders (or the screen throws on the missing session provider).
+
+- [ ] **Step 3: Make the substitutions**
+
+Work through the table above, one screen at a time. After each, run that screen's existing widget test to confirm nothing regressed:
+
+```bash
+flutter test test/widget/session_overview_talqeen_branch_test.dart
+flutter test test/widget/talqeen_session_screen_test.dart
+flutter test test/widget/student_dashboard_talqeen_branch_test.dart
+```
+
+Those existing tests override `studentCurrentSessionProvider`. Once a screen reads the meeting provider instead, they will fail — **update them to override `studentCurrentMeetingProvider` with a single-session `PacedSession`**. That is a correct change, not a weakening: the screens genuinely now consume meetings. Do not leave a screen reading both providers to keep an old test green.
 
 - [ ] **Step 4: Run the full suite**
 
@@ -1595,14 +1877,86 @@ Expected: PASS, analyzer clean.
 
 ```bash
 git add -A
-git commit -m "feat(teacher): show every passage a paced meeting covers, and set the pace
+git commit -m "feat(teacher): show every passage a paced meeting covers
+
+A 2x student meets two lessons in one sitting; showing only the first would
+have him memorize half of what he was assigned, silently.
+
+The curriculum-browsing screens (admin level detail, starting-point picker)
+keep reading the authored row — they show the curriculum, not a meeting.
 
 Refs: al_rasikhoon-g63"
 ```
 
 ---
 
-### Task 9: Close out
+### Task 10: Set a student's pace
+
+**Files:**
+- Modify: `lib/features/teacher/screens/` — the student detail / edit screen (find it in Step 1)
+- Test: `test/widget/student_pace_control_test.dart` (create)
+
+**Interfaces:**
+- Consumes: `StudentRepository.setStudentPace` (Task 4), `CurriculumPace` (Task 1).
+- Produces: no new public API.
+
+- [ ] **Step 1: Find where a teacher or supervisor already edits a student**
+
+```bash
+grep -rn "updateStudent\|repositionStudent\|setStudentPace" lib/features/teacher/ lib/features/supervisor/
+```
+
+The pace control belongs beside whatever already edits a student's curriculum standing (the flexible-placement / reposition UI is the natural neighbour — see `al_rasikhoon-i1d`, `al_rasikhoon-sne`). Put it there. If both a teacher screen and a supervisor screen exist, add it to both — the spec says either role may set it.
+
+- [ ] **Step 2: Write the failing widget test**
+
+```dart
+  testWidgets('a teacher can double a student\'s pace', (tester) async {
+    await pump(tester);
+
+    await tester.tap(find.text('2x'));
+    await tester.pumpAndSettle();
+
+    verify(() => studentRepo.setStudentPace('s1', CurriculumPace(2))).called(1);
+  });
+
+  testWidgets('a student\'s pace shows as 1x when none was ever set', (
+    tester,
+  ) async {
+    await pump(tester);
+
+    expect(find.text('1x'), findsOneWidget);
+  });
+```
+
+Match the existing tests' mocking style — check whether the suite uses `mocktail` (`verify(() => ...)`) or a `FakeFirebaseFirestore` round-trip, and follow it. `grep -rn "mocktail" test/ | head -3`.
+
+- [ ] **Step 3: Run to verify it fails, then implement**
+
+Run: `flutter test test/widget/student_pace_control_test.dart`
+Expected: FAIL — no pace control exists.
+
+A segmented control of `1x / 2x / 3x` calling `setStudentPace`, with a one-line explanation in Arabic beneath it (e.g. `عدد الحلقات في اللقاء الواحد`). Keep it minimal: it is a number, not a workflow. Do not build an approval flow — the spec says teacher *or* supervisor may set it directly.
+
+After writing, invalidate `studentProvider(studentId)` so the pending meeting recomposes immediately.
+
+- [ ] **Step 4: Run the full suite**
+
+Run: `flutter test && dart analyze`
+Expected: PASS, analyzer clean.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add -A
+git commit -m "feat(teacher): set a student's pace
+
+Refs: al_rasikhoon-g63"
+```
+
+---
+
+### Task 11: Close out
 
 - [ ] **Step 1: Run the whole suite**
 
