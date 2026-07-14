@@ -262,11 +262,10 @@ class PacedSessionComposer {
   ///    review what he is learning today.
   ///
   /// Exclusion 3 is EXACT-EQUALITY on the block, which holds only because all
-  /// 59 تلقين rows carry content identical to the lesson that follows them. It
-  /// is thinner than it reads: the source's structural assumptions do not hold
-  /// universally (see the L9 distant gap, al_rasikhoon-drw), and a تلقين whose
-  /// passage ever spanned MORE than its following lesson would leave the window
-  /// listing a range the meeting is teaching today.
+  /// 59 تلقين rows carry content identical to the lesson that follows them. A
+  /// تلقين whose passage ever spanned MORE than its following lesson would
+  /// leave the window listing a range the meeting is teaching today, so this
+  /// holds by the curriculum's shape, not by construction.
   static List<QuranContent> _recentWindow({
     required Map<int, SessionModel> byOrder,
     required int startOrderInLevel,
