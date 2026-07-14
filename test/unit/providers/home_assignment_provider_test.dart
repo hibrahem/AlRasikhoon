@@ -1,6 +1,7 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/repositories/home_practice_repository.dart';
 import 'package:al_rasikhoon/data/repositories/session_repository.dart';
@@ -74,6 +75,8 @@ void main() {
         teacherId: 'teacher-1',
         curriculumSessionId: 'L1_J30_S2',
         levelId: 1,
+        kind: SessionKind.talqeen,
+        juzNumber: 30,
         hizbNumber: 59,
         sessionNumber: 2,
         orderInLevel: 2,
@@ -100,6 +103,8 @@ void main() {
       teacherId: 'teacher-1',
       curriculumSessionId: 'L1_J30_S1',
       levelId: 1,
+      kind: SessionKind.talqeen,
+      juzNumber: 30,
       hizbNumber: 59,
       sessionNumber: 1,
       orderInLevel: 1,
@@ -114,6 +119,8 @@ void main() {
       teacherId: 'teacher-1',
       curriculumSessionId: 'L1_J30_S2',
       levelId: 1,
+      kind: SessionKind.talqeen,
+      juzNumber: 30,
       hizbNumber: 59,
       sessionNumber: 2,
       orderInLevel: 2,
@@ -176,6 +183,8 @@ void main() {
         teacherId: 'teacher-1',
         curriculumSessionId: 'L1_J30_S2',
         levelId: 1,
+        kind: SessionKind.talqeen,
+        juzNumber: 30,
         hizbNumber: 59,
         sessionNumber: 2,
         orderInLevel: 2,

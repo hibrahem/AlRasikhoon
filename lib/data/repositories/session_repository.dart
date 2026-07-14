@@ -46,6 +46,9 @@ class SessionRepository {
 
   /// Create session record
   ///
+  /// [kind] and [juzNumber] are copied verbatim from the session this record
+  /// is FOR (via `student.currentSessionKind`/`currentJuz` at write time) —
+  /// never inferred from [sessionNumber].
   /// [hizbNumber] is a LABEL, present only in levels 1-2. It keys nothing.
   /// [orderInLevel] is the curriculum's ordering key — copied verbatim from
   /// the session this record is FOR (never recomputed from [sessionNumber]).
@@ -55,6 +58,8 @@ class SessionRepository {
     required String teacherId,
     required String curriculumSessionId,
     required int levelId,
+    required SessionKind kind,
+    required int juzNumber,
     int? hizbNumber,
     required int sessionNumber,
     required int orderInLevel,
@@ -84,6 +89,8 @@ class SessionRepository {
         teacherId: teacherId,
         curriculumSessionId: curriculumSessionId,
         levelId: levelId,
+        kind: kind,
+        juzNumber: juzNumber,
         hizbNumber: hizbNumber,
         sessionNumber: sessionNumber,
         orderInLevel: orderInLevel,
@@ -107,6 +114,11 @@ class SessionRepository {
   /// so the record carries zeroed grades and passes unconditionally — it exists
   /// for history and attendance, and to carry the home assignment.
   ///
+  /// [kind] and [juzNumber] are copied verbatim from the session this record
+  /// is FOR (via `student.currentSessionKind`/`currentJuz` at write time) —
+  /// [kind] is always [SessionKind.talqeen] here, since this method records
+  /// nothing else, but it is threaded through rather than hardcoded so the
+  /// value keeps coming from the session, exactly like [orderInLevel].
   /// [orderInLevel] is the curriculum's ordering key — copied verbatim from
   /// the session this record is FOR (never recomputed from [sessionNumber]).
   /// [now] is a test seam; see [_writeSessionRecord].
@@ -115,6 +127,8 @@ class SessionRepository {
     required String teacherId,
     required String curriculumSessionId,
     required int levelId,
+    required SessionKind kind,
+    required int juzNumber,
     int? hizbNumber,
     required int sessionNumber,
     required int orderInLevel,
@@ -130,6 +144,8 @@ class SessionRepository {
         teacherId: teacherId,
         curriculumSessionId: curriculumSessionId,
         levelId: levelId,
+        kind: kind,
+        juzNumber: juzNumber,
         hizbNumber: hizbNumber,
         sessionNumber: sessionNumber,
         orderInLevel: orderInLevel,
@@ -442,8 +458,14 @@ class SessionRepository {
     final sardRecords = await getSardRecordsForStudent(studentId);
     final examRecords = await getExamRecordsForStudent(studentId);
 
-    final totalSessions = sessionRecords.length;
-    final passedSessions = sessionRecords.where((r) => r.passed).length;
+    // A تلقين is never graded — no errors, no pass/fail — so it must not
+    // inflate `total_sessions`/`passed_sessions` with a phantom pass. Only
+    // graded lesson records count here.
+    final gradedSessionRecords = sessionRecords
+        .where((r) => !r.isTalqeen)
+        .toList();
+    final totalSessions = gradedSessionRecords.length;
+    final passedSessions = gradedSessionRecords.where((r) => r.passed).length;
     final totalSards = sardRecords.length;
     final passedSards = sardRecords.where((r) => r.passed).length;
     final totalExams = examRecords.length;

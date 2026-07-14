@@ -284,7 +284,13 @@ class HomePracticeNotifier extends Notifier<AsyncValue<void>> {
         curriculumSessionId:
             lastRecord?.curriculumSessionId ?? student.currentSessionId,
         levelId: lastRecord?.levelId ?? student.currentLevel,
-        juzNumber: student.currentJuz,
+        // The record's OWN juz — never the student's CURRENT juz, which may
+        // already be a different one by the time this practice is logged
+        // (the teacher may have advanced the student across a juz boundary
+        // in between, e.g. finishing juz 30's last lesson and being moved
+        // into juz 29 before the student logs practice against the juz-30
+        // session they were actually assigned).
+        juzNumber: lastRecord?.juzNumber ?? student.currentJuz,
         hizbNumber: lastRecord?.hizbNumber ?? student.currentHizb,
         sessionNumber: lastRecord?.sessionNumber ?? student.currentSession,
         repetitions: repetitions,

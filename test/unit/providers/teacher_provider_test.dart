@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/session_record_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
@@ -21,6 +22,12 @@ class MockSessionRepository extends Mock implements SessionRepository {}
 void main() {
   late MockStudentRepository mockStudentRepository;
   late MockSessionRepository mockSessionRepository;
+
+  setUpAll(() {
+    // mocktail needs a fallback instance to match `any(named: 'kind')`
+    // against `createSessionRecord`'s new `SessionKind kind` parameter.
+    registerFallbackValue(SessionKind.lesson);
+  });
 
   setUp(() {
     mockStudentRepository = MockStudentRepository();
@@ -89,6 +96,8 @@ void main() {
       studentId: 'student-1',
       teacherId: 'teacher-1',
       curriculumSessionId: 'L1_J30_H59_S5',
+      kind: SessionKind.lesson,
+      juzNumber: 30,
       orderInLevel: 5,
       date: DateTime(2026, 1, 2),
       attemptNumber: 1,
@@ -327,6 +336,8 @@ void main() {
           teacherId: any(named: 'teacherId'),
           curriculumSessionId: any(named: 'curriculumSessionId'),
           levelId: any(named: 'levelId'),
+          kind: any(named: 'kind'),
+          juzNumber: any(named: 'juzNumber'),
           hizbNumber: any(named: 'hizbNumber'),
           sessionNumber: any(named: 'sessionNumber'),
           orderInLevel: any(named: 'orderInLevel'),
@@ -373,6 +384,8 @@ void main() {
           teacherId: any(named: 'teacherId'),
           curriculumSessionId: any(named: 'curriculumSessionId'),
           levelId: any(named: 'levelId'),
+          kind: any(named: 'kind'),
+          juzNumber: any(named: 'juzNumber'),
           hizbNumber: any(named: 'hizbNumber'),
           sessionNumber: any(named: 'sessionNumber'),
           orderInLevel: captureAny(named: 'orderInLevel'),
@@ -406,6 +419,8 @@ void main() {
             teacherId: any(named: 'teacherId'),
             curriculumSessionId: any(named: 'curriculumSessionId'),
             levelId: any(named: 'levelId'),
+            kind: any(named: 'kind'),
+            juzNumber: any(named: 'juzNumber'),
             hizbNumber: any(named: 'hizbNumber'),
             sessionNumber: any(named: 'sessionNumber'),
             orderInLevel: any(named: 'orderInLevel'),
@@ -454,6 +469,8 @@ void main() {
           teacherId: any(named: 'teacherId'),
           curriculumSessionId: any(named: 'curriculumSessionId'),
           levelId: any(named: 'levelId'),
+          kind: any(named: 'kind'),
+          juzNumber: any(named: 'juzNumber'),
           hizbNumber: any(named: 'hizbNumber'),
           sessionNumber: any(named: 'sessionNumber'),
           orderInLevel: any(named: 'orderInLevel'),

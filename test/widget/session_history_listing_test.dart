@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/session_record_model.dart';
 import 'package:al_rasikhoon/features/student/providers/student_provider.dart';
 import 'package:al_rasikhoon/features/student/screens/session_history_screen.dart';
@@ -16,6 +17,7 @@ SessionRecordModel _record({
   required String id,
   required bool passed,
   required SessionGrades grades,
+  SessionKind kind = SessionKind.lesson,
 }) {
   final now = DateTime(2024, 3, 15);
   return SessionRecordModel(
@@ -24,6 +26,8 @@ SessionRecordModel _record({
     teacherId: 'teacher1',
     curriculumSessionId: 'cs1',
     levelId: 1,
+    kind: kind,
+    juzNumber: 30,
     hizbNumber: 59,
     sessionNumber: 1,
     orderInLevel: 1,
@@ -102,5 +106,34 @@ void main() {
       expect(find.text('رسب'), findsNothing);
       expect(find.text('مجتهد'), findsNothing);
     });
+  });
+
+  // hibrahem/AlRasikhoon final-review finding #3: a تلقين is never graded —
+  // it must not render with a pass/fail badge, since `createTalqeenRecord`
+  // writes `passed: true` unconditionally (attendance, not a graded
+  // outcome).
+  group('SessionHistoryScreen listing — تلقين records', () {
+    testWidgets(
+      'a تلقين row shows neither نجح nor رسب, even though `passed` is true',
+      (tester) async {
+        await _pumpHistory(tester, [
+          _record(
+            id: 'r3',
+            passed: true,
+            kind: SessionKind.talqeen,
+            grades: const SessionGrades(
+              newMemorizationErrors: 0,
+              recentReviewErrors: 0,
+              distantReviewErrors: 0,
+            ),
+          ),
+        ]);
+
+        expect(find.text('نجح'), findsNothing);
+        expect(find.text('رسب'), findsNothing);
+        // It must still read as what it is.
+        expect(find.textContaining('تلقين'), findsWidgets);
+      },
+    );
   });
 }

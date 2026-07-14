@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/utils/grade_calculator.dart';
+import 'session_model.dart';
 
 class SessionGrades {
   final int newMemorizationErrors;
@@ -57,6 +58,19 @@ class SessionRecordModel {
   final String curriculumSessionId;
   final int levelId;
 
+  /// What the session this record is FOR IS — a تلقين or a lesson, copied
+  /// verbatim from the session (via `student.currentSessionKind` at write
+  /// time), never inferred from [sessionNumber]. A تلقين is never graded, so
+  /// this is what tells the pass/fail statistics and the history/detail
+  /// screens to treat this record as attendance, not a graded pass.
+  final SessionKind kind;
+
+  /// The juz this record's session belongs to, copied verbatim from the
+  /// session this record is FOR — never the student's CURRENT juz, which may
+  /// already be a different one by the time this is read (the teacher may
+  /// have advanced the student across a juz boundary in between).
+  final int juzNumber;
+
   /// A LABEL, present only in levels 1-2 — and absent even there on juz- and
   /// level-tier sessions. It keys nothing: the record is identified by
   /// [curriculumSessionId]. It used to default to 59, which quietly filed every
@@ -94,6 +108,8 @@ class SessionRecordModel {
     required this.teacherId,
     required this.curriculumSessionId,
     this.levelId = 1,
+    required this.kind,
+    required this.juzNumber,
     this.hizbNumber,
     this.sessionNumber = 1,
     required this.orderInLevel,
@@ -115,6 +131,15 @@ class SessionRecordModel {
       teacherId: data['teacher_id'] ?? '',
       curriculumSessionId: data['curriculum_session_id'] ?? '',
       levelId: data['level_id'] ?? 1,
+      // Falls back to a lesson only for records written before `kind`
+      // existed — every one of them WAS a graded lesson attempt, since a
+      // تلقين could not be recorded before this field shipped.
+      kind: data['kind'] != null
+          ? SessionKindX.fromString(data['kind'] as String)
+          : SessionKind.lesson,
+      // Falls back to 0 — never a real juz — only for records written before
+      // this field existed; never guessed from the student's current juz.
+      juzNumber: data['juz_number'] as int? ?? 0,
       hizbNumber: data['hizb_number'] as int?,
       sessionNumber: data['session_number'] ?? 1,
       // Falls back to 1 only for records written before this field existed —
@@ -137,6 +162,8 @@ class SessionRecordModel {
       'teacher_id': teacherId,
       'curriculum_session_id': curriculumSessionId,
       'level_id': levelId,
+      'kind': kind.value,
+      'juz_number': juzNumber,
       'hizb_number': hizbNumber,
       'session_number': sessionNumber,
       'order_in_level': orderInLevel,
@@ -151,12 +178,19 @@ class SessionRecordModel {
     };
   }
 
+  /// A تلقين is never graded: it carries no pass/fail and no error counts, so
+  /// it must never be counted as a graded pass in statistics, and never
+  /// rendered with a pass/fail badge or grade in history/detail.
+  bool get isTalqeen => kind == SessionKind.talqeen;
+
   SessionRecordModel copyWith({
     String? id,
     String? studentId,
     String? teacherId,
     String? curriculumSessionId,
     int? levelId,
+    SessionKind? kind,
+    int? juzNumber,
     int? hizbNumber,
     int? sessionNumber,
     int? orderInLevel,
@@ -175,6 +209,8 @@ class SessionRecordModel {
       teacherId: teacherId ?? this.teacherId,
       curriculumSessionId: curriculumSessionId ?? this.curriculumSessionId,
       levelId: levelId ?? this.levelId,
+      kind: kind ?? this.kind,
+      juzNumber: juzNumber ?? this.juzNumber,
       hizbNumber: hizbNumber ?? this.hizbNumber,
       sessionNumber: sessionNumber ?? this.sessionNumber,
       orderInLevel: orderInLevel ?? this.orderInLevel,

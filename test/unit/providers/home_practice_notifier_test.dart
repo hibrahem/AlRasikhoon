@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/session_record_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/repositories/home_practice_repository.dart';
@@ -52,6 +53,8 @@ void main() {
         teacherId: 'teacher-1',
         curriculumSessionId: 'L1_J30_S2',
         levelId: 1,
+        kind: SessionKind.lesson,
+        juzNumber: 30,
         hizbNumber: 59,
         sessionNumber: 2,
         orderInLevel: 2,
@@ -123,6 +126,109 @@ void main() {
 
       expect(captured[0], 'L1_J30_S2');
       expect(captured[1], 2);
+    },
+  );
+
+  // hibrahem/AlRasikhoon final-review finding #4: the student finishes juz
+  // 30's last lesson, the teacher advances him into juz 29, and only THEN
+  // does he log home practice. The juz must come from the completed
+  // session's OWN record — never the student's CURRENT juz, which by then is
+  // already 29 and would file the practice under a session that does not
+  // exist ('L1_J30_S66' logged with juz_number: 29).
+  test(
+    'addPractice takes the juz from the completed record, not the student\'s '
+    'CURRENT juz, across a juz boundary',
+    () async {
+      // The teacher completed the LAST session of juz 30 and advanced the
+      // student into juz 29 — the student's CURRENT juz is already 29.
+      final student = StudentModel(
+        id: 'student-1',
+        userId: 'user-1',
+        instituteId: 'institute-1',
+        currentLevel: 1,
+        currentJuz: 29,
+        currentSession: 1,
+        currentHizb: 57,
+        currentSessionId: 'L1_J29_S1',
+        createdAt: DateTime(2026, 1, 1),
+      );
+
+      // The record of the session that was just completed — still juz 30.
+      final completedRecord = SessionRecordModel(
+        id: 'record-j30-last',
+        studentId: 'student-1',
+        teacherId: 'teacher-1',
+        curriculumSessionId: 'L1_J30_S66',
+        levelId: 1,
+        kind: SessionKind.lesson,
+        juzNumber: 30,
+        hizbNumber: 60,
+        sessionNumber: 66,
+        orderInLevel: 66,
+        date: DateTime(2026, 1, 1),
+        attemptNumber: 1,
+        grades: const SessionGrades(
+          newMemorizationErrors: 0,
+          recentReviewErrors: 0,
+          distantReviewErrors: 0,
+        ),
+        passed: true,
+        repetitionsWithTeacher: 5,
+        homeRepetitionsRequired: 10,
+        createdAt: DateTime(2026, 1, 1),
+      );
+
+      when(
+        () => mockSessionRepository.getLatestSessionRecord('student-1'),
+      ).thenAnswer((_) async => completedRecord);
+
+      when(
+        () => mockHomePracticeRepository.createHomePractice(
+          studentId: any(named: 'studentId'),
+          curriculumSessionId: any(named: 'curriculumSessionId'),
+          levelId: any(named: 'levelId'),
+          juzNumber: any(named: 'juzNumber'),
+          hizbNumber: any(named: 'hizbNumber'),
+          sessionNumber: any(named: 'sessionNumber'),
+          repetitions: any(named: 'repetitions'),
+          notes: any(named: 'notes'),
+        ),
+      ).thenAnswer((_) async => 'practice-1');
+
+      final container = ProviderContainer(
+        overrides: [
+          currentStudentProvider.overrideWith((ref) async => student),
+          sessionRepositoryProvider.overrideWithValue(mockSessionRepository),
+          homePracticeRepositoryProvider.overrideWithValue(
+            mockHomePracticeRepository,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final ok = await container
+          .read(homePracticeNotifierProvider.notifier)
+          .addPractice(repetitions: 4);
+
+      expect(ok, isTrue);
+
+      // 30, from the record — NOT 29, the student's current juz. A
+      // regression that reads `student.currentJuz` again would fail this
+      // with 29 instead.
+      final captured = verify(
+        () => mockHomePracticeRepository.createHomePractice(
+          studentId: 'student-1',
+          curriculumSessionId: any(named: 'curriculumSessionId'),
+          levelId: any(named: 'levelId'),
+          juzNumber: captureAny(named: 'juzNumber'),
+          hizbNumber: any(named: 'hizbNumber'),
+          sessionNumber: any(named: 'sessionNumber'),
+          repetitions: 4,
+          notes: any(named: 'notes'),
+        ),
+      ).captured;
+
+      expect(captured.single, 30);
     },
   );
 

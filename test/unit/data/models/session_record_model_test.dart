@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/session_record_model.dart';
 
 void main() {
@@ -256,6 +257,8 @@ void main() {
           teacherId: 'teacher1',
           curriculumSessionId: 'cs1',
           levelId: 1,
+          kind: SessionKind.lesson,
+          juzNumber: 30,
           hizbNumber: 59,
           sessionNumber: 5,
           orderInLevel: 5,
@@ -278,6 +281,8 @@ void main() {
         expect(map['student_id'], 'student1');
         expect(map['teacher_id'], 'teacher1');
         expect(map['level_id'], 1);
+        expect(map['kind'], 'lesson');
+        expect(map['juz_number'], 30);
         expect(map['hizb_number'], 59);
         expect(map['session_number'], 5);
         expect(map['order_in_level'], 5);
@@ -287,6 +292,109 @@ void main() {
         expect(map['home_repetitions_required'], 8);
         expect(map['notes'], 'test');
         expect((map['grades'] as Map)['new_memorization_errors'], 1);
+      });
+    });
+
+    group('kind', () {
+      test('a تلقين record is marked as such, not inferred from a number', () {
+        final record = SessionRecordModel(
+          id: 'r1',
+          studentId: 's1',
+          teacherId: 't1',
+          curriculumSessionId: 'L1_J30_S1',
+          levelId: 1,
+          kind: SessionKind.talqeen,
+          juzNumber: 30,
+          orderInLevel: 1,
+          date: DateTime(2026, 7, 14),
+          attemptNumber: 1,
+          grades: const SessionGrades(
+            newMemorizationErrors: 0,
+            recentReviewErrors: 0,
+            distantReviewErrors: 0,
+          ),
+          passed: true,
+          createdAt: DateTime(2026, 7, 14),
+        );
+
+        expect(record.kind, SessionKind.talqeen);
+        expect(record.isTalqeen, isTrue);
+        expect(record.toFirestore()['kind'], 'talqeen');
+      });
+
+      test('a lesson record is not a تلقين', () {
+        final record = SessionRecordModel(
+          id: 'r2',
+          studentId: 's1',
+          teacherId: 't1',
+          curriculumSessionId: 'L1_J30_S5',
+          levelId: 1,
+          kind: SessionKind.lesson,
+          juzNumber: 30,
+          orderInLevel: 5,
+          date: DateTime(2026, 7, 14),
+          attemptNumber: 1,
+          grades: const SessionGrades(
+            newMemorizationErrors: 0,
+            recentReviewErrors: 0,
+            distantReviewErrors: 0,
+          ),
+          passed: true,
+          createdAt: DateTime(2026, 7, 14),
+        );
+
+        expect(record.isTalqeen, isFalse);
+      });
+
+      test('a record written before `kind` existed falls back to a lesson — '
+          'the only kind that could have been recorded before this field '
+          'shipped', () async {
+        final fakeFirestore = FakeFirebaseFirestore();
+        await fakeFirestore.collection('session_records').doc('old').set({
+          'student_id': 'student1',
+          'teacher_id': 'teacher1',
+          'curriculum_session_id': 'cs1',
+          'order_in_level': 1,
+          'date': Timestamp.now(),
+          'attempt_number': 1,
+          'passed': true,
+          'created_at': Timestamp.now(),
+        });
+
+        final doc = await fakeFirestore
+            .collection('session_records')
+            .doc('old')
+            .get();
+        final record = SessionRecordModel.fromFirestore(doc);
+
+        expect(record.kind, SessionKind.lesson);
+        expect(record.isTalqeen, isFalse);
+      });
+    });
+
+    group('juzNumber', () {
+      test('round-trips through Firestore, copied verbatim', () async {
+        final fakeFirestore = FakeFirebaseFirestore();
+        await fakeFirestore.collection('session_records').doc('r1').set({
+          'student_id': 'student1',
+          'teacher_id': 'teacher1',
+          'curriculum_session_id': 'L1_J29_S1',
+          'kind': 'talqeen',
+          'juz_number': 29,
+          'order_in_level': 67,
+          'date': Timestamp.now(),
+          'attempt_number': 1,
+          'passed': true,
+          'created_at': Timestamp.now(),
+        });
+
+        final doc = await fakeFirestore
+            .collection('session_records')
+            .doc('r1')
+            .get();
+        final record = SessionRecordModel.fromFirestore(doc);
+
+        expect(record.juzNumber, 29);
       });
     });
 
@@ -300,6 +408,8 @@ void main() {
             teacherId: 't1',
             curriculumSessionId: 'L1_J30_S2',
             levelId: 1,
+            kind: SessionKind.lesson,
+            juzNumber: 30,
             sessionNumber: 2,
             orderInLevel: 2,
             date: DateTime(2026, 7, 14),
@@ -329,6 +439,8 @@ void main() {
           studentId: 'a',
           teacherId: 'b',
           curriculumSessionId: 'c',
+          kind: SessionKind.lesson,
+          juzNumber: 30,
           orderInLevel: 1,
           date: DateTime.now(),
           attemptNumber: 1,
@@ -345,6 +457,8 @@ void main() {
           studentId: 'x',
           teacherId: 'y',
           curriculumSessionId: 'z',
+          kind: SessionKind.talqeen,
+          juzNumber: 29,
           orderInLevel: 9,
           date: DateTime.now(),
           attemptNumber: 2,

@@ -21,6 +21,8 @@ void main() {
           teacherId: 'teacher1',
           curriculumSessionId: 'cs1',
           levelId: 1,
+          kind: SessionKind.lesson,
+          juzNumber: 30,
           hizbNumber: 59,
           sessionNumber: 5,
           orderInLevel: 5,
@@ -51,6 +53,8 @@ void main() {
             teacherId: 'teacher1',
             curriculumSessionId: 'cs1',
             levelId: 1,
+            kind: SessionKind.lesson,
+            juzNumber: 30,
             hizbNumber: 59,
             sessionNumber: 5,
             orderInLevel: 5,
@@ -74,6 +78,8 @@ void main() {
             teacherId: 'teacher1',
             curriculumSessionId: 'cs1',
             levelId: 1,
+            kind: SessionKind.lesson,
+            juzNumber: 30,
             hizbNumber: 59,
             sessionNumber: 5,
             orderInLevel: 5,
@@ -99,6 +105,8 @@ void main() {
             teacherId: 'teacher1',
             curriculumSessionId: 'cs1',
             levelId: 9,
+            kind: SessionKind.lesson,
+            juzNumber: 30,
             hizbNumber: 59,
             sessionNumber: 5,
             orderInLevel: 5,
@@ -120,6 +128,8 @@ void main() {
           teacherId: 'teacher1',
           curriculumSessionId: 'cs1',
           levelId: 1,
+          kind: SessionKind.lesson,
+          juzNumber: 30,
           hizbNumber: 59,
           sessionNumber: 5,
           orderInLevel: 5,
@@ -147,6 +157,8 @@ void main() {
           teacherId: 'teacher1',
           curriculumSessionId: 'cs1',
           levelId: 1,
+          kind: SessionKind.lesson,
+          juzNumber: 30,
           hizbNumber: 59,
           sessionNumber: 5,
           orderInLevel: 5,
@@ -172,6 +184,8 @@ void main() {
             teacherId: 'teacher1',
             curriculumSessionId: 'L1_J30_S1',
             levelId: 1,
+            kind: SessionKind.talqeen,
+            juzNumber: 30,
             hizbNumber: 59,
             sessionNumber: 1,
             orderInLevel: 1,
@@ -207,6 +221,8 @@ void main() {
             teacherId: 'teacher1',
             curriculumSessionId: 'L1_J30_S1',
             levelId: 1,
+            kind: SessionKind.talqeen,
+            juzNumber: 30,
             sessionNumber: 1,
             orderInLevel: 1,
             repetitionsWithTeacher: 3,
@@ -218,6 +234,8 @@ void main() {
             teacherId: 'teacher1',
             curriculumSessionId: 'L1_J30_S2',
             levelId: 1,
+            kind: SessionKind.talqeen,
+            juzNumber: 30,
             sessionNumber: 2,
             orderInLevel: 2,
             repetitionsWithTeacher: 2,
@@ -265,6 +283,8 @@ void main() {
           teacherId: 'teacher1',
           curriculumSessionId: 'L1_J30_S1',
           levelId: 1,
+          kind: SessionKind.talqeen,
+          juzNumber: 30,
           sessionNumber: 1,
           orderInLevel: 1,
           repetitionsWithTeacher: 1,
@@ -276,6 +296,8 @@ void main() {
           teacherId: 'teacher1',
           curriculumSessionId: 'L1_J30_S3',
           levelId: 1,
+          kind: SessionKind.talqeen,
+          juzNumber: 30,
           sessionNumber: 3,
           orderInLevel: 3,
           repetitionsWithTeacher: 1,
@@ -775,6 +797,61 @@ void main() {
         expect(stats['passed_sards'], 1);
         expect(stats['total_exams'], 1);
         expect(stats['passed_exams'], 0);
+      });
+
+      // hibrahem/AlRasikhoon final-review finding #3: a تلقين record used to
+      // write `passed: true` with no `kind` to tell it apart, so it inflated
+      // `total_sessions`/`passed_sessions` with a phantom pass — a student
+      // who failed every lesson of a unit but sat its تلقين would show one
+      // pass instead of zero.
+      test('a تلقين is attendance, not a graded pass — it must not inflate '
+          'total_sessions/passed_sessions', () async {
+        // 6 failed lessons.
+        for (var i = 1; i <= 6; i++) {
+          await sessionRepository.createSessionRecord(
+            studentId: 'student1',
+            teacherId: 'teacher1',
+            curriculumSessionId: 'L1_J30_S$i',
+            levelId: 1,
+            kind: SessionKind.lesson,
+            juzNumber: 30,
+            hizbNumber: 59,
+            sessionNumber: i,
+            orderInLevel: i,
+            attemptNumber: 1,
+            newMemorizationErrors: 5, // محب at level 1 — always fails
+            recentReviewErrors: 0,
+            distantReviewErrors: 0,
+            repetitionsWithTeacher: 0,
+            homeRepetitionsRequired: 0,
+          );
+        }
+
+        // The unit's تلقين — never graded, always "passes" unconditionally
+        // by contract, but that is attendance, not a graded outcome.
+        await sessionRepository.createTalqeenRecord(
+          studentId: 'student1',
+          teacherId: 'teacher1',
+          curriculumSessionId: 'L1_J30_S7',
+          levelId: 1,
+          kind: SessionKind.talqeen,
+          juzNumber: 30,
+          hizbNumber: 59,
+          sessionNumber: 7,
+          orderInLevel: 7,
+          repetitionsWithTeacher: 4,
+          homeRepetitionsRequired: 10,
+        );
+
+        final stats = await sessionRepository.getStudentStatistics('student1');
+
+        // 6, not 7 — the تلقين record must not be counted as a session at
+        // all for these purposes.
+        expect(stats['total_sessions'], 6);
+        // 0, not 1 — the تلقين's unconditional `passed: true` must not
+        // read as a graded pass.
+        expect(stats['passed_sessions'], 0);
+        expect(stats['session_pass_rate'], 0);
       });
 
       test('returns zero rates for student with no records', () async {
