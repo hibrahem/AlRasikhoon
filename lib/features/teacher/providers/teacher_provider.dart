@@ -10,7 +10,8 @@ import '../../../data/models/session_record_model.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/user_provider.dart';
-import '../../../shared/providers/meeting_provider.dart' show composeMeetingFor;
+import '../../../shared/providers/meeting_provider.dart'
+    show composeMeetingFor, composeNextMeetingAfter;
 
 /// Provider for teacher's students
 final teacherStudentsProvider = FutureProvider<List<StudentWithUser>>((
@@ -106,6 +107,25 @@ final studentCurrentMeetingProvider =
 
       return composeMeetingFor(ref, studentAsync.student);
     });
+
+/// The meeting to PREVIEW after the active session — the passage the teacher
+/// recites (تلقين) with the student before closing. Recomposed from the
+/// student's live pace like every other meeting. Null when there is no active
+/// meeting, the student can't be resolved, or the active meeting is the last
+/// in the level.
+final activeSessionNextMeetingProvider = FutureProvider<PacedSession?>((
+  ref,
+) async {
+  final active = ref.watch(activeSessionProvider);
+  final meeting = active?.meeting;
+  if (active == null || meeting == null) return null;
+
+  final studentAsync = ref.watch(studentProvider(active.studentId));
+  final student = studentAsync.value?.student;
+  if (student == null) return null;
+
+  return composeNextMeetingAfter(ref, student, meeting);
+});
 
 /// Session state for recording a session
 class ActiveSessionState {
