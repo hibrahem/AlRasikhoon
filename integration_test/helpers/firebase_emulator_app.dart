@@ -16,6 +16,7 @@
 ///      emulator needs `--dart-define=EMULATOR_HOST=10.0.2.2`.)
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -261,11 +262,16 @@ class EmulatorTestEnvironment {
 
   /// Adds a student standing on the curriculum session [sessionId] — their
   /// position is copied from that session document, exactly as production does.
+  /// [teacherId] is what a TEACHER-scoped provider resolves the student
+  /// through (`getStudentsForTeacher`). Left null the student is unassigned,
+  /// which is a real shape (supervisor-created students, AgDR-0003) but is
+  /// invisible to every teacher screen.
   Future<String> addStudentRecord({
     String id = 'student_record_emu',
     required String userId,
     required String instituteId,
     String sessionId = 'L1_J30_S1',
+    String? teacherId,
   }) async {
     final doc = await firestore.collection('sessions').doc(sessionId).get();
     if (!doc.exists) {
@@ -273,45 +279,112 @@ class EmulatorTestEnvironment {
     }
     final session = SessionModel.fromFirestore(doc);
 
-    // Rules require `isTeacher()` to create student rows. The seed account
-    // sits at role=super_admin so it can write institutes/levels/sessions;
-    // flip to teacher just for this write, then flip back.
-    await _withSeedRole('teacher', () async {
-      await firestore.collection('students').doc(id).set({
-        'user_id': userId,
-        'institute_id': instituteId,
-        'teacher_id': null,
-        'current_level': session.levelId,
-        'current_juz': session.juzNumber,
-        'current_session': session.sessionNumber,
-        'current_order_in_level': session.orderInLevel,
-        'current_hizb': session.hizbNumber,
-        'current_session_id': session.id,
-        'current_session_kind': session.kind.value,
-        'current_session_tier': session.scope?.tier.value,
-        'current_session_label_ar': session.scope?.labelAr,
-        'current_attempt': 1,
-        'unlocked_levels': [1],
-        'completed_levels': [],
-        'is_active': true,
-        'created_at': Timestamp.now(),
-      });
+    // Written through the emulator's admin endpoint, which bypasses the rules.
+    //
+    // The `students` create rule requires `isTeacher()` — and a super_admin is
+    // NOT a teacher, so the seed account cannot satisfy it. This used to be
+    // worked around by flipping the seed account's role to `teacher` for the
+    // write and back afterwards, but that is a ONE-WAY DOOR against the current
+    // rules: only a super_admin may change a role, so the moment the account
+    // demoted itself it could no longer promote itself back, and the restore
+    // failed with `permission-denied` (al_rasikhoon-5mc).
+    //
+    // The rule is right — freezing `role` on a self-update is what stops a
+    // supervisor promoting themselves to super_admin. It is the SEEDING that
+    // was wrong: it should not be subject to the rules it is seeding around.
+    await seedDocument('students', id, {
+      'user_id': userId,
+      'institute_id': instituteId,
+      'teacher_id': teacherId,
+      'current_level': session.levelId,
+      'current_juz': session.juzNumber,
+      'current_session': session.sessionNumber,
+      'current_order_in_level': session.orderInLevel,
+      'current_hizb': session.hizbNumber,
+      'current_session_id': session.id,
+      'current_session_kind': session.kind.value,
+      'current_session_tier': session.scope?.tier.value,
+      'current_session_label_ar': session.scope?.labelAr,
+      'current_attempt': 1,
+      'unlocked_levels': [1],
+      'completed_levels': <int>[],
+      'is_active': true,
+      'created_at': DateTime.now(),
     });
     return id;
   }
 
-  /// Temporarily swaps the seed account's role for a single write that the
-  /// default super_admin role can't satisfy. The `users.update` rule allows
-  /// `request.auth.uid == userId`, so the seed account can re-role itself.
-  Future<void> _withSeedRole(String role, Future<void> Function() body) async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-    final ref = firestore.collection('users').doc(uid);
-    await ref.update({'role': role});
+  /// Writes `<collection>/<docId>` straight into the emulator, bypassing
+  /// `firestore.rules`.
+  ///
+  /// Seeding is not the thing under test — the app's behaviour is — so a seed
+  /// write has no business being blocked by a rule written to constrain the
+  /// APP. The emulator honours `Authorization: Bearer owner` as a full-access
+  /// token, the same escape hatch [clearEmulatorFirestore] already uses.
+  ///
+  /// Reach for this whenever a seed write cannot be satisfied by any single
+  /// role — never re-role the seed account to get past a rule.
+  Future<void> seedDocument(
+    String collection,
+    String docId,
+    Map<String, Object?> fields,
+  ) async {
+    final uri = Uri.parse(
+      'http://$_emulatorHost:8080/v1/projects/$_projectId/databases/(default)'
+      '/documents/$collection?documentId=$docId',
+    );
+    final body = jsonEncode({
+      'fields': fields.map((k, v) => MapEntry(k, _toFirestoreValue(v))),
+    });
+
+    final client = HttpClient();
     try {
-      await body();
+      final req = await client.postUrl(uri);
+      req.headers.set(HttpHeaders.authorizationHeader, 'Bearer owner');
+      req.headers.contentType = ContentType.json;
+      req.write(body);
+      final resp = await req.close();
+      final text = await resp.transform(const Utf8Decoder()).join();
+      if (resp.statusCode != 200) {
+        throw StateError(
+          'Seeding $collection/$docId failed: HTTP ${resp.statusCode} — $text',
+        );
+      }
     } finally {
-      await ref.update({'role': 'super_admin'});
+      client.close();
     }
+  }
+
+  /// Encodes a Dart value into Firestore's REST `Value` union.
+  static Map<String, Object?> _toFirestoreValue(Object? value) {
+    if (value == null) return {'nullValue': null};
+    if (value is bool) return {'booleanValue': value};
+    // `integerValue` is a STRING in the REST encoding — an int64 does not
+    // survive JSON's number type.
+    if (value is int) return {'integerValue': '$value'};
+    if (value is double) return {'doubleValue': value};
+    if (value is String) return {'stringValue': value};
+    if (value is DateTime) {
+      return {'timestampValue': value.toUtc().toIso8601String()};
+    }
+    if (value is Timestamp) {
+      return {'timestampValue': value.toDate().toUtc().toIso8601String()};
+    }
+    if (value is List) {
+      return {
+        'arrayValue': {'values': value.map(_toFirestoreValue).toList()},
+      };
+    }
+    if (value is Map) {
+      return {
+        'mapValue': {
+          'fields': value.map(
+            (k, v) => MapEntry('$k', _toFirestoreValue(v)),
+          ),
+        },
+      };
+    }
+    throw ArgumentError.value(value, 'value', 'Unsupported seed field type');
   }
 
   /// Seeds the same real-shaped level / session docs that the fake-Firestore
