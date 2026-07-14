@@ -7,7 +7,7 @@ import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_counter.dart';
-import '../providers/supervisor_provider.dart';
+import '../providers/teacher_provider.dart';
 
 class SardSessionScreen extends ConsumerStatefulWidget {
   final String studentId;
@@ -23,17 +23,16 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Sard is supervisor-only (#29). Resolve the student through the
-    // supervisor's institute scope (AgDR-0003) so supervisor-created students
-    // (teacher_id: null) resolve — the teacher-scoped studentProvider would
-    // return "Student not found" for them (#45).
+    // سرد is conducted by the TEACHER (al_rasikhoon-801). The student resolves
+    // through the teacher-scoped studentProvider, the same lookup the rest of
+    // the teacher's session flow uses.
     //
     // WHAT is being recited comes from the curriculum session the student
     // stands on: its verbatim label and its tier. A juz-tier سرد covers a whole
     // juz and a cumulative one the whole level, so neither can be called "the
     // hizb".
     final sessionAsync = ref.watch(
-      supervisorStudentCurrentSessionProvider(widget.studentId),
+      studentCurrentSessionProvider(widget.studentId),
     );
 
     return Scaffold(

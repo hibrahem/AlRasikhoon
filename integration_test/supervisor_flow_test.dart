@@ -1,9 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:al_rasikhoon/data/repositories/student_repository.dart';
-import 'package:al_rasikhoon/domain/curriculum/curriculum_position.dart';
 
 import 'helpers/test_app.dart';
 import 'helpers/test_robots.dart';
@@ -73,9 +69,9 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        // Standing on the juz-30 اختبار — session 70. The queue finds them by
+        // Standing on the juz-30 اختبار — session 68. The queue finds them by
         // their session's KIND, not by a magic number.
-        sessionId: 'L1_J30_S70',
+        sessionId: 'L1_J30_S68',
       );
 
       // Act
@@ -109,7 +105,7 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        sessionId: 'L1_J30_S70',
+        sessionId: 'L1_J30_S68',
       );
 
       // Act
@@ -150,7 +146,7 @@ void main() {
       await env.addStudent(
         userId: studentUser.id,
         instituteId: instituteId,
-        sessionId: 'L1_J30_S70',
+        sessionId: 'L1_J30_S68',
       );
 
       // Act
@@ -191,7 +187,7 @@ void main() {
         await env.addStudent(
           userId: studentUser.id,
           instituteId: instituteId,
-          sessionId: 'L1_J30_S70',
+          sessionId: 'L1_J30_S68',
         );
       }
 
@@ -205,268 +201,6 @@ void main() {
       await supervisorRobot.pumpAndSettle();
       expect(find.text('3'), findsWidgets); // 3 pending exams
     });
-
-    testWidgets(
-      'Supervisor conducts a Sard end-to-end: start → conduct → save (#29 / #45)',
-      (tester) async {
-        // Arrange — full supervisor Sard E2E (regression coverage for #45).
-        //
-        // Sard became supervisor-only in #29, which relocated the Sard routes
-        // into the supervisor shell. #45 fixed two coupled bugs that made the
-        // flow non-functional at runtime despite correct gating:
-        //   1. Cross-shell crash: SupervisorStudentsScreen used to push the
-        //      TEACHER-shell sessionOverview, then "بدء السرد" pushed the
-        //      SUPERVISOR-shell Sard route — a teacher-shell page sandwiched
-        //      between supervisor-shell branches tripped go_router 17's
-        //      duplicate-page-key assertion. It now pushes the supervisor-shell
-        //      session-overview (/supervisor/students/:studentId), so the whole
-        //      flow is ONE shell.
-        //   2. Teacher-scoped student lookup: the screens resolved the student
-        //      via getStudentsForTeacher; supervisor-created students carry
-        //      teacher_id: null (AgDR-0003), so the supervisor got "Student not
-        //      found". The supervisor path now resolves institute-scoped.
-        //
-        // This test drives the previously-crashing path to completion. The
-        // student carries teacher_id: null on purpose — the exact AgDR-0003
-        // shape that used to fail the lookup — proving institute-scoped
-        // resolution works.
-        const instituteId = 'sard_institute_1';
-        final supervisor = env.createSupervisor().copyWith(
-          instituteId: instituteId,
-        );
-        await env.setUp(authenticatedUser: supervisor);
-        await env.addInstitute(id: instituteId);
-        await env.assignSupervisorToInstitute(supervisor.id, instituteId);
-
-        final studentUser = env.createStudent(
-          id: 'sup_sard_student',
-          name: 'طالب سرد المشرف',
-        );
-        await env.fakeFirestore
-            .collection('users')
-            .doc(studentUser.id)
-            .set(studentUser.toFirestore());
-        await env.addStudent(
-          userId: studentUser.id,
-          instituteId: instituteId,
-          // teacher_id: null — a supervisor-created, institute-scoped student
-          // (AgDR-0003). The institute scope matches the supervisor's Students
-          // tab; the institute-scoped lookup (not getStudentsForTeacher) resolves
-          // it. Passing no teacherId leaves it null.
-          // The hizb-59 سرد — session 31 in the real curriculum.
-          sessionId: 'L1_J30_S31',
-        );
-
-        // Act
-        await tester.pumpWidget(TestApp(overrides: env.overrides));
-        supervisorRobot = SupervisorRobot(tester);
-
-        await supervisorRobot.verifyDashboard();
-        await supervisorRobot.goToStudents();
-        await supervisorRobot.verifyStudentsScreen();
-        await supervisorRobot.tapStudent('طالب سرد المشرف');
-        await supervisorRobot.verifySessionOverview();
-
-        // The supervisor gets the Sard start action; teacher-only notice absent.
-        await supervisorRobot.verifySardAvailableForSupervisor();
-
-        // Drive the full Sard to completion — this is the path that used to
-        // crash (cross-shell push) before #45. No "Student not found", no crash.
-        await supervisorRobot.startSard();
-        await supervisorRobot.verifySardSession();
-        await supervisorRobot.enterSardErrors(2);
-        await supervisorRobot.finishSard();
-        await supervisorRobot.verifySardResult();
-        await supervisorRobot.saveSardResult();
-
-        // Assert — the Sard saved successfully end-to-end.
-        await supervisorRobot.verifySardSaved();
-      },
-    );
-
-    testWidgets(
-      'a student placed on a JUZ-tier Sard is assessed with no prior sessions '
-      '(#flexible-start)',
-      (tester) async {
-        // A student arrives having already memorized juz 30, and is placed
-        // directly on its juz-tier سرد — an assessment that belongs to NO hizb
-        // and that the old model (hizb → 36 sessions, 35 = سرد) could not even
-        // name. The app taught them none of it — they hold zero session records
-        // — and the supervisor must still be able to assess them.
-        const instituteId = 'placed_institute';
-        final supervisor = env.createSupervisor().copyWith(
-          instituteId: instituteId,
-        );
-        await env.setUp(authenticatedUser: supervisor);
-        await env.addInstitute(id: instituteId);
-        await env.assignSupervisorToInstitute(supervisor.id, instituteId);
-
-        // Place the student through the production path, not a seeded document.
-        // The session they are placed on — L1_J30_S69, the juz-30 سرد — is one
-        // the seeded curriculum really contains.
-        final container = ProviderContainer(overrides: env.overrides.cast());
-        addTearDown(container.dispose);
-        final created = await container
-            .read(studentRepositoryProvider)
-            .createStudent(
-              name: 'طالب حافظ',
-              username: 'placed_student',
-              password: 'secret123',
-              instituteId: instituteId,
-              // teacher_id stays null: an institute-scoped student (AgDR-0003).
-              startingPosition: const CurriculumPosition(
-                level: 1,
-                juz: 30,
-                session: 69,
-              ),
-            );
-
-        // The anchor, and the facts copied from the curriculum, are persisted.
-        final doc = await env.fakeFirestore
-            .collection('students')
-            .doc(created.student.id)
-            .get();
-        expect(doc.data()?['current_level'], 1);
-        expect(doc.data()?['current_juz'], 30);
-        expect(doc.data()?['current_session'], 69);
-        expect(doc.data()?['current_session_id'], 'L1_J30_S69');
-        expect(doc.data()?['current_session_kind'], 'sard');
-        // A juz-tier سرد has no hizb at all — and the student's label is null,
-        // not a fabricated 59.
-        expect(doc.data()?['current_session_tier'], 'juz');
-        expect(doc.data()?['current_hizb'], isNull);
-        expect(doc.data()?['enrollment_position'], {
-          'level': 1,
-          'juz': 30,
-          'session': 69,
-        });
-
-        // They hold no session records at all — nothing was taught in the app.
-        final records = await env.fakeFirestore
-            .collection('session_records')
-            .where('student_id', isEqualTo: created.student.id)
-            .get();
-        expect(records.docs, isEmpty);
-
-        // The supervisor conducts their سرد end-to-end regardless.
-        await tester.pumpWidget(TestApp(overrides: env.overrides));
-        supervisorRobot = SupervisorRobot(tester);
-
-        await supervisorRobot.verifyDashboard();
-        await supervisorRobot.goToStudents();
-        await supervisorRobot.verifyStudentsScreen();
-        await supervisorRobot.tapStudent('طالب حافظ');
-        await supervisorRobot.verifySessionOverview();
-        await supervisorRobot.verifySardAvailableForSupervisor();
-
-        await supervisorRobot.startSard();
-        await supervisorRobot.verifySardSession();
-
-        // The supervisor can SEE what is being assessed: the curriculum's own
-        // words for it — a whole juz, not "the hizb".
-        expect(
-          find.text('سرد الجزء رقم 30 كاملًا على المحفظ المتابع'),
-          findsWidgets,
-        );
-
-        await supervisorRobot.enterSardErrors(2);
-        await supervisorRobot.finishSard();
-        await supervisorRobot.verifySardResult();
-        await supervisorRobot.saveSardResult();
-
-        await supervisorRobot.verifySardSaved();
-
-        // And the record carries the assessment's SCOPE — the thing a
-        // hizb-keyed record could never represent.
-        final sardRecords = await env.fakeFirestore
-            .collection('sard_records')
-            .where('student_id', isEqualTo: created.student.id)
-            .get();
-        expect(sardRecords.docs, hasLength(1));
-        final sard = sardRecords.docs.first.data();
-        expect(sard['curriculum_session_id'], 'L1_J30_S69');
-        expect(sard['tier'], 'juz');
-        expect(sard['juz_numbers'], [30]);
-        expect(sard['hizb_number'], isNull);
-        expect(
-          sard['scope_label_ar'],
-          'سرد الجزء رقم 30 كاملًا على المحفظ المتابع',
-        );
-      },
-    );
-
-    testWidgets(
-      'a supervisor conducts a CUMULATIVE (level-tier) Sard: the label names '
-      'all three juz, and the record persists them',
-      (tester) async {
-        // The last سرد of level 1 covers juz 28, 29 AND 30 — the level entire.
-        // Nothing about it can be expressed as "the hizb".
-        const instituteId = 'cumulative_institute';
-        final supervisor = env.createSupervisor().copyWith(
-          instituteId: instituteId,
-        );
-        await env.setUp(authenticatedUser: supervisor);
-        await env.addInstitute(id: instituteId);
-        await env.assignSupervisorToInstitute(supervisor.id, instituteId);
-
-        final studentUser = env.createStudent(
-          id: 'cumulative_student',
-          name: 'طالب السرد التراكمي',
-        );
-        await env.fakeFirestore
-            .collection('users')
-            .doc(studentUser.id)
-            .set(studentUser.toFirestore());
-        final studentId = await env.addStudent(
-          userId: studentUser.id,
-          instituteId: instituteId,
-          sessionId: 'L1_J28_S68', // the level's cumulative سرد
-        );
-
-        await tester.pumpWidget(TestApp(overrides: env.overrides));
-        supervisorRobot = SupervisorRobot(tester);
-
-        await supervisorRobot.verifyDashboard();
-        await supervisorRobot.goToStudents();
-        await supervisorRobot.verifyStudentsScreen();
-        await supervisorRobot.tapStudent('طالب السرد التراكمي');
-        await supervisorRobot.verifySessionOverview();
-        await supervisorRobot.verifySardAvailableForSupervisor();
-
-        await supervisorRobot.startSard();
-        await supervisorRobot.verifySardSession();
-
-        // The scope is stated verbatim, and the instruction is worded for the
-        // TIER — the whole level, not a hizb.
-        expect(
-          find.text(
-            'سرد المستوى كاملًا الأجزاء رقم 28 ــ  29 ــ 30 على المحفظ المتابع',
-          ),
-          findsWidgets,
-        );
-        expect(find.textContaining('الأجزاء 28 و 29 و 30'), findsWidgets);
-
-        await supervisorRobot.enterSardErrors(1);
-        await supervisorRobot.finishSard();
-        await supervisorRobot.verifySardResult();
-        await supervisorRobot.saveSardResult();
-        await supervisorRobot.verifySardSaved();
-
-        final sardRecords = await env.fakeFirestore
-            .collection('sard_records')
-            .where('student_id', isEqualTo: studentId)
-            .get();
-        expect(sardRecords.docs, hasLength(1));
-        final sard = sardRecords.docs.first.data();
-        expect(sard['curriculum_session_id'], 'L1_J28_S68');
-        expect(sard['tier'], 'cumulative');
-        expect(sard['juz_numbers'], [28, 29, 30]);
-        expect(
-          sard['scope_label_ar'],
-          'سرد المستوى كاملًا الأجزاء رقم 28 ــ  29 ــ 30 على المحفظ المتابع',
-        );
-      },
-    );
 
     testWidgets(
       'a supervisor conducts a JUZ-tier اختبار from the queue: the label names '
@@ -491,10 +225,10 @@ void main() {
         final studentId = await env.addStudent(
           userId: studentUser.id,
           instituteId: instituteId,
-          // The juz-30 اختبار is session 70. The queue finds them because their
+          // The juz-30 اختبار is session 68. The queue finds them because their
           // session's KIND is `exam` — the old `current_session == 36` filter
           // would have found nobody.
-          sessionId: 'L1_J30_S70',
+          sessionId: 'L1_J30_S68',
         );
 
         await tester.pumpWidget(TestApp(overrides: env.overrides));
@@ -524,7 +258,7 @@ void main() {
             .get();
         expect(examRecords.docs, hasLength(1));
         final exam = examRecords.docs.first.data();
-        expect(exam['curriculum_session_id'], 'L1_J30_S70');
+        expect(exam['curriculum_session_id'], 'L1_J30_S68');
         expect(exam['tier'], 'juz');
         expect(exam['juz_numbers'], [30]);
         expect(exam['hizb_number'], isNull);
@@ -561,7 +295,7 @@ void main() {
       await env.addStudent(
         userId: assignedStudent.id,
         instituteId: assignedInstitute,
-        sessionId: 'L1_J30_S70',
+        sessionId: 'L1_J30_S68',
       );
 
       // Create student in other institute
@@ -576,7 +310,7 @@ void main() {
       await env.addStudent(
         userId: otherStudent.id,
         instituteId: otherInstitute,
-        sessionId: 'L1_J30_S70',
+        sessionId: 'L1_J30_S68',
       );
 
       // Act

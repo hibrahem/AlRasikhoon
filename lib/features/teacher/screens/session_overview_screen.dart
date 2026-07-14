@@ -10,7 +10,6 @@ import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/student_level_progress.dart';
-import '../../../shared/providers/user_provider.dart';
 import '../../supervisor/providers/supervisor_provider.dart';
 import '../providers/teacher_provider.dart';
 
@@ -154,17 +153,16 @@ class SessionOverviewScreen extends ConsumerWidget {
                     }
 
                     if (session.isSard) {
-                      // Sard (السرد) is supervisor-only (#29). This screen is
-                      // shared by teacher and supervisor students lists, so the
-                      // entry point is gated by role: supervisors get the
-                      // "Start Sard" action; teachers see a read-only notice
-                      // and cannot start or navigate to a Sard session.
-                      final isSupervisor = ref.watch(isSupervisorProvider);
+                      // سرد is conducted by the TEACHER (al_rasikhoon-801).
+                      // This screen is still reachable by a supervisor via the
+                      // institute-scoped students list, so the entry point is
+                      // gated: the teacher gets the "بدء السرد" action, the
+                      // supervisor a read-only notice.
                       return _buildSardCard(
                         context,
                         session,
                         studentId,
-                        isSupervisor,
+                        !asSupervisor,
                       );
                     }
 
@@ -437,7 +435,7 @@ class SessionOverviewScreen extends ConsumerWidget {
     BuildContext context,
     SessionModel session,
     String studentId,
-    bool isSupervisor,
+    bool canConductSard,
   ) {
     return AppCard(
       backgroundColor: AppColors.info.withValues(alpha: 0.05),
@@ -477,13 +475,12 @@ class SessionOverviewScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
-          // Sard (السرد) is supervisor-only (#29). A teacher sees a read-only
-          // notice — no "Start Sard" action, no navigation. Only a supervisor
-          // gets the action. Assessments have UNLIMITED retries, so there is no
-          // attempt cap to gate on here — a student who cannot yet recite a juz
-          // keeps working at it.
-          if (!isSupervisor)
-            _buildSardSupervisorOnlyMessage(context)
+          // سرد is teacher-conducted (al_rasikhoon-801). A supervisor viewing
+          // this student sees a read-only notice — no action, no navigation.
+          // Assessments have UNLIMITED retries, so there is no attempt cap to
+          // gate on here — a student who cannot yet recite a juz keeps at it.
+          if (!canConductSard)
+            _buildSardTeacherOnlyMessage(context)
           else
             AppButton(
               text: 'بدء السرد',
@@ -501,7 +498,7 @@ class SessionOverviewScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSardSupervisorOnlyMessage(BuildContext context) {
+  Widget _buildSardTeacherOnlyMessage(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -514,7 +511,7 @@ class SessionOverviewScreen extends ConsumerWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'السرد يُجرى مع المشرف فقط',
+              'السرد يُجرى مع المعلم',
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(color: AppColors.warning),

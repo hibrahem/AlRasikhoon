@@ -454,15 +454,80 @@ class TeacherRobot extends TestRobot {
     await scrollAndTapByText('حفظ وإنهاء الحلقة');
   }
 
-  /// Verify the teacher is blocked from conducting Sard (#29 / #44).
+  /// Verify the teacher is offered the Sard entry point (al_rasikhoon-801).
   ///
-  /// At a سرد a teacher sees a read-only notice and the
-  /// "بدء السرد" action is absent — Sard is supervisor-only. This asserts both
-  /// the presence of the notice and the absence of the start button.
-  Future<void> verifySardBlockedForTeacher() async {
+  /// سرد is conducted by the TEACHER. The "بدء السرد" action can sit below the
+  /// fold on smaller screens, so scroll it into view before asserting.
+  Future<void> verifySardAvailableForTeacher() async {
     await pumpAndSettle();
-    expect(find.text('السرد يُجرى مع المشرف فقط'), findsOneWidget);
-    expect(find.text('بدء السرد'), findsNothing);
+    final startButton = find.text('بدء السرد');
+    await tester.scrollUntilVisible(
+      startButton,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await pumpAndSettle();
+    expect(startButton, findsOneWidget);
+  }
+
+  /// Start the Sard session from the session overview. Stays entirely inside
+  /// the teacher shell.
+  Future<void> startSard() async {
+    final startButton = find.text('بدء السرد');
+    await tester.scrollUntilVisible(
+      startButton,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await pumpAndSettle();
+    await tester.tap(startButton);
+    await pumpAndSettle();
+  }
+
+  /// Verify the Sard session screen is showing.
+  Future<void> verifySardSession() async {
+    await pumpAndSettle();
+    expect(find.text('السرد'), findsWidgets);
+  }
+
+  /// Enter Sard errors by tapping the ErrorCounter add button N times.
+  Future<void> enterSardErrors(int errors) async {
+    for (int i = 0; i < errors; i++) {
+      final addButtons = find.byIcon(Icons.add);
+      await tester.tap(addButtons.last);
+      await pumpAndSettle();
+    }
+  }
+
+  /// Finish the Sard and navigate to the result screen.
+  Future<void> finishSard() async {
+    await tapByText('إنهاء السرد');
+  }
+
+  /// Verify the Sard result screen is showing.
+  Future<void> verifySardResult() async {
+    await pumpAndSettle();
+    expect(find.text('نتيجة السرد'), findsOneWidget);
+  }
+
+  /// Save the Sard result. Stops one pump short of settling so the success
+  /// snackbar is still on-screen for the assertion (it auto-dismisses).
+  Future<void> saveSardResult() async {
+    final finder = find.text('حفظ النتيجة');
+    await tester.scrollUntilVisible(
+      finder,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await pumpAndSettle();
+    await tester.tap(finder);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+  }
+
+  /// Verify the Sard was saved (success snackbar — passing or failing).
+  Future<void> verifySardSaved() async {
+    expect(find.textContaining('تم حفظ السرد'), findsOneWidget);
   }
 
   // --- Bottom nav (al_rasikhoon-256) ---------------------------------------
@@ -739,9 +804,10 @@ class SupervisorRobot extends TestRobot {
     expect(find.textContaining('راسب'), findsOneWidget);
   }
 
-  // --- Sard (السرد) flow — supervisor-only since #29 (relocated here in #44).
-  // Sard is conducted from the supervisor's institute-scoped Students tab:
-  // Students → tap student → session overview → "بدء السرد" → Sard → result.
+  // Sard (السرد) is now conducted from the TEACHER's Students tab
+  // (al_rasikhoon-801, reversing #29). See TeacherRobot for the Sard flow.
+  // The supervisor keeps only the roster helpers below — Task 3 still needs
+  // them for the supervisor's own institute-scoped students list.
 
   /// Navigate to the supervisor's institute-scoped Students tab via bottom nav.
   Future<void> goToStudents() async {
@@ -773,95 +839,5 @@ class SupervisorRobot extends TestRobot {
   /// Tap on a student to open their session overview.
   Future<void> tapStudent(String name) async {
     await tapByText(name);
-  }
-
-  /// Verify the session overview screen.
-  Future<void> verifySessionOverview() async {
-    await pumpAndSettle();
-    expect(find.textContaining('الحلقة'), findsWidgets);
-  }
-
-  /// Verify the supervisor is offered the Sard entry point (#29 / #44).
-  ///
-  /// At a سرد a supervisor sees the "بدء السرد" action and does
-  /// NOT see the teacher-only read-only notice — the exact inverse of
-  /// [TeacherRobot.verifySardBlockedForTeacher]. The button can sit below the
-  /// fold on smaller emulator screens, so scroll it into view before asserting.
-  Future<void> verifySardAvailableForSupervisor() async {
-    await pumpAndSettle();
-    final startButton = find.text('بدء السرد');
-    await tester.scrollUntilVisible(
-      startButton,
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await pumpAndSettle();
-    expect(startButton, findsOneWidget);
-    expect(find.text('السرد يُجرى مع المشرف فقط'), findsNothing);
-  }
-
-  /// Start the Sard session from the session overview (#45).
-  /// Scrolls the "بدء السرد" action into view (it can sit below the fold on
-  /// smaller emulator screens) then taps it. After this the app navigates,
-  /// entirely within the supervisor shell, to the Sard session screen.
-  Future<void> startSard() async {
-    final startButton = find.text('بدء السرد');
-    await tester.scrollUntilVisible(
-      startButton,
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await pumpAndSettle();
-    await tester.tap(startButton);
-    await pumpAndSettle();
-  }
-
-  /// Verify the Sard session screen is showing.
-  Future<void> verifySardSession() async {
-    await pumpAndSettle();
-    expect(find.text('السرد'), findsWidgets);
-  }
-
-  /// Enter Sard errors by tapping the ErrorCounter add button N times.
-  /// The Sard session screen uses an ErrorCounter widget (like the exam flow).
-  Future<void> enterSardErrors(int errors) async {
-    for (int i = 0; i < errors; i++) {
-      final addButtons = find.byIcon(Icons.add);
-      await tester.tap(addButtons.last);
-      await pumpAndSettle();
-    }
-  }
-
-  /// Finish the Sard and navigate to the result screen.
-  Future<void> finishSard() async {
-    await tapByText('إنهاء السرد');
-  }
-
-  /// Verify the Sard result screen is showing.
-  Future<void> verifySardResult() async {
-    await pumpAndSettle();
-    expect(find.text('نتيجة السرد'), findsOneWidget);
-  }
-
-  /// Save the Sard result. Stops one pump short of settling so the success
-  /// snackbar is still on-screen for the assertion (it auto-dismisses).
-  Future<void> saveSardResult() async {
-    final finder = find.text('حفظ النتيجة');
-    await tester.scrollUntilVisible(
-      finder,
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await pumpAndSettle();
-    await tester.tap(finder);
-    // Pump enough for the async Firestore write + snackbar, without
-    // pumpAndSettle (which would wait out the snackbar's full duration).
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-  }
-
-  /// Verify the Sard was saved (success snackbar — passing or failing).
-  Future<void> verifySardSaved() async {
-    expect(find.textContaining('تم حفظ السرد'), findsOneWidget);
   }
 }

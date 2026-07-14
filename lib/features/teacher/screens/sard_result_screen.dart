@@ -10,7 +10,7 @@ import '../../../routing/app_router.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/grade_display.dart';
-import '../providers/supervisor_provider.dart';
+import '../providers/teacher_provider.dart';
 
 class SardResultScreen extends ConsumerStatefulWidget {
   final String studentId;
@@ -43,11 +43,11 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
       final currentUser = ref.read(currentUserProvider);
       if (currentUser == null) throw Exception('User not authenticated');
 
-      // Resolve through the supervisor's institute scope (AgDR-0003) — Sard is
-      // supervisor-only (#29), and supervisor-created students have
-      // teacher_id: null, so the teacher-scoped lookup would fail (#45).
+      // سرد is conducted by the TEACHER (al_rasikhoon-801) — resolve the
+      // student through the teacher-scoped lookup, like every other teacher
+      // session flow.
       final studentAsync = await ref.read(
-        supervisorStudentProvider(widget.studentId).future,
+        studentProvider(widget.studentId).future,
       );
       if (studentAsync == null) throw Exception('Student not found');
 
@@ -98,7 +98,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
         await studentRepo.incrementStudentAttempt(student.id);
       }
 
-      // The four outcomes are four different things, and the supervisor is told
+      // The four outcomes are four different things, and the teacher is told
       // which: a pass that MOVED the student, a pass that FINISHED the
       // curriculum, and a pass that could not move them at all (a hole in the
       // seeded data, or a student that vanished) — the last of which must never
@@ -111,10 +111,10 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
       final curriculumCompleted =
           advanceOutcome == StudentAdvanceOutcome.curriculumCompleted;
 
-      // Invalidate the supervisor's institute-scoped providers so the students
-      // list and the resolved student reflect the advanced/incremented state.
-      ref.invalidate(supervisorStudentsProvider);
-      ref.invalidate(supervisorStudentProvider(widget.studentId));
+      // Invalidate the teacher's providers so the students list and the
+      // resolved student reflect the advanced/incremented state.
+      ref.invalidate(teacherStudentsProvider);
+      ref.invalidate(studentProvider(widget.studentId));
 
       if (mounted) {
         final String message;
@@ -139,10 +139,9 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
           SnackBar(content: Text(message), backgroundColor: background),
         );
 
-        // Navigate back to the supervisor's students list. Sard is a
-        // supervisor-only activity (#29), so we always return to the supervisor
-        // surface, never the teacher students route.
-        context.go(AppRoutes.supervisorStudents);
+        // Back to the teacher's students list — سرد is a teacher activity
+        // (al_rasikhoon-801), so we always return to the teacher surface.
+        context.go(AppRoutes.teacherStudents);
       }
     } catch (e) {
       if (mounted) {
@@ -162,7 +161,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final studentAsync = ref.watch(supervisorStudentProvider(widget.studentId));
+    final studentAsync = ref.watch(studentProvider(widget.studentId));
     // Grade is level-based (hibrahem/AlRasikhoon#22). The level-based grade is
     // only computed once the student value resolves — never from a default
     // level=1 while loading, which would flash a harsher grade (#36).

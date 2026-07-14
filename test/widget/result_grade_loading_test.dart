@@ -7,7 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/features/supervisor/providers/supervisor_provider.dart';
 import 'package:al_rasikhoon/features/supervisor/screens/exam_result_screen.dart';
-import 'package:al_rasikhoon/features/supervisor/screens/sard_result_screen.dart';
+import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
+import 'package:al_rasikhoon/features/teacher/screens/sard_result_screen.dart';
 
 /// Loading-state test for hibrahem/AlRasikhoon#36.
 ///
@@ -35,50 +36,52 @@ void _expectNoGradeWhileLoading(WidgetTester tester) {
 
 void main() {
   group('Result screens withhold grade while student loads (#36)', () {
-    testWidgets('SardResultScreen shows a placeholder, not a grade, while loading',
-        (tester) async {
-      // A never-completing future keeps the provider in the loading state.
-      final pending = Completer<StudentWithUser?>();
-      addTearDown(() => pending.complete(null));
+    testWidgets(
+      'SardResultScreen shows a placeholder, not a grade, while loading',
+      (tester) async {
+        // A never-completing future keeps the provider in the loading state.
+        final pending = Completer<StudentWithUser?>();
+        addTearDown(() => pending.complete(null));
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            // SardResultScreen resolves the student through the supervisor's
-            // institute scope (AgDR-0003 / #45 — Sard is supervisor-only and
-            // its students may have teacher_id: null), so override that
-            // provider, not the teacher-scoped studentProvider.
-            supervisorStudentProvider.overrideWith((ref, id) => pending.future),
-          ],
-          child: const MaterialApp(
-            home: SardResultScreen(studentId: 'student1', errorCount: 3),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              // SardResultScreen resolves its student through the teacher-scoped
+              // studentProvider (سرد is teacher-conducted, al_rasikhoon-801).
+              studentProvider.overrideWith((ref, id) => pending.future),
+            ],
+            child: const MaterialApp(
+              home: SardResultScreen(studentId: 'student1', errorCount: 3),
+            ),
           ),
-        ),
-      );
-      // Do NOT pumpAndSettle — that would wait for the future forever.
-      await tester.pump();
+        );
+        // Do NOT pumpAndSettle — that would wait for the future forever.
+        await tester.pump();
 
-      _expectNoGradeWhileLoading(tester);
-    });
+        _expectNoGradeWhileLoading(tester);
+      },
+    );
 
-    testWidgets('ExamResultScreen shows a placeholder, not a grade, while loading',
-        (tester) async {
-      final pending = Completer<StudentWithUser?>();
-      addTearDown(() => pending.complete(null));
+    testWidgets(
+      'ExamResultScreen shows a placeholder, not a grade, while loading',
+      (tester) async {
+        final pending = Completer<StudentWithUser?>();
+        addTearDown(() => pending.complete(null));
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            examStudentProvider.overrideWith((ref, id) => pending.future),
-          ],
-          child: const MaterialApp(
-            home: ExamResultScreen(studentId: 'student1', errorCount: 3),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              examStudentProvider.overrideWith((ref, id) => pending.future),
+            ],
+            child: const MaterialApp(
+              home: ExamResultScreen(studentId: 'student1', errorCount: 3),
+            ),
           ),
-        ),
-      );
-      await tester.pump();
+        );
+        await tester.pump();
 
-      _expectNoGradeWhileLoading(tester);
-    });
+        _expectNoGradeWhileLoading(tester);
+      },
+    );
   });
 }

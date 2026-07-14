@@ -14,8 +14,8 @@ import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
-import 'package:al_rasikhoon/features/supervisor/providers/supervisor_provider.dart';
-import 'package:al_rasikhoon/features/supervisor/screens/sard_result_screen.dart';
+import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
+import 'package:al_rasikhoon/features/teacher/screens/sard_result_screen.dart';
 import 'package:al_rasikhoon/routing/app_router.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 
@@ -99,12 +99,12 @@ void main() {
       authProvider: UserAuthProvider.emailPassword,
       createdAt: DateTime(2026, 1, 1),
     );
-    final supervisor = UserModel(
-      id: 'sup1',
-      username: 'supervisor',
-      email: 'sup@alrasikhoon.local',
-      name: 'مشرف',
-      role: UserRole.supervisor,
+    final teacher = UserModel(
+      id: 'teacher1',
+      username: 'teacher',
+      email: 'teacher@alrasikhoon.local',
+      name: 'معلم',
+      role: UserRole.teacher,
       instituteId: 'institute1',
       authProvider: UserAuthProvider.emailPassword,
       createdAt: DateTime(2026, 1, 1),
@@ -131,7 +131,7 @@ void main() {
               const SardResultScreen(studentId: 'student1', errorCount: 0),
         ),
         GoRoute(
-          path: AppRoutes.supervisorStudents,
+          path: AppRoutes.teacherStudents,
           builder: (context, state) =>
               const Scaffold(body: Text('قائمة الطلاب')),
         ),
@@ -144,14 +144,14 @@ void main() {
           // The screen resolves the سرد's SCOPE from the curriculum itself, so
           // the curriculum repository must read the same fake Firestore.
           firestoreProvider.overrideWithValue(firestore),
-          currentUserProvider.overrideWithValue(supervisor),
+          currentUserProvider.overrideWithValue(teacher),
           studentRepositoryProvider.overrideWithValue(studentRepository),
           sessionRepositoryProvider.overrideWithValue(sessionRepository),
-          supervisorStudentProvider.overrideWith(
+          studentProvider.overrideWith(
             (ref, id) async =>
                 StudentWithUser(student: student, user: studentUser),
           ),
-          supervisorStudentsProvider.overrideWith((ref) async => []),
+          teacherStudentsProvider.overrideWith((ref) async => []),
         ],
         child: MaterialApp.router(routerConfig: router),
       ),
