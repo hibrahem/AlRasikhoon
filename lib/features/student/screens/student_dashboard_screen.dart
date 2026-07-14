@@ -292,6 +292,72 @@ class _StudentDashboardScreenState
           );
         }
 
+        // The تلقين branch MUST come before isExam/isSard and the regular
+        // lesson fallthrough (see session_overview_screen.dart's identical
+        // ordering): a تلقين is neither graded nor new memorization for the
+        // student to recite alone, and falling through to the lesson card
+        // would tell him to memorize a passage the teacher has not yet read
+        // to him.
+        if (session.isTalqeen) {
+          return AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.record_voice_over,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'تلقين',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          Text(
+                            'الجزء ${session.juzNumber}',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'المقطع الجديد',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  session.currentLevelContent?.rangeAr ?? '',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'سيقرأ المعلّم هذا المقطع معك ويكرره معك. لا حفظ عليك ولا '
+                  'تسميع ولا تقييم في هذه الحلقة.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          );
+        }
+
         if (session.isExam) {
           return AppCard(
             backgroundColor: AppColors.secondary.withValues(alpha: 0.05),
