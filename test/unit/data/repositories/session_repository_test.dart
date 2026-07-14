@@ -3,6 +3,73 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/repositories/session_repository.dart';
+import 'package:al_rasikhoon/domain/curriculum/curriculum_pace.dart';
+import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
+
+/// A one-session meeting standing in for whatever `PacedSessionComposer`
+/// would have produced — these tests exercise `SessionRepository`, not
+/// composition, so the content blocks are irrelevant and left empty.
+PacedSession _meeting({
+  required String id,
+  required int sessionNumber,
+  required int orderInLevel,
+  int levelId = 1,
+  SessionKind kind = SessionKind.lesson,
+}) {
+  final session = SessionModel(
+    id: id,
+    levelId: levelId,
+    juzNumber: 30,
+    sessionNumber: sessionNumber,
+    orderInLevel: orderInLevel,
+    kind: kind,
+  );
+  return PacedSession(
+    sessions: [session],
+    newContent: const [],
+    recentReview: const [],
+    distantReview: const [],
+  );
+}
+
+/// A genuine TWO-session meeting — what a 2x student's batch produces — so
+/// the batching derivations in `createSessionRecord`/`createTalqeenRecord`
+/// (which session names the record, whose `orderInLevel` is `from`/`to`,
+/// what `coversSessionIds` holds) are exercised on more than one session.
+/// `_meeting`, being single-session, cannot tell `.last` from `.first` or a
+/// real span from a degenerate one-element one.
+PacedSession _twoSessionMeeting({
+  required String firstId,
+  required String secondId,
+  required int firstOrderInLevel,
+  required int firstSessionNumber,
+  int levelId = 1,
+}) {
+  final sessions = [
+    SessionModel(
+      id: firstId,
+      levelId: levelId,
+      juzNumber: 30,
+      sessionNumber: firstSessionNumber,
+      orderInLevel: firstOrderInLevel,
+      kind: SessionKind.lesson,
+    ),
+    SessionModel(
+      id: secondId,
+      levelId: levelId,
+      juzNumber: 30,
+      sessionNumber: firstSessionNumber + 1,
+      orderInLevel: firstOrderInLevel + 1,
+      kind: SessionKind.lesson,
+    ),
+  ];
+  return PacedSession(
+    sessions: sessions,
+    newContent: const [],
+    recentReview: const [],
+    distantReview: const [],
+  );
+}
 
 void main() {
   group('SessionRepository', () {
@@ -19,19 +86,16 @@ void main() {
         final record = await sessionRepository.createSessionRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
-          curriculumSessionId: 'cs1',
+          meeting: _meeting(id: 'cs1', sessionNumber: 5, orderInLevel: 5),
           levelId: 1,
-          kind: SessionKind.lesson,
-          juzNumber: 30,
           hizbNumber: 59,
-          sessionNumber: 5,
-          orderInLevel: 5,
           attemptNumber: 1,
           newMemorizationErrors: 2,
           recentReviewErrors: 1,
           distantReviewErrors: 0,
           repetitionsWithTeacher: 0,
           homeRepetitionsRequired: 0,
+          pace: CurriculumPace.standard,
         );
 
         expect(record.studentId, 'student1');
@@ -51,19 +115,16 @@ void main() {
           final record = await sessionRepository.createSessionRecord(
             studentId: 'student1',
             teacherId: 'teacher1',
-            curriculumSessionId: 'cs1',
+            meeting: _meeting(id: 'cs1', sessionNumber: 5, orderInLevel: 5),
             levelId: 1,
-            kind: SessionKind.lesson,
-            juzNumber: 30,
             hizbNumber: 59,
-            sessionNumber: 5,
-            orderInLevel: 5,
             attemptNumber: 1,
             newMemorizationErrors: 4, // محب at level 1
             recentReviewErrors: 1,
             distantReviewErrors: 2,
             repetitionsWithTeacher: 0,
             homeRepetitionsRequired: 0,
+            pace: CurriculumPace.standard,
           );
 
           expect(record.passed, false);
@@ -76,19 +137,16 @@ void main() {
           final record = await sessionRepository.createSessionRecord(
             studentId: 'student1',
             teacherId: 'teacher1',
-            curriculumSessionId: 'cs1',
+            meeting: _meeting(id: 'cs1', sessionNumber: 5, orderInLevel: 5),
             levelId: 1,
-            kind: SessionKind.lesson,
-            juzNumber: 30,
             hizbNumber: 59,
-            sessionNumber: 5,
-            orderInLevel: 5,
             attemptNumber: 1,
             newMemorizationErrors: 3,
             recentReviewErrors: 3,
             distantReviewErrors: 3,
             repetitionsWithTeacher: 0,
             homeRepetitionsRequired: 0,
+            pace: CurriculumPace.standard,
           );
 
           expect(record.passed, true);
@@ -103,19 +161,16 @@ void main() {
           final record = await sessionRepository.createSessionRecord(
             studentId: 'student1',
             teacherId: 'teacher1',
-            curriculumSessionId: 'cs1',
+            meeting: _meeting(id: 'cs1', sessionNumber: 5, orderInLevel: 5),
             levelId: 9,
-            kind: SessionKind.lesson,
-            juzNumber: 30,
             hizbNumber: 59,
-            sessionNumber: 5,
-            orderInLevel: 5,
             attemptNumber: 1,
             newMemorizationErrors: 4,
             recentReviewErrors: 4,
             distantReviewErrors: 4,
             repetitionsWithTeacher: 0,
             homeRepetitionsRequired: 0,
+            pace: CurriculumPace.standard,
           );
 
           expect(record.passed, true);
@@ -126,19 +181,16 @@ void main() {
         final record = await sessionRepository.createSessionRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
-          curriculumSessionId: 'cs1',
+          meeting: _meeting(id: 'cs1', sessionNumber: 5, orderInLevel: 5),
           levelId: 1,
-          kind: SessionKind.lesson,
-          juzNumber: 30,
           hizbNumber: 59,
-          sessionNumber: 5,
-          orderInLevel: 5,
           attemptNumber: 1,
           newMemorizationErrors: 0,
           recentReviewErrors: 0,
           distantReviewErrors: 0,
           repetitionsWithTeacher: 0,
           homeRepetitionsRequired: 0,
+          pace: CurriculumPace.standard,
           notes: 'ممتاز',
         );
 
@@ -155,23 +207,96 @@ void main() {
         final record = await sessionRepository.createSessionRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
-          curriculumSessionId: 'cs1',
+          meeting: _meeting(id: 'cs1', sessionNumber: 5, orderInLevel: 5),
           levelId: 1,
-          kind: SessionKind.lesson,
-          juzNumber: 30,
           hizbNumber: 59,
-          sessionNumber: 5,
-          orderInLevel: 5,
           attemptNumber: 1,
           newMemorizationErrors: 0,
           recentReviewErrors: 0,
           distantReviewErrors: 0,
           repetitionsWithTeacher: 5,
           homeRepetitionsRequired: 8,
+          pace: CurriculumPace.standard,
         );
 
         expect(record.repetitionsWithTeacher, 5);
         expect(record.homeRepetitionsRequired, 8);
+      });
+
+      test('a genuine two-session meeting (2x pace) is recorded by its LAST '
+          'session — its span, and its full coverage — not collapsed to a '
+          'one-session shape (al_rasikhoon-g63)', () async {
+        final meeting = _twoSessionMeeting(
+          firstId: 'L1_J30_S5',
+          secondId: 'L1_J30_S6',
+          firstOrderInLevel: 5,
+          firstSessionNumber: 5,
+        );
+
+        final record = await sessionRepository.createSessionRecord(
+          studentId: 'student1',
+          teacherId: 'teacher1',
+          meeting: meeting,
+          levelId: 1,
+          hizbNumber: 59,
+          attemptNumber: 1,
+          newMemorizationErrors: 0,
+          recentReviewErrors: 0,
+          distantReviewErrors: 0,
+          repetitionsWithTeacher: 0,
+          homeRepetitionsRequired: 0,
+          pace: CurriculumPace(2),
+        );
+
+        // Named by the LAST session, so a reader that knows nothing of
+        // pace still lands on the right point in the curriculum.
+        expect(record.curriculumSessionId, 'L1_J30_S6');
+        expect(record.sessionNumber, 6);
+        expect(record.fromOrderInLevel, 5);
+        expect(record.toOrderInLevel, 6);
+        expect(record.coversSessionIds, ['L1_J30_S5', 'L1_J30_S6']);
+        expect(record.isBatched, isTrue);
+
+        // The stored doc must carry the TO value under `order_in_level` —
+        // writing the FROM value would make a 2x student's record sort
+        // BEFORE a 1x record at the same position and corrupt
+        // `getLatestSessionRecord`.
+        final stored = await fakeFirestore
+            .collection('session_records')
+            .doc(record.id)
+            .get();
+        expect(stored.data()?['order_in_level'], 6);
+      });
+
+      test('a 2x student whose batch truncates to ONE session (a تلقين or a '
+          'سرد boundary) still records his PACE SETTING, not the truncated '
+          'batch size (al_rasikhoon-g63)', () async {
+        // The meeting itself covers only one session — as if the batch
+        // stopped early — but the student's pace setting is 2x.
+        final meeting = _meeting(
+          id: 'L1_J30_S5',
+          sessionNumber: 5,
+          orderInLevel: 5,
+        );
+        expect(meeting.coversSessionIds.length, 1);
+
+        final record = await sessionRepository.createSessionRecord(
+          studentId: 'student1',
+          teacherId: 'teacher1',
+          meeting: meeting,
+          levelId: 1,
+          hizbNumber: 59,
+          attemptNumber: 1,
+          newMemorizationErrors: 0,
+          recentReviewErrors: 0,
+          distantReviewErrors: 0,
+          repetitionsWithTeacher: 0,
+          homeRepetitionsRequired: 0,
+          pace: CurriculumPace(2),
+        );
+
+        expect(record.paceAtTime, 2);
+        expect(record.coversSessionIds.length, 1);
       });
     });
 
@@ -182,15 +307,17 @@ void main() {
           final record = await sessionRepository.createTalqeenRecord(
             studentId: 'student1',
             teacherId: 'teacher1',
-            curriculumSessionId: 'L1_J30_S1',
+            meeting: _meeting(
+              id: 'L1_J30_S1',
+              sessionNumber: 1,
+              orderInLevel: 1,
+              kind: SessionKind.talqeen,
+            ),
             levelId: 1,
-            kind: SessionKind.talqeen,
-            juzNumber: 30,
             hizbNumber: 59,
-            sessionNumber: 1,
-            orderInLevel: 1,
             repetitionsWithTeacher: 4,
             homeRepetitionsRequired: 10,
+            pace: CurriculumPace.standard,
           );
 
           expect(record.passed, isTrue);
@@ -219,27 +346,31 @@ void main() {
           await sessionRepository.createTalqeenRecord(
             studentId: 'student1',
             teacherId: 'teacher1',
-            curriculumSessionId: 'L1_J30_S1',
+            meeting: _meeting(
+              id: 'L1_J30_S1',
+              sessionNumber: 1,
+              orderInLevel: 1,
+              kind: SessionKind.talqeen,
+            ),
             levelId: 1,
-            kind: SessionKind.talqeen,
-            juzNumber: 30,
-            sessionNumber: 1,
-            orderInLevel: 1,
             repetitionsWithTeacher: 3,
             homeRepetitionsRequired: 7,
+            pace: CurriculumPace.standard,
             now: DateTime(2026, 1, 1, 10, 0, 0),
           );
           final newer = await sessionRepository.createTalqeenRecord(
             studentId: 'student1',
             teacherId: 'teacher1',
-            curriculumSessionId: 'L1_J30_S2',
+            meeting: _meeting(
+              id: 'L1_J30_S2',
+              sessionNumber: 2,
+              orderInLevel: 2,
+              kind: SessionKind.talqeen,
+            ),
             levelId: 1,
-            kind: SessionKind.talqeen,
-            juzNumber: 30,
-            sessionNumber: 2,
-            orderInLevel: 2,
             repetitionsWithTeacher: 2,
             homeRepetitionsRequired: 12,
+            pace: CurriculumPace.standard,
             now: DateTime(2026, 1, 1, 10, 0, 1),
           );
 
@@ -281,27 +412,31 @@ void main() {
         await sessionRepository.createTalqeenRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
-          curriculumSessionId: 'L1_J30_S1',
+          meeting: _meeting(
+            id: 'L1_J30_S1',
+            sessionNumber: 1,
+            orderInLevel: 1,
+            kind: SessionKind.talqeen,
+          ),
           levelId: 1,
-          kind: SessionKind.talqeen,
-          juzNumber: 30,
-          sessionNumber: 1,
-          orderInLevel: 1,
           repetitionsWithTeacher: 1,
           homeRepetitionsRequired: 7,
+          pace: CurriculumPace.standard,
           now: tiedInstant,
         );
         final furtherAlong = await sessionRepository.createTalqeenRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
-          curriculumSessionId: 'L1_J30_S3',
+          meeting: _meeting(
+            id: 'L1_J30_S3',
+            sessionNumber: 3,
+            orderInLevel: 3,
+            kind: SessionKind.talqeen,
+          ),
           levelId: 1,
-          kind: SessionKind.talqeen,
-          juzNumber: 30,
-          sessionNumber: 3,
-          orderInLevel: 3,
           repetitionsWithTeacher: 1,
           homeRepetitionsRequired: 12,
+          pace: CurriculumPace.standard,
           now: tiedInstant,
         );
 
@@ -310,7 +445,7 @@ void main() {
         );
 
         expect(latest!.id, furtherAlong.id);
-        expect(latest.orderInLevel, 3);
+        expect(latest.toOrderInLevel, 3);
         expect(latest.homeRepetitionsRequired, 12);
       });
 
@@ -811,19 +946,20 @@ void main() {
           await sessionRepository.createSessionRecord(
             studentId: 'student1',
             teacherId: 'teacher1',
-            curriculumSessionId: 'L1_J30_S$i',
+            meeting: _meeting(
+              id: 'L1_J30_S$i',
+              sessionNumber: i,
+              orderInLevel: i,
+            ),
             levelId: 1,
-            kind: SessionKind.lesson,
-            juzNumber: 30,
             hizbNumber: 59,
-            sessionNumber: i,
-            orderInLevel: i,
             attemptNumber: 1,
             newMemorizationErrors: 5, // محب at level 1 — always fails
             recentReviewErrors: 0,
             distantReviewErrors: 0,
             repetitionsWithTeacher: 0,
             homeRepetitionsRequired: 0,
+            pace: CurriculumPace.standard,
           );
         }
 
@@ -832,15 +968,17 @@ void main() {
         await sessionRepository.createTalqeenRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
-          curriculumSessionId: 'L1_J30_S7',
+          meeting: _meeting(
+            id: 'L1_J30_S7',
+            sessionNumber: 7,
+            orderInLevel: 7,
+            kind: SessionKind.talqeen,
+          ),
           levelId: 1,
-          kind: SessionKind.talqeen,
-          juzNumber: 30,
           hizbNumber: 59,
-          sessionNumber: 7,
-          orderInLevel: 7,
           repetitionsWithTeacher: 4,
           homeRepetitionsRequired: 10,
+          pace: CurriculumPace.standard,
         );
 
         final stats = await sessionRepository.getStudentStatistics('student1');

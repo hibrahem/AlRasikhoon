@@ -5,6 +5,7 @@ import '../models/student_model.dart';
 import '../models/user_model.dart';
 import '../services/firebase_service.dart';
 import '../../core/constants/app_constants.dart';
+import '../../domain/curriculum/curriculum_pace.dart';
 import '../../domain/curriculum/curriculum_position.dart';
 import 'curriculum_repository.dart';
 import 'user_repository.dart';
@@ -440,14 +441,32 @@ class StudentRepository {
     });
   }
 
-  /// Advance the student to the next session of the curriculum.
+  /// Sets how many lessons the student covers in one meeting.
+  ///
+  /// Takes effect on the student's very next meeting: the pending meeting's
+  /// extent is derived from this pace, not stored, so there is nothing to
+  /// migrate and no position to fix up. Records already written keep the pace
+  /// they were recorded at.
+  Future<void> setStudentPace(String studentId, CurriculumPace pace) async {
+    await _studentsCollection.doc(studentId).update({
+      'pace': pace.toJson(),
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Advance the student past the meeting that ends at [fromOrderInLevel].
   ///
   /// Advancement walks `order_in_level`: the next session is the one at
-  /// `currentOrderInLevel + 1` of the same level, whatever juz that falls in.
-  /// This is the ONLY rule that crosses a juz boundary correctly, because the
+  /// `fromOrderInLevel + 1` of the same level, whatever juz that falls in. This
+  /// is the ONLY rule that crosses a juz boundary correctly, because the
   /// teaching order of a level's juz is DATA (levels 1-9 descend — level 1 runs
   /// juz 30 → 29 → 28 — while level 10 ASCENDS, juz 1 → 2 → 3). Every arithmetic
   /// rule that ever tried to compute the next juz got level 10 wrong.
+  ///
+  /// [fromOrderInLevel] defaults to the session the student stands on — a
+  /// standard-pace meeting covers exactly that one. A paced meeting covers N,
+  /// so its caller passes the LAST order it discharged, and the student lands
+  /// on the one after it.
   ///
   /// Assessments need no gating machinery of their own: the سرد and اختبار of a
   /// juz ARE the last sessions of that juz, and the cumulative pair the last of
@@ -462,11 +481,15 @@ class StudentRepository {
   /// - [_CurriculumDataMissing]: the walk ran out of *seeded* sessions before it
   ///   could tell whether the student had truly finished — leave the student
   ///   exactly as they are and write nothing.
-  Future<StudentAdvanceOutcome> advanceStudentSession(String studentId) async {
+  Future<StudentAdvanceOutcome> advanceStudentSession(
+    String studentId, {
+    int? fromOrderInLevel,
+  }) async {
     final student = await getStudentById(studentId);
     if (student == null) return StudentAdvanceOutcome.studentNotFound;
 
-    final outcome = await _nextSession(student);
+    final from = fromOrderInLevel ?? student.currentOrderInLevel;
+    final outcome = await _nextSession(student, from);
 
     switch (outcome) {
       case _CurriculumDataMissing():
@@ -533,9 +556,10 @@ class StudentRepository {
     return credited;
   }
 
-  /// The session that follows the one the student stands on.
+  /// The session that follows [fromOrderInLevel] — the last order the meeting
+  /// being advanced past discharged.
   ///
-  /// 1. `order_in_level + 1` within the current level — the whole advancement
+  /// 1. `fromOrderInLevel + 1` within the current level — the whole advancement
   ///    rule, juz boundaries included.
   /// 2. If there is none, the level is finished: take the first session
   ///    (`order_in_level == 1`) of the next level that has one, so a level with
@@ -544,11 +568,14 @@ class StudentRepository {
   ///    finished.
   ///
   /// Before concluding a level is finished, the levels catalog is consulted: if
-  /// it says the level has more sessions after the student's, then the missing
-  /// `order_in_level + 1` is a HOLE in the data, not the end of the level, and
-  /// the student must not be marched into the next level on the strength of a
-  /// missing document.
-  Future<_NextSessionOutcome> _nextSession(StudentModel student) async {
+  /// it says the level has more sessions after [fromOrderInLevel], then the
+  /// missing `fromOrderInLevel + 1` is a HOLE in the data, not the end of the
+  /// level, and the student must not be marched into the next level on the
+  /// strength of a missing document.
+  Future<_NextSessionOutcome> _nextSession(
+    StudentModel student,
+    int fromOrderInLevel,
+  ) async {
     final level = student.currentLevel;
     if (level < 1 || level > CurriculumPosition.totalLevels) {
       // A corrupted or legacy record. Not the end of the curriculum, and not a
@@ -558,7 +585,7 @@ class StudentRepository {
 
     final next = await _curriculumRepository.getSessionByOrderInLevel(
       level: level,
-      orderInLevel: student.currentOrderInLevel + 1,
+      orderInLevel: fromOrderInLevel + 1,
     );
     if (next != null) return _Advanced(next);
 
@@ -567,7 +594,7 @@ class StudentRepository {
     final catalog = await _curriculumRepository.getLevelByNumber(level);
     if (catalog != null &&
         catalog.sessionCount > 0 &&
-        student.currentOrderInLevel < catalog.sessionCount) {
+        fromOrderInLevel < catalog.sessionCount) {
       return const _CurriculumDataMissing();
     }
 

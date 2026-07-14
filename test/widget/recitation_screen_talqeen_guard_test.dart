@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
+import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/features/teacher/screens/recitation_screen.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 
@@ -56,12 +57,29 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    // The screen now reads the MEETING, not the session directly (see
+    // memorization_mode_colors_test.dart) — the session stands alone (not
+    // batched), so its meeting is a single-session `PacedSession` built from
+    // the same row.
+    final meeting = PacedSession(
+      sessions: [session],
+      newContent: [
+        if (session.currentLevelContent != null) session.currentLevelContent!,
+      ],
+      recentReview: [
+        if (session.recentReviewContent != null) session.recentReviewContent!,
+      ],
+      distantReview: [
+        if (session.distantReviewContent != null) session.distantReviewContent!,
+      ],
+    );
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          studentCurrentSessionProvider(
+          studentCurrentMeetingProvider(
             's1',
-          ).overrideWith((ref) async => session),
+          ).overrideWith((ref) async => meeting),
         ],
         child: const MaterialApp(
           home: Directionality(

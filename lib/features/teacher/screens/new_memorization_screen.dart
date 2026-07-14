@@ -11,7 +11,7 @@ class NewMemorizationScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sessionAsync = ref.watch(studentCurrentSessionProvider(studentId));
+    final meetingAsync = ref.watch(studentCurrentMeetingProvider(studentId));
 
     // This is the standalone "new memorization" (الجديد) mode screen, so it
     // carries the same accent as part 1 elsewhere (hibrahem/AlRasikhoon#25).
@@ -23,17 +23,18 @@ class NewMemorizationScreen extends ConsumerWidget {
         backgroundColor: modeColor,
         foregroundColor: AppColors.textOnPrimary,
       ),
-      body: sessionAsync.when(
-        data: (session) {
-          if (session == null) {
+      body: meetingAsync.when(
+        data: (meeting) {
+          if (meeting == null) {
             return const Center(child: Text('لا توجد بيانات'));
           }
 
           // Assessments carry no new memorization, and five review-only lessons
           // carry none either: absence is data, and the screen says so instead
-          // of dereferencing null.
-          final content = session.currentLevelContent;
-          if (content == null) {
+          // of dereferencing null. A batched meeting may draw its new content
+          // from more than one curriculum row, which is why this is the
+          // meeting's own merged range rather than one session's content block.
+          if (!meeting.hasNewContent) {
             return const Center(child: Text('لا يوجد حفظ جديد في هذه الحلقة'));
           }
 
@@ -87,25 +88,14 @@ class NewMemorizationScreen extends ConsumerWidget {
                       const SizedBox(height: 16),
                       const Divider(),
                       const SizedBox(height: 12),
+                      // A batch may cover more than one curriculum row, so
+                      // this is the meeting's own merged range — never a
+                      // single row's discrete from/to fields, which cannot
+                      // represent two non-contiguous blocks.
                       _InfoRow(
                         icon: Icons.menu_book,
-                        label: 'من سورة',
-                        value: content.fromSurah,
-                      ),
-                      _InfoRow(
-                        icon: Icons.bookmark,
-                        label: 'من آية',
-                        value: '${content.fromVerse}',
-                      ),
-                      _InfoRow(
-                        icon: Icons.menu_book,
-                        label: 'إلى سورة',
-                        value: content.toSurah,
-                      ),
-                      _InfoRow(
-                        icon: Icons.bookmark,
-                        label: 'إلى آية',
-                        value: '${content.toVerse}',
+                        label: 'المقطع',
+                        value: meeting.newContentAr,
                       ),
                     ],
                   ),

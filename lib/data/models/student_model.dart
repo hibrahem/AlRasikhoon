@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:al_rasikhoon/core/constants/app_constants.dart';
+import '../../domain/curriculum/curriculum_pace.dart';
 import '../../domain/curriculum/curriculum_position.dart';
 import 'session_model.dart';
 
@@ -56,7 +57,18 @@ class StudentModel {
   /// [CurriculumPosition.start], which is exactly what they were.
   final CurriculumPosition enrollmentPosition;
 
-  const StudentModel({
+  /// How many lessons this student covers in one meeting.
+  ///
+  /// The curriculum is authored for the average student — one meeting, one
+  /// session. A student who memorizes quickly can be run at N×, set by their
+  /// teacher or supervisor, changeable mid-level.
+  ///
+  /// The student stores where a meeting STARTS, never how far it extends: the
+  /// extent is derived from this pace at read time, which is what lets a pace
+  /// change take effect immediately with nothing to migrate.
+  final CurriculumPace pace;
+
+  StudentModel({
     required this.id,
     required this.userId,
     required this.instituteId,
@@ -78,7 +90,8 @@ class StudentModel {
     this.updatedAt,
     this.isActive = true,
     this.enrollmentPosition = CurriculumPosition.start,
-  });
+    CurriculumPace? pace,
+  }) : pace = pace ?? CurriculumPace.standard;
 
   /// Enrolls a student onto [session], crediting every level before it as
   /// already memorized. The student's current position *is* the anchor: they
@@ -128,6 +141,10 @@ class StudentModel {
 
   factory StudentModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    return StudentModel.fromJson(doc.id, data);
+  }
+
+  factory StudentModel.fromJson(String id, Map<String, dynamic> data) {
     final level = data['current_level'] as int? ?? 1;
     final juz = data['current_juz'] as int? ?? 30;
     final session = data['current_session'] as int? ?? 1;
@@ -135,7 +152,7 @@ class StudentModel {
     final tier = data['current_session_tier'];
 
     return StudentModel(
-      id: doc.id,
+      id: id,
       userId: data['user_id'] ?? '',
       instituteId: data['institute_id'] ?? '',
       teacherId: data['teacher_id'],
@@ -160,7 +177,7 @@ class StudentModel {
           ? throw ArgumentError.value(
               null,
               'current_session_kind',
-              'Student document ${doc.id} is missing current_session_kind',
+              'Student document $id is missing current_session_kind',
             )
           : SessionKindX.fromString(kind as String),
       currentSessionTier: tier == null
@@ -178,6 +195,7 @@ class StudentModel {
           : CurriculumPosition.fromMap(
               Map<String, dynamic>.from(data['enrollment_position'] as Map),
             ),
+      pace: CurriculumPace.fromJson(data['pace']),
     );
   }
 
@@ -203,6 +221,7 @@ class StudentModel {
       'updated_at': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
       'is_active': isActive,
       'enrollment_position': enrollmentPosition.toMap(),
+      'pace': pace.toJson(),
     };
   }
 
@@ -228,6 +247,7 @@ class StudentModel {
     DateTime? updatedAt,
     bool? isActive,
     CurriculumPosition? enrollmentPosition,
+    CurriculumPace? pace,
   }) {
     return StudentModel(
       id: id ?? this.id,
@@ -252,6 +272,7 @@ class StudentModel {
       updatedAt: updatedAt ?? this.updatedAt,
       isActive: isActive ?? this.isActive,
       enrollmentPosition: enrollmentPosition ?? this.enrollmentPosition,
+      pace: pace ?? this.pace,
     );
   }
 

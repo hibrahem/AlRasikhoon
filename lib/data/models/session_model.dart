@@ -233,6 +233,18 @@ class QuranContent {
 
   @override
   String toString() => rangeAr;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is QuranContent &&
+          other.fromSurah == fromSurah &&
+          other.fromVerse == fromVerse &&
+          other.toSurah == toSurah &&
+          other.toVerse == toVerse;
+
+  @override
+  int get hashCode => Object.hash(fromSurah, fromVerse, toSurah, toVerse);
 }
 
 /// One row of the curriculum: a lesson, a سرد or an اختبار.

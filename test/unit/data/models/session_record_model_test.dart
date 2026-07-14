@@ -210,7 +210,12 @@ void main() {
         expect(record.levelId, 2);
         expect(record.hizbNumber, 57);
         expect(record.sessionNumber, 10);
-        expect(record.orderInLevel, 12);
+        // Falls back to `order_in_level` (this record predates the span).
+        expect(record.toOrderInLevel, 12);
+        expect(record.fromOrderInLevel, 12);
+        expect(record.coversSessionIds, ['cs1']);
+        expect(record.paceAtTime, 1);
+        expect(record.isBatched, isFalse);
         expect(record.attemptNumber, 2);
         expect(record.grades.newMemorizationErrors, 1);
         expect(record.grades.recentReviewErrors, 2);
@@ -244,7 +249,8 @@ void main() {
         expect(record.grades.totalErrors, 0);
         // A record written before `order_in_level` existed falls back to 1 —
         // never recomputed from sessionNumber.
-        expect(record.orderInLevel, 1);
+        expect(record.toOrderInLevel, 1);
+        expect(record.fromOrderInLevel, 1);
       });
     });
 
@@ -261,7 +267,10 @@ void main() {
           juzNumber: 30,
           hizbNumber: 59,
           sessionNumber: 5,
-          orderInLevel: 5,
+          fromOrderInLevel: 5,
+          toOrderInLevel: 5,
+          coversSessionIds: const ['cs1'],
+          paceAtTime: 1,
           date: now,
           attemptNumber: 1,
           grades: const SessionGrades(
@@ -285,7 +294,11 @@ void main() {
         expect(map['juz_number'], 30);
         expect(map['hizb_number'], 59);
         expect(map['session_number'], 5);
+        expect(map['from_order_in_level'], 5);
+        expect(map['to_order_in_level'], 5);
         expect(map['order_in_level'], 5);
+        expect(map['covers_session_ids'], ['cs1']);
+        expect(map['pace_at_time'], 1);
         expect(map['attempt_number'], 1);
         expect(map['passed'], true);
         expect(map['repetitions_with_teacher'], 5);
@@ -305,7 +318,9 @@ void main() {
           levelId: 1,
           kind: SessionKind.talqeen,
           juzNumber: 30,
-          orderInLevel: 1,
+          fromOrderInLevel: 1,
+          toOrderInLevel: 1,
+          coversSessionIds: const ['L1_J30_S1'],
           date: DateTime(2026, 7, 14),
           attemptNumber: 1,
           grades: const SessionGrades(
@@ -331,7 +346,9 @@ void main() {
           levelId: 1,
           kind: SessionKind.lesson,
           juzNumber: 30,
-          orderInLevel: 5,
+          fromOrderInLevel: 5,
+          toOrderInLevel: 5,
+          coversSessionIds: const ['L1_J30_S5'],
           date: DateTime(2026, 7, 14),
           attemptNumber: 1,
           grades: const SessionGrades(
@@ -444,7 +461,9 @@ void main() {
             kind: SessionKind.lesson,
             juzNumber: 30,
             sessionNumber: 2,
-            orderInLevel: 2,
+            fromOrderInLevel: 2,
+            toOrderInLevel: 2,
+            coversSessionIds: const ['L1_J30_S2'],
             date: DateTime(2026, 7, 14),
             attemptNumber: 1,
             grades: const SessionGrades(
@@ -474,7 +493,9 @@ void main() {
           curriculumSessionId: 'c',
           kind: SessionKind.lesson,
           juzNumber: 30,
-          orderInLevel: 1,
+          fromOrderInLevel: 1,
+          toOrderInLevel: 1,
+          coversSessionIds: const ['c'],
           date: DateTime.now(),
           attemptNumber: 1,
           grades: const SessionGrades(
@@ -492,7 +513,9 @@ void main() {
           curriculumSessionId: 'z',
           kind: SessionKind.talqeen,
           juzNumber: 29,
-          orderInLevel: 9,
+          fromOrderInLevel: 9,
+          toOrderInLevel: 9,
+          coversSessionIds: const ['z'],
           date: DateTime.now(),
           attemptNumber: 2,
           grades: const SessionGrades(
@@ -507,5 +530,78 @@ void main() {
         expect(r1, equals(r2));
       });
     });
+  });
+
+  group('a record spans the meeting it recorded', () {
+    test(
+      'a record written before paced curricula is a one-session meeting',
+      () {
+        final record = SessionRecordModel.fromJson('r1', {
+          'student_id': 's1',
+          'teacher_id': 't1',
+          'curriculum_session_id': 'L1_J30_S5',
+          'level_id': 1,
+          'session_number': 5,
+          'order_in_level': 5,
+          'attempt_number': 1,
+          'passed': true,
+        });
+
+        expect(record.fromOrderInLevel, 5);
+        expect(record.toOrderInLevel, 5);
+        expect(record.coversSessionIds, ['L1_J30_S5']);
+        expect(record.paceAtTime, 1);
+        expect(record.isBatched, isFalse);
+      },
+    );
+
+    test('a doubled meeting records both sessions it discharged', () {
+      final record = SessionRecordModel.fromJson('r1', {
+        'student_id': 's1',
+        'teacher_id': 't1',
+        'curriculum_session_id': 'L1_J30_S6',
+        'level_id': 1,
+        'session_number': 6,
+        'from_order_in_level': 5,
+        'to_order_in_level': 6,
+        'covers_session_ids': ['L1_J30_S5', 'L1_J30_S6'],
+        'pace_at_time': 2,
+        'attempt_number': 1,
+        'passed': true,
+      });
+
+      expect(record.fromOrderInLevel, 5);
+      expect(record.toOrderInLevel, 6);
+      expect(record.coversSessionIds, ['L1_J30_S5', 'L1_J30_S6']);
+      expect(record.paceAtTime, 2);
+      expect(record.isBatched, isTrue);
+    });
+
+    test(
+      'a record keeps the pace it was recorded at, not the student\'s current one',
+      () {
+        // The student may be moved back to 1x tomorrow. History must not be
+        // rewritten: this meeting really did cover two sessions.
+        final record = SessionRecordModel.fromJson('r1', {
+          'student_id': 's1',
+          'teacher_id': 't1',
+          'curriculum_session_id': 'L1_J30_S6',
+          'level_id': 1,
+          'session_number': 6,
+          'from_order_in_level': 5,
+          'to_order_in_level': 6,
+          'covers_session_ids': ['L1_J30_S5', 'L1_J30_S6'],
+          'pace_at_time': 2,
+          'attempt_number': 1,
+          'passed': true,
+        });
+
+        expect(record.toFirestore()['pace_at_time'], 2);
+        // The compatibility mirror: old readers and the ordering query both
+        // depend on order_in_level, which must equal the meeting's LAST session.
+        expect(record.toFirestore()['order_in_level'], 6);
+        expect(record.toFirestore()['to_order_in_level'], 6);
+      },
+    );
   });
 }

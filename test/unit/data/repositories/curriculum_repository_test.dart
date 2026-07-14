@@ -159,12 +159,30 @@ void main() {
   });
 
   group('getSessionsForLevel', () {
+    test('a level yields every one of its sessions, in teaching order', () async {
+      // Level 1 runs juz 30 → 29. Ordering by juz would put 29 first; ordering
+      // by order_in_level is the only rule that gets the teaching order right.
+      await seedSession(firestore, level: 1, juz: 29, session: 1, order: 3);
+      await seedSession(firestore, level: 1, juz: 30, session: 1, order: 1);
+      await seedSession(firestore, level: 1, juz: 30, session: 2, order: 2);
+      await seedSession(firestore, level: 2, juz: 27, session: 1, order: 1);
+
+      final sessions = await repository.getSessionsForLevel(level: 1);
+
+      expect(sessions.map((s) => s.orderInLevel), [1, 2, 3]);
+      expect(sessions.map((s) => s.id), [
+        'L1_J30_S1',
+        'L1_J30_S2',
+        'L1_J29_S1',
+      ]);
+    });
+
     test('returns the level in teaching order — juz 30 then juz 29, by '
         'order_in_level and never by juz number', () async {
       await seedLevelOneJuz29(firestore);
       await seedLevelOneJuz30(firestore);
 
-      final sessions = await repository.getSessionsForLevel(1);
+      final sessions = await repository.getSessionsForLevel(level: 1);
 
       expect(sessions.map((s) => s.orderInLevel), isA<Iterable<int>>());
       expect(

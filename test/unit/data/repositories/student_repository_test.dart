@@ -9,6 +9,7 @@ import 'package:al_rasikhoon/data/repositories/curriculum_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
+import 'package:al_rasikhoon/domain/curriculum/curriculum_pace.dart';
 import 'package:al_rasikhoon/domain/curriculum/curriculum_position.dart';
 
 import 'curriculum_fixtures.dart';
@@ -762,6 +763,96 @@ void main() {
         );
         expect(outcome, StudentAdvanceOutcome.studentNotFound);
       });
+
+      test(
+        'a paced meeting ending on the level\'s LAST session rolls the '
+        'student over into the next level — the data-hole check gates on '
+        'the MEETING\'s endpoint, never the student\'s own position',
+        () async {
+          // A 2x student stands at order 209, the level's last two orders
+          // (209, 210) are both lessons, and the catalog says the level has
+          // exactly 210 sessions. His meeting discharges 209 AND 210, so
+          // `advanceStudentSession` is called with `fromOrderInLevel: 210`
+          // — the meeting's true endpoint — even though the student HIMSELF
+          // still sits at 209. Gating the "is the level really finished?"
+          // check on 209 instead of 210 would wrongly conclude the data is
+          // holed (209 < 210) and strand him on the level forever, since
+          // nothing would ever be written and every subsequent pass would
+          // repeat the exact same no-op.
+          await seedSession(
+            fakeFirestore,
+            level: 1,
+            juz: 28,
+            session: 68,
+            order: 209,
+          );
+          await seedSession(
+            fakeFirestore,
+            level: 1,
+            juz: 28,
+            session: 69,
+            order: 210,
+          );
+          await seedLevelTwoHead(fakeFirestore);
+          await seedStudent(level: 1, juz: 28, session: 68, order: 209);
+
+          final outcome = await studentRepository.advanceStudentSession(
+            's1',
+            fromOrderInLevel: 210,
+          );
+
+          expect(
+            outcome,
+            StudentAdvanceOutcome.advanced,
+            reason:
+                'the level is genuinely finished at order 210 (the '
+                'meeting\'s endpoint), not merely missing data past the '
+                'student\'s own order 209',
+          );
+          final student = await readStudent();
+          expect(student['current_level'], 2);
+          expect(student['current_order_in_level'], 1);
+          expect(student['current_session_id'], 'L2_J27_S1');
+          expect(student['completed_levels'], contains(1));
+        },
+      );
+
+      test('a paced meeting ending BEFORE the level\'s last session still '
+          'reports curriculumDataMissing when the next order is genuinely '
+          'absent, even though the student himself stands earlier in the '
+          'level', () async {
+        // The student himself still stands at order 1 (a تلقين) — his OWN
+        // position would find order 2 seeded and never surface the hole.
+        // Only the paced meeting's true endpoint (order 3, with nothing
+        // seeded at order 4, against a catalog of 210) exposes it. Fixing
+        // FIX 1 to gate on the meeting's endpoint must not break this: a
+        // genuine hole past the meeting's endpoint is still a hole.
+        await seedLevelOneJuz30(fakeFirestore);
+        await seedLevelTwoHead(fakeFirestore);
+        await seedStudent(
+          level: 1,
+          juz: 30,
+          session: 1,
+          order: 1,
+          kind: 'talqeen',
+        );
+
+        final outcome = await studentRepository.advanceStudentSession(
+          's1',
+          fromOrderInLevel: 3,
+        );
+
+        expect(outcome, StudentAdvanceOutcome.curriculumDataMissing);
+        final student = await readStudent();
+        expect(
+          student['current_order_in_level'],
+          1,
+          reason:
+              'nothing was written — the student is left exactly as '
+              'he was',
+        );
+        expect(student['current_session_id'], 'L1_J30_S1');
+      });
     });
 
     group('getStudentsReadyForExam', () {
@@ -1150,6 +1241,56 @@ void main() {
         // A genuinely non-denormalized field still updates.
         expect(doc['teacher_id'], 'teacher-2');
       });
+
+      test('carries a loaded pace back through — it is not stripped like the '
+          'current_* position facts', () async {
+        await seedStudent(level: 1, juz: 30, session: 5, order: 5);
+        await fakeFirestore.collection('students').doc('s1').update({
+          'pace': 3,
+        });
+
+        // A realistic caller: load the student (picking up its pace), then
+        // change an unrelated field and write it back.
+        final loaded = await studentRepository.getStudentById('s1');
+        final student = loaded!.copyWith(teacherId: 'teacher-2');
+        await studentRepository.updateStudent(student);
+
+        final doc = await readStudent();
+        expect(doc['pace'], 3);
+      });
+    });
+
+    group('setStudentPace', () {
+      test('sets how many lessons the student covers in one meeting', () async {
+        await seedStudent(level: 1, juz: 30, session: 5, order: 5);
+
+        await studentRepository.setStudentPace('s1', CurriculumPace(2));
+
+        final doc = await readStudent();
+        expect(doc['pace'], 2);
+      });
+
+      test(
+        'does not disturb the denormalized current_* session facts',
+        () async {
+          await seedStudent(
+            level: 1,
+            juz: 30,
+            session: 5,
+            order: 5,
+            kind: 'exam',
+            tier: 'juz',
+          );
+
+          await studentRepository.setStudentPace('s1', CurriculumPace(2));
+
+          final doc = await readStudent();
+          expect(doc['current_level'], 1);
+          expect(doc['current_session'], 5);
+          expect(doc['current_session_kind'], 'exam');
+          expect(doc['current_session_tier'], 'juz');
+        },
+      );
     });
   });
 }

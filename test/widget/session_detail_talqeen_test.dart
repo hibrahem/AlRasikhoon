@@ -49,7 +49,9 @@ void main() {
         juzNumber: 30,
         hizbNumber: 59,
         sessionNumber: 1,
-        orderInLevel: 1,
+        fromOrderInLevel: 1,
+        toOrderInLevel: 1,
+        coversSessionIds: const ['L1_J30_S1'],
         date: DateTime(2026, 7, 14),
         attemptNumber: 1,
         grades: const SessionGrades(
@@ -92,7 +94,9 @@ void main() {
       juzNumber: 30,
       hizbNumber: 59,
       sessionNumber: 5,
-      orderInLevel: 5,
+      fromOrderInLevel: 5,
+      toOrderInLevel: 5,
+      coversSessionIds: const ['L1_J30_S5'],
       date: DateTime(2026, 7, 14),
       attemptNumber: 1,
       grades: const SessionGrades(

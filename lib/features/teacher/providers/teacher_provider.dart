@@ -7,7 +7,9 @@ import '../../../data/models/institute_model.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
 import '../../../core/utils/grade_calculator.dart';
+import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/user_provider.dart';
+import '../../../shared/providers/meeting_provider.dart' show composeMeetingFor;
 
 /// Provider for teacher's students
 final teacherStudentsProvider = FutureProvider<List<StudentWithUser>>((
@@ -83,6 +85,27 @@ final studentCurrentSessionProvider =
       return curriculumRepo.getSessionById(student.currentSessionId);
     });
 
+/// The MEETING the student stands on: the N curriculum sessions their pace
+/// covers, and the three content streams composed from them.
+///
+/// This is what every screen that teaches or reports on a student must read.
+/// [studentCurrentSessionProvider] returns the single authored row and
+/// remains correct for anything that browses the CURRICULUM (the
+/// starting-point picker, the admin level detail) — but a student at 2x does
+/// not meet a row, he meets a meeting.
+///
+/// The meeting is composed on every read from the student's LIVE pace.
+/// Nothing about its extent is stored, which is exactly why a teacher can
+/// change a student's pace mid-level and have it land on the next meeting
+/// with nothing to migrate.
+final studentCurrentMeetingProvider =
+    FutureProvider.family<PacedSession?, String>((ref, studentId) async {
+      final studentAsync = await ref.watch(studentProvider(studentId).future);
+      if (studentAsync == null) return null;
+
+      return composeMeetingFor(ref, studentAsync.student);
+    });
+
 /// Session state for recording a session
 class ActiveSessionState {
   final String studentId;
@@ -107,6 +130,15 @@ class ActiveSessionState {
   /// they never show an unqualified success message for the latter.
   final StudentAdvanceOutcome? advanceOutcome;
 
+  /// The meeting being taught — every curriculum session it covers, composed
+  /// from the student's LIVE pace. Composed (best-effort) by
+  /// [ActiveSessionNotifier.startSession] and recomposed on
+  /// `completeSession` / `completeTalqeenSession`; still null if composition
+  /// couldn't run (e.g. unseeded data, a provider still warming up). Screens
+  /// read it to render every block it covers rather than just the one the
+  /// student started on.
+  final PacedSession? meeting;
+
   const ActiveSessionState({
     required this.studentId,
     this.currentPart = 1,
@@ -118,6 +150,7 @@ class ActiveSessionState {
     this.notes,
     this.isComplete = false,
     this.advanceOutcome,
+    this.meeting,
   });
 
   ActiveSessionState copyWith({
@@ -131,6 +164,7 @@ class ActiveSessionState {
     String? notes,
     bool? isComplete,
     StudentAdvanceOutcome? advanceOutcome,
+    PacedSession? meeting,
   }) {
     return ActiveSessionState(
       studentId: studentId ?? this.studentId,
@@ -145,6 +179,7 @@ class ActiveSessionState {
       notes: notes ?? this.notes,
       isComplete: isComplete ?? this.isComplete,
       advanceOutcome: advanceOutcome ?? this.advanceOutcome,
+      meeting: meeting ?? this.meeting,
     );
   }
 
@@ -179,8 +214,59 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
   @override
   ActiveSessionState? build() => null;
 
-  void startSession(String studentId) {
+  /// Starts a session and — while the teacher is teaching it, not only once
+  /// it is graded — composes and stores the meeting being taught.
+  ///
+  /// The session-summary screen shows what was JUST taught. By the time
+  /// `completeSession`/`completeTalqeenSession` run, the student has already
+  /// advanced past the meeting, so composing from his then-CURRENT position
+  /// would describe the NEXT meeting, not the one just recited.
+  /// `ActiveSessionState.meeting` is the only thing that can hold the
+  /// meeting being taught, so it must be populated here, at the start,
+  /// while the position it is composed from is still the one being taught —
+  /// not left null until completion.
+  ///
+  /// `state` is set synchronously first so every other notifier method
+  /// (`setPartErrors`, `setNotes`, ...) can be called immediately after,
+  /// exactly as before this method became asynchronous.
+  Future<void> startSession(String studentId) async {
     state = ActiveSessionState(studentId: studentId);
+    await _loadMeetingBeingTaught(studentId);
+  }
+
+  /// Best-effort composition of the meeting for [startSession]. This is a
+  /// display nicety for the in-progress screens, not the record of what
+  /// happened — nothing is graded or written here, so a failure has nothing
+  /// to lose. If the student or curriculum can't be read yet (unseeded
+  /// data, a provider still warming up, ...) the session still starts with
+  /// `meeting == null`. `completeSession` recomposes independently and is
+  /// the one place a composition failure must be surfaced — see its doc
+  /// comment — because that is where a grade would otherwise be silently
+  /// lost.
+  Future<void> _loadMeetingBeingTaught(String studentId) async {
+    try {
+      final studentAsync = await ref.read(studentProvider(studentId).future);
+      if (studentAsync == null) return;
+
+      final student = studentAsync.student;
+      final curriculumRepo = ref.read(curriculumRepositoryProvider);
+      final levelSessions = await curriculumRepo.getSessionsForLevel(
+        level: student.currentLevel,
+      );
+      final meeting = PacedSessionComposer.compose(
+        levelSessions: levelSessions,
+        startOrderInLevel: student.currentOrderInLevel,
+        pace: student.pace,
+      );
+
+      // The teacher may have started a different student's session, or
+      // ended this one, while this composition was in flight — don't
+      // resurrect a stale meeting onto the wrong (or a cleared) state.
+      if (state?.studentId != studentId) return;
+      state = state!.copyWith(meeting: meeting);
+    } catch (_) {
+      // See doc comment above: best-effort, nothing written, nothing lost.
+    }
   }
 
   void setPartErrors(int part, int errors) {
@@ -241,6 +327,21 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     state = state!.copyWith(homeRepetitionsRequired: repetitions);
   }
 
+  /// Grades and records the meeting, then advances the student past it on a
+  /// pass.
+  ///
+  /// Composition happens BEFORE the record is written, deliberately: if
+  /// `PacedSessionComposer.compose` cannot find a session at the student's
+  /// `currentOrderInLevel` (a curriculum row missing or renumbered under
+  /// him), it throws `ArgumentError` — and that throw propagates out of this
+  /// method uncaught, so NOTHING is written. The recitation the teacher just
+  /// heard is not silently saved with a wrong or empty scope, and it is not
+  /// silently discarded either — the caller sees the exception (the
+  /// `catch (e)` in `SessionSummaryScreen._saveSession`) and can tell the
+  /// teacher the save failed, rather than reporting an unqualified success.
+  /// This mirrors the posture `curriculumDataMissing` already enforces on
+  /// the advance side: a graded session is never lost without a signal to
+  /// someone.
   Future<SessionRecordModel?> completeSession() async {
     if (state == null) return null;
 
@@ -256,34 +357,52 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     final student = studentAsync.student;
     final sessionRepo = ref.read(sessionRepositoryProvider);
     final studentRepo = ref.read(studentRepositoryProvider);
+    final curriculumRepo = ref.read(curriculumRepositoryProvider);
 
-    // Create session record. The curriculum session id is the student's own
-    // `current_session_id` — read from the curriculum on placement/advance,
-    // never rebuilt here (the old `..._H{hizb}_S{n}` form names no document).
+    // Compose the meeting from the student's LIVE pace: a fast student's
+    // recitation may discharge several curriculum sessions at once, so the
+    // meeting — not the student's own single current session — is what gets
+    // graded and recorded.
+    final levelSessions = await curriculumRepo.getSessionsForLevel(
+      level: student.currentLevel,
+    );
+    final meeting = PacedSessionComposer.compose(
+      levelSessions: levelSessions,
+      startOrderInLevel: student.currentOrderInLevel,
+      pace: student.pace,
+    );
+    state = state!.copyWith(meeting: meeting);
+
+    // Create session record. One recitation, one record — however many
+    // sessions the meeting batched together.
     final record = await sessionRepo.createSessionRecord(
       studentId: student.id,
       teacherId: currentUser.id,
-      curriculumSessionId: student.currentSessionId,
+      meeting: meeting,
       levelId: student.currentLevel,
-      kind: student.currentSessionKind,
-      juzNumber: student.currentJuz,
       hizbNumber: student.currentHizb,
-      sessionNumber: student.currentSession,
-      orderInLevel: student.currentOrderInLevel,
       attemptNumber: student.currentAttempt,
       newMemorizationErrors: state!.part1Errors,
       recentReviewErrors: state!.part2Errors,
       distantReviewErrors: state!.part3Errors,
       repetitionsWithTeacher: state!.repetitionsWithTeacher,
       homeRepetitionsRequired: state!.homeRepetitionsRequired,
+      pace: student.pace,
       notes: state!.notes,
     );
 
     // Update student progress
     StudentAdvanceOutcome? advanceOutcome;
     if (record.passed) {
-      advanceOutcome = await studentRepo.advanceStudentSession(student.id);
+      // Past the whole meeting — a 2x student who passes has discharged two
+      // sessions and must not land back on the second of them.
+      advanceOutcome = await studentRepo.advanceStudentSession(
+        student.id,
+        fromOrderInLevel: meeting.toOrderInLevel,
+      );
     } else {
+      // He repeats the MEETING, not half of it: his position is unchanged, so
+      // the next composition rebuilds the same batch.
       await studentRepo.incrementStudentAttempt(student.id);
     }
 
@@ -315,23 +434,38 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     final student = studentAsync.student;
     final sessionRepo = ref.read(sessionRepositoryProvider);
     final studentRepo = ref.read(studentRepositoryProvider);
+    final curriculumRepo = ref.read(curriculumRepositoryProvider);
+
+    // A تلقين always stands alone (`PacedSessionComposer` never batches one),
+    // so this composition always spans exactly the student's own session —
+    // but it goes through the same path as `completeSession` so the record
+    // carries a span like every other one.
+    final levelSessions = await curriculumRepo.getSessionsForLevel(
+      level: student.currentLevel,
+    );
+    final meeting = PacedSessionComposer.compose(
+      levelSessions: levelSessions,
+      startOrderInLevel: student.currentOrderInLevel,
+      pace: student.pace,
+    );
+    state = state!.copyWith(meeting: meeting);
 
     final record = await sessionRepo.createTalqeenRecord(
       studentId: student.id,
       teacherId: currentUser.id,
-      curriculumSessionId: student.currentSessionId,
+      meeting: meeting,
       levelId: student.currentLevel,
-      kind: student.currentSessionKind,
-      juzNumber: student.currentJuz,
       hizbNumber: student.currentHizb,
-      sessionNumber: student.currentSession,
-      orderInLevel: student.currentOrderInLevel,
       repetitionsWithTeacher: state!.repetitionsWithTeacher,
       homeRepetitionsRequired: state!.homeRepetitionsRequired,
+      pace: student.pace,
       notes: state!.notes,
     );
 
-    final advanceOutcome = await studentRepo.advanceStudentSession(student.id);
+    final advanceOutcome = await studentRepo.advanceStudentSession(
+      student.id,
+      fromOrderInLevel: meeting.toOrderInLevel,
+    );
 
     state = state!.copyWith(isComplete: true, advanceOutcome: advanceOutcome);
 

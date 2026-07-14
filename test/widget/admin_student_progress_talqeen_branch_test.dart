@@ -7,6 +7,7 @@ import 'package:al_rasikhoon/data/models/session_record_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
+import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/features/admin/providers/admin_provider.dart';
 import 'package:al_rasikhoon/shared/screens/student_progress_screen.dart';
 
@@ -79,7 +80,9 @@ void main() {
     juzNumber: 30,
     hizbNumber: 59,
     sessionNumber: 1,
-    orderInLevel: 1,
+    fromOrderInLevel: 1,
+    toOrderInLevel: 1,
+    coversSessionIds: const ['L1_J30_S1'],
     date: DateTime(2026, 7, 1),
     attemptNumber: 1,
     grades: const SessionGrades(
@@ -101,7 +104,9 @@ void main() {
     juzNumber: 30,
     hizbNumber: 59,
     sessionNumber: 2,
-    orderInLevel: 2,
+    fromOrderInLevel: 2,
+    toOrderInLevel: 2,
+    coversSessionIds: const ['L1_J30_S2'],
     date: DateTime(2026, 7, 2),
     attemptNumber: 1,
     grades: const SessionGrades(
@@ -120,9 +125,27 @@ void main() {
           adminStudentProvider('s1').overrideWith(
             (ref) async => StudentWithUser(student: student, user: user),
           ),
-          adminStudentCurrentSessionProvider(
-            's1',
-          ).overrideWith((ref) async => talqeenSession),
+          // A تلقين always stands alone (`PacedSessionComposer` never
+          // batches one), so its meeting is a single-session `PacedSession`
+          // built from the same row — the screen now reads the MEETING, not
+          // the session directly.
+          adminStudentCurrentMeetingProvider('s1').overrideWith(
+            (ref) async => PacedSession(
+              sessions: [talqeenSession],
+              newContent: [
+                if (talqeenSession.currentLevelContent != null)
+                  talqeenSession.currentLevelContent!,
+              ],
+              recentReview: [
+                if (talqeenSession.recentReviewContent != null)
+                  talqeenSession.recentReviewContent!,
+              ],
+              distantReview: [
+                if (talqeenSession.distantReviewContent != null)
+                  talqeenSession.distantReviewContent!,
+              ],
+            ),
+          ),
           adminStudentSessionHistoryProvider('s1').overrideWith(
             (ref) async => <SessionRecordModel>[
               talqeenRecord,
@@ -139,7 +162,7 @@ void main() {
             child: StudentProgressScreen(
               studentId: 's1',
               studentProvider: adminStudentProvider,
-              currentSessionProvider: adminStudentCurrentSessionProvider,
+              currentMeetingProvider: adminStudentCurrentMeetingProvider,
               sessionHistoryProvider: adminStudentSessionHistoryProvider,
             ),
           ),

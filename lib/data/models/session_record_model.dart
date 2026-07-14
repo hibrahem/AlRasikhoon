@@ -58,11 +58,12 @@ class SessionRecordModel {
   final String curriculumSessionId;
   final int levelId;
 
-  /// What the session this record is FOR IS — a تلقين or a lesson, copied
-  /// verbatim from the session (via `student.currentSessionKind` at write
-  /// time), never inferred from [sessionNumber]. A تلقين is never graded, so
-  /// this is what tells the pass/fail statistics and the history/detail
-  /// screens to treat this record as attendance, not a graded pass.
+  /// What the session this record is FOR IS — a تلقين or a lesson, read off
+  /// that curriculum session itself (the last one the meeting discharged), never
+  /// off the student's denormalized `current_session_kind`, and never inferred
+  /// from [sessionNumber]. A تلقين is never graded, so this is what tells the
+  /// pass/fail statistics and the history/detail screens to treat this record as
+  /// attendance, not a graded pass.
   final SessionKind kind;
 
   /// The juz this record's session belongs to, copied verbatim from the
@@ -84,13 +85,37 @@ class SessionRecordModel {
   final int? hizbNumber;
   final int sessionNumber;
 
-  /// The curriculum's ordering key (1..M within [levelId]), copied verbatim
-  /// from the session this record is FOR — never recomputed, never inferred
-  /// from [sessionNumber]. It is the only thing that orders session records
-  /// within a level: juz numbers cannot (level 10 teaches juz 1 → 2 → 3), and
+  /// The first session this meeting discharged.
+  final int fromOrderInLevel;
+
+  /// The LAST session this meeting discharged, and THE advancement key: the
+  /// student's next meeting begins at `toOrderInLevel + 1`.
+  ///
+  /// Copied verbatim from the curriculum, never recomputed from
+  /// [sessionNumber]. It is the only thing that orders session records within a
+  /// level: juz numbers cannot (level 10 teaches juz 1 → 2 → 3), and
   /// [date]/[createdAt] cannot either, since both come from the same
-  /// `DateTime.now()` at write time and can tie.
-  final int orderInLevel;
+  /// `DateTime.now()` at write time and can tie. This can: a later meeting
+  /// always carries a strictly greater [toOrderInLevel] within a level.
+  final int toOrderInLevel;
+
+  /// Every curriculum session this ONE recitation discharged. A student at 2x
+  /// recites two sessions' content in one sitting and is graded once — writing
+  /// two records would fabricate an observation that never happened.
+  final List<String> coversSessionIds;
+
+  /// The STUDENT'S PACE SETTING in force when this was recorded — not the
+  /// number of sessions this meeting happened to cover. History must not be
+  /// rewritten when the student's pace later changes: the student may be
+  /// moved back to 1x tomorrow, but he really was a [paceAtTime]x student
+  /// when this was recorded. A batch can truncate short of the pace (a تلقين
+  /// or a سرد boundary stops it early), so [coversSessionIds.length] can be
+  /// LESS than [paceAtTime] — the two must never be conflated.
+  final int paceAtTime;
+
+  /// Whether this meeting covered more than one curriculum session.
+  bool get isBatched => coversSessionIds.length > 1;
+
   final DateTime date;
   final int attemptNumber;
   final SessionGrades grades;
@@ -118,7 +143,10 @@ class SessionRecordModel {
     required this.juzNumber,
     this.hizbNumber,
     this.sessionNumber = 1,
-    required this.orderInLevel,
+    required this.fromOrderInLevel,
+    required this.toOrderInLevel,
+    required this.coversSessionIds,
+    this.paceAtTime = 1,
     required this.date,
     required this.attemptNumber,
     required this.grades,
@@ -131,37 +159,52 @@ class SessionRecordModel {
 
   factory SessionRecordModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    return SessionRecordModel.fromJson(doc.id, data);
+  }
+
+  factory SessionRecordModel.fromJson(String id, Map<String, dynamic> json) {
+    final curriculumSessionId = json['curriculum_session_id'] ?? '';
+    // Backward compatibility: every record written before paced curricula
+    // has `order_in_level` and no span. It must read back as a
+    // single-session, pace-1 meeting — never recomputed, never guessed.
+    final toOrderInLevel =
+        json['to_order_in_level'] as int? ??
+        json['order_in_level'] as int? ??
+        1;
     return SessionRecordModel(
-      id: doc.id,
-      studentId: data['student_id'] ?? '',
-      teacherId: data['teacher_id'] ?? '',
-      curriculumSessionId: data['curriculum_session_id'] ?? '',
-      levelId: data['level_id'] ?? 1,
+      id: id,
+      studentId: json['student_id'] ?? '',
+      teacherId: json['teacher_id'] ?? '',
+      curriculumSessionId: curriculumSessionId,
+      levelId: json['level_id'] ?? 1,
       // Falls back to a lesson only for records written before `kind`
       // existed — every one of them WAS a graded lesson attempt, since a
       // تلقين could not be recorded before this field shipped.
-      kind: data['kind'] != null
-          ? SessionKindX.fromString(data['kind'] as String)
+      kind: json['kind'] != null
+          ? SessionKindX.fromString(json['kind'] as String)
           : SessionKind.lesson,
       // Null only for records written before this field existed. Never a
       // sentinel like 0 (not a real juz) and never guessed from the
       // student's current juz — a caller that needs a juz for an absent
       // record must fall back explicitly, the way `addPractice` falls back
       // to the student's own current juz.
-      juzNumber: data['juz_number'] as int?,
-      hizbNumber: data['hizb_number'] as int?,
-      sessionNumber: data['session_number'] ?? 1,
-      // Falls back to 1 only for records written before this field existed —
-      // never recomputed from sessionNumber for records that do carry it.
-      orderInLevel: data['order_in_level'] as int? ?? 1,
-      date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      attemptNumber: data['attempt_number'] ?? 1,
-      grades: SessionGrades.fromJson(data['grades']),
-      passed: data['passed'] ?? false,
-      repetitionsWithTeacher: data['repetitions_with_teacher'] ?? 0,
-      homeRepetitionsRequired: data['home_repetitions_required'] ?? 0,
-      notes: data['notes'],
-      createdAt: (data['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      juzNumber: json['juz_number'] as int?,
+      hizbNumber: json['hizb_number'] as int?,
+      sessionNumber: json['session_number'] ?? 1,
+      fromOrderInLevel: json['from_order_in_level'] as int? ?? toOrderInLevel,
+      toOrderInLevel: toOrderInLevel,
+      coversSessionIds: json['covers_session_ids'] != null
+          ? List<String>.from(json['covers_session_ids'] as List)
+          : [curriculumSessionId as String],
+      paceAtTime: json['pace_at_time'] as int? ?? 1,
+      date: (json['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      attemptNumber: json['attempt_number'] ?? 1,
+      grades: SessionGrades.fromJson(json['grades']),
+      passed: json['passed'] ?? false,
+      repetitionsWithTeacher: json['repetitions_with_teacher'] ?? 0,
+      homeRepetitionsRequired: json['home_repetitions_required'] ?? 0,
+      notes: json['notes'],
+      createdAt: (json['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 
@@ -175,7 +218,15 @@ class SessionRecordModel {
       'juz_number': juzNumber,
       'hizb_number': hizbNumber,
       'session_number': sessionNumber,
-      'order_in_level': orderInLevel,
+      'from_order_in_level': fromOrderInLevel,
+      'to_order_in_level': toOrderInLevel,
+      // Compatibility mirror, kept equal to `toOrderInLevel`: pre-pace
+      // readers, and `SessionRepository.getLatestSessionRecord`'s ordering
+      // query, both key off `order_in_level`. Writing it here means old and
+      // new records keep sorting together without a second Firestore index.
+      'order_in_level': toOrderInLevel,
+      'covers_session_ids': coversSessionIds,
+      'pace_at_time': paceAtTime,
       'date': Timestamp.fromDate(date),
       'attempt_number': attemptNumber,
       'grades': grades.toJson(),
@@ -202,7 +253,10 @@ class SessionRecordModel {
     int? juzNumber,
     int? hizbNumber,
     int? sessionNumber,
-    int? orderInLevel,
+    int? fromOrderInLevel,
+    int? toOrderInLevel,
+    List<String>? coversSessionIds,
+    int? paceAtTime,
     DateTime? date,
     int? attemptNumber,
     SessionGrades? grades,
@@ -222,7 +276,10 @@ class SessionRecordModel {
       juzNumber: juzNumber ?? this.juzNumber,
       hizbNumber: hizbNumber ?? this.hizbNumber,
       sessionNumber: sessionNumber ?? this.sessionNumber,
-      orderInLevel: orderInLevel ?? this.orderInLevel,
+      fromOrderInLevel: fromOrderInLevel ?? this.fromOrderInLevel,
+      toOrderInLevel: toOrderInLevel ?? this.toOrderInLevel,
+      coversSessionIds: coversSessionIds ?? this.coversSessionIds,
+      paceAtTime: paceAtTime ?? this.paceAtTime,
       date: date ?? this.date,
       attemptNumber: attemptNumber ?? this.attemptNumber,
       grades: grades ?? this.grades,

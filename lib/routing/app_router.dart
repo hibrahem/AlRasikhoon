@@ -187,7 +187,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                   return StudentProgressScreen(
                     studentId: id,
                     studentProvider: adminStudentProvider,
-                    currentSessionProvider: adminStudentCurrentSessionProvider,
+                    currentMeetingProvider: adminStudentCurrentMeetingProvider,
                     sessionHistoryProvider: adminStudentSessionHistoryProvider,
                   );
                 },
@@ -331,8 +331,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                   return StudentProgressScreen(
                     studentId: studentId,
                     studentProvider: supervisorStudentProvider,
-                    currentSessionProvider:
-                        supervisorStudentCurrentSessionProvider,
+                    currentMeetingProvider:
+                        supervisorStudentCurrentMeetingProvider,
                     sessionHistoryProvider:
                         supervisorStudentSessionHistoryProvider,
                   );

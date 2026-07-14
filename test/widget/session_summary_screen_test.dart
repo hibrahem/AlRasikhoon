@@ -7,6 +7,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
+import 'package:al_rasikhoon/data/repositories/curriculum_repository.dart';
 import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
@@ -32,7 +33,23 @@ void main() {
     (tester) async {
       final firestore = FakeFirebaseFirestore();
       final sessionRepository = SessionRepository(firestore: firestore);
+      final curriculumRepository = CurriculumRepository(firestore: firestore);
       final mockStudentRepository = MockStudentRepository();
+
+      // The curriculum session the student stands on (order 7 of level 1) —
+      // `completeSession` now composes a meeting from the curriculum before
+      // writing anything, so this must exist for the composer to find.
+      await firestore
+          .collection('sessions')
+          .doc('CUSTOM_SESSION_ID_NOT_REBUILT')
+          .set({
+            'level_id': 1,
+            'juz_number': 30,
+            'session_number': 1,
+            'order_in_level': 7,
+            'kind': 'lesson',
+            'hizb_number': 59,
+          });
 
       final teacher = UserModel(
         id: 'teacher-1',
@@ -74,7 +91,10 @@ void main() {
         (_) async => [StudentWithUser(student: student, user: studentUser)],
       );
       when(
-        () => mockStudentRepository.advanceStudentSession('student-1'),
+        () => mockStudentRepository.advanceStudentSession(
+          'student-1',
+          fromOrderInLevel: 7,
+        ),
       ).thenAnswer((_) async => StudentAdvanceOutcome.advanced);
 
       final container = ProviderContainer(
@@ -82,6 +102,7 @@ void main() {
           currentUserProvider.overrideWithValue(teacher),
           studentRepositoryProvider.overrideWithValue(mockStudentRepository),
           sessionRepositoryProvider.overrideWithValue(sessionRepository),
+          curriculumRepositoryProvider.overrideWithValue(curriculumRepository),
         ],
       );
       addTearDown(container.dispose);

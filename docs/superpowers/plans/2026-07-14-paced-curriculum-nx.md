@@ -1673,11 +1673,47 @@ final studentCurrentMeetingProvider =
     });
 ```
 
-Mirror it in `lib/features/supervisor/providers/supervisor_provider.dart` as `supervisorStudentCurrentMeetingProvider`, resolving the student via `supervisorStudentProvider` (institute-scoped, AgDR-0003 — a supervisor-created student has a null `teacher_id` and the teacher-scoped provider would return "Student not found").
+The three providers differ ONLY in which provider resolves the student. Do not
+triplicate the composition — put it in one place. In
+`lib/features/teacher/providers/teacher_provider.dart`, above the provider:
 
-Mirror it in `lib/features/student/providers/student_provider.dart` as `studentDashboardMeetingProvider`, a plain `FutureProvider<PacedSession?>` resolving via `currentStudentProvider`.
+```dart
+/// Composes the meeting [student] currently stands on.
+///
+/// Shared by the teacher, supervisor and student-dashboard meeting providers,
+/// which differ only in how they RESOLVE the student (teacher-scoped,
+/// institute-scoped per AgDR-0003, or the signed-in student). The composition
+/// itself is one rule and lives in one place.
+Future<PacedSession?> composeMeetingFor(Ref ref, StudentModel student) async {
+  final curriculumRepo = ref.watch(curriculumRepositoryProvider);
 
-All three are the same eight lines; the only difference is which provider resolves the student. That duplication already exists for the session providers — follow it rather than inventing a shared abstraction.
+  final levelSessions = await curriculumRepo.getSessionsForLevel(
+    level: student.currentLevel,
+  );
+  if (levelSessions.isEmpty) return null;
+
+  return PacedSessionComposer.compose(
+    levelSessions: levelSessions,
+    startOrderInLevel: student.currentOrderInLevel,
+    pace: student.pace,
+  );
+}
+```
+
+`studentCurrentMeetingProvider` then reduces to resolving the student and calling
+it. Add the two twins the same way:
+
+- `supervisorStudentCurrentMeetingProvider` in
+  `lib/features/supervisor/providers/supervisor_provider.dart`, resolving via
+  `supervisorStudentProvider` (institute-scoped, AgDR-0003 — a supervisor-created
+  student has a null `teacher_id`, and the teacher-scoped provider would return
+  "Student not found").
+- `studentDashboardMeetingProvider` in
+  `lib/features/student/providers/student_provider.dart`, a plain
+  `FutureProvider<PacedSession?>` resolving via `currentStudentProvider`.
+
+Each is then three lines: resolve the student, return null if absent, and
+`return composeMeetingFor(ref, student)`.
 
 - [ ] **Step 4: Run the tests to verify they pass**
 

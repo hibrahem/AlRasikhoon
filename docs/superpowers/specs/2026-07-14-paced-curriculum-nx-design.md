@@ -239,6 +239,40 @@ fed the batch's last order instead of the single session's order.
 - **Application:** a 2x meeting writes one record covering N sessions, and
   advancement lands on `toOrderInLevel + 1`.
 
+## Display: de-duplicate and merge, but never across a surah
+
+A composed meeting's content lists are DISCRETE — two lessons, several recent-window
+rows, two distant chunks. Rendered raw, a 2x student's recent review reads as
+fragments with the تلقين's block duplicated. The display getters
+(`newContentAr` / `recentReviewAr` / `distantReviewAr`) therefore de-duplicate, then
+merge contiguous runs into the curriculum's own idiom: `النبأ: 1 - 30`.
+
+**The merge lives in the display layer, never in the composer.** The composer's
+discrete lists are what give the gate tests their teeth — the "recent review never
+intersects the meeting's own new content" assertion compares discrete blocks, and a
+composer that merged them into one wide range would never match a taught block and
+would go silently toothless.
+
+**Two blocks are contiguous if and only if they are in the SAME surah and
+`next.fromVerse == prev.toVerse + 1`.** Blocks in different surahs are NEVER merged.
+
+That last rule is not conservatism, it is correctness. The tempting rule — "if the
+next block opens a new surah at verse 1, the previous surah must have been finished"
+— is **unsound, and false on the real data**. The app does not know surah lengths
+(deliberately: that would be curriculum knowledge it has no business holding), so it
+cannot know a surah was finished. Level 9's distant cursor proves it: order 13 sweeps
+`هود 1-28` and order 14 jumps to `يوسف 1-111`, but هود has 123 verses — the source
+simply skips هود 29-123. Under the tempting rule a 2x student's screen would read
+`هود: 1 إلى يوسف: 111`, claiming ~95 verses no curriculum row ever assigned him.
+
+So a cross-surah run renders as two ranges joined by ` • `. It is never wider than
+what the curriculum states. The curriculum itself *does* author cross-surah ranges
+(`النبأ 38 - النازعات 14`) — it may, because its author knows the surah lengths. We
+may not.
+
+Merging is not authoring: a merged block copies the first block's start and the last
+block's end. It computes no surah name and no verse number.
+
 ## Out of scope
 
 - **Cleaning the ~8 noisy source rows.** The surah-name typos (`المعار ج`), the

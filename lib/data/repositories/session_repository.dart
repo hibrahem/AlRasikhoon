@@ -7,6 +7,8 @@ import '../models/exam_record_model.dart';
 import '../services/firebase_service.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/grade_calculator.dart';
+import '../../domain/curriculum/curriculum_pace.dart';
+import '../../domain/curriculum/paced_session.dart';
 
 class SessionRepository {
   final FirebaseFirestore _firestore;
@@ -46,29 +48,36 @@ class SessionRepository {
 
   /// Create session record
   ///
-  /// [kind] and [juzNumber] are copied verbatim from the session this record
-  /// is FOR (via `student.currentSessionKind`/`currentJuz` at write time) —
+  /// `kind` and `juzNumber` are read off the session this record NAMES — the
+  /// last one [meeting] discharged — never off the student's denormalized
+  /// `current_session_kind`/`current_juz`, which are a copy and can drift, and
   /// never inferred from [sessionNumber].
   /// [hizbNumber] is a LABEL, present only in levels 1-2. It keys nothing.
-  /// [orderInLevel] is the curriculum's ordering key — copied verbatim from
-  /// the session this record is FOR (never recomputed from [sessionNumber]).
+  /// [meeting] is the teaching meeting this ONE recitation discharged — one
+  /// session at 1x pace, or several batched together at 2x and beyond. The
+  /// teacher grades one recitation, so this writes exactly one record no
+  /// matter how many curriculum sessions [meeting] spans; see
+  /// [SessionRecordModel.toOrderInLevel] for why that span, not
+  /// [sessionNumber], is the advancement key.
+  /// [pace] is the student's pace SETTING, recorded verbatim as
+  /// [SessionRecordModel.paceAtTime] — it is NOT derived from `meeting.sessions.length`,
+  /// because a batch can truncate short of the pace (a تلقين or a سرد
+  /// boundary stops it early) while the student's pace setting has not
+  /// changed.
   /// [now] is a test seam; see [_writeSessionRecord].
   Future<SessionRecordModel> createSessionRecord({
     required String studentId,
     required String teacherId,
-    required String curriculumSessionId,
+    required PacedSession meeting,
     required int levelId,
-    required SessionKind kind,
-    required int juzNumber,
     int? hizbNumber,
-    required int sessionNumber,
-    required int orderInLevel,
     required int attemptNumber,
     required int newMemorizationErrors,
     required int recentReviewErrors,
     required int distantReviewErrors,
     required int repetitionsWithTeacher,
     required int homeRepetitionsRequired,
+    required CurriculumPace pace,
     String? notes,
     DateTime? now,
   }) {
@@ -87,13 +96,22 @@ class SessionRepository {
         id: id,
         studentId: studentId,
         teacherId: teacherId,
-        curriculumSessionId: curriculumSessionId,
+        // The record NAMES the last session it discharged, so that a reader
+        // that knows nothing of pace still lands on the right point in the
+        // curriculum.
+        curriculumSessionId: meeting.sessions.last.id,
         levelId: levelId,
-        kind: kind,
-        juzNumber: juzNumber,
+        // Read off the session the record NAMES — not off the student's
+        // denormalized `current_session_kind`/`current_juz`, which are a copy
+        // and can drift. The meeting holds the real curriculum row.
+        kind: meeting.sessions.last.kind,
+        juzNumber: meeting.sessions.last.juzNumber,
         hizbNumber: hizbNumber,
-        sessionNumber: sessionNumber,
-        orderInLevel: orderInLevel,
+        sessionNumber: meeting.sessions.last.sessionNumber,
+        fromOrderInLevel: meeting.fromOrderInLevel,
+        toOrderInLevel: meeting.toOrderInLevel,
+        coversSessionIds: meeting.coversSessionIds,
+        paceAtTime: pace.multiplier,
         date: writtenAt,
         attemptNumber: attemptNumber,
         grades: grades,
@@ -114,26 +132,30 @@ class SessionRepository {
   /// so the record carries zeroed grades and passes unconditionally — it exists
   /// for history and attendance, and to carry the home assignment.
   ///
-  /// [kind] and [juzNumber] are copied verbatim from the session this record
-  /// is FOR (via `student.currentSessionKind`/`currentJuz` at write time) —
-  /// [kind] is always [SessionKind.talqeen] here, since this method records
-  /// nothing else, but it is threaded through rather than hardcoded so the
-  /// value keeps coming from the session, exactly like [orderInLevel].
-  /// [orderInLevel] is the curriculum's ordering key — copied verbatim from
-  /// the session this record is FOR (never recomputed from [sessionNumber]).
+  /// [meeting] is the meeting this تلقين belongs to — see [createSessionRecord].
+  /// A تلقين always stands alone (`PacedSessionComposer` never batches one),
+  /// so [meeting] here always spans exactly one session; the shape still
+  /// holds and needs no special case.
+  ///
+  /// `kind` and `juzNumber` are read off that session — never off the student's
+  /// denormalized `current_session_kind`/`current_juz`, which are a copy and can
+  /// drift. `kind` is always [SessionKind.talqeen] here, since this method
+  /// records nothing else, but it still comes FROM the session rather than being
+  /// hardcoded, exactly as the ordering key does.
+  ///
+  /// [pace] is the student's pace SETTING, recorded verbatim as
+  /// [SessionRecordModel.paceAtTime] — see [createSessionRecord].
+  ///
   /// [now] is a test seam; see [_writeSessionRecord].
   Future<SessionRecordModel> createTalqeenRecord({
     required String studentId,
     required String teacherId,
-    required String curriculumSessionId,
+    required PacedSession meeting,
     required int levelId,
-    required SessionKind kind,
-    required int juzNumber,
     int? hizbNumber,
-    required int sessionNumber,
-    required int orderInLevel,
     required int repetitionsWithTeacher,
     required int homeRepetitionsRequired,
+    required CurriculumPace pace,
     String? notes,
     DateTime? now,
   }) {
@@ -142,13 +164,19 @@ class SessionRepository {
         id: id,
         studentId: studentId,
         teacherId: teacherId,
-        curriculumSessionId: curriculumSessionId,
+        curriculumSessionId: meeting.sessions.last.id,
         levelId: levelId,
-        kind: kind,
-        juzNumber: juzNumber,
+        // Read off the session the record NAMES — not off the student's
+        // denormalized `current_session_kind`/`current_juz`, which are a copy
+        // and can drift. The meeting holds the real curriculum row.
+        kind: meeting.sessions.last.kind,
+        juzNumber: meeting.sessions.last.juzNumber,
         hizbNumber: hizbNumber,
-        sessionNumber: sessionNumber,
-        orderInLevel: orderInLevel,
+        sessionNumber: meeting.sessions.last.sessionNumber,
+        fromOrderInLevel: meeting.fromOrderInLevel,
+        toOrderInLevel: meeting.toOrderInLevel,
+        coversSessionIds: meeting.coversSessionIds,
+        paceAtTime: pace.multiplier,
         date: writtenAt,
         attemptNumber: 1,
         grades: const SessionGrades(
@@ -174,10 +202,18 @@ class SessionRepository {
   /// both stamped from the SAME `DateTime.now()` call (see
   /// `_writeSessionRecord`), so anything that ties `date` ties `created_at`
   /// too; that pairing can never break a tie. `order_in_level` can: a
-  /// student's records are written one per completed session, and a later
-  /// session always carries a strictly greater `order_in_level` within a
+  /// student's records are written one per completed meeting, and a later
+  /// meeting always carries a strictly greater `order_in_level` within a
   /// level, so on a same-instant tie the record further along the curriculum
   /// is the genuinely later one.
+  ///
+  /// `order_in_level` is now [SessionRecordModel.toOrderInLevel]'s
+  /// compatibility mirror — see [SessionRecordModel.toFirestore] — kept
+  /// deliberately UNCHANGED here rather than switched to `to_order_in_level`.
+  /// Both old records (which only ever had `order_in_level`) and new records
+  /// (which write both, in lockstep) sort correctly on this one field, so the
+  /// query and its composite index (`student_id`, `date`, `order_in_level` in
+  /// `firestore.indexes.json`) need no change.
   Future<SessionRecordModel?> getLatestSessionRecord(String studentId) async {
     final query = await _sessionRecordsCollection
         .where('student_id', isEqualTo: studentId)

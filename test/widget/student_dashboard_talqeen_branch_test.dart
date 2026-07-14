@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
+import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/features/student/providers/student_provider.dart';
 import 'package:al_rasikhoon/features/student/screens/student_dashboard_screen.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
@@ -60,8 +61,26 @@ void main() {
         overrides: [
           currentUserProvider.overrideWithValue(user),
           currentStudentProvider.overrideWith((ref) async => student),
-          studentDashboardSessionProvider.overrideWith(
-            (ref) async => talqeenSession,
+          // A تلقين always stands alone (`PacedSessionComposer` never
+          // batches one), so its meeting is a single-session `PacedSession`
+          // built from the same row — the screen now reads the MEETING, not
+          // the session directly.
+          studentDashboardMeetingProvider.overrideWith(
+            (ref) async => PacedSession(
+              sessions: [talqeenSession],
+              newContent: [
+                if (talqeenSession.currentLevelContent != null)
+                  talqeenSession.currentLevelContent!,
+              ],
+              recentReview: [
+                if (talqeenSession.recentReviewContent != null)
+                  talqeenSession.recentReviewContent!,
+              ],
+              distantReview: [
+                if (talqeenSession.distantReviewContent != null)
+                  talqeenSession.distantReviewContent!,
+              ],
+            ),
           ),
           studentStatsProvider.overrideWith(
             (ref) async => const StudentStats(
