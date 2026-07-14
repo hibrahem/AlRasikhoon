@@ -127,3 +127,24 @@ Task 10 (LAST): complete, full suite 713/713 — the pace control on session_ove
   schedules an automatic retry Timer that outlives the test, tripping "Timer still pending" — fixed by overriding
   firestoreProvider with FakeFirebaseFirestore() in the new test, same as add_student_screen_test.dart /
   session_summary_screen_test.dart already do.
+Task 10: complete (commit a88a1ab, review pending final) — pace control (1x/2x/3x) on session_overview_screen
+  Placed there because the flexible-placement/reposition screens the plan pointed at DON'T EXIST YET
+  (al_rasikhoon-i1d and -sne are still OPEN). session_overview is the one screen both teacher AND supervisor
+  land on for a student (it's reused verbatim with asSupervisor: true).
+  Good deviation: invalidates whichever student provider the ACTIVE path watches — the supervisor path is fed by
+  supervisorStudentProvider, independent of studentProvider; invalidating the wrong one would leave the
+  supervisor's meeting stale. Mirrors sard_result_screen.dart.
+  Suite 713/713.
+FINAL WHOLE-BRANCH REVIEW: found 1 CRITICAL, fixed in f42cce1. Suite 714/714, analyze clean.
+  *** CRITICAL (my spec's bug, introduced TWICE): the display merge invented Qur'an verses across a surah
+  boundary. The rule "different surah AND next.fromVerse == 1 => contiguous" assumes the previous surah was
+  FINISHED — but the app does not know surah lengths (deliberately) and the assumption is FALSE on real data.
+  L9 distant: order 13 = هود 1-28, order 14 = يوسف 1-111. هود has 123 verses; the source SKIPS هود 29-123.
+  A 2x student would have seen "هود: 1 إلى يوسف: 111" — ~95 verses nobody assigned him.
+  FIX: merge ONLY within one surah on adjacent verses. Cross-surah blocks render as two ranges joined by ' • '.
+  Mutation-proven with the real هود/يوسف data.
+  Reviewer also walked all 10 levels at paces 2/3/5: no order is ever skipped or repeated, no batch ever
+  contains a non-lesson, no stranding at a level boundary. Legacy record round-trip re-verified.
+Minors filed as al_rasikhoon-1aq. Source-data defects added to al_rasikhoon-drw.
+NOT DONE: (a) in-app verification (plan Task 11 step 2); (b) reconciling with the parallel session's
+  uncommitted SessionRecordModel work (kind + juzNumber) in the MAIN checkout — Task 6 rewrote the same model.
