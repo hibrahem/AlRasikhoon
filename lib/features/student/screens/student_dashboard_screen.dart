@@ -13,6 +13,7 @@ import '../../../shared/widgets/stat_card.dart';
 import '../../../shared/widgets/student_level_progress.dart';
 import '../../../shared/widgets/level_progression_widget.dart';
 import '../providers/student_provider.dart';
+import '../widgets/home_assignment_card.dart';
 
 class StudentDashboardScreen extends ConsumerStatefulWidget {
   const StudentDashboardScreen({super.key});
@@ -114,6 +115,13 @@ class _StudentDashboardScreenState
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Text('Error: $e'),
               ),
+
+              const SizedBox(height: 24),
+
+              // What the student owes at home — renders nothing when there is
+              // no assignment, so it is safe to always place here (spec §5:
+              // both the dashboard and the home-practice screen show it).
+              const HomeAssignmentCard(),
 
               const SizedBox(height: 24),
 
