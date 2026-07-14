@@ -18,7 +18,7 @@ toolchain failing does not mask the other):
 | Set up Flutter | `subosito/flutter-action@v2` | Pinned to Flutter **3.35.7** (stable) — bundles Dart 3.9.2 to satisfy `pubspec.yaml`'s `sdk: ^3.9.2`. |
 | Resolve deps | `flutter pub get` | |
 | Analyze | `flutter analyze` | Fails the job on any analyzer error/warning (default behaviour). |
-| Unit tests | `flutter test test/` | **Unit suite only.** Integration tests (`integration_test/`) need a device/emulator and are tracked separately under **issue #5** — intentionally not wired here. |
+| Unit, widget and E2E tests | `flutter test test/` | Everything: unit, widget, and the five E2E suites in `test/e2e/`. All on the Dart VM — no device, no simulator (closes **issue #5**). The E2E suites fake Firestore and override every provider, so they never needed a device; the one they used to demand cost a ~28-minute cold Xcode build per run, which is why nothing ran them. They execute at a real phone's viewport, **safe-area padding included** — the host's default 800×600 surface hides precisely the below-the-fold bugs the suite exists to catch. `integration_test/firebase_emulator_flow_test.dart` is NOT run here: it talks to a real Firestore via `firebase emulators:start`. |
 
 ### Job: `functions` — build + lint
 
