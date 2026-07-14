@@ -26,6 +26,15 @@ class SessionDetailScreen extends ConsumerWidget {
 
           final dateFormat = DateFormat('yyyy/MM/dd hh:mm a', 'ar');
 
+          // The record carries only the session id (`L1_J30_S1`). That id is a
+          // key, not a name: the title a student reads is the session's own
+          // Arabic title. Fall back to the id only if the session cannot be
+          // resolved at all.
+          final session = ref
+              .watch(curriculumSessionByIdProvider(record.curriculumSessionId))
+              .value;
+          final title = session?.titleAr ?? record.curriculumSessionId;
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -55,7 +64,7 @@ class SessionDetailScreen extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  record.curriculumSessionId,
+                                  title,
                                   style: Theme.of(
                                     context,
                                   ).textTheme.titleMedium,

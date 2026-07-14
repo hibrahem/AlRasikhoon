@@ -17,13 +17,20 @@ void main() {
     await initializeDateFormatting('ar');
   });
 
-  Future<void> pump(WidgetTester tester, SessionRecordModel record) async {
+  Future<void> pump(
+    WidgetTester tester,
+    SessionRecordModel record, {
+    SessionModel? session,
+  }) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           sessionRecordByIdProvider(
             record.id,
           ).overrideWith((ref) async => record),
+          curriculumSessionByIdProvider(
+            record.curriculumSessionId,
+          ).overrideWith((ref) async => session),
         ],
         child: MaterialApp(
           home: Directionality(
@@ -114,5 +121,54 @@ void main() {
     expect(find.text('الحفظ الجديد'), findsOneWidget);
     expect(find.text('المراجعة القريبة'), findsOneWidget);
     expect(find.text('المراجعة البعيدة'), findsOneWidget);
+  });
+
+  // The record stores the curriculum session's ID (`L1_J30_S5`). That is a key,
+  // not a name: a student reading his own history must see the session's Arabic
+  // title, never the raw id.
+  testWidgets('the header names the session in Arabic, not by its raw id', (
+    tester,
+  ) async {
+    final record = SessionRecordModel(
+      id: 'r3',
+      studentId: 'student1',
+      teacherId: 'teacher1',
+      curriculumSessionId: 'L1_J30_S5',
+      levelId: 1,
+      kind: SessionKind.lesson,
+      juzNumber: 30,
+      hizbNumber: 59,
+      sessionNumber: 5,
+      fromOrderInLevel: 5,
+      toOrderInLevel: 5,
+      coversSessionIds: const ['L1_J30_S5'],
+      date: DateTime(2026, 7, 14),
+      attemptNumber: 1,
+      grades: const SessionGrades(
+        newMemorizationErrors: 0,
+        recentReviewErrors: 0,
+        distantReviewErrors: 0,
+      ),
+      passed: true,
+      createdAt: DateTime(2026, 7, 14),
+    );
+
+    await pump(
+      tester,
+      record,
+      session: const SessionModel(
+        id: 'L1_J30_S5',
+        levelId: 1,
+        juzNumber: 30,
+        sessionNumber: 5,
+        orderInLevel: 5,
+        kind: SessionKind.lesson,
+        unitIndex: 1,
+        hizbNumber: 59,
+      ),
+    );
+
+    expect(find.text('الحلقة 5 - الجزء 30'), findsOneWidget);
+    expect(find.text('L1_J30_S5'), findsNothing);
   });
 }

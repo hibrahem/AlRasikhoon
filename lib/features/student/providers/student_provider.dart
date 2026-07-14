@@ -103,6 +103,18 @@ final sessionRecordByIdProvider =
       return repo.getSessionRecordById(recordId);
     });
 
+/// Fetches a curriculum session by its id (`L{level}_J{juz}_S{n}`).
+///
+/// A record stores only that id. The name a student reads — `تلقين - الجزء 30`,
+/// `سرد الحزب 60`, `الحلقة 4 - الجزء 30` — lives on the session, so any screen
+/// that has a record and wants to NAME its session must resolve it through here
+/// rather than print the raw id.
+final curriculumSessionByIdProvider =
+    FutureProvider.family<SessionModel?, String>((ref, sessionId) async {
+      final repo = ref.watch(curriculumRepositoryProvider);
+      return repo.getSessionById(sessionId);
+    });
+
 /// Provider for student statistics
 final studentStatsProvider = FutureProvider<StudentStats>((ref) async {
   final student = await ref.watch(currentStudentProvider.future);
