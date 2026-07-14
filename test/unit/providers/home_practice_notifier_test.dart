@@ -232,6 +232,105 @@ void main() {
     },
   );
 
+  // hibrahem/AlRasikhoon final-review finding #2: a record written before
+  // `juz_number` shipped reads back with `juzNumber: null` (never a sentinel
+  // like 0, which is not a real juz). `addPractice` must fall back to the
+  // student's OWN current juz in that case — a regression that reads
+  // `lastRecord?.juzNumber ?? student.currentJuz` while `juzNumber` still
+  // defaulted to 0 in the model would never hit this fallback at all, since
+  // 0 is not null, and would file the practice under a juz that does not
+  // exist.
+  test('addPractice falls back to the student\'s OWN currentJuz when the last '
+      'record predates the juz_number field', () async {
+    final student = StudentModel(
+      id: 'student-1',
+      userId: 'user-1',
+      instituteId: 'institute-1',
+      currentLevel: 1,
+      currentJuz: 30,
+      currentSession: 3,
+      currentHizb: 59,
+      currentSessionId: 'L1_J30_S3',
+      createdAt: DateTime(2026, 1, 1),
+    );
+
+    // A pre-migration record: written before `juz_number` existed, so it
+    // carries no juz at all.
+    final preMigrationRecord = SessionRecordModel(
+      id: 'record-pre-migration',
+      studentId: 'student-1',
+      teacherId: 'teacher-1',
+      curriculumSessionId: 'L1_J30_S2',
+      levelId: 1,
+      kind: SessionKind.lesson,
+      juzNumber: null,
+      hizbNumber: 59,
+      sessionNumber: 2,
+      orderInLevel: 2,
+      date: DateTime(2026, 1, 1),
+      attemptNumber: 1,
+      grades: const SessionGrades(
+        newMemorizationErrors: 0,
+        recentReviewErrors: 0,
+        distantReviewErrors: 0,
+      ),
+      passed: true,
+      repetitionsWithTeacher: 5,
+      homeRepetitionsRequired: 10,
+      createdAt: DateTime(2026, 1, 1),
+    );
+
+    when(
+      () => mockSessionRepository.getLatestSessionRecord('student-1'),
+    ).thenAnswer((_) async => preMigrationRecord);
+
+    when(
+      () => mockHomePracticeRepository.createHomePractice(
+        studentId: any(named: 'studentId'),
+        curriculumSessionId: any(named: 'curriculumSessionId'),
+        levelId: any(named: 'levelId'),
+        juzNumber: any(named: 'juzNumber'),
+        hizbNumber: any(named: 'hizbNumber'),
+        sessionNumber: any(named: 'sessionNumber'),
+        repetitions: any(named: 'repetitions'),
+        notes: any(named: 'notes'),
+      ),
+    ).thenAnswer((_) async => 'practice-1');
+
+    final container = ProviderContainer(
+      overrides: [
+        currentStudentProvider.overrideWith((ref) async => student),
+        sessionRepositoryProvider.overrideWithValue(mockSessionRepository),
+        homePracticeRepositoryProvider.overrideWithValue(
+          mockHomePracticeRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final ok = await container
+        .read(homePracticeNotifierProvider.notifier)
+        .addPractice(repetitions: 4);
+
+    expect(ok, isTrue);
+
+    // 30, the student's OWN current juz — never 0, and never null.
+    final captured = verify(
+      () => mockHomePracticeRepository.createHomePractice(
+        studentId: 'student-1',
+        curriculumSessionId: any(named: 'curriculumSessionId'),
+        levelId: any(named: 'levelId'),
+        juzNumber: captureAny(named: 'juzNumber'),
+        hizbNumber: any(named: 'hizbNumber'),
+        sessionNumber: any(named: 'sessionNumber'),
+        repetitions: 4,
+        notes: any(named: 'notes'),
+      ),
+    ).captured;
+
+    expect(captured.single, 30);
+  });
+
   test('addPractice falls back to the student\'s OWN currentSessionId — never '
       "'' — when there is no session record yet", () async {
     final student = StudentModel(

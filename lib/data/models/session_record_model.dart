@@ -69,7 +69,13 @@ class SessionRecordModel {
   /// session this record is FOR — never the student's CURRENT juz, which may
   /// already be a different one by the time this is read (the teacher may
   /// have advanced the student across a juz boundary in between).
-  final int juzNumber;
+  ///
+  /// Null only for records written before this field existed — those records
+  /// genuinely do not carry a juz, so this stays nullable rather than
+  /// defaulting to a sentinel like `0`, which is not a real juz and would be
+  /// written straight into a new document (e.g. home practice) by any caller
+  /// that read it with `??`.
+  final int? juzNumber;
 
   /// A LABEL, present only in levels 1-2 — and absent even there on juz- and
   /// level-tier sessions. It keys nothing: the record is identified by
@@ -137,9 +143,12 @@ class SessionRecordModel {
       kind: data['kind'] != null
           ? SessionKindX.fromString(data['kind'] as String)
           : SessionKind.lesson,
-      // Falls back to 0 — never a real juz — only for records written before
-      // this field existed; never guessed from the student's current juz.
-      juzNumber: data['juz_number'] as int? ?? 0,
+      // Null only for records written before this field existed. Never a
+      // sentinel like 0 (not a real juz) and never guessed from the
+      // student's current juz — a caller that needs a juz for an absent
+      // record must fall back explicitly, the way `addPractice` falls back
+      // to the student's own current juz.
+      juzNumber: data['juz_number'] as int?,
       hizbNumber: data['hizb_number'] as int?,
       sessionNumber: data['session_number'] ?? 1,
       // Falls back to 1 only for records written before this field existed —

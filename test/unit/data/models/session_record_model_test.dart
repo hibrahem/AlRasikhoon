@@ -396,6 +396,39 @@ void main() {
 
         expect(record.juzNumber, 29);
       });
+
+      // hibrahem/AlRasikhoon final-review finding #2: a record written
+      // before `juz_number` shipped must read back as `juzNumber: null` —
+      // never a sentinel like 0, which is not a real juz and reads as data.
+      // A caller (e.g. `addPractice`) that falls back with
+      // `lastRecord?.juzNumber ?? student.currentJuz` only works if this is
+      // null; a leftover `?? 0` here would silently swallow that fallback.
+      test(
+        'reads back as null for a record written before this field existed',
+        () async {
+          final fakeFirestore = FakeFirebaseFirestore();
+          await fakeFirestore.collection('session_records').doc('r2').set({
+            'student_id': 'student1',
+            'teacher_id': 'teacher1',
+            'curriculum_session_id': 'L1_J29_S1',
+            'kind': 'lesson',
+            // No 'juz_number' at all — pre-migration data.
+            'order_in_level': 67,
+            'date': Timestamp.now(),
+            'attempt_number': 1,
+            'passed': true,
+            'created_at': Timestamp.now(),
+          });
+
+          final doc = await fakeFirestore
+              .collection('session_records')
+              .doc('r2')
+              .get();
+          final record = SessionRecordModel.fromFirestore(doc);
+
+          expect(record.juzNumber, isNull);
+        },
+      );
     });
 
     group('recitation counts', () {
