@@ -1,10 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/institute_repository.dart';
 import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/repositories/student_repository.dart';
-import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/institute_model.dart';
@@ -137,22 +135,6 @@ final adminStudentProvider = FutureProvider.family<StudentWithUser?, String>((
   final repo = ref.watch(studentRepositoryProvider);
   return repo.getStudentWithUserById(studentId);
 });
-
-/// The curriculum session a student is currently on (admin-only view).
-final adminStudentCurrentSessionProvider =
-    FutureProvider.family<SessionModel?, String>((ref, studentId) async {
-      final studentWithUser = await ref.watch(
-        adminStudentProvider(studentId).future,
-      );
-      if (studentWithUser == null) return null;
-
-      final student = studentWithUser.student;
-      final curriculumRepo = ref.watch(curriculumRepositoryProvider);
-
-      // The student carries the id of the session they stand on
-      // (`L{level}_J{juz}_S{n}`) — a direct read, no id rebuilding.
-      return curriculumRepo.getSessionById(student.currentSessionId);
-    });
 
 /// The MEETING a student stands on (admin-only view) — the admin twin of
 /// `studentCurrentMeetingProvider`. Resolves the student via

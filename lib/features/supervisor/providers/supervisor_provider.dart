@@ -50,28 +50,6 @@ final supervisorStudentProvider =
       return null;
     });
 
-/// Current-session data for a student resolved through the supervisor's
-/// institute scope. Mirrors the teacher-side `studentCurrentSessionProvider`
-/// but resolves the student via [supervisorStudentProvider] (institute-scoped,
-/// AgDR-0003) instead of the teacher-scoped `getStudentsForTeacher`. This is
-/// what lets a supervisor open the session-overview / Sard flow for an
-/// institute student whose `teacher_id` is null (supervisor-created students,
-/// per AgDR-0003) without hitting "Student not found".
-final supervisorStudentCurrentSessionProvider =
-    FutureProvider.family<SessionModel?, String>((ref, studentId) async {
-      final studentAsync = await ref.watch(
-        supervisorStudentProvider(studentId).future,
-      );
-      if (studentAsync == null) return null;
-
-      final student = studentAsync.student;
-      final curriculumRepo = ref.watch(curriculumRepositoryProvider);
-
-      // The student carries the id of the session they stand on
-      // (`L{level}_J{juz}_S{n}`) — a direct read, no id rebuilding.
-      return curriculumRepo.getSessionById(student.currentSessionId);
-    });
-
 /// Recent session records for a student in the supervisor's institute — the
 /// history half of the supervisor's read-only progress view (al_rasikhoon-801).
 /// Reads are not institute-scoped at the repository level (al_rasikhoon-bpk);
@@ -88,9 +66,9 @@ final supervisorStudentSessionHistoryProvider =
 
 /// The MEETING a student in the supervisor's institute stands on — the
 /// institute-scoped twin of `studentCurrentMeetingProvider`. Resolves the
-/// student via [supervisorStudentProvider] (institute-scoped, AgDR-0003) so a
-/// supervisor-created student (null `teacher_id`) is not lost the same way
-/// [supervisorStudentCurrentSessionProvider] avoids it above, then composes
+/// student via [supervisorStudentProvider] (institute-scoped, AgDR-0003)
+/// rather than the teacher-scoped `getStudentsForTeacher`, so a
+/// supervisor-created student (null `teacher_id`) is not lost, then composes
 /// the meeting through the one shared rule in [composeMeetingFor].
 final supervisorStudentCurrentMeetingProvider =
     FutureProvider.family<PacedSession?, String>((ref, studentId) async {
