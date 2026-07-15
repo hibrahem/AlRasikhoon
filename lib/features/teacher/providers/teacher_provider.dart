@@ -116,11 +116,19 @@ final studentCurrentMeetingProvider =
 final activeSessionNextMeetingProvider = FutureProvider<PacedSession?>((
   ref,
 ) async {
-  final active = ref.watch(activeSessionProvider);
-  final meeting = active?.meeting;
-  if (active == null || meeting == null) return null;
+  // Subscribe only to the two fields the next passage is composed from — the
+  // meeting being taught and whose session it is — NOT the whole active
+  // session. The recitation counts (and every other field) live on the same
+  // state object and are edited on the very screen that shows this preview;
+  // watching the whole object would reload the preview — flashing a spinner
+  // over the passage card — on every count tap.
+  final studentId = ref.watch(
+    activeSessionProvider.select((s) => s?.studentId),
+  );
+  final meeting = ref.watch(activeSessionProvider.select((s) => s?.meeting));
+  if (studentId == null || meeting == null) return null;
 
-  final studentAsync = ref.watch(studentProvider(active.studentId));
+  final studentAsync = ref.watch(studentProvider(studentId));
   final student = studentAsync.value?.student;
   if (student == null) return null;
 
