@@ -46,37 +46,11 @@ LIB_DIR="$FUNCTIONS_DIR/lib"
 
 cd "$FUNCTIONS_DIR"
 
-# Portable sha256: prefer sha256sum (Linux/CI), fall back to shasum (macOS).
-_sha256() {
-  if command -v sha256sum >/dev/null 2>&1; then
-    sha256sum
-  else
-    shasum -a 256
-  fi
-}
-
-# Deterministic content hash of every compiled artifact under lib/.
-# Sorted file list -> per-file hash -> hash of the combined list, so the result
-# is stable across runs and machines. *.tsbuildinfo is a build cache, not a
-# shipped artifact, so it is excluded.
-hash_lib() {
-  if [ ! -d "$LIB_DIR" ]; then
-    echo "__NO_LIB__"
-    return 0
-  fi
-  # Stream each artifact's path (relative to lib/, for machine independence)
-  # followed by its bytes into a single sha256. Piping into the _sha256 shell
-  # function is required — `xargs` cannot invoke a shell function.
-  (
-    cd "$LIB_DIR"
-    find . -type f ! -name '*.tsbuildinfo' -print0 \
-      | LC_ALL=C sort -z \
-      | while IFS= read -r -d '' f; do
-          printf '%s\0' "$f"
-          cat "$f"
-        done
-  ) | _sha256 | awk '{print $1}'
-}
+# hash_lib() (and _sha256) live in the shared helper so this freshness check and
+# build-stamp.sh hash the compiled artifact identically. LIB_DIR is already set
+# above; lib-hash.sh honours it.
+# shellcheck source=lib-hash.sh
+. "$SCRIPT_DIR/lib-hash.sh"
 
 echo "==> verify-build-fresh: hashing existing functions/lib"
 BEFORE="$(hash_lib)"

@@ -130,6 +130,26 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Build-freshness guard (issue al_rasikhoon-x9v, follow-up to
+      # al_rasikhoon-fh2). `npm run verify:build-fresh` rebuilds functions/lib
+      # and asserts the compiled artifact matches a clean build of
+      # functions/src, so a stale lib can never pass CI. On a fresh CI checkout
+      # functions/lib is gitignored and therefore absent — the script builds it
+      # from src and passes (a clean checkout cannot carry a stale artifact),
+      # while still proving src compiles. The same script gives the deploy path
+      # (scripts/deploy_functions.sh) its teeth, where a developer's machine can
+      # be holding an out-of-date lib.
+      - name: Verify build freshness
+        run: npm run verify:build-fresh
+
+      # Guard the deployed-build-identity tooling (issue al_rasikhoon-5a0) from
+      # bitrot: compute HEAD's build stamp here (functions/lib exists from the
+      # step above). This exercises stamp COMPUTATION only; the deploy path's
+      # read-back-and-compare against LIVE functions needs deploy credentials
+      # and runs in scripts/deploy_functions.sh, not in CI.
+      - name: Verify build stamp computes
+        run: bash scripts/build-stamp.sh
+
       # functions/package.json defines a `lint` script
       # ("eslint --ext .ts src/"). Run it. If a future change removes the
       # script, `npm run lint --if-present` makes this step a silent no-op

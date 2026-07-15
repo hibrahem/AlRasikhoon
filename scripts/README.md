@@ -81,11 +81,24 @@ found) · `2` bad usage / `gcloud` missing.
 ### Post-deploy wrapper — always audit after deploying
 
 Don't run `firebase deploy --only functions` bare. Use the wrapper, which
-deploys and then immediately runs the audit so a deploy that leaves a
-function un-invocable fails loudly instead of looking green:
+guards the deploy on both sides so a bad deploy fails loudly instead of
+looking green. In order it:
+
+1. **Pre-deploy build freshness** (`functions/scripts/verify-build-fresh.sh`) —
+   rebuilds `functions/lib` and asserts it matches `functions/src`, so a stale
+   artifact can never be shipped.
+2. **Pre-deploy build stamp** (`functions/scripts/build-stamp.sh`) — records
+   HEAD's build identity (`<commit>[-dirty]-<lib-hash>`) into `functions/.env`
+   as `BUILD_STAMP`, which Firebase deploys as an env var on each function.
+3. **Deploy** — `firebase deploy --only functions`.
+4. **Post-deploy IAM audit** (`audit_functions_iam.sh`) — asserts every
+   function is publicly invocable.
+5. **Post-deploy build identity** (`verify_deployed_build.sh`) — reads
+   `BUILD_STAMP` back off the LIVE functions and asserts it equals HEAD's,
+   proving the deploy actually replaced the running artifact.
 
 ```bash
-# Deploys to alrasikhoon-57151 (us-central1) by default, then audits:
+# Deploys to alrasikhoon-57151 (us-central1) by default, with all guards:
 scripts/deploy_functions.sh
 
 # Override target project / region via env:
@@ -93,8 +106,47 @@ FIREBASE_PROJECT_ID=alrasikhoon-dev FUNCTIONS_REGION=us-central1 \
   scripts/deploy_functions.sh
 ```
 
-The wrapper exits non-zero if either the deploy fails or the post-deploy
-audit finds a function missing the binding.
+The wrapper exits non-zero if the lib is stale, the deploy fails, a function
+is missing the `allUsers` binding, or a function is not running HEAD's build.
+
+### Build-freshness check (pre-deploy + CI)
+
+`functions/scripts/verify-build-fresh.sh` rebuilds `functions/lib` and fails if
+the compiled output changed — i.e. the lib about to ship did not match
+`functions/src`. It closes the gap behind issue `al_rasikhoon-fh2`, where a
+stale lib silently shipped two months of dormant `src` changes at once.
+
+```bash
+# From anywhere in the repo (or `npm run verify:build-fresh` in functions/):
+functions/scripts/verify-build-fresh.sh
+```
+
+Exit codes: `0` fresh (or clean checkout with no prior lib) · `1` stale —
+rebuilding changed the output · `2` build/environment failure. It runs in CI
+(the **functions** job in `.github/workflows/ci.yml`) and as the first
+pre-deploy step of the wrapper above.
+
+### Deployed-build identity check (post-deploy)
+
+`verify_deployed_build.sh` proves the functions actually RUNNING are the build
+from HEAD, complementing the IAM audit (reachability) with an identity check.
+The deploy path stamps `BUILD_STAMP` into each function's env; this script reads
+it back off the live Cloud Run services and asserts it equals HEAD's stamp
+(from `functions/scripts/build-stamp.sh`). A stale or missing stamp means
+`firebase deploy` reported success but did not replace the running artifact —
+the `al_rasikhoon-fh2` failure mode.
+
+```bash
+scripts/verify_deployed_build.sh --project alrasikhoon-57151 --region us-central1
+```
+
+Exit codes: `0` every function runs HEAD's build · `1` a function's stamp is
+stale/missing (or none found) · `2` bad usage / `gcloud` missing.
+
+**Only fully exercisable during a real deploy:** the read-back uses live
+`gcloud` credentials against deployed services. Argument parsing and the
+expected-stamp computation run offline (and in CI, via the *Verify build stamp
+computes* step), but the read-back-and-compare needs a deployed project.
 
 ### CI — daily cron audit against production
 
