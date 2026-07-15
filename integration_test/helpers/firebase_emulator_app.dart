@@ -34,7 +34,7 @@ import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/auth_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
-import 'package:al_rasikhoon/data/services/local_storage_service.dart';
+import 'package:al_rasikhoon/data/services/shared_preferences_provider.dart';
 import 'package:al_rasikhoon/firebase_options.dart';
 import 'package:al_rasikhoon/l10n/app_localizations.dart';
 import 'package:al_rasikhoon/routing/app_router.dart';

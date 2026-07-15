@@ -6,7 +6,6 @@ import 'package:al_rasikhoon/app.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
-import 'package:al_rasikhoon/data/services/local_storage_service.dart';
 import 'package:al_rasikhoon/data/services/session_cache.dart';
 import 'package:al_rasikhoon/features/settings/screens/settings_screen.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
@@ -17,8 +16,6 @@ import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 class _MockFirebaseService extends Mock implements FirebaseService {}
 
 class _MockUserRepository extends Mock implements UserRepository {}
-
-class _MockLocalStorageService extends Mock implements LocalStorageService {}
 
 class _MockSessionCache extends Mock implements SessionCache {}
 
@@ -54,9 +51,6 @@ void main() {
         overrides: [
           firebaseServiceProvider.overrideWithValue(mockFirebaseService),
           userRepositoryProvider.overrideWithValue(_MockUserRepository()),
-          localStorageServiceProvider.overrideWithValue(
-            _MockLocalStorageService(),
-          ),
           sessionCacheProvider.overrideWithValue(mockSessionCache),
           isAuthenticatedProvider.overrideWithValue(true),
           currentUserRoleProvider.overrideWithValue(UserRole.teacher),
