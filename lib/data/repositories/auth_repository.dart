@@ -1,5 +1,6 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/firebase_service.dart';
 import '../services/session_cache.dart';
@@ -89,8 +90,13 @@ class AuthRepository extends Notifier<AuthState> {
       }
       state = state.copyWith(appUser: appUser);
       await _sessionCache.cacheUser(appUser);
-    } catch (_) {
-      // Offline / transient: keep showing the cached profile.
+    } catch (error, stackTrace) {
+      // Expected path: an offline / transient getUserById failure — keep
+      // showing the cached optimistic profile. But this bare catch also
+      // swallows programming errors and any throw from signOut(), so surface
+      // it at debug level so a genuine reconcile bug isn't invisible in the
+      // field.
+      debugPrint('_refreshAppUser reconcile failed: $error\n$stackTrace');
     }
   }
 
