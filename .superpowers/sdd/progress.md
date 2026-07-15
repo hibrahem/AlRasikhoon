@@ -328,3 +328,10 @@ Task 14: complete (commit 2c39ce5, review clean) — session_detail_screen adopt
   `color` from GradeInfo, have callers map Grade->tokens.gradeX themselves) - not a rushed single-screen fix.
   MUST file as a bd follow-up issue during Task 17 alongside the teacher/admin/supervisor/auth issues.
   Full test/widget suite: 143 passing, 0 failing.
+Task 15: complete (commit b1eb02d, review clean) — session_history_screen: EmptyState (exact copy verified
+  verbatim) for no-sessions case, ErrorState for load failures, no AppColors left (file had none directly -
+  row rendering fully delegates to SessionRecordRow, already reskinned/token-driven from earlier work,
+  verified it genuinely shows a binary pass/fail marker per #24's rule, not literally GradeDisplay but a
+  real outcome indicator). No new provider calls, data-fetching byte-identical. No findings.
+  Minor (not fixed, cross-cutting pre-existing pattern, not this task's): no screen in the app passes
+  onRetry to ErrorState - consistent gap across sibling screens, follow-up only.
