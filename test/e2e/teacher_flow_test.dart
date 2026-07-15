@@ -235,8 +235,10 @@ void main() {
       // Part 3: 0 errors
       await teacherRobot.enterErrorCount(0);
       await teacherRobot.submitRecitation(part: 3);
-      // Assert - Failed grade is shown on the summary screen before saving
-      expect(find.textContaining('محب'), findsWidgets); // Failed grade
+      // Assert - Failed grade is shown on the summary screen before saving.
+      // Go through verifyGrade so the assertion waits for the async summary
+      // screen to mount instead of racing its load (al_rasikhoon-obt).
+      await teacherRobot.verifyGrade('محب'); // Failed grade
       await teacherRobot.completeSession();
     });
 
