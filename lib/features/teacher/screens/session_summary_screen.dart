@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/teacher_provider.dart';
 import '../recitation_parts.dart';
 import '../widgets/active_lesson_timer.dart';
@@ -31,6 +33,7 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final activeSession = ref.watch(activeSessionProvider);
     final studentAsync = ref.watch(studentProvider(widget.studentId));
     // Per-part + overall grades are level-based (hibrahem/AlRasikhoon#22). The
@@ -68,15 +71,13 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                   child: Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: AppColors.primary.withValues(
-                          alpha: 0.1,
-                        ),
+                        backgroundColor: tokens.green.withValues(alpha: 0.1),
                         child: Text(
                           studentWithUser.user.name.isNotEmpty
                               ? studentWithUser.user.name[0]
                               : '?',
-                          style: const TextStyle(
-                            color: AppColors.primary,
+                          style: TextStyle(
+                            color: tokens.green,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -93,7 +94,7 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                             Text(
                               'الحلقة ${studentWithUser.student.currentSession}',
                               style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: AppColors.textSecondary),
+                                  ?.copyWith(color: tokens.sepia),
                             ),
                           ],
                         ),
@@ -150,18 +151,8 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                   ],
                 );
               },
-              loading: () => const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-              error: (_, _) => const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Text('تعذّر تحميل النتيجة'),
-                ),
-              ),
+              loading: () => const LoadingState(lines: 1),
+              error: (_, _) => const ErrorState(message: 'تعذّر تحميل النتيجة'),
             ),
 
             const SizedBox(height: 24),
@@ -230,7 +221,11 @@ class _OverallResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = passed ? AppColors.success : AppColors.error;
+    final tokens = context.tokens;
+    // No manuscript token for "success" — the primary green already
+    // carries the positive/affirmative role, and maroon (the palette's
+    // rubrication/emphasis hue) already carries error.
+    final color = passed ? tokens.green : tokens.maroon;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
@@ -279,6 +274,7 @@ class _PartResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final gradeInfo = GradeCalculator.calculateForLevel(level, errors);
 
     return AppCard(
@@ -291,7 +287,12 @@ class _PartResultCard extends StatelessWidget {
             children: [
               Icon(
                 gradeInfo.passed ? Icons.check_circle : Icons.cancel,
-                color: gradeInfo.passed ? AppColors.success : AppColors.error,
+                // Same success/error reasoning as _OverallResultCard above.
+                // NOTE: gradeInfo.color (used just below for the error-count
+                // and grade-name text) is intentionally left untouched — it
+                // is being made brightness-aware in a parallel task
+                // (grade_calculator.dart), out of scope here.
+                color: gradeInfo.passed ? tokens.green : tokens.maroon,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -328,14 +329,14 @@ class _PartResultCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.menu_book, size: 16, color: AppColors.textSecondary),
+                Icon(Icons.menu_book, size: 16, color: tokens.sepia),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     content,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                   ),
                 ),
               ],
