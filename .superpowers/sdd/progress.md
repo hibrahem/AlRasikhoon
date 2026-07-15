@@ -247,3 +247,7 @@ Task 4: complete (commit 69245f3, review clean) — persisted ThemeModeNotifier/
 Task 5: complete (commits b0cdccb impl + 2861077 fix, review clean) — wired darkTheme + ref.watch(themeModeProvider)
   into MaterialApp.router in lib/app.dart. Fixed: dart format incidentally collapsed 2 unrelated multi-line
   properties (supportedLocales, builder) to single-line -> reverted to keep diff minimal. Re-review approved.
+Task 6: complete (commit 40da117, review clean) — ThemeModeSelector (AppCard + SegmentedButton<ThemeMode>,
+  فاتح/داكن/تلقائي) embedded in settings_screen.dart after _ProfileCard; stale "no theme toggle" doc comment
+  replaced. No findings. === FOUNDATION (Tasks 1-6) DONE: fonts, tokens, real dark theme, persistence,
+  MaterialApp wiring, Settings toggle. Next: shared-widget reskin (7-12), then student screens (13-16). ===
