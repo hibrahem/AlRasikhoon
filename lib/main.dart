@@ -48,10 +48,22 @@ void main() async {
   // the returning user before the first frame.
   await Hive.initFlutter();
 
+  // Open the session box defensively: a corrupt box must never strand the app
+  // on the splash. On failure, delete it and reopen a fresh (empty) box — the
+  // cache is simply absent and the normal login flow runs.
+  Future<Box> openSessionBox() async {
+    try {
+      return await Hive.openBox(AppConstants.boxSession);
+    } catch (_) {
+      await Hive.deleteBoxFromDisk(AppConstants.boxSession);
+      return await Hive.openBox(AppConstants.boxSession);
+    }
+  }
+
   // The remaining local inits are independent — run them concurrently to
   // shrink the pre-first-frame window.
   final results = await Future.wait([
-    Hive.openBox(AppConstants.boxSession),
+    openSessionBox(),
     SharedPreferences.getInstance(),
   ]);
   final sessionBox = results[0] as Box;
