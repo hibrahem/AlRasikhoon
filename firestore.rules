@@ -23,6 +23,14 @@ service cloud.firestore {
       return isAuthenticated() && getUserRole() == 'teacher';
     }
 
+    function isStudentRole() {
+      return isAuthenticated() && getUserRole() == 'student';
+    }
+
+    function isGuardian() {
+      return isAuthenticated() && getUserRole() == 'guardian';
+    }
+
     // The canonical institute the signed-in user is bound to, read off
     // users/{uid}.institute_id (AgDR-0003: single source of truth for
     // supervisor scoping). Null when the field is absent.
@@ -51,6 +59,81 @@ service cloud.firestore {
       return isSupervisor() &&
         ('student_id' in recordData) &&
         get(/databases/$(database)/documents/students/$(recordData.student_id)).data.institute_id == callerInstituteId();
+    }
+
+    // === Read-scoping helpers (al_rasikhoon-bpk) =============================
+    // Reads were previously `allow read: if isAuthenticated()` on students and
+    // every record collection, so any signed-in user could read every student
+    // and all progress across institutes. The helpers below scope reads by role
+    // and REUSE the existing write-side institute primitives so read and write
+    // stay consistent (al_rasikhoon-3n6 will migrate the supervisor helper for
+    // both at once).
+
+    // A guardian may read a student they are the guardian of. The guardian↔child
+    // link is students.guardian_id == the caller's uid (server-side counterpart
+    // of getStudentsByGuardianId's client .where('guardian_id', ...)). Fail-closed
+    // when the field is absent.
+    function isGuardianOfStudent(studentData) {
+      return isGuardian() &&
+        ('guardian_id' in studentData) &&
+        studentData.guardian_id == request.auth.uid;
+    }
+
+    // A student may read their OWN student document: students.user_id == the
+    // caller's uid (server-side counterpart of getStudentByUserId's client
+    // .where('user_id', ...)). Fail-closed when the field is absent.
+    function isOwnStudentRecord(studentData) {
+      return isStudentRole() &&
+        ('user_id' in studentData) &&
+        studentData.user_id == request.auth.uid;
+    }
+
+    // Who may READ a given student document.
+    //  - admin      → all
+    //  - teacher    → all (MIRRORS the unscoped teacher WRITE on students;
+    //                 tightening teacher read+write to their own students is
+    //                 tracked together in al_rasikhoon-ob7)
+    //  - supervisor → students of their institute, via the SAME helper the write
+    //                 side uses (isSupervisorOfStudentInstitute, AgDR-0003)
+    //  - guardian   → only their children
+    //  - student    → only their own record
+    function canReadStudent(studentData) {
+      return isSuperAdmin() ||
+        isTeacher() ||
+        isSupervisorOfStudentInstitute(studentData) ||
+        isGuardianOfStudent(studentData) ||
+        isOwnStudentRecord(studentData);
+    }
+
+    // Records (session/sard/exam) carry a denormalized student_id but NO
+    // institute_id, so read-scoping a record goes through its student — the same
+    // single get() the supervisor WRITE path already uses. The role gates
+    // (isGuardian()/isStudentRole()) short-circuit BEFORE the get(), so it only
+    // runs for the caller class that actually needs it.
+    function recordStudentData(recordData) {
+      return get(/databases/$(database)/documents/students/$(recordData.student_id)).data;
+    }
+
+    function isGuardianOfRecordStudent(recordData) {
+      return isGuardian() &&
+        ('student_id' in recordData) &&
+        recordStudentData(recordData).guardian_id == request.auth.uid;
+    }
+
+    function isOwnRecord(recordData) {
+      return isStudentRole() &&
+        ('student_id' in recordData) &&
+        recordStudentData(recordData).user_id == request.auth.uid;
+    }
+
+    // Who may READ a given session/sard/exam record. Same role matrix as
+    // canReadStudent, resolved through the record's student.
+    function canReadRecord(recordData) {
+      return isSuperAdmin() ||
+        isTeacher() ||
+        isSupervisorOfRecordStudent(recordData) ||
+        isGuardianOfRecordStudent(recordData) ||
+        isOwnRecord(recordData);
     }
 
     // Users collection
@@ -85,7 +168,11 @@ service cloud.firestore {
 
     // Students collection
     match /students/{studentId} {
-      allow read: if isAuthenticated();
+      // Reads are scoped by role (al_rasikhoon-bpk): admin/teacher see all,
+      // supervisor sees their institute, guardian sees their children, student
+      // sees only their own doc. A blanket authenticated read here previously
+      // exposed every student across institutes.
+      allow read: if canReadStudent(resource.data);
       // Allow create if: teacher, supervisor (only within their own institute —
       // teacher-parity student management, AgDR-0003 / #28), OR student creating
       // their own record (for invitation flow).
@@ -122,7 +209,8 @@ service cloud.firestore {
     // student in their own institute (teacher-parity evaluation scoped to the
     // institute, AgDR-0003 / #28).
     match /session_records/{recordId} {
-      allow read: if isAuthenticated();
+      // Read-scoped by role through the record's student (al_rasikhoon-bpk).
+      allow read: if canReadRecord(resource.data);
       allow create: if isTeacher() ||
         isSupervisorOfRecordStudent(request.resource.data);
       // A supervisor must own BOTH the existing record's student AND the
@@ -145,14 +233,16 @@ service cloud.firestore {
     // in al_rasikhoon-ob7 (which tightens session_records and sard_records
     // together); it is NOT new here. Reads stay open (authenticated).
     match /sard_records/{sardId} {
-      allow read: if isAuthenticated();
+      // Read-scoped by role through the record's student (al_rasikhoon-bpk).
+      allow read: if canReadRecord(resource.data);
       allow create: if isTeacher();
       allow update: if isTeacher();
     }
 
     // Exam records
     match /exam_records/{examId} {
-      allow read: if isAuthenticated();
+      // Read-scoped by role through the record's student (al_rasikhoon-bpk).
+      allow read: if canReadRecord(resource.data);
       allow create: if isSupervisor();
       allow update: if isSupervisor();
     }

@@ -84,11 +84,35 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
     // Super admin.
     await seed("users", "admin", { role: "super_admin", name: "Admin" });
 
+    // Read-scoping actors (al_rasikhoon-bpk).
+    // Guardians (role only; the child link lives on the student doc).
+    await seed("users", "guardian_a", { role: "guardian", name: "Guardian A" });
+    await seed("users", "guardian_b", { role: "guardian", name: "Guardian B" });
+    // Students-as-users (the person behind a student doc). Their student doc
+    // carries user_id == this uid.
+    await seed("users", "stu_user_a", { role: "student", name: "Student user A" });
+    await seed("users", "stu_user_b", { role: "student", name: "Student user B" });
+
     // --- Students -----------------------------------------------------------
     await seed("students", "stu_a", { institute_id: INST_A, name: "Student A" });
     await seed("students", "stu_b", { institute_id: INST_B, name: "Student B" });
     // Legacy student with NO institute_id (must fail closed).
     await seed("students", "stu_legacy", { name: "Legacy student" });
+
+    // Read-scoping students: each has a linked user (user_id) and guardian
+    // (guardian_id), plus an institute for supervisor scoping.
+    await seed("students", "stu_child_a", {
+      institute_id: INST_A,
+      user_id: "stu_user_a",
+      guardian_id: "guardian_a",
+      name: "Child A",
+    });
+    await seed("students", "stu_child_b", {
+      institute_id: INST_B,
+      user_id: "stu_user_b",
+      guardian_id: "guardian_b",
+      name: "Child B",
+    });
 
     // --- Records (for update repoint tests) ---------------------------------
     await seed("session_records", "sess_a", {
@@ -99,6 +123,14 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
       student_id: "stu_a",
       pages: 3,
     });
+
+    // Read-scoping records, one per child, per collection.
+    await seed("session_records", "sess_child_a", { student_id: "stu_child_a", score: 5 });
+    await seed("session_records", "sess_child_b", { student_id: "stu_child_b", score: 5 });
+    await seed("sard_records", "sard_child_a", { student_id: "stu_child_a", pages: 3 });
+    await seed("sard_records", "sard_child_b", { student_id: "stu_child_b", pages: 3 });
+    await seed("exam_records", "exam_child_a", { student_id: "stu_child_a", errors: 1 });
+    await seed("exam_records", "exam_child_b", { student_id: "stu_child_b", errors: 1 });
   });
 
   // === Finding #1 — self-service privilege escalation ======================
@@ -281,5 +313,146 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
         errors: 2,
       })
     );
+  });
+
+  // === al_rasikhoon-bpk — READ scoping on students =========================
+  // Previously `allow read: if isAuthenticated()`, so any signed-in user could
+  // read every student across institutes. Reads are now scoped by role. Each
+  // deny proves the app CANNOT fetch forbidden data even by direct ID (a
+  // client .where() filter is not access control); each allow guards against
+  // regressing a legitimate read.
+
+  // --- student self-reads ---------------------------------------------------
+  it("DENIES a student reading another student's record", async () => {
+    const db = asUser("stu_user_a");
+    await assertFails(getDoc(doc(db, "students", "stu_child_b")));
+  });
+
+  it("ALLOWS a student reading their OWN student record", async () => {
+    const db = asUser("stu_user_a");
+    await assertSucceeds(getDoc(doc(db, "students", "stu_child_a")));
+  });
+
+  // --- guardian reads -------------------------------------------------------
+  it("DENIES a guardian reading a student who is not their child", async () => {
+    const db = asUser("guardian_a");
+    await assertFails(getDoc(doc(db, "students", "stu_child_b")));
+  });
+
+  it("ALLOWS a guardian reading their own child's student record", async () => {
+    const db = asUser("guardian_a");
+    await assertSucceeds(getDoc(doc(db, "students", "stu_child_a")));
+  });
+
+  // --- supervisor institute scoping (reuses write-side helper) --------------
+  it("DENIES a supervisor of institute A reading a student of institute B", async () => {
+    const db = asUser("sup_a");
+    await assertFails(getDoc(doc(db, "students", "stu_child_b")));
+  });
+
+  it("ALLOWS a supervisor of institute A reading a student of institute A", async () => {
+    const db = asUser("sup_a");
+    await assertSucceeds(getDoc(doc(db, "students", "stu_child_a")));
+  });
+
+  it("DENIES a supervisor reading a student with no institute_id (fail-closed)", async () => {
+    const db = asUser("sup_a");
+    await assertFails(getDoc(doc(db, "students", "stu_legacy")));
+  });
+
+  // --- teacher + admin (broad) ---------------------------------------------
+  // JUDGMENT CALL: teacher reads mirror the currently-UNSCOPED teacher write on
+  // students (any teacher may write any student). Tightening teacher read+write
+  // to their own students is tracked together in al_rasikhoon-ob7.
+  it("ALLOWS a teacher reading any student (read mirrors the unscoped teacher write)", async () => {
+    const db = asUser("teacher_a");
+    await assertSucceeds(getDoc(doc(db, "students", "stu_child_b")));
+  });
+
+  it("ALLOWS an admin reading any student", async () => {
+    const db = asUser("admin");
+    await assertSucceeds(getDoc(doc(db, "students", "stu_child_b")));
+  });
+
+  it("DENIES an unauthenticated client reading a student", async () => {
+    const db = testEnv.unauthenticatedContext().firestore();
+    await assertFails(getDoc(doc(db, "students", "stu_child_a")));
+  });
+
+  // === al_rasikhoon-bpk — READ scoping on records ==========================
+  // session/sard/exam records carry a denormalized student_id and are scoped
+  // through their student (records have no institute_id of their own).
+
+  // --- session_records ------------------------------------------------------
+  it("DENIES a student reading another student's session_record", async () => {
+    const db = asUser("stu_user_a");
+    await assertFails(getDoc(doc(db, "session_records", "sess_child_b")));
+  });
+
+  it("ALLOWS a student reading their OWN session_record", async () => {
+    const db = asUser("stu_user_a");
+    await assertSucceeds(getDoc(doc(db, "session_records", "sess_child_a")));
+  });
+
+  it("DENIES a guardian reading a non-child's session_record", async () => {
+    const db = asUser("guardian_a");
+    await assertFails(getDoc(doc(db, "session_records", "sess_child_b")));
+  });
+
+  it("ALLOWS a guardian reading their child's session_record", async () => {
+    const db = asUser("guardian_a");
+    await assertSucceeds(getDoc(doc(db, "session_records", "sess_child_a")));
+  });
+
+  it("DENIES a supervisor of institute A reading an institute-B session_record", async () => {
+    const db = asUser("sup_a");
+    await assertFails(getDoc(doc(db, "session_records", "sess_child_b")));
+  });
+
+  it("ALLOWS a supervisor of institute A reading an institute-A session_record", async () => {
+    const db = asUser("sup_a");
+    await assertSucceeds(getDoc(doc(db, "session_records", "sess_child_a")));
+  });
+
+  it("DENIES an unauthenticated client reading a session_record", async () => {
+    const db = testEnv.unauthenticatedContext().firestore();
+    await assertFails(getDoc(doc(db, "session_records", "sess_child_a")));
+  });
+
+  // --- sard_records ---------------------------------------------------------
+  it("DENIES a guardian reading a non-child's sard_record", async () => {
+    const db = asUser("guardian_a");
+    await assertFails(getDoc(doc(db, "sard_records", "sard_child_b")));
+  });
+
+  it("ALLOWS a guardian reading their child's sard_record", async () => {
+    const db = asUser("guardian_a");
+    await assertSucceeds(getDoc(doc(db, "sard_records", "sard_child_a")));
+  });
+
+  it("DENIES a supervisor of institute A reading an institute-B sard_record", async () => {
+    const db = asUser("sup_a");
+    await assertFails(getDoc(doc(db, "sard_records", "sard_child_b")));
+  });
+
+  // --- exam_records ---------------------------------------------------------
+  it("DENIES a student reading another student's exam_record", async () => {
+    const db = asUser("stu_user_a");
+    await assertFails(getDoc(doc(db, "exam_records", "exam_child_b")));
+  });
+
+  it("ALLOWS a student reading their OWN exam_record", async () => {
+    const db = asUser("stu_user_a");
+    await assertSucceeds(getDoc(doc(db, "exam_records", "exam_child_a")));
+  });
+
+  it("DENIES a supervisor of institute A reading an institute-B exam_record", async () => {
+    const db = asUser("sup_a");
+    await assertFails(getDoc(doc(db, "exam_records", "exam_child_b")));
+  });
+
+  it("ALLOWS a supervisor of institute A reading an institute-A exam_record", async () => {
+    const db = asUser("sup_a");
+    await assertSucceeds(getDoc(doc(db, "exam_records", "exam_child_a")));
   });
 });
