@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/utils/grade_calculator.dart';
+import '../../domain/session/session_duration.dart';
 import 'session_model.dart';
 
 class SessionGrades {
@@ -68,7 +69,7 @@ class SessionGrades {
   );
 }
 
-class SessionRecordModel {
+class SessionRecordModel implements SessionTiming {
   final String id;
   final String studentId;
   final String teacherId;
@@ -128,6 +129,7 @@ class SessionRecordModel {
   /// when this was recorded. A batch can truncate short of the pace (a تلقين
   /// or a سرد boundary stops it early), so [coversSessionIds.length] can be
   /// LESS than [paceAtTime] — the two must never be conflated.
+  @override
   final int paceAtTime;
 
   /// Whether this meeting covered more than one curriculum session.
@@ -168,6 +170,7 @@ class SessionRecordModel {
   /// records written before sessions were timed, and for any record whose
   /// start was not captured. Capped to 3× the pace target at write time; see
   /// [SessionDuration].
+  @override
   final Duration? duration;
 
   const SessionRecordModel({

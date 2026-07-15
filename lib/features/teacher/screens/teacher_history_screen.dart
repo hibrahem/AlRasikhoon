@@ -52,14 +52,7 @@ class TeacherHistoryScreen extends ConsumerWidget {
                   ],
                   passed: record.passed,
                   date: record.date,
-                  sessionDuration: record.duration == null
-                      ? null
-                      : SessionDuration(
-                          elapsed: record.duration!,
-                          target: SessionDuration.targetForPace(
-                            record.paceAtTime,
-                          ),
-                        ),
+                  sessionDuration: SessionDuration.fromRecord(record),
                   onTap: () {
                     context.push(
                       AppRoutes.teacherSessionDetail.replaceFirst(

@@ -48,14 +48,7 @@ class SessionHistoryScreen extends ConsumerWidget {
                   subtitleLines: ['المستوى ${record.levelId}'],
                   passed: record.passed,
                   date: record.date,
-                  sessionDuration: record.duration == null
-                      ? null
-                      : SessionDuration(
-                          elapsed: record.duration!,
-                          target: SessionDuration.targetForPace(
-                            record.paceAtTime,
-                          ),
-                        ),
+                  sessionDuration: SessionDuration.fromRecord(record),
                   onTap: () {
                     context.push(
                       AppRoutes.sessionDetail.replaceFirst(
