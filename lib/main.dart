@@ -8,7 +8,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'firebase_options.dart';
 import 'app.dart';
 import 'data/services/local_storage_service.dart';
+import 'data/services/session_cache.dart';
 import 'core/config/firebase_emulator_config.dart';
+import 'core/constants/app_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,16 +43,25 @@ void main() async {
   // Configure Firebase Emulators if enabled
   await FirebaseEmulatorConfig.configureEmulators();
 
-  // Initialize Hive for local caching
+  // Initialize Hive and open the session box BEFORE runApp so
+  // AuthRepository.build() can read the cached user synchronously and route
+  // the returning user before the first frame.
   await Hive.initFlutter();
 
-  // Initialize SharedPreferences
-  final sharedPreferences = await SharedPreferences.getInstance();
+  // The remaining local inits are independent — run them concurrently to
+  // shrink the pre-first-frame window.
+  final results = await Future.wait([
+    Hive.openBox(AppConstants.boxSession),
+    SharedPreferences.getInstance(),
+  ]);
+  final sessionBox = results[0] as Box;
+  final sharedPreferences = results[1] as SharedPreferences;
 
   runApp(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+        sessionBoxProvider.overrideWithValue(sessionBox),
       ],
       child: const AlRasikhoonApp(),
     ),
