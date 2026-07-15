@@ -301,3 +301,17 @@ Task 12: complete (commit a83d90a, review clean) — ShimmerBox (reduced-motion 
   created + disposed correctly), EmptyState, ErrorState ('إعادة المحاولة' retry), LoadingState (composes
   ShimmerBox). All token-driven, no providers. No findings.
   === FOUNDATION + WIDGET RESKIN (Tasks 1-12) ALL COMPLETE. Starting screen adoption (13-16). ===
+Task 13: complete (commits ac1407d impl + cd69931 fix, review clean) — student_dashboard_screen adopts
+  full system: JuzRing hero (juz=stats.currentJuz, progress=currentOrderInLevel/totalSessions w/ explicit
+  zero-guard, NOT bare .clamp which doesn't stop 0/0=NaN), AppBar title in Aref Ruqaa (only use of that
+  font in the app, verified), LoadingState/ErrorState replace bespoke spinners, full token mapping applied.
+  No new provider calls, RefreshIndicator byte-identical - both verified via direct diff.
+  Fixed (review-found, Important): AppColors.info (not in mapping table) was mapped to tokens.sepia for the
+  سرد card's accent -> collided with that SAME card's own caption text (also sepia via textSecondary
+  mapping), making the "distinct 3rd accent" invisible against its own body text. Fixed -> tokens.maroon
+  (palette's rubrication/emphasis hue), caption stays sepia. 3 session-type cards now genuinely distinct:
+  lesson=green, exam=gold, سرد=maroon.
+  Minor (not fixed, deferred): AppColors.success (also not in mapping table) -> tokens.green makes 2 of 3
+  quick-stat tiles the same color (were previously distinguishable primary/success green shades). Low
+  severity, follow-up only if a dedicated success token is added later.
+  Full test/widget suite: 143 passing, 0 failing throughout.
