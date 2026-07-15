@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/states/empty_state.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 
 /// Read-only admin view of a single curriculum level and the predefined
 /// sessions that compose it (hibrahem/AlRasikhoon#23).
@@ -29,8 +32,8 @@ class LevelDetailScreen extends ConsumerWidget {
         ),
       ),
       body: sessionsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل الحلقات: $e'),
         data: (sessions) {
           if (sessions.isEmpty) {
             return _EmptyState(levelNumber: levelNumber);
@@ -76,25 +79,26 @@ class _LevelHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return AppCard(
       margin: EdgeInsets.zero,
-      backgroundColor: AppColors.primary.withValues(alpha: 0.05),
+      backgroundColor: tokens.green.withValues(alpha: 0.05),
       child: Row(
         children: [
           Container(
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              color: tokens.green.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
               child: Text(
                 '$levelNumber',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  color: tokens.green,
                 ),
               ),
             ),
@@ -108,9 +112,9 @@ class _LevelHeader extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   '$juzRangeAr • $sessionCount حلقة',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                 ),
               ],
             ),
@@ -159,7 +163,7 @@ class _SessionCard extends StatelessWidget {
             'الجزء ${session.juzNumber}',
             style: Theme.of(
               context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodySmall?.copyWith(color: context.tokens.sepia),
           ),
           if (currentRange.isNotEmpty ||
               recentRange.isNotEmpty ||
@@ -199,7 +203,7 @@ class _ContentRow extends StatelessWidget {
               label,
               style: Theme.of(
                 context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+              ).textTheme.bodySmall?.copyWith(color: context.tokens.sepia),
             ),
           ),
           Expanded(
@@ -220,19 +224,29 @@ class _SessionKindChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final Color color;
     switch (kind) {
       case SessionKind.sard:
-        color = AppColors.info;
+        // No manuscript token for the old "info" blue. Mirrors the
+        // identical سرد judgment call already made for the student's
+        // current-session card (student_dashboard_screen.dart): maroon,
+        // the palette's rubrication/emphasis hue, kept distinct from the
+        // lesson's green and the exam's gold below.
+        color = tokens.maroon;
         break;
       case SessionKind.exam:
-        color = AppColors.warning;
+        // Mirrors the exam card's tokens.gold on the same student
+        // dashboard, not maroon — an exam/اختبار is a neutral instructional
+        // notice ("go take the exam"), not a warning/danger state.
+        color = tokens.gold;
         break;
       case SessionKind.talqeen:
       case SessionKind.lesson:
         // A تلقين teaches new content like a lesson does and is never
-        // assessed, so it gets the same chip color.
-        color = AppColors.primary;
+        // assessed, so it gets the same chip color — green, mirroring the
+        // same student dashboard precedent.
+        color = tokens.green;
         break;
     }
     return Container(
@@ -260,34 +274,10 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.menu_book_outlined,
-              size: 64,
-              color: AppColors.textSecondary.withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'لا توجد حلقات لهذا المستوى',
-              style: Theme.of(context).textTheme.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'لم تتم إضافة أي حلقات للمستوى $levelNumber بعد.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+    return EmptyState(
+      icon: Icons.menu_book_outlined,
+      title: 'لا توجد حلقات لهذا المستوى',
+      message: 'لم تتم إضافة أي حلقات للمستوى $levelNumber بعد.',
     );
   }
 }

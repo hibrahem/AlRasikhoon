@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
+import '../../../core/theme/grade_color_tokens.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/grade_display.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/student_provider.dart';
 
 class SessionDetailScreen extends ConsumerWidget {
@@ -14,6 +17,7 @@ class SessionDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tokens = context.tokens;
     final recordAsync = ref.watch(sessionRecordByIdProvider(recordId));
 
     return Scaffold(
@@ -50,13 +54,10 @@ class SessionDetailScreen extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.1),
+                              color: tokens.green.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(
-                              Icons.menu_book,
-                              color: AppColors.primary,
-                            ),
+                            child: Icon(Icons.menu_book, color: tokens.green),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -72,9 +73,7 @@ class SessionDetailScreen extends ConsumerWidget {
                                 Text(
                                   dateFormat.format(record.date),
                                   style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: AppColors.textSecondary,
-                                      ),
+                                      ?.copyWith(color: tokens.sepia),
                                 ),
                               ],
                             ),
@@ -105,18 +104,15 @@ class SessionDetailScreen extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.05),
+                      color: tokens.green.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.2),
+                        color: tokens.green.withValues(alpha: 0.2),
                       ),
                     ),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.record_voice_over,
-                          color: AppColors.primary,
-                        ),
+                        Icon(Icons.record_voice_over, color: tokens.green),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
@@ -190,8 +186,8 @@ class SessionDetailScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل تفاصيل الحلقة: $e'),
       ),
     );
   }
@@ -220,6 +216,7 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -229,7 +226,7 @@ class _InfoRow extends StatelessWidget {
             label,
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodyMedium?.copyWith(color: tokens.sepia),
           ),
           Text(
             value,
@@ -256,6 +253,7 @@ class _PartResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final gradeInfo = GradeCalculator.calculateForLevel(level, errors);
 
     return AppCard(
@@ -265,7 +263,17 @@ class _PartResultCard extends StatelessWidget {
         children: [
           Icon(
             gradeInfo.passed ? Icons.check_circle : Icons.cancel,
-            color: gradeInfo.passed ? AppColors.success : AppColors.error,
+            // AppColors.success has no direct AppTokens equivalent (not in
+            // the Task 9 mapping table). Following the Task 13 precedent,
+            // it maps to tokens.green — tokens.green and AppColors.gradeRasikh
+            // are byte-identical, and green already carries the
+            // "positive/passed" role elsewhere in this screen (تلقين icon,
+            // header icon). AppColors.error maps to tokens.maroon per the
+            // table. No collision: the errors-count/grade-name text to the
+            // right uses tokens.colorForGrade (the brightness-aware
+            // grade-tier palette), a separate signal from this pass/fail
+            // icon.
+            color: gradeInfo.passed ? tokens.green : tokens.maroon,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -278,14 +286,14 @@ class _PartResultCard extends StatelessWidget {
                 '$errors أخطاء',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: gradeInfo.color,
+                  color: tokens.colorForGrade(gradeInfo.grade),
                 ),
               ),
               Text(
                 gradeInfo.nameAr,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: gradeInfo.color),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: tokens.colorForGrade(gradeInfo.grade),
+                ),
               ),
             ],
           ),

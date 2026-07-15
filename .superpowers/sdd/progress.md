@@ -227,3 +227,141 @@ FINAL WHOLE-BRANCH REVIEW (opus): READY TO MERGE — no Critical/Important. Trac
   reimplementation. ValueKey(startedAt) mitigation verified at ALL 3 consumer sites (ActiveLessonTimer,
   Sard/ExamSessionScreen). DDD clean (domain imports only intl). All 5 Minors deferred (test-coverage/DRY only).
   Filed as follow-up beads issue. Suite 842/842, analyze clean.
+
+=== AL RASIKHOON MANUSCRIPT UI — plan: docs/superpowers/plans/2026-07-15-al-rasikhoon-manuscript-ui.md ===
+# Issue: al_rasikhoon-5ss (pass 1: foundation + student slice)
+# Worktree: .claude/worktrees/al_rasikhoon-5ss-ui-overhaul
+# Branch: worktree-al_rasikhoon-5ss-ui-overhaul (base 645a5a8)
+# 17 tasks. Baseline: plan committed at f13488b.
+Task 1: complete (commit 1924423, review clean) — bundled Amiri + Aref Ruqaa TTFs into google_fonts/
+  Minor (not fixed): tests use testWidgets() w/ unused tester param instead of plain test() — justified
+  (Flutter binding init for asset loading), approved as-is.
+Task 2: complete (commit 54ee6b6, review clean) — AppTokens ThemeExtension (16 fields, light+dark, copyWith+lerp),
+  AppDimens, AppMotion. All hex values verified byte-for-byte against plan. No findings.
+Task 3: complete (commit 32592bd, review clean) — AppTheme.lightTheme/darkTheme both built from a single
+  _build(tokens, brightness) helper; dark is genuinely dark (Brightness.dark, AppTokens.dark), AppTokens
+  extension attached to both, scaffoldBackgroundColor=tokens.page. Reviewer confirmed the test would have
+  caught the original darkTheme=>lightTheme bug. No AppColors leaks, no non-bundled fonts. No findings.
+Task 4: complete (commit 69245f3, review clean) — persisted ThemeModeNotifier/themeModeProvider (plain
+  Riverpod, key 'theme_mode', values light/dark/system, unrecognized->system). No findings.
+Task 5: complete (commits b0cdccb impl + 2861077 fix, review clean) — wired darkTheme + ref.watch(themeModeProvider)
+  into MaterialApp.router in lib/app.dart. Fixed: dart format incidentally collapsed 2 unrelated multi-line
+  properties (supportedLocales, builder) to single-line -> reverted to keep diff minimal. Re-review approved.
+Task 6: complete (commit 40da117, review clean) — ThemeModeSelector (AppCard + SegmentedButton<ThemeMode>,
+  فاتح/داكن/تلقائي) embedded in settings_screen.dart after _ProfileCard; stale "no theme toggle" doc comment
+  replaced. No findings. === FOUNDATION (Tasks 1-6) DONE: fonts, tokens, real dark theme, persistence,
+  MaterialApp wiring, Settings toggle. Next: shared-widget reskin (7-12), then student screens (13-16). ===
+Task 7: complete (commits 6cfe372 impl + 81fe70c fix + 92d34bd fix, review clean) — theme_test_harness.dart
+  (pumpInTheme, real AppTheme light/dark, RTL) + AppCard reskinned (context.tokens.card default bg,
+  backgroundColor still wins, new illuminated=true draws gold hairline border via tokens.gold).
+  *** ARCHITECTURE DECISION (escalated to user) ***: context.tokens was `Theme.of(this).extension<AppTokens>()!`
+  (hard crash) -> broke 88 pre-existing tests across 32 files pumping bare MaterialApp() w/o AppTheme. User
+  chose: fallback to AppTokens.light instead of touching 32 test files. Fix confirmed PRODUCTION-UNREACHABLE
+  (app_theme.dart._build always sets extensions:[t]; app.dart always supplies AppTheme.light/darkTheme; grep
+  confirms context.tokens is the only extension<AppTokens>() call site) — only fires in themeless tests.
+  SEPARATE regression also found+fixed: Tasks 5/6 wired themeModeProvider into AlRasikhoonApp/SettingsScreen;
+  2 pre-existing test files (settings_screen_test.dart x7, role_shell_navigation_test.dart x1) never overrode
+  sharedPreferencesProvider (didn't need to, before). Fixed via the established SharedPreferences mock pattern,
+  no assertions weakened. Full test/widget suite: 135 passing, 0 failing (true baseline was 131/0 pre-plan).
+  Minor (not fixed): `width: illuminated ? 1 : 1` no-op ternary in app_card.dart, cosmetic only.
+  PROCESS NOTE for tasks 8-16: use pumpInTheme() harness for all new tests; context.tokens now safe to use
+  in any test context (falls back to light tokens if untHEMEd).
+Task 8: complete (commit 8a6b2ac, review clean) — Illuminated Juz Ring signature widget (juzRingSweep pure
+  fn + JuzRing widget + _JuzRingPainter custom paint). Token-driven colors, no data-fetching (pure presentational).
+  No findings.
+Task 9: complete (commit e71931a, review clean) — reskinned stat_card/student_card/app_button/app_text_field
+  to context.tokens per mapping table. NOTE: implementer subagent was cut off mid-run by an API spend-limit
+  error before committing/reporting; controller verified diff line-by-line, ran flutter analyze + full
+  test/widget suite (137 passing, 0 failing) directly, committed on its behalf, wrote the report. Reviewer
+  independently re-verified every substitution against the mapping table. Out-of-table colors (warning/info/
+  textOnPrimary/textOnSecondary) correctly left untouched. Minor (not fixed): a few unrelated dart-format
+  line-collapses with zero color changes (cosmetic only, e.g. StatItem ctor, AppTextField label Text()).
+Task 10: complete (commits 878fbfe impl + 90f9a8d fix, review clean) — reskinned grade_display/session_timer/
+  session_record_row/error_counter to tokens+grade tokens; progress_bar fill animates via
+  AppMotion.of(base), reduced-motion aware, public API unchanged. Mastery ladder (5 rungs, راسخ..محب) added
+  to student_level_progress.dart + level_progression_widget.dart, constructors preserved. Implementer itself
+  caught+fixed 2 pre-existing test regressions (hardcoded old AppColors values in
+  session_record_row_duration_test.dart) applying the Task 7/9 lesson.
+  Fixed (review-found, Important x2): (1) LevelProgressionWidget's ladder fraction was currentLevel/totalLevels,
+  CONTRADICTING its own header (completedLevels.length/totalLevels) -> corrected to
+  completedLevels.length/totalLevels, matches student_level_progress.dart's "in-progress-not-done=zero"
+  convention; new regression test proven to catch the original bug. (2) _MasteryLadder was duplicated
+  verbatim (~66 lines) across both widgets -> consolidated into ONE public MasteryLadder class in
+  progress_bar.dart, both callers import it, zero duplication remains (grep-verified).
+  Dead code left in place, not removed (Minor, acceptable restraint): LevelProgressBar in progress_bar.dart
+  now unreferenced anywhere; unlockedLevels ctor param on LevelProgressionWidget accepted but unused by the
+  new ladder motif (documented in class doc comment). Full test/widget suite: 140 passing, 0 failing.
+Task 11: complete (commit 63a21ec, review clean) — bottom_nav_bar (selected=gold/unselected=sepia),
+  role_shell (Scaffold bg=tokens.page, nav logic byte-identical, verified), confirm_sign_out (error->maroon).
+  nav_destinations.dart needed no changes (icon/label/route data only, no colors) - claim independently
+  verified. All 4 constructors unchanged. role_shell_navigation_test.dart 1/1, full suite 140/0. No findings.
+  === SHARED-WIDGET RESKIN SWEEP (Tasks 7-11) COMPLETE. Next: Task 12 empty/error/loading states, then
+  Tasks 13-16 student screens adopt everything. ===
+Task 12: complete (commit a83d90a, review clean) — ShimmerBox (reduced-motion aware, controller lazily
+  created + disposed correctly), EmptyState, ErrorState ('إعادة المحاولة' retry), LoadingState (composes
+  ShimmerBox). All token-driven, no providers. No findings.
+  === FOUNDATION + WIDGET RESKIN (Tasks 1-12) ALL COMPLETE. Starting screen adoption (13-16). ===
+Task 13: complete (commits ac1407d impl + cd69931 fix, review clean) — student_dashboard_screen adopts
+  full system: JuzRing hero (juz=stats.currentJuz, progress=currentOrderInLevel/totalSessions w/ explicit
+  zero-guard, NOT bare .clamp which doesn't stop 0/0=NaN), AppBar title in Aref Ruqaa (only use of that
+  font in the app, verified), LoadingState/ErrorState replace bespoke spinners, full token mapping applied.
+  No new provider calls, RefreshIndicator byte-identical - both verified via direct diff.
+  Fixed (review-found, Important): AppColors.info (not in mapping table) was mapped to tokens.sepia for the
+  سرد card's accent -> collided with that SAME card's own caption text (also sepia via textSecondary
+  mapping), making the "distinct 3rd accent" invisible against its own body text. Fixed -> tokens.maroon
+  (palette's rubrication/emphasis hue), caption stays sepia. 3 session-type cards now genuinely distinct:
+  lesson=green, exam=gold, سرد=maroon.
+  Minor (not fixed, deferred): AppColors.success (also not in mapping table) -> tokens.green makes 2 of 3
+  quick-stat tiles the same color (were previously distinguishable primary/success green shades). Low
+  severity, follow-up only if a dedicated success token is added later.
+  Full test/widget suite: 143 passing, 0 failing throughout.
+Task 14: complete (commit 2c39ce5, review clean) — session_detail_screen adopts full system: token mapping,
+  LoadingState/ErrorState replace bespoke spinners, no new provider calls, data-fetching byte-identical.
+  success->green judgment call (Task 13 precedent), verified no role collision this time.
+  *** REAL BUT OUT-OF-SCOPE GAP FOUND (Minor, deferred to Task 17 follow-ups) ***: lib/core/utils/
+  grade_calculator.dart's GradeInfo.color bakes RAW brightness-unaware AppColors.gradeX as const at
+  construction, bypassing AppTokens entirely -> genuine dark-mode contrast defect on every screen reading
+  gradeInfo.color (this screen + grade_display.dart's GradeBadge). Pre-existing since Task 10 (which only
+  had grade_display.dart in scope, not grade_calculator.dart - a core/utils file no task in this plan
+  charters). Task 17's own verification grep doesn't scan lib/core/utils either, so this would silently
+  survive final verification unless filed explicitly. PROPER FIX requires an architectural change (drop
+  `color` from GradeInfo, have callers map Grade->tokens.gradeX themselves) - not a rushed single-screen fix.
+  MUST file as a bd follow-up issue during Task 17 alongside the teacher/admin/supervisor/auth issues.
+  Full test/widget suite: 143 passing, 0 failing.
+Task 15: complete (commit b1eb02d, review clean) — session_history_screen: EmptyState (exact copy verified
+  verbatim) for no-sessions case, ErrorState for load failures, no AppColors left (file had none directly -
+  row rendering fully delegates to SessionRecordRow, already reskinned/token-driven from earlier work,
+  verified it genuinely shows a binary pass/fail marker per #24's rule, not literally GradeDisplay but a
+  real outcome indicator). No new provider calls, data-fetching byte-identical. No findings.
+  Minor (not fixed, cross-cutting pre-existing pattern, not this task's): no screen in the app passes
+  onRetry to ErrorState - consistent gap across sibling screens, follow-up only.
+Task 16: complete (commits f50fc3f impl + 395ad19 fix, review clean) — home_practice_screen adopts full
+  system: token mapping, LoadingState/EmptyState/ErrorState swapped in, no new provider calls, practice-
+  logging logic byte-identical. success->green (routine), warning->maroon (routine, no collision).
+  Fixed (review-found, Important): AppColors.info->tokens.ink for the "هذا الأسبوع" stat card was a NO-OP
+  accent (tokens.ink IS the theme's default headlineSmall text color app-wide, so icon+value rendered
+  identical to plain unstyled text vs the other 3 cards' real green/gold/maroon pop). Fixed -> reuse
+  tokens.green (shared with "اليوم"/today card, justified: today+week are naturally related time-window
+  metrics, distinguished by icon+label not color - common dashboard pattern, not a defect).
+  Confirmed: manuscript palette (AppTokens) genuinely has only 3 saturated accent hues (green/gold/maroon) -
+  a real design-system gap (no 4th accent token) noted as backlog, not blocking, across both Task 14 and 16.
+  Full test/widget suite: 143 passing, 0 failing throughout.
+  === ALL 4 STUDENT SCREENS (Tasks 13-16) COMPLETE. Starting Task 17: final verification + follow-ups. ===
+Task 17: complete (commits 0be09fa impl + e39c5dd fix, review clean) — FINAL TASK. flutter analyze clean
+  (3 pre-existing RawKeyEvent deprecations only). Full flutter test suite: 970 passed/3 failed/973 total
+  (unit 785/0, widget 143/0, e2e 41/3) - the 3 e2e failures in teacher_flow_test.dart PROVEN pre-existing
+  by reproducing identically at merge-base 645a5a8 in a temp worktree (properly cleaned up). Grep sweep for
+  AppColors leaks in student screens/shared widgets: 6 hits, 3 pre-cleared (textOnPrimary/textOnSecondary,
+  warning/info on filled bgs), 3 GENUINE newly-found dark-mode inconsistencies (session_record_row.dart,
+  error_counter.dart, grade_display.dart mix raw AppColors.success/warning with adaptive tokens.maroon in
+  the same branch) - folded into bug al_rasikhoon-3k3's scope via bd notes (all file/line detail preserved).
+  5 follow-up bd issues filed + linked to parent epic al_rasikhoon-5ss: al_rasikhoon-ulz (teacher-11),
+  al_rasikhoon-bd8 (admin-12), al_rasikhoon-alt (supervisor-5), al_rasikhoon-pob (auth-2), al_rasikhoon-3k3
+  (grade-color dark-mode bug, now scoped to grade_calculator.dart + the 3 newly-found files). Epic left
+  IN_PROGRESS, not closed.
+  Fixed (review-found, Important): bd dep links were added backwards (child depends_on epic), making all 5
+  invisible to `bd ready` for as long as the epic stays open - defeating their purpose. Reversed (epic
+  depends_on each child) - verified live via bd ready, all 5 now surface as ready/actionable work.
+  === ALL 17 TASKS COMPLETE, ALL REVIEWED CLEAN. ===
+  REMAINING before the plan's Definition of Done is fully met: manual verification on a phone viewport in
+  light+dark+Arabic RTL (explicitly deferred to the controller during Task 17, not attempted by any subagent).

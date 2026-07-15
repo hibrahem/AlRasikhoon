@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../domain/session/session_duration.dart';
 
 /// A live, once-a-second count-up shown in an active session's app bar.
@@ -40,25 +41,29 @@ class _SessionTimerState extends State<SessionTimer> {
     super.dispose();
   }
 
-  Color _colorFor(LiveTimerLevel level) {
+  Color _colorFor(LiveTimerLevel level, AppTokens tokens) {
     switch (level) {
       case LiveTimerLevel.neutral:
         return AppColors.textOnPrimary;
       case LiveTimerLevel.warning:
-        return AppColors.secondary;
+        return tokens.gold;
       case LiveTimerLevel.danger:
-        return AppColors.error;
+        return tokens.maroon;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final elapsed = _elapsed;
     final target = widget.target;
     final text = target == null
         ? SessionDuration.formatClock(elapsed)
         : '${SessionDuration.formatClock(elapsed)} / ${SessionDuration.formatClock(target)}';
-    final color = _colorFor(SessionDuration.liveTimerLevel(elapsed, target));
+    final color = _colorFor(
+      SessionDuration.liveTimerLevel(elapsed, target),
+      tokens,
+    );
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),

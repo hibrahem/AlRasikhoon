@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
 import 'core/theme/app_theme.dart';
 import 'routing/app_router.dart';
+import 'features/settings/providers/theme_mode_provider.dart';
 
 class AlRasikhoonApp extends ConsumerWidget {
   const AlRasikhoonApp({super.key});
@@ -11,11 +12,14 @@ class AlRasikhoonApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       title: 'الراسخون',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
       locale: const Locale('ar'),
       supportedLocales: const [
         Locale('ar'),

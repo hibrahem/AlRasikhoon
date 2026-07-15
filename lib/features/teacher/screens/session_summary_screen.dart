@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
+import '../../../core/theme/grade_color_tokens.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -280,6 +282,10 @@ class _PartResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gradeInfo = GradeCalculator.calculateForLevel(level, errors);
+    // al_rasikhoon-3k3: only `tokens` and the gradeInfo-color lines below are
+    // this fix's concern; the AppColors.success/AppColors.error lines in
+    // this build method are out of scope (owned by a parallel task).
+    final tokens = context.tokens;
 
     return AppCard(
       margin: EdgeInsets.zero,
@@ -307,14 +313,14 @@ class _PartResultCard extends StatelessWidget {
                     '$errors أخطاء',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: gradeInfo.color,
+                      color: tokens.colorForGrade(gradeInfo.grade),
                     ),
                   ),
                   Text(
                     gradeInfo.nameAr,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: gradeInfo.color),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: tokens.colorForGrade(gradeInfo.grade),
+                    ),
                   ),
                 ],
               ),

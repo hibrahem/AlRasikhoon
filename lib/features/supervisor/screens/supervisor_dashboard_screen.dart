@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/stat_card.dart';
 import '../providers/supervisor_provider.dart';
 
@@ -19,6 +21,7 @@ class _SupervisorDashboardScreenState
     extends ConsumerState<SupervisorDashboardScreen> {
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final statsAsync = ref.watch(supervisorStatsProvider);
 
     return Scaffold(
@@ -47,17 +50,18 @@ class _SupervisorDashboardScreenState
               const SizedBox(height: 8),
               Text(
                 'إدارة اختبارات الطلاب',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: tokens.sepia),
               ),
               const SizedBox(height: 24),
 
               // Stats
               statsAsync.when(
                 data: (stats) => _buildStats(stats),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text('Error: $e'),
+                loading: () => const LoadingState(lines: 2),
+                error: (e, _) =>
+                    ErrorState(message: 'تعذر تحميل الإحصائيات: $e'),
               ),
 
               const SizedBox(height: 24),
@@ -74,10 +78,10 @@ class _SupervisorDashboardScreenState
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.1),
+                    color: tokens.gold.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.quiz, color: AppColors.secondary),
+                  child: Icon(Icons.quiz, color: tokens.gold),
                 ),
                 trailing: const Icon(Icons.chevron_left),
                 onTap: () => context.go(AppRoutes.examQueue),
@@ -90,6 +94,7 @@ class _SupervisorDashboardScreenState
   }
 
   Widget _buildStats(SupervisorStats stats) {
+    final tokens = context.tokens;
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -102,26 +107,39 @@ class _SupervisorDashboardScreenState
           title: 'اختبارات معلقة',
           value: '${stats.pendingExams}',
           icon: Icons.pending_actions,
-          iconColor: AppColors.warning,
+          // AppColors.warning has no direct AppTokens equivalent. Pending
+          // exams are the screen's own "اختبار" quick-action below (which
+          // already uses tokens.gold), so gold keeps this card visually tied
+          // to that same exam-attention identity — distinct from the
+          // pass/fail cards below, which use green/maroon.
+          iconColor: tokens.gold,
           onTap: () => context.go(AppRoutes.examQueue),
         ),
         StatCard(
           title: 'اختبارات اليوم',
           value: '${stats.completedToday}',
           icon: Icons.today,
-          iconColor: AppColors.info,
+          // AppColors.info has no direct AppTokens equivalent either. This
+          // is a neutral daily tally (passed + failed combined), not a
+          // warning or an outcome, so it reuses tokens.green — the
+          // palette's least alarming accent — rather than the gold/maroon
+          // used by the "needs attention" and "failed" cards.
+          iconColor: tokens.green,
         ),
         StatCard(
           title: 'ناجحون اليوم',
           value: '${stats.passedToday}',
           icon: Icons.check_circle,
-          iconColor: AppColors.success,
+          // No manuscript token for a distinct "success" hue — the primary
+          // green already carries the positive/affirmative role, so it is
+          // reused here.
+          iconColor: tokens.green,
         ),
         StatCard(
           title: 'راسبون اليوم',
           value: '${stats.failedToday}',
           icon: Icons.cancel,
-          iconColor: AppColors.error,
+          iconColor: tokens.maroon,
         ),
       ],
     );

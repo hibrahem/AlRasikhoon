@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../data/models/user_model.dart';
 import 'bottom_nav_bar.dart';
 import 'nav_destinations.dart';
@@ -20,6 +21,7 @@ class RoleShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final branches = navigationShell.route.branches;
     final branchCount = branches.length;
 
@@ -59,6 +61,7 @@ class RoleShell extends StatelessWidget {
     }());
 
     return Scaffold(
+      backgroundColor: tokens.page,
       body: navigationShell,
       bottomNavigationBar: AppBottomNavBar(
         currentIndex: navigationShell.currentIndex,

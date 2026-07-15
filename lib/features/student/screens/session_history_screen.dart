@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../domain/session/session_duration.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/session_record_row.dart';
+import '../../../shared/widgets/states/empty_state.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/student_provider.dart';
 
 class SessionHistoryScreen extends ConsumerWidget {
@@ -19,7 +21,11 @@ class SessionHistoryScreen extends ConsumerWidget {
       body: historyAsync.when(
         data: (records) {
           if (records.isEmpty) {
-            return _buildEmptyState(context);
+            return const EmptyState(
+              icon: Icons.history,
+              title: 'لا توجد جلسات بعد',
+              message: 'ستظهر جلساتك هنا بعد أول تسميع',
+            );
           }
 
           return RefreshIndicator(
@@ -62,37 +68,8 @@ class SessionHistoryScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.history,
-            size: 80,
-            color: AppColors.textSecondary.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'لا يوجد سجل',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'ستظهر هنا سجلات الحلقات السابقة',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-          ),
-        ],
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل سجل الحلقات: $e'),
       ),
     );
   }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../data/models/user_model.dart';
 import 'nav_destinations.dart';
 
@@ -17,15 +17,16 @@ class AppBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final destinations = destinationsFor(role);
 
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: onTap,
       type: BottomNavigationBarType.fixed,
-      backgroundColor: AppColors.surface,
-      selectedItemColor: AppColors.primary,
-      unselectedItemColor: AppColors.textSecondary,
+      backgroundColor: tokens.card,
+      selectedItemColor: tokens.gold,
+      unselectedItemColor: tokens.sepia,
       items: [
         for (final destination in destinations)
           BottomNavigationBarItem(

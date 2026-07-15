@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../data/models/session_model.dart';
 import '../../data/repositories/curriculum_repository.dart';
 import '../../data/repositories/student_repository.dart';
@@ -37,6 +38,7 @@ class StudentCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tokens = context.tokens;
     final student = studentWithUser.student;
     final user = studentWithUser.user;
     final level = ref.watch(levelProvider(student.currentLevel)).value;
@@ -47,7 +49,7 @@ class StudentCard extends ConsumerWidget {
         : 0.0;
 
     return Material(
-      color: AppColors.surface,
+      color: tokens.card,
       borderRadius: BorderRadius.circular(12),
       elevation: 1,
       child: InkWell(
@@ -63,11 +65,11 @@ class StudentCard extends ConsumerWidget {
                 children: [
                   // Avatar
                   CircleAvatar(
-                    backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                    backgroundColor: tokens.green.withValues(alpha: 0.1),
                     child: Text(
                       user.name.isNotEmpty ? user.name[0] : '?',
-                      style: const TextStyle(
-                        color: AppColors.primary,
+                      style: TextStyle(
+                        color: tokens.green,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -84,8 +86,9 @@ class StudentCard extends ConsumerWidget {
                         ),
                         Text(
                           'المستوى ${student.currentLevel}',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: AppColors.textSecondary),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                         ),
                         if (instituteName != null &&
                             instituteName!.isNotEmpty) ...[
@@ -115,10 +118,11 @@ class StudentCard extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: _kindColor(
                           student.currentSessionKind,
+                          tokens,
                         ).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: _kindColor(student.currentSessionKind),
+                          color: _kindColor(student.currentSessionKind, tokens),
                         ),
                       ),
                       child: Text(
@@ -129,7 +133,7 @@ class StudentCard extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: _kindColor(student.currentSessionKind),
+                          color: _kindColor(student.currentSessionKind, tokens),
                         ),
                       ),
                     ),
@@ -179,7 +183,7 @@ class StudentCard extends ConsumerWidget {
                           : '—',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textSecondary,
+                        color: tokens.sepia,
                       ),
                     ),
                   ],
@@ -215,17 +219,17 @@ class StudentCard extends ConsumerWidget {
     );
   }
 
-  Color _kindColor(SessionKind kind) {
+  Color _kindColor(SessionKind kind, AppTokens tokens) {
     switch (kind) {
       case SessionKind.exam:
-        return AppColors.secondary;
+        return tokens.gold;
       case SessionKind.sard:
         return AppColors.info;
       case SessionKind.talqeen:
       case SessionKind.lesson:
         // A تلقين teaches new content like a lesson does and is never
         // assessed, so it gets the same badge color.
-        return AppColors.primary;
+        return tokens.green;
     }
   }
 
@@ -255,24 +259,19 @@ class _InfoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: tokens.surfaceVariant,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: AppColors.textSecondary),
+          Icon(icon, size: 14, color: tokens.sepia),
           const SizedBox(width: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 11,
-              color: AppColors.textSecondary,
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 11, color: tokens.sepia)),
         ],
       ),
     );
@@ -323,24 +322,25 @@ class _InstituteBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
+        color: tokens.green.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.account_balance, size: 12, color: AppColors.primary),
+          Icon(Icons.account_balance, size: 12, color: tokens.green),
           const SizedBox(width: 4),
           Flexible(
             child: Text(
               name,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
-                color: AppColors.primary,
+                color: tokens.green,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -366,19 +366,17 @@ class StudentListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final student = studentWithUser.student;
     final user = studentWithUser.user;
 
     return ListTile(
       onTap: onTap,
       leading: CircleAvatar(
-        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+        backgroundColor: tokens.green.withValues(alpha: 0.1),
         child: Text(
           user.name.isNotEmpty ? user.name[0] : '?',
-          style: const TextStyle(
-            color: AppColors.primary,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: tokens.green, fontWeight: FontWeight.bold),
         ),
       ),
       title: Text(user.name),
@@ -386,9 +384,7 @@ class StudentListTile extends StatelessWidget {
         'المستوى ${student.currentLevel} - الحلقة ${student.currentSession}',
         style: Theme.of(context).textTheme.bodySmall,
       ),
-      trailing:
-          trailing ??
-          const Icon(Icons.chevron_left, color: AppColors.textSecondary),
+      trailing: trailing ?? Icon(Icons.chevron_left, color: tokens.sepia),
     );
   }
 }

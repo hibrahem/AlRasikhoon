@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/session_repository.dart';
@@ -10,6 +10,7 @@ import '../../../routing/app_router.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/grade_display.dart';
+import '../../../shared/widgets/states/error_state.dart';
 import '../providers/supervisor_provider.dart';
 
 class ExamResultScreen extends ConsumerStatefulWidget {
@@ -115,22 +116,33 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
       ref.invalidate(supervisorStatsProvider);
 
       if (mounted) {
+        final tokens = context.tokens;
         final String message;
         final Color background;
         if (progressNotAdvanced) {
           message =
               'تم حفظ النتيجة، لكن تعذر تحديث تقدم الطالب: لا توجد حلقات '
               'تالية في المنهج.';
-          background = AppColors.error;
+          // A genuine system anomaly (curriculum data gap) -> tokens.maroon
+          // per the table's AppColors.error mapping.
+          background = tokens.maroon;
         } else if (curriculumCompleted) {
           message = 'تم حفظ الاختبار - ناجح. أتم الطالب المنهج كاملًا.';
-          background = AppColors.success;
+          // No manuscript token for a distinct "success" hue — the primary
+          // green already carries the positive/affirmative role, so it is
+          // reused here.
+          background = tokens.green;
         } else if (record.passed) {
           message = 'تم حفظ الاختبار - ناجح';
-          background = AppColors.success;
+          background = tokens.green;
         } else {
           message = 'تم حفظ الاختبار - راسب';
-          background = AppColors.warning;
+          // AppColors.warning has no direct AppTokens equivalent. A failed
+          // اختبار is an expected, non-alarming outcome — distinct from the
+          // genuine data anomaly above, which already uses tokens.maroon —
+          // so it gets tokens.gold instead of reusing maroon for a second,
+          // unrelated meaning in this same method.
+          background = tokens.gold;
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -145,7 +157,7 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('حدث خطأ: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: context.tokens.maroon,
           ),
         );
       }
@@ -158,6 +170,7 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final studentAsync = ref.watch(examStudentProvider(widget.studentId));
     // Grade is level-based (hibrahem/AlRasikhoon#22). The level-based grade is
     // only computed once the student value resolves — never from a default
@@ -190,7 +203,7 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceVariant,
+                      color: tokens.surfaceVariant,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     // What was examined: the curriculum's own label for this
@@ -214,14 +227,18 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
                   showStars: true,
                   showPassStatus: true,
                 ),
+                // Deliberately NOT LoadingState here: result_grade_loading_
+                // test.dart (#36) asserts find.byType(CircularProgressIndicator)
+                // specifically, to prove no grade is computed/shown before the
+                // real level resolves. LoadingState renders ShimmerBox, not a
+                // CircularProgressIndicator, so it would silently defeat that
+                // regression guard. The original bespoke spinner is kept.
                 loading: () => const Padding(
                   padding: EdgeInsets.all(20),
                   child: CircularProgressIndicator(),
                 ),
-                error: (_, _) => const Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Text('تعذّر تحميل النتيجة'),
-                ),
+                error: (_, _) =>
+                    const ErrorState(message: 'تعذّر تحميل النتيجة'),
               ),
 
               const SizedBox(height: 32),
@@ -255,7 +272,7 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
                 isLoading: _isSaving,
                 isFullWidth: true,
                 size: AppButtonSize.large,
-                backgroundColor: AppColors.secondary,
+                backgroundColor: tokens.gold,
               ),
               const SizedBox(height: 12),
               if (gradeInfo != null && !gradeInfo.passed)
