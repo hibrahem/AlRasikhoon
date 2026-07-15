@@ -296,11 +296,27 @@ service cloud.firestore {
       allow write: if isSuperAdmin();
     }
 
-    // Home practice records (students can manage their own)
+    // Home practice records — a student self-reports practice against their own
+    // student doc. Each doc carries a denormalized student_id (see
+    // HomePracticeModel), so it scopes exactly like session/sard/exam records.
     match /home_practices/{practiceId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && getUserRole() == 'student';
-      allow update, delete: if isAuthenticated() && getUserRole() == 'student';
+      // Read-scoped by role through the practice's student (al_rasikhoon-c6e).
+      // Previously `allow read: if isAuthenticated()`, so any signed-in user
+      // could read every student's home practice across institutes — the same
+      // leak al_rasikhoon-bpk closed for students/records. canReadRecord resolves
+      // through students/{student_id}: admin, the student's teacher/supervisor/
+      // guardian, and the student themself may read; it fails closed when
+      // student_id is absent.
+      allow read: if canReadRecord(resource.data);
+      // Writes are the student's OWN practice only. isOwnRecord requires the
+      // caller to be the student behind the practice's student doc
+      // (students/{student_id}.user_id == request.auth.uid); previously ANY
+      // student could create/update/delete ANY home_practice. On update BOTH the
+      // existing and incoming student must be the caller's, so student_id cannot
+      // be repointed onto another student.
+      allow create: if isOwnRecord(request.resource.data);
+      allow update: if isOwnRecord(resource.data) && isOwnRecord(request.resource.data);
+      allow delete: if isOwnRecord(resource.data);
     }
   }
 }

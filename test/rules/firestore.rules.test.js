@@ -26,6 +26,7 @@ const {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
 } = require("firebase/firestore");
 
 const PROJECT_ID = "alrasikhoon-57151";
@@ -147,6 +148,13 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
     await seed("sard_records", "sard_child_b", { student_id: "stu_child_b", pages: 3 });
     await seed("exam_records", "exam_child_a", { student_id: "stu_child_a", errors: 1 });
     await seed("exam_records", "exam_child_b", { student_id: "stu_child_b", errors: 1 });
+
+    // Home practices, one per child (al_rasikhoon-c6e). Each carries a
+    // denormalized student_id and scopes through its student like the records
+    // above. hp_orphan has NO student_id to prove reads/writes fail closed.
+    await seed("home_practices", "hp_child_a", { student_id: "stu_child_a", repetitions: 3 });
+    await seed("home_practices", "hp_child_b", { student_id: "stu_child_b", repetitions: 3 });
+    await seed("home_practices", "hp_orphan", { repetitions: 3 });
   });
 
   // === Finding #1 — self-service privilege escalation ======================
@@ -595,6 +603,130 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
     const db = asUser("teacher_a");
     await assertFails(
       updateDoc(doc(db, "sard_records", "sard_a"), { student_id: "stu_b" })
+    );
+  });
+
+  // === al_rasikhoon-c6e — home_practices READ scoping ======================
+  // Previously `allow read: if isAuthenticated()`, so any signed-in user could
+  // read every student's home practice across institutes. Reads now scope by
+  // role through the practice's student_id via canReadRecord() — the same matrix
+  // as session/sard/exam records. child A → institute A / teacher_a / guardian_a
+  // / user stu_user_a; child B → institute B / teacher_b / guardian_b.
+
+  it("DENIES a student reading another student's home_practice (al_rasikhoon-c6e)", async () => {
+    const db = asUser("stu_user_a");
+    await assertFails(getDoc(doc(db, "home_practices", "hp_child_b")));
+  });
+
+  it("ALLOWS a student reading their OWN home_practice (al_rasikhoon-c6e)", async () => {
+    const db = asUser("stu_user_a");
+    await assertSucceeds(getDoc(doc(db, "home_practices", "hp_child_a")));
+  });
+
+  it("DENIES a guardian reading a non-child's home_practice (al_rasikhoon-c6e)", async () => {
+    const db = asUser("guardian_a");
+    await assertFails(getDoc(doc(db, "home_practices", "hp_child_b")));
+  });
+
+  it("ALLOWS a guardian reading their child's home_practice (al_rasikhoon-c6e)", async () => {
+    const db = asUser("guardian_a");
+    await assertSucceeds(getDoc(doc(db, "home_practices", "hp_child_a")));
+  });
+
+  it("DENIES a supervisor of institute A reading an institute-B home_practice (al_rasikhoon-c6e)", async () => {
+    const db = asUser("sup_a");
+    await assertFails(getDoc(doc(db, "home_practices", "hp_child_b")));
+  });
+
+  it("ALLOWS a supervisor of institute A reading an institute-A home_practice (al_rasikhoon-c6e)", async () => {
+    const db = asUser("sup_a");
+    await assertSucceeds(getDoc(doc(db, "home_practices", "hp_child_a")));
+  });
+
+  it("DENIES a teacher reading another teacher's home_practice (al_rasikhoon-c6e)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(getDoc(doc(db, "home_practices", "hp_child_b")));
+  });
+
+  it("ALLOWS a teacher reading their own student's home_practice (al_rasikhoon-c6e)", async () => {
+    const db = asUser("teacher_a");
+    await assertSucceeds(getDoc(doc(db, "home_practices", "hp_child_a")));
+  });
+
+  it("ALLOWS an admin reading any home_practice (al_rasikhoon-c6e)", async () => {
+    const db = asUser("admin");
+    await assertSucceeds(getDoc(doc(db, "home_practices", "hp_child_b")));
+  });
+
+  it("DENIES a student reading a home_practice with no student_id (fail-closed, al_rasikhoon-c6e)", async () => {
+    const db = asUser("stu_user_a");
+    await assertFails(getDoc(doc(db, "home_practices", "hp_orphan")));
+  });
+
+  it("DENIES an unauthenticated client reading a home_practice (al_rasikhoon-c6e)", async () => {
+    const db = testEnv.unauthenticatedContext().firestore();
+    await assertFails(getDoc(doc(db, "home_practices", "hp_child_a")));
+  });
+
+  // === al_rasikhoon-c6e — home_practices WRITE scoping =====================
+  // A student may create/update/delete ONLY their OWN home_practice (the
+  // practice's student_id resolves to a student doc whose user_id == the caller,
+  // via isOwnRecord). Previously ANY student could write ANY home_practice. On
+  // update BOTH the existing and incoming student must be the caller's, so
+  // student_id cannot be repointed onto another student.
+
+  it("ALLOWS a student creating their OWN home_practice (al_rasikhoon-c6e)", async () => {
+    const db = asUser("stu_user_a");
+    await assertSucceeds(
+      setDoc(doc(db, "home_practices", "hp_own_new"), {
+        student_id: "stu_child_a",
+        repetitions: 5,
+      })
+    );
+  });
+
+  it("DENIES a student creating a home_practice for another student (al_rasikhoon-c6e)", async () => {
+    const db = asUser("stu_user_a");
+    await assertFails(
+      setDoc(doc(db, "home_practices", "hp_cross_new"), {
+        student_id: "stu_child_b",
+        repetitions: 5,
+      })
+    );
+  });
+
+  it("ALLOWS a student updating their OWN home_practice (al_rasikhoon-c6e)", async () => {
+    const db = asUser("stu_user_a");
+    await assertSucceeds(
+      updateDoc(doc(db, "home_practices", "hp_child_a"), { repetitions: 9 })
+    );
+  });
+
+  it("DENIES a student updating another student's home_practice (al_rasikhoon-c6e)", async () => {
+    const db = asUser("stu_user_a");
+    await assertFails(
+      updateDoc(doc(db, "home_practices", "hp_child_b"), { repetitions: 9 })
+    );
+  });
+
+  it("DENIES a student repointing their home_practice's student_id to another student (al_rasikhoon-c6e)", async () => {
+    const db = asUser("stu_user_a");
+    await assertFails(
+      updateDoc(doc(db, "home_practices", "hp_child_a"), { student_id: "stu_child_b" })
+    );
+  });
+
+  it("ALLOWS a student deleting their OWN home_practice (al_rasikhoon-c6e)", async () => {
+    const db = asUser("stu_user_a");
+    await assertSucceeds(
+      deleteDoc(doc(db, "home_practices", "hp_child_a"))
+    );
+  });
+
+  it("DENIES a student deleting another student's home_practice (al_rasikhoon-c6e)", async () => {
+    const db = asUser("stu_user_a");
+    await assertFails(
+      deleteDoc(doc(db, "home_practices", "hp_child_b"))
     );
   });
 });
