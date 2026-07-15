@@ -297,3 +297,7 @@ Task 11: complete (commit 63a21ec, review clean) — bottom_nav_bar (selected=go
   verified. All 4 constructors unchanged. role_shell_navigation_test.dart 1/1, full suite 140/0. No findings.
   === SHARED-WIDGET RESKIN SWEEP (Tasks 7-11) COMPLETE. Next: Task 12 empty/error/loading states, then
   Tasks 13-16 student screens adopt everything. ===
+Task 12: complete (commit a83d90a, review clean) — ShimmerBox (reduced-motion aware, controller lazily
+  created + disposed correctly), EmptyState, ErrorState ('إعادة المحاولة' retry), LoadingState (composes
+  ShimmerBox). All token-driven, no providers. No findings.
+  === FOUNDATION + WIDGET RESKIN (Tasks 1-12) ALL COMPLETE. Starting screen adoption (13-16). ===
