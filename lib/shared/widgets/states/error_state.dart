@@ -19,7 +19,17 @@ class ErrorState extends StatelessWidget {
           children: [
             Icon(Icons.error_outline, size: 48, color: tokens.maroon),
             const SizedBox(height: 16),
-            Text(message, style: text.bodyLarge, textAlign: TextAlign.center),
+            // Bounded so a pathologically long message (e.g. a raw exception
+            // whose toString() carries an embedded stack trace) can never
+            // blow out this Column's height and trip Flutter's RenderFlex
+            // overflow assertion — it truncates instead.
+            Text(
+              message,
+              style: text.bodyLarge,
+              textAlign: TextAlign.center,
+              maxLines: 6,
+              overflow: TextOverflow.ellipsis,
+            ),
             if (onRetry != null) ...[
               const SizedBox(height: 20),
               OutlinedButton(
