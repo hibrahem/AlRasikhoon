@@ -32,7 +32,6 @@ import '../features/teacher/screens/teacher_students_screen.dart';
 import '../features/teacher/screens/teacher_history_screen.dart';
 import '../features/teacher/screens/session_overview_screen.dart';
 import '../features/teacher/screens/recitation_screen.dart';
-import '../features/teacher/screens/recitation_result_screen.dart';
 import '../features/teacher/screens/new_memorization_screen.dart';
 import '../features/teacher/screens/session_summary_screen.dart';
 import '../features/teacher/screens/talqeen_session_screen.dart';
@@ -100,8 +99,6 @@ class AppRoutes {
   static const String sessionOverview = '/teacher/session/:studentId';
   static const String recitation =
       '/teacher/session/:studentId/recitation/:part';
-  static const String recitationResult =
-      '/teacher/session/:studentId/recitation/:part/result';
   static const String newMemorization = '/teacher/session/:studentId/new';
   static const String sessionSummary = '/teacher/session/:studentId/summary';
   static const String nextContentTalqeen =
@@ -420,19 +417,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                   final studentId = state.pathParameters['studentId']!;
                   final part = int.parse(state.pathParameters['part']!);
                   return RecitationScreen(studentId: studentId, part: part);
-                },
-              ),
-              GoRoute(
-                path: AppRoutes.recitationResult,
-                builder: (context, state) {
-                  final studentId = state.pathParameters['studentId']!;
-                  final part = int.parse(state.pathParameters['part']!);
-                  final errorCount = state.extra as int? ?? 0;
-                  return RecitationResultScreen(
-                    studentId: studentId,
-                    part: part,
-                    errorCount: errorCount,
-                  );
                 },
               ),
               GoRoute(

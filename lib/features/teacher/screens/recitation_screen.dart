@@ -88,7 +88,8 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
 
           final presentParts = meeting.presentParts;
           final position = presentParts.indexOf(widget.part) + 1;
-          final isLastPart = meeting.partAfter(widget.part) == null;
+          final nextPart = meeting.partAfter(widget.part);
+          final isLastPart = nextPart == null;
 
           // The content card, the error counter and the actions are taller than
           // the viewport the teacher shell leaves on a phone, so the content
@@ -216,19 +217,27 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
                                       .read(activeSessionProvider.notifier)
                                       .setPartErrors(widget.part, _errorCount);
 
-                                  // Navigate to result or next part
-                                  context.push(
-                                    AppRoutes.recitationResult
-                                        .replaceFirst(
-                                          ':studentId',
-                                          widget.studentId,
-                                        )
-                                        .replaceFirst(
-                                          ':part',
-                                          '${widget.part}',
-                                        ),
-                                    extra: _errorCount,
-                                  );
+                                  // Go straight to the next evaluation screen —
+                                  // no intermediate per-part result screen — or
+                                  // to the session summary after the last part.
+                                  // Per-part grades are shown on the summary.
+                                  if (isLastPart) {
+                                    context.push(
+                                      AppRoutes.sessionSummary.replaceFirst(
+                                        ':studentId',
+                                        widget.studentId,
+                                      ),
+                                    );
+                                  } else {
+                                    context.push(
+                                      AppRoutes.recitation
+                                          .replaceFirst(
+                                            ':studentId',
+                                            widget.studentId,
+                                          )
+                                          .replaceFirst(':part', '$nextPart'),
+                                    );
+                                  }
                                 },
                               ),
                             ),
