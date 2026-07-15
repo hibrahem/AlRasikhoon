@@ -101,6 +101,32 @@ void main() {
     expect(find.text('إنهاء الحلقة'), findsOneWidget);
   });
 
+  testWidgets('the talqeen screen carries the two repetition counts', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      part1Errors: 0,
+      current: _meeting(2, _c('النبأ', 1, 11)),
+      next: _meeting(3, _c('النبأ', 12, 20)),
+    );
+    // The counts card moved here from the summary — the teacher records the
+    // repetitions on the talqeen step, right before ending the الحلقة.
+    expect(find.text('التكرار'), findsOneWidget);
+    final withTeacher = find.byKey(
+      const Key('increment_repetitions_with_teacher'),
+    );
+    final atHome = find.byKey(const Key('increment_home_repetitions_required'));
+    expect(withTeacher, findsOneWidget);
+    expect(atHome, findsOneWidget);
+    // The steppers are wired to the active-session provider, so tapping raises
+    // the displayed count (proving they aren't inert decoration).
+    await tester.ensureVisible(withTeacher);
+    await tester.tap(withTeacher);
+    await tester.pump();
+    expect(find.text('1'), findsOneWidget);
+  });
+
   testWidgets('failed session previews the SAME current passage', (
     tester,
   ) async {

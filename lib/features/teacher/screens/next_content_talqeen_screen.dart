@@ -7,6 +7,7 @@ import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../providers/teacher_provider.dart';
+import '../widgets/recitation_counts_card.dart';
 
 /// The talqeen step that closes a session: before ending the الحلقة, the
 /// teacher recites the passage the student will memorize next TO the student.
@@ -133,6 +134,27 @@ class _NextContentTalqeenScreenState
                     ),
                     error: (_, _) => const _PassageCard(passage: ''),
                   ),
+
+            const SizedBox(height: 24),
+
+            // The two counts, recorded on the talqeen step right before the
+            // الحلقة is ended: how many times teacher and student recited the
+            // passage together, and how many repetitions the student owes at
+            // home. `completeSession` reads them straight off the active
+            // session, so they persist onto this session's record.
+            Text('التكرار', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 12),
+            RecitationCountsCard(
+              repetitionsWithTeacher: active.repetitionsWithTeacher,
+              homeRepetitionsRequired: active.homeRepetitionsRequired,
+              onRepetitionsWithTeacherChanged: ref
+                  .read(activeSessionProvider.notifier)
+                  .setRepetitionsWithTeacher,
+              onHomeRepetitionsRequiredChanged: ref
+                  .read(activeSessionProvider.notifier)
+                  .setHomeRepetitionsRequired,
+            ),
+
             const SizedBox(height: 32),
             AppButton(
               text: 'إنهاء الحلقة',
