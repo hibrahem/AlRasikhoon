@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_counter.dart';
 import '../../../shared/widgets/session_timer.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/supervisor_provider.dart';
 
 class ExamSessionScreen extends ConsumerStatefulWidget {
@@ -31,6 +32,7 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final studentAsync = ref.watch(examStudentProvider(widget.studentId));
     // WHAT is being examined comes from the curriculum session the student
     // stands on — its verbatim label and its tier — never from a hizb: the
@@ -73,9 +75,7 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                       // Student and exam info
                       AppCard(
                         margin: const EdgeInsets.all(16),
-                        backgroundColor: AppColors.secondary.withValues(
-                          alpha: 0.05,
-                        ),
+                        backgroundColor: tokens.gold.withValues(alpha: 0.05),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -83,12 +83,13 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                               children: [
                                 CircleAvatar(
                                   radius: 24,
-                                  backgroundColor: AppColors.secondary
-                                      .withValues(alpha: 0.1),
+                                  backgroundColor: tokens.gold.withValues(
+                                    alpha: 0.1,
+                                  ),
                                   child: Text(
                                     user.name.isNotEmpty ? user.name[0] : '?',
-                                    style: const TextStyle(
-                                      color: AppColors.secondary,
+                                    style: TextStyle(
+                                      color: tokens.gold,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -110,9 +111,7 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodySmall
-                                            ?.copyWith(
-                                              color: AppColors.textSecondary,
-                                            ),
+                                            ?.copyWith(color: tokens.sepia),
                                       ),
                                     ],
                                   ),
@@ -127,15 +126,10 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: AppColors.secondary.withValues(
-                                      alpha: 0.1,
-                                    ),
+                                    color: tokens.gold.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: const Icon(
-                                    Icons.quiz,
-                                    color: AppColors.secondary,
-                                  ),
+                                  child: Icon(Icons.quiz, color: tokens.gold),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -156,9 +150,7 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodySmall
-                                            ?.copyWith(
-                                              color: AppColors.textSecondary,
-                                            ),
+                                            ?.copyWith(color: tokens.sepia),
                                       ),
                                     ],
                                   ),
@@ -169,15 +161,15 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: AppColors.surface,
+                                color: tokens.card,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.info_outline,
                                     size: 20,
-                                    color: AppColors.secondary,
+                                    color: tokens.gold,
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(
@@ -187,9 +179,7 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
-                                          ?.copyWith(
-                                            color: AppColors.secondary,
-                                          ),
+                                          ?.copyWith(color: tokens.gold),
                                     ),
                                   ),
                                 ],
@@ -238,7 +228,7 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                           },
                           isFullWidth: true,
                           size: AppButtonSize.large,
-                          backgroundColor: AppColors.secondary,
+                          backgroundColor: tokens.gold,
                         ),
                       ),
                     ],
@@ -248,13 +238,23 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const LoadingState(),
+        // Deliberately NOT ErrorState here: ErrorState wraps its message in a
+        // Column(mainAxisSize: min), which asserts a RenderFlex overflow if
+        // the message is very long. examStudentProvider's real (unmocked)
+        // failure is a Riverpod ProviderException whose message embeds the
+        // full dependency chain and can run to thousands of characters —
+        // exactly what exam_session_timer_test.dart and
+        // exam_session_overflow_test.dart hit, since neither test mocks
+        // Firebase. A bare Text in Center has no such column to overflow, so
+        // the original bespoke widget is kept.
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
     );
   }
 
   void _showExitConfirmation() {
+    final tokens = context.tokens;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -270,7 +270,7 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
               Navigator.pop(context);
               context.pop();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            style: ElevatedButton.styleFrom(backgroundColor: tokens.maroon),
             child: const Text('نعم، إلغاء'),
           ),
         ],

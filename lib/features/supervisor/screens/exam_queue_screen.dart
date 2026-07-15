@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/states/empty_state.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/supervisor_provider.dart';
 
 class ExamQueueScreen extends ConsumerWidget {
@@ -11,6 +14,7 @@ class ExamQueueScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tokens = context.tokens;
     final examQueueAsync = ref.watch(examQueueProvider);
 
     return Scaffold(
@@ -18,7 +22,11 @@ class ExamQueueScreen extends ConsumerWidget {
       body: examQueueAsync.when(
         data: (students) {
           if (students.isEmpty) {
-            return _buildEmptyState(context);
+            return const EmptyState(
+              icon: Icons.check_circle_outline,
+              title: 'لا يوجد طلاب بالانتظار',
+              message: 'جميع الاختبارات مكتملة',
+            );
           }
 
           return RefreshIndicator(
@@ -47,13 +55,11 @@ class ExamQueueScreen extends ConsumerWidget {
                     children: [
                       CircleAvatar(
                         radius: 24,
-                        backgroundColor: AppColors.secondary.withValues(
-                          alpha: 0.1,
-                        ),
+                        backgroundColor: tokens.gold.withValues(alpha: 0.1),
                         child: Text(
                           user.name.isNotEmpty ? user.name[0] : '?',
-                          style: const TextStyle(
-                            color: AppColors.secondary,
+                          style: TextStyle(
+                            color: tokens.gold,
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                           ),
@@ -99,16 +105,16 @@ class ExamQueueScreen extends ConsumerWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.secondary.withValues(alpha: 0.1),
+                          color: tokens.gold.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.secondary),
+                          border: Border.all(color: tokens.gold),
                         ),
-                        child: const Text(
+                        child: Text(
                           'اختبار',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.secondary,
+                            color: tokens.gold,
                           ),
                         ),
                       ),
@@ -119,37 +125,8 @@ class ExamQueueScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.check_circle_outline,
-            size: 80,
-            color: AppColors.success.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'لا يوجد طلاب بالانتظار',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'جميع الاختبارات مكتملة',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-          ),
-        ],
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل قائمة الاختبارات: $e'),
       ),
     );
   }
@@ -163,25 +140,23 @@ class _InfoBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: tokens.surfaceVariant,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: AppColors.textSecondary),
+          Icon(icon, size: 12, color: tokens.sepia),
           const SizedBox(width: 4),
           Flexible(
             child: Text(
               text,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 11,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 11, color: tokens.sepia),
             ),
           ),
         ],
