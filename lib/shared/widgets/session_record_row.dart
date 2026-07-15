@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../core/constants/app_colors.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../domain/session/session_duration.dart';
 import 'app_card.dart';
@@ -52,7 +51,7 @@ class SessionRecordRow extends StatelessWidget {
     final tokens = context.tokens;
     final passColor = isTalqeen
         ? tokens.green
-        : (passed ? AppColors.success : tokens.maroon);
+        : (passed ? tokens.green : tokens.maroon);
     final dateFormat = DateFormat('yyyy/MM/dd', 'ar');
 
     return AppCard(
@@ -173,9 +172,9 @@ class _DurationDisplay extends StatelessWidget {
   static Color? _colorForStatus(DurationStatus status, AppTokens tokens) {
     switch (status) {
       case DurationStatus.under:
-        return AppColors.warning; // yellow — faster than target
+        return tokens.gold; // gold — faster than target
       case DurationStatus.onTarget:
-        return AppColors.success; // green — on time
+        return tokens.green; // green — on time
       case DurationStatus.over:
         return tokens.maroon; // red — beyond target
       case DurationStatus.none:

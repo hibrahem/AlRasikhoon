@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/theme/grade_color_tokens.dart';
 import '../../core/utils/grade_calculator.dart';
@@ -79,7 +78,7 @@ class GradeDisplay extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               decoration: BoxDecoration(
                 color: gradeInfo.passed
-                    ? AppColors.success.withValues(alpha: 0.1)
+                    ? tokens.green.withValues(alpha: 0.1)
                     : tokens.maroon.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -88,7 +87,7 @@ class GradeDisplay extends StatelessWidget {
                 children: [
                   Icon(
                     gradeInfo.passed ? Icons.check_circle : Icons.cancel,
-                    color: gradeInfo.passed ? AppColors.success : tokens.maroon,
+                    color: gradeInfo.passed ? tokens.green : tokens.maroon,
                     size: 24,
                   ),
                   const SizedBox(width: 8),
@@ -97,9 +96,7 @@ class GradeDisplay extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: gradeInfo.passed
-                          ? AppColors.success
-                          : tokens.maroon,
+                      color: gradeInfo.passed ? tokens.green : tokens.maroon,
                     ),
                   ),
                 ],

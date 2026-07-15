@@ -132,7 +132,7 @@ class ErrorCounter extends StatelessWidget {
               children: [
                 Icon(
                   gradeInfo.passed ? Icons.check_circle : Icons.cancel,
-                  color: gradeInfo.passed ? AppColors.success : tokens.maroon,
+                  color: gradeInfo.passed ? tokens.green : tokens.maroon,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -141,7 +141,7 @@ class ErrorCounter extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: gradeInfo.passed ? AppColors.success : tokens.maroon,
+                    color: gradeInfo.passed ? tokens.green : tokens.maroon,
                   ),
                 ),
               ],
