@@ -78,9 +78,11 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
       institute_id: INST_A,
       name: "Supervisor A",
     });
-    // Teacher (no institute scoping on records — al_rasikhoon-ob7; used to
-    // assert Sard is teacher-conducted, al_rasikhoon-801).
+    // Teachers. Record writes are scoped to a teacher's OWN students via
+    // students.teacher_id (al_rasikhoon-ob7); teacher_b exists so we can assert
+    // teacher A is denied on teacher B's students/records.
     await seed("users", "teacher_a", { role: "teacher", name: "Teacher A" });
+    await seed("users", "teacher_b", { role: "teacher", name: "Teacher B" });
     // Super admin.
     await seed("users", "admin", { role: "super_admin", name: "Admin" });
 
@@ -94,21 +96,35 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
     await seed("users", "stu_user_b", { role: "student", name: "Student user B" });
 
     // --- Students -----------------------------------------------------------
-    await seed("students", "stu_a", { institute_id: INST_A, name: "Student A" });
-    await seed("students", "stu_b", { institute_id: INST_B, name: "Student B" });
-    // Legacy student with NO institute_id (must fail closed).
+    // teacher_id assigns the student to a teacher (al_rasikhoon-ob7 scoping):
+    // stu_a → teacher_a, stu_b → teacher_b.
+    await seed("students", "stu_a", {
+      institute_id: INST_A,
+      teacher_id: "teacher_a",
+      name: "Student A",
+    });
+    await seed("students", "stu_b", {
+      institute_id: INST_B,
+      teacher_id: "teacher_b",
+      name: "Student B",
+    });
+    // Legacy student with NO institute_id AND NO teacher_id (must fail closed
+    // for both supervisor institute scoping and teacher record scoping).
     await seed("students", "stu_legacy", { name: "Legacy student" });
 
     // Read-scoping students: each has a linked user (user_id) and guardian
-    // (guardian_id), plus an institute for supervisor scoping.
+    // (guardian_id), an institute for supervisor scoping, and a teacher_id for
+    // teacher scoping (child A → teacher_a, child B → teacher_b).
     await seed("students", "stu_child_a", {
       institute_id: INST_A,
+      teacher_id: "teacher_a",
       user_id: "stu_user_a",
       guardian_id: "guardian_a",
       name: "Child A",
     });
     await seed("students", "stu_child_b", {
       institute_id: INST_B,
+      teacher_id: "teacher_b",
       user_id: "stu_user_b",
       guardian_id: "guardian_b",
       name: "Child B",
@@ -244,10 +260,10 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
 
   // === al_rasikhoon-801 — Sard is TEACHER-ONLY (reverses #29) ===============
   // سرد is conducted by the TEACHER; the supervisor conducts الاختبار. Teacher
-  // writes are unscoped here, exactly as session_records already is — scoping
-  // BOTH to the teacher's own students is al_rasikhoon-ob7.
+  // writes are now scoped to the teacher's OWN students (al_rasikhoon-ob7):
+  // stu_a belongs to teacher_a, so these ALLOWs still hold.
 
-  it("ALLOWS a teacher creating a sard_record (Sard is teacher-conducted, al_rasikhoon-801)", async () => {
+  it("ALLOWS a teacher creating a sard_record for their OWN student (al_rasikhoon-801/ob7)", async () => {
     const db = asUser("teacher_a");
     await assertSucceeds(
       setDoc(doc(db, "sard_records", "sard_new_teacher"), {
@@ -257,7 +273,7 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
     );
   });
 
-  it("ALLOWS a teacher updating an existing sard_record (al_rasikhoon-801)", async () => {
+  it("ALLOWS a teacher updating an existing sard_record for their OWN student (al_rasikhoon-801/ob7)", async () => {
     const db = asUser("teacher_a");
     await assertSucceeds(
       updateDoc(doc(db, "sard_records", "sard_a"), { pages: 9 })
@@ -360,13 +376,23 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
     await assertFails(getDoc(doc(db, "students", "stu_legacy")));
   });
 
-  // --- teacher + admin (broad) ---------------------------------------------
-  // JUDGMENT CALL: teacher reads mirror the currently-UNSCOPED teacher write on
-  // students (any teacher may write any student). Tightening teacher read+write
-  // to their own students is tracked together in al_rasikhoon-ob7.
-  it("ALLOWS a teacher reading any student (read mirrors the unscoped teacher write)", async () => {
+  // --- teacher scoping (al_rasikhoon-ob7) -----------------------------------
+  // Teacher reads are now scoped to the teacher's OWN students via
+  // students.teacher_id, closing the cross-institute hole bpk deferred. child A
+  // belongs to teacher_a; child B belongs to teacher_b.
+  it("DENIES a teacher reading another teacher's student (al_rasikhoon-ob7)", async () => {
     const db = asUser("teacher_a");
-    await assertSucceeds(getDoc(doc(db, "students", "stu_child_b")));
+    await assertFails(getDoc(doc(db, "students", "stu_child_b")));
+  });
+
+  it("ALLOWS a teacher reading their OWN student (al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertSucceeds(getDoc(doc(db, "students", "stu_child_a")));
+  });
+
+  it("DENIES a teacher reading a teacher-less student (fail-closed, al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(getDoc(doc(db, "students", "stu_legacy")));
   });
 
   it("ALLOWS an admin reading any student", async () => {
@@ -414,6 +440,16 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
     await assertSucceeds(getDoc(doc(db, "session_records", "sess_child_a")));
   });
 
+  it("DENIES a teacher reading another teacher's session_record (al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(getDoc(doc(db, "session_records", "sess_child_b")));
+  });
+
+  it("ALLOWS a teacher reading their own student's session_record (al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertSucceeds(getDoc(doc(db, "session_records", "sess_child_a")));
+  });
+
   it("DENIES an unauthenticated client reading a session_record", async () => {
     const db = testEnv.unauthenticatedContext().firestore();
     await assertFails(getDoc(doc(db, "session_records", "sess_child_a")));
@@ -435,6 +471,16 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
     await assertFails(getDoc(doc(db, "sard_records", "sard_child_b")));
   });
 
+  it("DENIES a teacher reading another teacher's sard_record (al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(getDoc(doc(db, "sard_records", "sard_child_b")));
+  });
+
+  it("ALLOWS a teacher reading their own student's sard_record (al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertSucceeds(getDoc(doc(db, "sard_records", "sard_child_a")));
+  });
+
   // --- exam_records ---------------------------------------------------------
   it("DENIES a student reading another student's exam_record", async () => {
     const db = asUser("stu_user_a");
@@ -454,5 +500,101 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
   it("ALLOWS a supervisor of institute A reading an institute-A exam_record", async () => {
     const db = asUser("sup_a");
     await assertSucceeds(getDoc(doc(db, "exam_records", "exam_child_a")));
+  });
+
+  it("DENIES a teacher reading another teacher's exam_record (al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(getDoc(doc(db, "exam_records", "exam_child_b")));
+  });
+
+  it("ALLOWS a teacher reading their own student's exam_record (al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertSucceeds(getDoc(doc(db, "exam_records", "exam_child_a")));
+  });
+
+  // === al_rasikhoon-ob7 — teacher record WRITE scoping =====================
+  // A teacher may create/update session_records and sard_records ONLY for their
+  // OWN students (students.teacher_id == uid), resolved through the record's
+  // student. On update, BOTH the existing and incoming student are checked so
+  // student_id cannot be repointed onto another teacher's student. stu_a/child_a
+  // belong to teacher_a; stu_b/child_b belong to teacher_b.
+
+  // --- session_records: create ----------------------------------------------
+  it("DENIES a teacher creating a session_record for another teacher's student (al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      setDoc(doc(db, "session_records", "sess_cross"), {
+        student_id: "stu_b",
+        score: 7,
+      })
+    );
+  });
+
+  it("ALLOWS a teacher creating a session_record for their OWN student (al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertSucceeds(
+      setDoc(doc(db, "session_records", "sess_own_new"), {
+        student_id: "stu_a",
+        score: 7,
+      })
+    );
+  });
+
+  it("DENIES a teacher creating a session_record for a teacher-less student (fail-closed, al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      setDoc(doc(db, "session_records", "sess_legacy"), {
+        student_id: "stu_legacy",
+        score: 1,
+      })
+    );
+  });
+
+  // --- session_records: update + repoint ------------------------------------
+  it("DENIES a teacher updating a session_record of another teacher's student (al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      updateDoc(doc(db, "session_records", "sess_child_b"), { score: 9 })
+    );
+  });
+
+  it("ALLOWS a teacher updating a session_record of their OWN student (al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertSucceeds(
+      updateDoc(doc(db, "session_records", "sess_a"), { score: 9 })
+    );
+  });
+
+  it("DENIES a teacher repointing a session_record's student_id to another teacher's student (al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      updateDoc(doc(db, "session_records", "sess_a"), { student_id: "stu_b" })
+    );
+  });
+
+  // --- sard_records: create -------------------------------------------------
+  it("DENIES a teacher creating a sard_record for another teacher's student (al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      setDoc(doc(db, "sard_records", "sard_cross"), {
+        student_id: "stu_b",
+        pages: 4,
+      })
+    );
+  });
+
+  // --- sard_records: update + repoint ---------------------------------------
+  it("DENIES a teacher updating a sard_record of another teacher's student (al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      updateDoc(doc(db, "sard_records", "sard_child_b"), { pages: 9 })
+    );
+  });
+
+  it("DENIES a teacher repointing a sard_record's student_id to another teacher's student (al_rasikhoon-ob7)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      updateDoc(doc(db, "sard_records", "sard_a"), { student_id: "stu_b" })
+    );
   });
 });
