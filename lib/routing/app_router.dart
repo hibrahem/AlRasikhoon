@@ -36,6 +36,7 @@ import '../features/teacher/screens/recitation_result_screen.dart';
 import '../features/teacher/screens/new_memorization_screen.dart';
 import '../features/teacher/screens/session_summary_screen.dart';
 import '../features/teacher/screens/talqeen_session_screen.dart';
+import '../features/teacher/screens/next_content_talqeen_screen.dart';
 import '../features/teacher/screens/add_student_screen.dart';
 import '../features/student/screens/student_dashboard_screen.dart';
 import '../features/student/screens/session_history_screen.dart';
@@ -90,6 +91,8 @@ class AppRoutes {
       '/teacher/session/:studentId/recitation/:part/result';
   static const String newMemorization = '/teacher/session/:studentId/new';
   static const String sessionSummary = '/teacher/session/:studentId/summary';
+  static const String nextContentTalqeen =
+      '/teacher/session/:studentId/next-content';
   static const String talqeenSession = '/teacher/session/:studentId/talqeen';
   // Sard (السرد) — TEACHER-conducted (al_rasikhoon-801, reversing #29). Lives
   // in the teacher shell alongside the rest of the session flow, so the whole
@@ -412,6 +415,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) {
                   final studentId = state.pathParameters['studentId']!;
                   return SessionSummaryScreen(studentId: studentId);
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.nextContentTalqeen,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  return NextContentTalqeenScreen(studentId: studentId);
                 },
               ),
               GoRoute(
