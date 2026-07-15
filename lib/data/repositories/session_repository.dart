@@ -9,6 +9,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/utils/grade_calculator.dart';
 import '../../domain/curriculum/curriculum_pace.dart';
 import '../../domain/curriculum/paced_session.dart';
+import '../../domain/session/session_duration.dart';
 
 class SessionRepository {
   final FirebaseFirestore _firestore;
@@ -80,6 +81,7 @@ class SessionRepository {
     required CurriculumPace pace,
     String? notes,
     DateTime? now,
+    DateTime? startedAt,
   }) {
     final grades = SessionGrades(
       newMemorizationErrors: newMemorizationErrors,
@@ -120,6 +122,12 @@ class SessionRepository {
         homeRepetitionsRequired: homeRepetitionsRequired,
         notes: notes,
         createdAt: writtenAt,
+        duration: startedAt == null
+            ? null
+            : SessionDuration(
+                elapsed: writtenAt.difference(startedAt),
+                target: SessionDuration.targetForPace(pace.multiplier),
+              ).elapsed,
       ),
       now: now,
     );
@@ -158,6 +166,7 @@ class SessionRepository {
     required CurriculumPace pace,
     String? notes,
     DateTime? now,
+    DateTime? startedAt,
   }) {
     return _writeSessionRecord(
       (id, writtenAt) => SessionRecordModel(
@@ -189,6 +198,12 @@ class SessionRepository {
         homeRepetitionsRequired: homeRepetitionsRequired,
         notes: notes,
         createdAt: writtenAt,
+        duration: startedAt == null
+            ? null
+            : SessionDuration(
+                elapsed: writtenAt.difference(startedAt),
+                target: SessionDuration.targetForPace(pace.multiplier),
+              ).elapsed,
       ),
       now: now,
     );

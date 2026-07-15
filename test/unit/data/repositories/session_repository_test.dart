@@ -298,6 +298,70 @@ void main() {
         expect(record.paceAtTime, 2);
         expect(record.coversSessionIds.length, 1);
       });
+
+      test(
+        'records the capped wall-clock duration from startedAt to write',
+        () async {
+          final started = DateTime(2026, 1, 1, 10, 0, 0);
+          final record = await sessionRepository.createSessionRecord(
+            studentId: 's1',
+            teacherId: 't1',
+            meeting: _meeting(
+              id: 'L1_J30_S1',
+              sessionNumber: 1,
+              orderInLevel: 1,
+            ),
+            levelId: 1,
+            attemptNumber: 1,
+            newMemorizationErrors: 0,
+            recentReviewErrors: 0,
+            distantReviewErrors: 0,
+            repetitionsWithTeacher: 0,
+            homeRepetitionsRequired: 0,
+            pace: CurriculumPace.standard, // 1x → 20 min target, 60 min cap
+            startedAt: started,
+            now: started.add(const Duration(minutes: 22)),
+          );
+          expect(record.duration, const Duration(minutes: 22));
+        },
+      );
+
+      test('clamps a forgotten session to three times the target', () async {
+        final started = DateTime(2026, 1, 1, 10, 0, 0);
+        final record = await sessionRepository.createSessionRecord(
+          studentId: 's1',
+          teacherId: 't1',
+          meeting: _meeting(id: 'L1_J30_S1', sessionNumber: 1, orderInLevel: 1),
+          levelId: 1,
+          attemptNumber: 1,
+          newMemorizationErrors: 0,
+          recentReviewErrors: 0,
+          distantReviewErrors: 0,
+          repetitionsWithTeacher: 0,
+          homeRepetitionsRequired: 0,
+          pace: CurriculumPace.standard,
+          startedAt: started,
+          now: started.add(const Duration(hours: 12)),
+        );
+        expect(record.duration, const Duration(minutes: 60));
+      });
+
+      test('leaves duration null when no start was captured', () async {
+        final record = await sessionRepository.createSessionRecord(
+          studentId: 's1',
+          teacherId: 't1',
+          meeting: _meeting(id: 'L1_J30_S1', sessionNumber: 1, orderInLevel: 1),
+          levelId: 1,
+          attemptNumber: 1,
+          newMemorizationErrors: 0,
+          recentReviewErrors: 0,
+          distantReviewErrors: 0,
+          repetitionsWithTeacher: 0,
+          homeRepetitionsRequired: 0,
+          pace: CurriculumPace.standard,
+        );
+        expect(record.duration, isNull);
+      });
     });
 
     group('createTalqeenRecord', () {
