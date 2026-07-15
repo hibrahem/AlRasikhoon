@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/states/empty_state.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/admin_provider.dart';
 
 class TeachersScreen extends ConsumerWidget {
@@ -11,6 +14,7 @@ class TeachersScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tokens = context.tokens;
     final teachersAsync = ref.watch(allTeachersProvider);
 
     return Scaffold(
@@ -18,7 +22,11 @@ class TeachersScreen extends ConsumerWidget {
       body: teachersAsync.when(
         data: (teachers) {
           if (teachers.isEmpty) {
-            return _buildEmptyState(context);
+            return const EmptyState(
+              icon: Icons.people_outline,
+              title: 'لا يوجد معلمون',
+              message: 'اضغط على + لإضافة معلم جديد',
+            );
           }
           return RefreshIndicator(
             onRefresh: () async {
@@ -37,13 +45,11 @@ class TeachersScreen extends ConsumerWidget {
                     children: [
                       CircleAvatar(
                         radius: 24,
-                        backgroundColor: AppColors.primary.withValues(
-                          alpha: 0.1,
-                        ),
+                        backgroundColor: tokens.green.withValues(alpha: 0.1),
                         child: Text(
                           teacher.name.isNotEmpty ? teacher.name[0] : '?',
-                          style: const TextStyle(
-                            color: AppColors.primary,
+                          style: TextStyle(
+                            color: tokens.green,
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                           ),
@@ -68,7 +74,7 @@ class TeachersScreen extends ConsumerWidget {
                                       ? Icons.phone
                                       : Icons.email,
                                   size: 14,
-                                  color: AppColors.textSecondary,
+                                  color: tokens.sepia,
                                 ),
                                 const SizedBox(width: 4),
                                 // A teacher with no phone falls back to their
@@ -78,9 +84,7 @@ class TeachersScreen extends ConsumerWidget {
                                   child: Text(
                                     teacher.phone ?? teacher.displayUsername,
                                     style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(
-                                          color: AppColors.textSecondary,
-                                        ),
+                                        ?.copyWith(color: tokens.sepia),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -96,9 +100,12 @@ class TeachersScreen extends ConsumerWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
+                          // "success"/"error" reused as green/maroon — the
+                          // same positive-affirmative/danger roles they
+                          // already carry elsewhere (see admin dashboard).
                           color: teacher.isActive
-                              ? AppColors.success.withValues(alpha: 0.1)
-                              : AppColors.error.withValues(alpha: 0.1),
+                              ? tokens.green.withValues(alpha: 0.1)
+                              : tokens.maroon.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -106,16 +113,13 @@ class TeachersScreen extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: 11,
                             color: teacher.isActive
-                                ? AppColors.success
-                                : AppColors.error,
+                                ? tokens.green
+                                : tokens.maroon,
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Icon(
-                        Icons.chevron_left,
-                        color: AppColors.textSecondary,
-                      ),
+                      Icon(Icons.chevron_left, color: tokens.sepia),
                     ],
                   ),
                 );
@@ -123,41 +127,12 @@ class TeachersScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل المعلمين: $e'),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.addTeacher),
         child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.people_outline,
-            size: 80,
-            color: AppColors.textSecondary.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'لا يوجد معلمون',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'اضغط على + لإضافة معلم جديد',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-          ),
-        ],
       ),
     );
   }
