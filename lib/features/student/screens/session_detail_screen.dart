@@ -5,7 +5,6 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/grade_color_tokens.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/grade_display.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/student_provider.dart';
@@ -97,8 +96,8 @@ class SessionDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 // A تلقين is never graded — no errors, no pass/fail, no
-                // attempt cap. It must NOT show `GradeDisplay` or the
-                // part-by-part error breakdown below, which both imply a
+                // attempt cap. It must NOT show the overall result banner or
+                // the part-by-part error breakdown below, which both imply a
                 // graded outcome that a تلقين never has.
                 if (record.isTalqeen)
                   Container(
@@ -125,21 +124,15 @@ class SessionDetailScreen extends ConsumerWidget {
                     ),
                   )
                 else ...[
-                  // Overall session result — binary pass/fail, fails on ANY
-                  // محب component, no averaging (#24). The session grade is
-                  // the worst of the three level-based component grades (#22).
+                  // Overall session result is a BINARY pass/fail ONLY (#24):
+                  // the session is failed if ANY single part grades محب, and
+                  // passes only if none is. It deliberately shows NO combined
+                  // grade tier and NO summed error "score" — grades and error
+                  // counts are never combined across parts. Each part's own
+                  // grade and pass/fail is shown, alone, in the cards below.
                   Center(
-                    child: GradeDisplay(
-                      errorCount: record.grades.totalErrors,
-                      gradeInfo: GradeCalculator.calculateSessionGrade(
-                        level: record.levelId,
-                        newMemorizationErrors:
-                            record.grades.newMemorizationErrors,
-                        recentReviewErrors: record.grades.recentReviewErrors,
-                        distantReviewErrors: record.grades.distantReviewErrors,
-                      ),
-                      showStars: true,
-                      showPassStatus: true,
+                    child: _OverallResultBanner(
+                      passed: record.grades.passesForLevel(record.levelId),
                     ),
                   ),
 
@@ -205,6 +198,53 @@ String _partTitleAr(int part) {
       return 'المراجعة البعيدة';
     default:
       return 'التسميع';
+  }
+}
+
+/// The session-level verdict: a binary ناجح / راسب marker per
+/// hibrahem/AlRasikhoon#24. It carries no grade tier and no error count on
+/// purpose — the session outcome is pass/fail only, and every per-part grade
+/// and error count lives in the part cards below it, each evaluated alone.
+class _OverallResultBanner extends StatelessWidget {
+  final bool passed;
+
+  const _OverallResultBanner({required this.passed});
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    // tokens.green / tokens.maroon carry the passed / failed roles used by the
+    // per-part cards on this same screen — reuse them so the overall verdict
+    // reads with the same colour language as the parts it summarises.
+    final color = passed ? tokens.green : tokens.maroon;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color, width: 2),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            passed ? Icons.check_circle : Icons.cancel,
+            color: color,
+            size: 28,
+          ),
+          const SizedBox(width: 10),
+          Text(
+            passed ? 'ناجح' : 'راسب',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
