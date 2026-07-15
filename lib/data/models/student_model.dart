@@ -51,6 +51,21 @@ class StudentModel {
   final DateTime? updatedAt;
   final bool isActive;
 
+  /// Whether the student has finished the entire curriculum: they passed the
+  /// اختبار of the last session of the last level, so there is no session ahead
+  /// of them to move onto. Their position stands frozen on that final اختبار
+  /// (there is nowhere to advance it to), which is precisely why this flag
+  /// exists: without it a finished student — still denormalized as standing on
+  /// an اختبار — would sit in the supervisor's exam queue forever and be
+  /// re-examined indefinitely. Set once, on the final pass, by
+  /// [StudentRepository.advanceStudentSession]; never unset.
+  final bool curriculumCompleted;
+
+  /// When the curriculum was completed. Null until the final pass. Paired with
+  /// [curriculumCompleted] so "graduated" carries a date, the way [createdAt]
+  /// and [updatedAt] date the rest of the record.
+  final DateTime? curriculumCompletedAt;
+
   /// Where this student entered the curriculum. Everything before it is
   /// credited as memorized before joining — the app never taught it. Students
   /// created before flexible placement have no stored anchor and read back as
@@ -89,6 +104,8 @@ class StudentModel {
     required this.createdAt,
     this.updatedAt,
     this.isActive = true,
+    this.curriculumCompleted = false,
+    this.curriculumCompletedAt,
     this.enrollmentPosition = CurriculumPosition.start,
     CurriculumPace? pace,
   }) : pace = pace ?? CurriculumPace.standard;
@@ -190,6 +207,12 @@ class StudentModel {
       createdAt: (data['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updated_at'] as Timestamp?)?.toDate(),
       isActive: data['is_active'] ?? true,
+      // Absent on every student who has not finished — legacy documents and
+      // in-progress students alike — so a missing field reads as "not yet
+      // graduated", never surfaced as corruption.
+      curriculumCompleted: data['curriculum_completed'] as bool? ?? false,
+      curriculumCompletedAt: (data['curriculum_completed_at'] as Timestamp?)
+          ?.toDate(),
       enrollmentPosition: data['enrollment_position'] == null
           ? CurriculumPosition.start
           : CurriculumPosition.fromMap(
@@ -220,6 +243,10 @@ class StudentModel {
       'created_at': Timestamp.fromDate(createdAt),
       'updated_at': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
       'is_active': isActive,
+      'curriculum_completed': curriculumCompleted,
+      'curriculum_completed_at': curriculumCompletedAt != null
+          ? Timestamp.fromDate(curriculumCompletedAt!)
+          : null,
       'enrollment_position': enrollmentPosition.toMap(),
       'pace': pace.toJson(),
     };
@@ -246,6 +273,8 @@ class StudentModel {
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isActive,
+    bool? curriculumCompleted,
+    DateTime? curriculumCompletedAt,
     CurriculumPosition? enrollmentPosition,
     CurriculumPace? pace,
   }) {
@@ -271,6 +300,9 @@ class StudentModel {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isActive: isActive ?? this.isActive,
+      curriculumCompleted: curriculumCompleted ?? this.curriculumCompleted,
+      curriculumCompletedAt:
+          curriculumCompletedAt ?? this.curriculumCompletedAt,
       enrollmentPosition: enrollmentPosition ?? this.enrollmentPosition,
       pace: pace ?? this.pace,
     );
@@ -304,8 +336,13 @@ class StudentModel {
   /// Whether the student stands on a سرد, assessed by their teacher.
   bool get canTakeSard => currentSessionKind == SessionKind.sard;
 
-  /// Whether the student stands on an اختبار, assessed by the supervisor.
-  bool get canTakeExam => currentSessionKind == SessionKind.exam;
+  /// Whether the student stands on an اختبار the supervisor should still
+  /// assess. A graduated student's position stays frozen on the final اختبار
+  /// they already passed — there is nowhere ahead to advance it to — so kind
+  /// alone would keep offering them for re-examination forever. Graduation is
+  /// the terminal state: once finished, there is no exam left to take.
+  bool get canTakeExam =>
+      currentSessionKind == SessionKind.exam && !curriculumCompleted;
 
   /// Whether the student stands on an assessment of any tier.
   bool get isOnAssessment => canTakeSard || canTakeExam;

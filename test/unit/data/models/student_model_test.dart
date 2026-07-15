@@ -191,6 +191,70 @@ void main() {
       });
     });
 
+    group('graduation', () {
+      test(
+        'a graduated student can no longer take the exam they finished on',
+        () {
+          // A finished student stays denormalized as standing on the final
+          // اختبار they passed — their position never moves, there is nowhere
+          // ahead to move it. Kind alone would keep offering them for
+          // re-examination forever; the graduation flag is what closes the door.
+          final graduate = studentOn(
+            juzExam,
+          ).copyWith(curriculumCompleted: true);
+
+          expect(graduate.currentSessionKind, SessionKind.exam);
+          expect(graduate.canTakeExam, isFalse);
+        },
+      );
+
+      test('a student still standing on an exam, not yet graduated, can take '
+          'it', () {
+        final student = studentOn(juzExam);
+
+        expect(student.curriculumCompleted, isFalse);
+        expect(student.canTakeExam, isTrue);
+      });
+
+      test('graduation round-trips through Firestore', () async {
+        final graduate = studentOn(juzExam).copyWith(
+          curriculumCompleted: true,
+          curriculumCompletedAt: DateTime(2026, 7, 15),
+        );
+        final data = graduate.toFirestore();
+
+        expect(data['curriculum_completed'], isTrue);
+        expect(data['curriculum_completed_at'], isA<Timestamp>());
+
+        final firestore = FakeFirebaseFirestore();
+        await firestore.collection('students').doc('g1').set(data);
+        final doc = await firestore.collection('students').doc('g1').get();
+        final round = StudentModel.fromFirestore(doc);
+
+        expect(round.curriculumCompleted, isTrue);
+        expect(round.curriculumCompletedAt, DateTime(2026, 7, 15));
+        expect(round.canTakeExam, isFalse);
+      });
+
+      test(
+        'a document with no graduation flag reads back as not graduated',
+        () {
+          // Every legacy and in-progress student pre-dates the field. A missing
+          // flag is "not yet graduated", never corruption to surface.
+          final student = StudentModel.fromJson('s1', {
+            'user_id': 'u1',
+            'institute_id': 'i1',
+            'current_session_kind': 'exam',
+            'created_at': null,
+          });
+
+          expect(student.curriculumCompleted, isFalse);
+          expect(student.curriculumCompletedAt, isNull);
+          expect(student.canTakeExam, isTrue);
+        },
+      );
+    });
+
     group('attempts', () {
       test('a lesson may be attempted three times', () {
         expect(studentOn(firstLesson, attempt: 1).canStartSession, isTrue);
