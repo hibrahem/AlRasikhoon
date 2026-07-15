@@ -42,14 +42,14 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
 
     if (activeSession == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('ملخص الحلقة')),
+        appBar: AppBar(title: const Text('ملخص التسميع')),
         body: const Center(child: Text('لا توجد جلسة نشطة')),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ملخص الحلقة'),
+        title: const Text('ملخص التسميع'),
         automaticallyImplyLeading: false,
         actions: [ActiveLessonTimer(studentId: widget.studentId)],
       ),

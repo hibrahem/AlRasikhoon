@@ -48,7 +48,6 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
             _showExitConfirmation();
           },
         ),
-        actions: [ActiveLessonTimer(studentId: widget.studentId)],
       ),
       body: meetingAsync.when(
         data: (meeting) {
@@ -134,6 +133,25 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
                                       color: modeColor,
                                       fontWeight: FontWeight.w600,
                                     ),
+                                  ),
+                                ),
+                                const Spacer(),
+                                // The live session timer, relocated out of the
+                                // app bar into the content-card header as a
+                                // filled status pill. It sits on the mode accent
+                                // exactly as it did on the colored app bar, so
+                                // its white/amber/red states keep the same
+                                // contrast — just in a cleaner, in-context spot.
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: modeColor,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: ActiveLessonTimer(
+                                    studentId: widget.studentId,
                                   ),
                                 ),
                               ],
