@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/confirm_sign_out.dart';
 import '../../../shared/widgets/stat_card.dart';
 import '../providers/admin_provider.dart';
 
@@ -28,9 +29,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await ref.read(authRepositoryProvider.notifier).signOut();
-            },
+            // Admin has no الإعدادات destination, so its sign-out lives here in
+            // the AppBar — but behind the same confirmation gate as every other
+            // role, never a one-tap destructive action.
+            onPressed: () => confirmSignOut(context, ref),
           ),
         ],
       ),

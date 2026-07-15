@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/user_model.dart';
-import '../../../data/repositories/auth_repository.dart';
 import '../../../shared/providers/institute_provider.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/confirm_sign_out.dart';
 import '../../student/providers/student_provider.dart';
 import '../../teacher/providers/teacher_provider.dart';
 
@@ -156,34 +156,8 @@ class _SignOutButton extends ConsumerWidget {
         side: const BorderSide(color: AppColors.error),
         padding: const EdgeInsets.symmetric(vertical: 14),
       ),
-      onPressed: () => _confirmSignOut(context, ref),
+      onPressed: () => confirmSignOut(context, ref),
     );
-  }
-
-  Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('هل تريد تسجيل الخروج؟'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('إلغاء'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              'تسجيل الخروج',
-              style: TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed ?? false) {
-      await ref.read(authRepositoryProvider.notifier).signOut();
-    }
   }
 }
 
