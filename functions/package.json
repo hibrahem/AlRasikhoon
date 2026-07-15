@@ -13,7 +13,8 @@
     "logs": "firebase functions:log",
     "lint": "eslint --ext .ts src/",
     "lint:fix": "eslint --ext .ts src/ --fix",
-    "verify:build-fresh": "bash scripts/verify-build-fresh.sh"
+    "verify:build-fresh": "bash scripts/verify-build-fresh.sh",
+    "backfill:institute-id": "tsc -p scripts/tsconfig.json && node lib/scripts/backfill-institute-id.js"
   },
   "engines": {
     "node": "22"

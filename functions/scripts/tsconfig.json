@@ -1,0 +1,10 @@
+{
+  "//": "Standalone compile config for one-off maintenance scripts. The base tsconfig only includes src/ (the deployed functions); this compiles the scripts to lib/scripts/ (gitignored) so they can be run with plain node.",
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../lib/scripts",
+    "rootDir": ".",
+    "noUnusedLocals": true
+  },
+  "include": ["*.ts"]
+}
