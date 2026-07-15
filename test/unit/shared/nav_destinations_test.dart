@@ -7,17 +7,12 @@ import 'package:al_rasikhoon/shared/widgets/nav_destinations.dart';
 
 void main() {
   group('destinationsFor', () {
-    test('teacher has three tabs: students, history, settings', () {
+    test('teacher has two tabs: students, settings', () {
       final destinations = destinationsFor(UserRole.teacher);
 
-      expect(destinations.map((d) => d.label), [
-        'الطلاب',
-        'السجل',
-        'الملف الشخصي',
-      ]);
+      expect(destinations.map((d) => d.label), ['الطلاب', 'الملف الشخصي']);
       expect(destinations.map((d) => d.rootPath), [
         AppRoutes.teacherStudents,
-        AppRoutes.teacherHistory,
         AppRoutes.teacherSettings,
       ]);
     });
@@ -26,6 +21,13 @@ void main() {
       final labels = destinationsFor(UserRole.teacher).map((d) => d.label);
 
       expect(labels, isNot(contains('الحلقة')));
+    });
+
+    test('teacher has no dedicated السجل tab: history lives in the profile '
+        '(al_rasikhoon-pb7)', () {
+      final labels = destinationsFor(UserRole.teacher).map((d) => d.label);
+
+      expect(labels, isNot(contains('السجل')));
     });
 
     test('guardian sees the same destinations as student', () {

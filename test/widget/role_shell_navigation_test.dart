@@ -9,7 +9,6 @@ import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/data/services/session_cache.dart';
 import 'package:al_rasikhoon/features/settings/screens/settings_screen.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
-import 'package:al_rasikhoon/features/teacher/screens/teacher_history_screen.dart';
 import 'package:al_rasikhoon/features/teacher/screens/teacher_students_screen.dart';
 import 'package:al_rasikhoon/shared/providers/institute_provider.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
@@ -59,7 +58,6 @@ void main() {
           teacherStudentsProvider.overrideWith((ref) async => []),
           filteredTeacherStudentsProvider.overrideWith((ref) async => []),
           teacherInstitutesProvider.overrideWith((ref) async => []),
-          teacherHistoryProvider.overrideWith((ref) async => []),
         ],
         child: const AlRasikhoonApp(),
       ),
@@ -68,25 +66,16 @@ void main() {
 
     // Redirected straight to /teacher — branch 0, الطلاب (students).
     expect(find.byType(TeacherStudentsScreen), findsOneWidget);
-    expect(find.byType(TeacherHistoryScreen), findsNothing);
     expect(find.byType(SettingsScreen), findsNothing);
 
-    // Tap السجل — this is the exact tab that used to do NOTHING, silently,
-    // because the teacher shell had only one StatefulShellBranch behind
-    // four (then three) nav tabs (al_rasikhoon-256).
-    await tester.tap(find.text('السجل'));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(TeacherHistoryScreen), findsOneWidget);
-    expect(find.byType(TeacherStudentsScreen), findsNothing);
-    expect(find.byType(SettingsScreen), findsNothing);
-
-    // Tap الملف الشخصي.
+    // Tap الملف الشخصي — the second (and last) tab. There is no longer a
+    // dedicated السجل tab; a student's history now lives inside their profile
+    // (al_rasikhoon-pb7). This still guards al_rasikhoon-256: every tab, not
+    // just the first, must actually change the visible screen.
     await tester.tap(find.text('الملف الشخصي'));
     await tester.pumpAndSettle();
 
     expect(find.byType(SettingsScreen), findsOneWidget);
-    expect(find.byType(TeacherHistoryScreen), findsNothing);
     expect(find.byType(TeacherStudentsScreen), findsNothing);
 
     // And back to الطلاب — every tab, not just the first, must navigate.
@@ -95,6 +84,5 @@ void main() {
 
     expect(find.byType(TeacherStudentsScreen), findsOneWidget);
     expect(find.byType(SettingsScreen), findsNothing);
-    expect(find.byType(TeacherHistoryScreen), findsNothing);
   });
 }

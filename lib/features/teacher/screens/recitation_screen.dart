@@ -52,7 +52,7 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
       body: meetingAsync.when(
         data: (meeting) {
           // A تلقين is never graded, failed, or attempt-limited — it has no
-          // entry point to this screen in-app (session_overview_screen.dart
+          // entry point to this screen in-app (student_profile_screen.dart
           // branches on isTalqeen before ever reaching the regular-session
           // card), but a hand-edited URL could still land here directly.
           // Mirror the guard in talqeen_session_screen.dart: refuse to run

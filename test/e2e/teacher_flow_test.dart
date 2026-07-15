@@ -321,9 +321,9 @@ void main() {
         // The الحلقة tab was removed by design; it must not be present.
         await teacherRobot.verifyNoHalaqahTab();
 
-        // Assert - tapping السجل lands on the history screen, students gone.
-        await teacherRobot.goToHistory();
-        await teacherRobot.verifyHistoryScreen();
+        // There is no longer a السجل tab either: a student's session history
+        // now lives inside that student's profile (al_rasikhoon-pb7).
+        await teacherRobot.verifyNoHistoryTab();
 
         // Assert - tapping الملف الشخصي lands on the settings screen.
         await teacherRobot.goToSettings();

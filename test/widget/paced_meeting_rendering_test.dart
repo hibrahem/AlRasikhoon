@@ -7,7 +7,7 @@ import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
-import 'package:al_rasikhoon/features/teacher/screens/session_overview_screen.dart';
+import 'package:al_rasikhoon/features/teacher/screens/student_profile_screen.dart';
 
 /// A 2x student meets TWO lessons in one sitting. Every screen that teaches him
 /// must show both passages — showing only the first would have him memorize half
@@ -58,8 +58,14 @@ void main() {
           studentCurrentMeetingProvider(
             's1',
           ).overrideWith((ref) async => meeting),
+          // The profile embeds this student's history; this test is about the
+          // current-meeting card, so stub the history empty to keep it off
+          // Firestore.
+          teacherStudentSessionHistoryProvider(
+            's1',
+          ).overrideWith((ref) async => const []),
         ],
-        child: const MaterialApp(home: SessionOverviewScreen(studentId: 's1')),
+        child: const MaterialApp(home: StudentProfileScreen(studentId: 's1')),
       ),
     );
     await tester.pumpAndSettle();

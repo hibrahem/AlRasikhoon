@@ -30,8 +30,7 @@ import '../features/supervisor/widgets/reposition_starting_point_section.dart';
 import '../features/teacher/screens/sard_session_screen.dart';
 import '../features/teacher/screens/sard_result_screen.dart';
 import '../features/teacher/screens/teacher_students_screen.dart';
-import '../features/teacher/screens/teacher_history_screen.dart';
-import '../features/teacher/screens/session_overview_screen.dart';
+import '../features/teacher/screens/student_profile_screen.dart';
 import '../features/teacher/screens/recitation_screen.dart';
 import '../features/teacher/screens/new_memorization_screen.dart';
 import '../features/teacher/screens/session_summary_screen.dart';
@@ -97,7 +96,12 @@ class AppRoutes {
   // Teacher
   static const String teacherStudents = '/teacher';
   static const String addStudent = '/teacher/students/add';
-  static const String sessionOverview = '/teacher/session/:studentId';
+  // The student PROFILE screen — identity, level, progress, pace, current
+  // session (startable from here), and that student's embedded session history
+  // (al_rasikhoon-pb7). Opened when a teacher taps a student. Path is kept as
+  // `/teacher/session/:studentId` so the whole session flow (recitation,
+  // summary, سرد, ...) still hangs off it as a sub-path.
+  static const String studentProfile = '/teacher/session/:studentId';
   static const String recitation =
       '/teacher/session/:studentId/recitation/:part';
   static const String newMemorization = '/teacher/session/:studentId/new';
@@ -112,10 +116,12 @@ class AppRoutes {
   // are the true backstop.
   static const String sardSession = '/teacher/session/:studentId/sard';
   static const String sardResult = '/teacher/session/:studentId/sard/result';
-  static const String teacherHistory = '/teacher/history';
-  // A past record the teacher heard, opened from السجل. Same screen as the
-  // student's session detail, but registered in the teacher shell so opening
-  // it never crosses a shell boundary (#45 duplicate-page-key crash).
+  // A past record the teacher heard, opened from a student's embedded session
+  // history on the profile screen (al_rasikhoon-pb7 folded the teacher-wide
+  // السجل tab into the profile). Same screen as the student's session detail,
+  // but registered in the teacher shell's Students branch — alongside the
+  // profile that opens it — so the push never crosses a shell boundary (#45
+  // duplicate-page-key crash).
   static const String teacherSessionDetail = '/teacher/history/:recordId';
   static const String teacherSettings = '/teacher/settings';
 
@@ -413,10 +419,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) => const AddStudentScreen(),
               ),
               GoRoute(
-                path: AppRoutes.sessionOverview,
+                path: AppRoutes.studentProfile,
                 builder: (context, state) {
                   final studentId = state.pathParameters['studentId']!;
-                  return SessionOverviewScreen(studentId: studentId);
+                  return StudentProfileScreen(studentId: studentId);
                 },
               ),
               GoRoute(
@@ -478,15 +484,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                   );
                 },
               ),
-            ],
-          ),
-          // Branch 1: History
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.teacherHistory,
-                builder: (context, state) => const TeacherHistoryScreen(),
-              ),
+              // A past record, opened from a student's embedded history on the
+              // profile screen (al_rasikhoon-pb7). Registered in THIS (Students)
+              // branch — the one the profile lives in — so tapping a record
+              // stays shell-local and never triggers a cross-shell
+              // duplicate-page-key crash (al_rasikhoon-3hn / #45).
               GoRoute(
                 path: AppRoutes.teacherSessionDetail,
                 builder: (context, state) {
@@ -496,7 +498,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // Branch 2: Settings
+          // Branch 1: Settings
           StatefulShellBranch(
             routes: [
               GoRoute(

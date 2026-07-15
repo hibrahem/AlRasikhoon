@@ -5,20 +5,28 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/student_model.dart';
+import '../../../data/models/user_model.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../domain/curriculum/curriculum_pace.dart';
 import '../../../domain/curriculum/paced_session.dart';
+import '../../../domain/session/session_duration.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/session_record_row.dart';
 import '../../../shared/widgets/student_level_progress.dart';
 import '../providers/teacher_provider.dart';
 
-class SessionOverviewScreen extends ConsumerWidget {
+/// A teacher's single view of one student: identity (name + username), level,
+/// pace, the current session (which can be started from here), level progress,
+/// and that student's session history — all in one place (al_rasikhoon-pb7).
+/// The history was previously a separate teacher-wide tab; it now lives here,
+/// scoped to this student, so the teacher sees the whole picture at once.
+class StudentProfileScreen extends ConsumerWidget {
   final String studentId;
 
-  const SessionOverviewScreen({super.key, required this.studentId});
+  const StudentProfileScreen({super.key, required this.studentId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,7 +38,7 @@ class SessionOverviewScreen extends ConsumerWidget {
     final meetingAsync = ref.watch(studentCurrentMeetingProvider(studentId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الحلقة')),
+      appBar: AppBar(title: const Text('ملف الطالب')),
       body: studentAsync.when(
         data: (studentWithUser) {
           if (studentWithUser == null) {
@@ -40,152 +48,119 @@ class SessionOverviewScreen extends ConsumerWidget {
           final student = studentWithUser.student;
           final user = studentWithUser.user;
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Student info card
-                AppCard(
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 28,
-                        backgroundColor: AppColors.primary.withValues(
-                          alpha: 0.1,
-                        ),
-                        child: Text(
-                          user.name.isNotEmpty ? user.name[0] : '?',
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              user.name,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'المستوى ${student.currentLevel} - الجزء ${student.currentJuz}',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: AppColors.textSecondary),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (student.currentAttempt > 1)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.warning.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            'المحاولة ${student.currentAttempt}',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: AppColors.warning,
-                            ),
-                          ),
-                        ),
-                    ],
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(studentProvider(studentId));
+              ref.invalidate(studentCurrentMeetingProvider(studentId));
+              ref.invalidate(teacherStudentSessionHistoryProvider(studentId));
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Identity: name, username, level/juz.
+                  _StudentHeaderCard(user: user, student: student),
+
+                  const SizedBox(height: 24),
+
+                  // Pace control — either a teacher or a supervisor may set it,
+                  // and it may change mid-level; there is no approval workflow.
+                  _buildPaceControl(context, ref, student),
+
+                  const SizedBox(height: 24),
+
+                  // Current session info
+                  Text(
+                    'الحلقة الحالية',
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                ),
+                  const SizedBox(height: 12),
 
-                const SizedBox(height: 24),
+                  meetingAsync.when(
+                    data: (meeting) {
+                      if (meeting == null) {
+                        return const AppCard(
+                          child: Center(child: Text('لا توجد بيانات للحلقة')),
+                        );
+                      }
 
-                // Pace control — either a teacher or a supervisor may set it,
-                // and it may change mid-level; there is no approval workflow.
-                _buildPaceControl(context, ref, student),
+                      // The meeting's KIND is the kind of the session it
+                      // starts on — a batch is all lessons, so they agree. What
+                      // this session IS comes from the curriculum's own `kind`,
+                      // never from its number: session 35 of juz 30 is an
+                      // ordinary lesson, and the juz-30 اختبار is session 68.
+                      //
+                      // The تلقين branch MUST come before isExam/isSard and the
+                      // regular-lesson fallthrough: a تلقين is neither an
+                      // assessment nor a graded lesson, and falling through would
+                      // start it as one.
+                      final session = meeting.first;
 
-                const SizedBox(height: 24),
+                      if (session.isTalqeen) {
+                        return _buildTalqeenCard(
+                          context,
+                          meeting,
+                          studentId,
+                          ref,
+                        );
+                      }
 
-                // Current session info
-                Text(
-                  'الحلقة الحالية',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 12),
+                      if (session.isExam) {
+                        return _buildExamCard(context, session);
+                      }
 
-                meetingAsync.when(
-                  data: (meeting) {
-                    if (meeting == null) {
-                      return const AppCard(
-                        child: Center(child: Text('لا توجد بيانات للحلقة')),
-                      );
-                    }
+                      if (session.isSard) {
+                        // سرد is conducted by the TEACHER (al_rasikhoon-801), and
+                        // only a teacher reaches this screen.
+                        return _buildSardCard(context, session, studentId);
+                      }
 
-                    // The meeting's KIND is the kind of the session it
-                    // starts on — a batch is all lessons, so they agree. What
-                    // this session IS comes from the curriculum's own `kind`,
-                    // never from its number: session 35 of juz 30 is an
-                    // ordinary lesson, and the juz-30 اختبار is session 68.
-                    //
-                    // The تلقين branch MUST come before isExam/isSard and the
-                    // regular-lesson fallthrough: a تلقين is neither an
-                    // assessment nor a graded lesson, and falling through would
-                    // start it as one.
-                    final session = meeting.first;
-
-                    if (session.isTalqeen) {
-                      return _buildTalqeenCard(
+                      return _buildRegularSessionCard(
                         context,
                         meeting,
+                        student,
                         studentId,
                         ref,
                       );
-                    }
-
-                    if (session.isExam) {
-                      return _buildExamCard(context, session);
-                    }
-
-                    if (session.isSard) {
-                      // سرد is conducted by the TEACHER (al_rasikhoon-801), and
-                      // only a teacher reaches this screen.
-                      return _buildSardCard(context, session, studentId);
-                    }
-
-                    return _buildRegularSessionCard(
-                      context,
-                      meeting,
-                      student,
-                      studentId,
-                      ref,
-                    );
-                  },
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Text('Error: $e'),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Progress section — measured against the level's real session
-                // count, from the levels catalog.
-                Text(
-                  'التقدم في المستوى',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 12),
-                AppCard(
-                  child: StudentLevelProgress(
-                    level: student.currentLevel,
-                    orderInLevel: student.currentOrderInLevel,
+                    },
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Text('Error: $e'),
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 24),
+
+                  // Progress section — measured against the level's real
+                  // session count, from the levels catalog.
+                  Text(
+                    'التقدم في المستوى',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  AppCard(
+                    child: StudentLevelProgress(
+                      level: student.currentLevel,
+                      orderInLevel: student.currentOrderInLevel,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Session history — this student's past sessions, embedded
+                  // (al_rasikhoon-pb7). Moved here from the teacher-wide history
+                  // tab so the teacher sees a student's record in context, and
+                  // tapping a row opens that record's detail within the same
+                  // (Students) shell branch.
+                  Text(
+                    'سجل الحلقات',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  _SessionHistorySection(studentId: studentId),
+                ],
+              ),
             ),
           );
         },
@@ -686,6 +661,140 @@ class _SessionPartTile extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Identity block: avatar, name, username, and the current level/juz — plus the
+/// attempt badge when the student is on a retry. The username is shown only
+/// when present: accounts that predate the username field carry an empty one,
+/// and a blank "اسم المستخدم:" line would read as missing data rather than
+/// absent by design.
+class _StudentHeaderCard extends StatelessWidget {
+  final UserModel user;
+  final StudentModel student;
+
+  const _StudentHeaderCard({required this.user, required this.student});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 28,
+            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+            child: Text(
+              user.name.isNotEmpty ? user.name[0] : '?',
+              style: const TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(user.name, style: Theme.of(context).textTheme.titleMedium),
+                if (user.username.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'اسم المستخدم: ${user.username}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 4),
+                Text(
+                  'المستوى ${student.currentLevel} - الجزء ${student.currentJuz}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (student.currentAttempt > 1)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'المحاولة ${student.currentAttempt}',
+                style: const TextStyle(fontSize: 11, color: AppColors.warning),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// This student's session history, embedded in the profile (al_rasikhoon-pb7).
+/// Rows are identified by session (not by student, since it is one student's
+/// list) and reuse [SessionRecordRow], the same row the student's own history
+/// and the former teacher-wide history used. Tapping a row opens that record's
+/// detail via [AppRoutes.teacherSessionDetail] — registered in the same
+/// (Students) shell branch, so the push never crosses a shell boundary
+/// (al_rasikhoon-3hn).
+class _SessionHistorySection extends ConsumerWidget {
+  final String studentId;
+
+  const _SessionHistorySection({required this.studentId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final historyAsync = ref.watch(
+      teacherStudentSessionHistoryProvider(studentId),
+    );
+
+    return historyAsync.when(
+      data: (records) {
+        if (records.isEmpty) {
+          return const AppCard(
+            child: Center(child: Text('لا يوجد سجل للحلقات')),
+          );
+        }
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: records.length,
+          itemBuilder: (context, index) {
+            final record = records[index];
+            // Listing shows only binary pass/fail (نجح / رسب), never an
+            // average of the three component grades (#24); the per-component
+            // breakdown lives in the session detail. Enforced by
+            // SessionRecordRow, shared with the student's own history — which
+            // also owns the rule that a تلقين shows no outcome at all.
+            return SessionRecordRow(
+              isTalqeen: record.isTalqeen,
+              title: record.isTalqeen
+                  ? 'تلقين'
+                  : 'الحلقة ${record.sessionNumber}',
+              subtitleLines: ['المستوى ${record.levelId}'],
+              passed: record.passed,
+              date: record.date,
+              sessionDuration: SessionDuration.fromRecord(record),
+              onTap: () {
+                context.push(
+                  AppRoutes.teacherSessionDetail.replaceFirst(
+                    ':recordId',
+                    record.id,
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Text('Error: $e'),
     );
   }
 }

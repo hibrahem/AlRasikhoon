@@ -7,7 +7,7 @@ import 'package:al_rasikhoon/features/teacher/screens/recitation_screen.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 
 /// RecitationScreen is the GRADED lesson-recitation flow. It has no in-app
-/// entry point for a تلقين (session_overview_screen.dart branches on
+/// entry point for a تلقين (student_profile_screen.dart branches on
 /// isTalqeen before ever rendering the "بدء الحلقة" button that leads here),
 /// but on Flutter web a teacher who started a تلقين could hand-edit the URL
 /// straight to this screen. A تلقين must never be graded, failed, or
