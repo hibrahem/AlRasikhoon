@@ -103,7 +103,7 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                                 // rather than overflow the row.
                                 Expanded(
                                   child: Text(
-                                    teacher.phone ?? teacher.email,
+                                    teacher.phone ?? teacher.displayUsername,
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium

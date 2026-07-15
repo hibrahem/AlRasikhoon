@@ -76,7 +76,7 @@ class TeachersScreen extends ConsumerWidget {
                                 // their username — it must shrink, not overflow.
                                 Expanded(
                                   child: Text(
-                                    teacher.phone ?? teacher.email,
+                                    teacher.phone ?? teacher.displayUsername,
                                     style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
                                           color: AppColors.textSecondary,
