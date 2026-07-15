@@ -276,3 +276,18 @@ Task 9: complete (commit e71931a, review clean) — reskinned stat_card/student_
   independently re-verified every substitution against the mapping table. Out-of-table colors (warning/info/
   textOnPrimary/textOnSecondary) correctly left untouched. Minor (not fixed): a few unrelated dart-format
   line-collapses with zero color changes (cosmetic only, e.g. StatItem ctor, AppTextField label Text()).
+Task 10: complete (commits 878fbfe impl + 90f9a8d fix, review clean) — reskinned grade_display/session_timer/
+  session_record_row/error_counter to tokens+grade tokens; progress_bar fill animates via
+  AppMotion.of(base), reduced-motion aware, public API unchanged. Mastery ladder (5 rungs, راسخ..محب) added
+  to student_level_progress.dart + level_progression_widget.dart, constructors preserved. Implementer itself
+  caught+fixed 2 pre-existing test regressions (hardcoded old AppColors values in
+  session_record_row_duration_test.dart) applying the Task 7/9 lesson.
+  Fixed (review-found, Important x2): (1) LevelProgressionWidget's ladder fraction was currentLevel/totalLevels,
+  CONTRADICTING its own header (completedLevels.length/totalLevels) -> corrected to
+  completedLevels.length/totalLevels, matches student_level_progress.dart's "in-progress-not-done=zero"
+  convention; new regression test proven to catch the original bug. (2) _MasteryLadder was duplicated
+  verbatim (~66 lines) across both widgets -> consolidated into ONE public MasteryLadder class in
+  progress_bar.dart, both callers import it, zero duplication remains (grep-verified).
+  Dead code left in place, not removed (Minor, acceptable restraint): LevelProgressBar in progress_bar.dart
+  now unreferenced anywhere; unlockedLevels ctor param on LevelProgressionWidget accepted but unused by the
+  new ladder motif (documented in class doc comment). Full test/widget suite: 140 passing, 0 failing.
