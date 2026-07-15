@@ -700,6 +700,36 @@ void main() {
             containsAll([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
           );
           expect((student['unlocked_levels'] as List).length, 10);
+          // Graduated: the student's position stays frozen on the final
+          // اختبار, so the flag — not the position — is what lifts them out of
+          // the supervisor's exam queue for good.
+          expect(student['curriculum_completed'], isTrue);
+          expect(student['curriculum_completed_at'], isNotNull);
+        },
+      );
+
+      test(
+        'an ordinary advance to a later session does NOT graduate the student',
+        () async {
+          await seedLevelOneTail(fakeFirestore);
+          await seedLevelTwoHead(fakeFirestore);
+          await seedStudent(
+            level: 1,
+            juz: 28,
+            session: 69,
+            order: 210, // the level's session_count — its cumulative اختبار
+            kind: 'exam',
+            tier: 'cumulative',
+          );
+
+          final outcome = await studentRepository.advanceStudentSession('s1');
+
+          expect(outcome, StudentAdvanceOutcome.advanced);
+          final student = await readStudent();
+          // Passing a non-final اختبار moves the student on; it must never be
+          // mistaken for finishing the curriculum.
+          expect(student['current_session_id'], 'L2_J27_S1');
+          expect(student.containsKey('curriculum_completed'), isFalse);
         },
       );
 
@@ -928,6 +958,51 @@ void main() {
 
         expect(ready, isEmpty);
       });
+
+      test(
+        'excludes a graduated student still standing on the final exam',
+        () async {
+          await seedUser(id: 'u1', name: 'طالب متخرج');
+          // A finished student's position stays frozen on the last اختبار they
+          // passed — so kind alone still matches them. Only the graduation flag
+          // keeps them out of the queue; without it they would be re-examined
+          // forever.
+          await fakeFirestore.collection('students').doc('graduate').set({
+            'user_id': 'u1',
+            'institute_id': 'institute1',
+            'current_level': 10,
+            'current_juz': 3,
+            'current_session': 60,
+            'current_order_in_level': 180,
+            'current_session_id': 'L10_J3_S60',
+            'current_session_kind': 'exam',
+            'current_session_tier': 'cumulative',
+            'current_attempt': 1,
+            'curriculum_completed': true,
+            'curriculum_completed_at': Timestamp.now(),
+            'is_active': true,
+            'created_at': Timestamp.now(),
+          });
+          // A second student, genuinely awaiting an exam, proves the query still
+          // returns the students it should.
+          await seedStudent(
+            id: 'awaiting',
+            level: 1,
+            juz: 30,
+            session: 70,
+            order: 70,
+            kind: 'exam',
+            tier: 'juz',
+            instituteId: 'institute1',
+          );
+
+          final ready = await studentRepository.getStudentsReadyForExam(
+            'institute1',
+          );
+
+          expect(ready.map((s) => s.student.id), ['awaiting']);
+        },
+      );
     });
 
     group('getStudentById', () {

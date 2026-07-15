@@ -401,6 +401,15 @@ class StudentRepository {
   /// [_writePosition] — never a session number. Assessments sit wherever the
   /// curriculum puts them (the juz-30 اختبار of level 1 is session 68), so the
   /// old `current_session == 36` test found nobody at all.
+  ///
+  /// A GRADUATED student is excluded even though they still stand on an اختبار:
+  /// finishing the curriculum freezes their position on the final اختبار they
+  /// already passed (there is nowhere ahead to move it), so kind alone would
+  /// re-queue them forever. The graduation flag is applied as a post-filter, not
+  /// a Firestore `where` clause: an equality filter would silently drop every
+  /// legacy or in-progress document that pre-dates the field (the field is
+  /// absent, not `false`), whereas [StudentModel] reads a missing flag back as
+  /// "not graduated". This also keeps the query free of a composite index.
   Future<List<StudentWithUser>> getStudentsReadyForExam(
     String instituteId,
   ) async {
@@ -412,6 +421,7 @@ class StudentRepository {
 
     final students = query.docs
         .map((doc) => StudentModel.fromFirestore(doc))
+        .where((student) => !student.curriculumCompleted)
         .toList();
 
     final studentsWithUsers = <StudentWithUser>[];
@@ -529,6 +539,14 @@ class StudentRepository {
           'current_attempt': 1,
           'completed_levels': completedLevels,
           'unlocked_levels': unlockedLevels,
+          // The student finished the curriculum: mark them graduated so they
+          // leave the supervisor's exam queue for good. Their position is not
+          // moved (there is no session ahead), so this flag — not the position
+          // — is what tells getStudentsReadyForExam and StudentModel.canTakeExam
+          // that there is no exam left for them to sit. Set here, in the one
+          // place that owns the "final pass" determination, never scattered.
+          'curriculum_completed': true,
+          'curriculum_completed_at': FieldValue.serverTimestamp(),
           'updated_at': FieldValue.serverTimestamp(),
         });
         return StudentAdvanceOutcome.curriculumCompleted;
