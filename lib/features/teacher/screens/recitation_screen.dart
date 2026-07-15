@@ -86,10 +86,18 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
               content = '';
           }
 
+          // Reachable in-app only for present parts, but a hand-edited URL can
+          // land on a part that is not in presentParts. Guard the derived
+          // position and last-part flag so that never renders as "الجزء 0 من N"
+          // or "إنهاء التسميع": fall back to the raw part number, and treat a
+          // non-present part as not-last (partAfter also returns null for it).
           final presentParts = meeting.presentParts;
-          final position = presentParts.indexOf(widget.part) + 1;
+          final isPresentPart = presentParts.contains(widget.part);
+          final position = isPresentPart
+              ? presentParts.indexOf(widget.part) + 1
+              : widget.part;
           final nextPart = meeting.partAfter(widget.part);
-          final isLastPart = nextPart == null;
+          final isLastPart = isPresentPart && nextPart == null;
 
           // The content card, the error counter and the actions are taller than
           // the viewport the teacher shell leaves on a phone, so the content
