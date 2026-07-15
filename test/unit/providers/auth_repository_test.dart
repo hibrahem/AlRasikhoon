@@ -159,4 +159,40 @@ void main() {
       UserRole.teacher,
     );
   });
+
+  test(
+    'a stale in-flight refresh is discarded after sign-out, not resurrected',
+    () async {
+      when(() => sessionCache.readUser()).thenReturn(null);
+      final completer = Completer<UserModel?>();
+      when(
+        () => userRepository.getUserById('u1'),
+      ).thenAnswer((_) => completer.future);
+      final user = MockUser();
+      when(() => user.uid).thenReturn('u1');
+
+      final container = makeContainer();
+      container.read(authRepositoryProvider);
+
+      // uid1 signs in; the Firestore fetch is left in flight.
+      authStateController.add(user);
+      await Future<void>.delayed(Duration.zero);
+
+      // Before the fetch resolves, the user signs out.
+      authStateController.add(null);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(container.read(authRepositoryProvider).appUser, isNull);
+      expect(container.read(authRepositoryProvider).firebaseUser, isNull);
+
+      // The stale fetch resolves after sign-out: it must not resurrect
+      // the superseded session or re-persist it to disk.
+      completer.complete(_user(role: UserRole.teacher));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(container.read(authRepositoryProvider).appUser, isNull);
+      expect(container.read(authRepositoryProvider).firebaseUser, isNull);
+      verifyNever(() => sessionCache.cacheUser(any()));
+    },
+  );
 }

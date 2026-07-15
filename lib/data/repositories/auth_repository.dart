@@ -57,15 +57,16 @@ class AuthRepository extends Notifier<AuthState> {
   }
 
   void _init() {
-    _firebaseService.authStateChanges.listen((user) {
+    _firebaseService.authStateChanges.listen((user) async {
       if (user != null) {
         state = state.copyWith(firebaseUser: user);
         // Fire-and-forget: never blocks the UI-visible state.
         _refreshAppUser(user.uid);
       } else {
         // Genuine auth loss (no persisted session or revoked): drop the
-        // optimistic cache and fall back to login.
-        _sessionCache.clear();
+        // optimistic cache and fall back to login. Not on the hot UI path,
+        // so await for durability.
+        await _sessionCache.clear();
         state = const AuthState();
       }
     });
@@ -78,6 +79,10 @@ class AuthRepository extends Notifier<AuthState> {
   Future<void> _refreshAppUser(String uid) async {
     try {
       final appUser = await _userRepository.getUserById(uid);
+      // Discard a stale result: the session may have changed (sign-out or a
+      // different account signing in) while this fetch was in flight. Applying
+      // it would resurrect a superseded session and re-persist it to disk.
+      if (state.firebaseUser?.uid != uid) return;
       if (appUser == null || !appUser.isActive) {
         await signOut();
         return;
