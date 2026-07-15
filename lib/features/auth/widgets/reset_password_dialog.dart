@@ -2,7 +2,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -55,6 +55,9 @@ class _ResetPasswordDialogState extends ConsumerState<ResetPasswordDialog> {
     // (not the bare State.mounted getter, which can pass while the
     // specific element is gone).
     final messenger = ScaffoldMessenger.of(context);
+    // Capture the token color before the async gap for the same reason as
+    // the messenger above: never read `context` after an await.
+    final errorColor = context.tokens.maroon;
     try {
       final authRepo = ref.read(authRepositoryProvider.notifier);
       await authRepo.setPasswordForUser(
@@ -68,16 +71,13 @@ class _ResetPasswordDialogState extends ConsumerState<ResetPasswordDialog> {
       messenger.showSnackBar(
         SnackBar(
           content: Text('فشل إعادة التعيين: ${e.message ?? e.code}'),
-          backgroundColor: AppColors.error,
+          backgroundColor: errorColor,
         ),
       );
     } catch (e) {
       if (!context.mounted) return;
       messenger.showSnackBar(
-        SnackBar(
-          content: Text('حدث خطأ: $e'),
-          backgroundColor: AppColors.error,
-        ),
+        SnackBar(content: Text('حدث خطأ: $e'), backgroundColor: errorColor),
       );
     } finally {
       if (mounted) {
@@ -88,6 +88,7 @@ class _ResetPasswordDialogState extends ConsumerState<ResetPasswordDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     if (_committedPassword != null) {
       return AlertDialog(
         title: const Text('تم تعيين كلمة المرور'),
@@ -103,9 +104,9 @@ class _ResetPasswordDialogState extends ConsumerState<ResetPasswordDialog> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
+                color: tokens.green.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                border: Border.all(color: tokens.green.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -146,7 +147,7 @@ class _ResetPasswordDialogState extends ConsumerState<ResetPasswordDialog> {
               'لن تظهر مرة أخرى. شاركها مع المستخدم الآن.',
               style: Theme.of(
                 context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+              ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
             ),
           ],
         ),
