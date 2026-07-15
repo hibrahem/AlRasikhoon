@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/session_repository.dart';
@@ -10,6 +10,8 @@ import '../../../routing/app_router.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/grade_display.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/teacher_provider.dart';
 
 class SardResultScreen extends ConsumerStatefulWidget {
@@ -40,6 +42,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
 
   Future<void> _saveSard() async {
     setState(() => _isSaving = true);
+    final tokens = context.tokens;
 
     try {
       final currentUser = ref.read(currentUserProvider);
@@ -122,20 +125,25 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
       if (mounted) {
         final String message;
         final Color background;
+        // No manuscript token for "success"/"warning" — the primary green
+        // already carries the positive/affirmative role and maroon (the
+        // palette's rubrication/emphasis hue) already carries error, so a
+        // failed سرد reuses maroon too (these four branches never render
+        // together).
         if (progressNotAdvanced) {
           message =
               'تم حفظ النتيجة، لكن تعذر تحديث تقدم الطالب: لا توجد حلقات '
               'تالية في المنهج.';
-          background = AppColors.error;
+          background = tokens.maroon;
         } else if (curriculumCompleted) {
           message = 'تم حفظ السرد - ناجح. أتم الطالب المنهج كاملًا.';
-          background = AppColors.success;
+          background = tokens.green;
         } else if (record.passed) {
           message = 'تم حفظ السرد - ناجح';
-          background = AppColors.success;
+          background = tokens.green;
         } else {
           message = 'تم حفظ السرد - راسب';
-          background = AppColors.warning;
+          background = tokens.maroon;
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -151,7 +159,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('حدث خطأ: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: tokens.maroon,
           ),
         );
       }
@@ -164,6 +172,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final studentAsync = ref.watch(studentProvider(widget.studentId));
     // Grade is level-based (hibrahem/AlRasikhoon#22). The level-based grade is
     // only computed once the student value resolves — never from a default
@@ -202,7 +211,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceVariant,
+                      color: tokens.surfaceVariant,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -224,14 +233,9 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
                   showStars: true,
                   showPassStatus: true,
                 ),
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(20),
-                  child: CircularProgressIndicator(),
-                ),
-                error: (_, _) => const Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Text('تعذّر تحميل النتيجة'),
-                ),
+                loading: () => const LoadingState(lines: 1),
+                error: (_, _) =>
+                    const ErrorState(message: 'تعذّر تحميل النتيجة'),
               ),
 
               const SizedBox(height: 32),

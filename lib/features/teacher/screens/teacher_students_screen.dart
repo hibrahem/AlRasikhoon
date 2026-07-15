@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../data/models/institute_model.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/providers/institute_provider.dart';
+import '../../../shared/widgets/states/empty_state.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/student_card.dart';
 import '../providers/teacher_provider.dart';
 
@@ -42,7 +44,11 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
             child: studentsAsync.when(
               data: (students) {
                 if (students.isEmpty) {
-                  return _buildEmptyState();
+                  return const EmptyState(
+                    icon: Icons.school_outlined,
+                    title: 'لا يوجد طلاب',
+                    message: 'اضغط على + لإضافة طالب جديد',
+                  );
                 }
 
                 return RefreshIndicator(
@@ -80,8 +86,8 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
                   ),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Error: $e')),
+              loading: () => const LoadingState(),
+              error: (e, _) => ErrorState(message: 'تعذر تحميل الطلاب: $e'),
             ),
           ),
         ],
@@ -120,35 +126,6 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.school_outlined,
-            size: 80,
-            color: AppColors.textSecondary.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'لا يوجد طلاب',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'اضغط على + لإضافة طالب جديد',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-          ),
-        ],
       ),
     );
   }

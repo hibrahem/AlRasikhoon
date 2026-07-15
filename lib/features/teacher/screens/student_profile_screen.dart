@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+// Kept only for the memorization-mode accent system
+// (forMemorizationPart) used by _SessionPartTile below. Fixed,
+// colorblind-safe, WCAG-AA-verified colors (hibrahem/AlRasikhoon#25), not
+// theme-adaptive tokens, so they intentionally stay raw.
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/student_model.dart';
 import '../../../data/models/user_model.dart';
@@ -15,6 +20,8 @@ import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/session_record_row.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/student_level_progress.dart';
 import '../providers/teacher_provider.dart';
 
@@ -125,9 +132,9 @@ class StudentProfileScreen extends ConsumerWidget {
                         ref,
                       );
                     },
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (e, _) => Text('Error: $e'),
+                    loading: () => const LoadingState(),
+                    error: (e, _) =>
+                        ErrorState(message: 'تعذر تحميل الحلقة: $e'),
                   ),
 
                   const SizedBox(height: 24),
@@ -164,8 +171,8 @@ class StudentProfileScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل الطالب: $e'),
       ),
     );
   }
@@ -179,6 +186,7 @@ class StudentProfileScreen extends ConsumerWidget {
     WidgetRef ref,
     StudentModel student,
   ) {
+    final tokens = context.tokens;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,7 +211,7 @@ class StudentProfileScreen extends ConsumerWidget {
             'عدد الحلقات في اللقاء الواحد',
             style: Theme.of(
               context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
           ),
         ],
       ),
@@ -223,9 +231,9 @@ class StudentProfileScreen extends ConsumerWidget {
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تعذر تحديث وتيرة الحفظ'),
-            backgroundColor: AppColors.error,
+          SnackBar(
+            content: const Text('تعذر تحديث وتيرة الحفظ'),
+            backgroundColor: context.tokens.maroon,
           ),
         );
       }
@@ -253,6 +261,7 @@ class StudentProfileScreen extends ConsumerWidget {
     String studentId,
     WidgetRef ref,
   ) {
+    final tokens = context.tokens;
     final session = meeting.first;
     return AppCard(
       child: Column(
@@ -263,10 +272,10 @@ class StudentProfileScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: tokens.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.menu_book, color: AppColors.primary),
+                child: Icon(Icons.menu_book, color: tokens.green),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -282,9 +291,9 @@ class StudentProfileScreen extends ConsumerWidget {
                       // is known to disagree with the source text for the
                       // same session. The juz is always consistent.
                       'الجزء ${session.juzNumber}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                     ),
                   ],
                 ),
@@ -359,6 +368,7 @@ class StudentProfileScreen extends ConsumerWidget {
     String studentId,
     WidgetRef ref,
   ) {
+    final tokens = context.tokens;
     final session = meeting.first;
     return AppCard(
       child: Column(
@@ -369,13 +379,10 @@ class StudentProfileScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: tokens.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.record_voice_over,
-                  color: AppColors.primary,
-                ),
+                child: Icon(Icons.record_voice_over, color: tokens.green),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -388,9 +395,9 @@ class StudentProfileScreen extends ConsumerWidget {
                     ),
                     Text(
                       'الجزء ${session.juzNumber}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                     ),
                   ],
                 ),
@@ -404,7 +411,7 @@ class StudentProfileScreen extends ConsumerWidget {
             'المقطع الجديد',
             style: Theme.of(
               context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
           ),
           const SizedBox(height: 4),
           Text(
@@ -436,25 +443,22 @@ class StudentProfileScreen extends ConsumerWidget {
   }
 
   Widget _buildMaxAttemptsReachedMessage(BuildContext context) {
+    final tokens = context.tokens;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.1),
+        color: tokens.maroon.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+        border: Border.all(color: tokens.maroon.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
-          const Icon(
-            Icons.warning_amber_rounded,
-            color: AppColors.error,
-            size: 32,
-          ),
+          Icon(Icons.warning_amber_rounded, color: tokens.maroon, size: 32),
           const SizedBox(height: 12),
           Text(
             'تم استنفاد جميع المحاولات',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: AppColors.error,
+              color: tokens.maroon,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -464,7 +468,7 @@ class StudentProfileScreen extends ConsumerWidget {
             textAlign: TextAlign.center,
             style: Theme.of(
               context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
           ),
         ],
       ),
@@ -480,8 +484,14 @@ class StudentProfileScreen extends ConsumerWidget {
     SessionModel session,
     String studentId,
   ) {
+    final tokens = context.tokens;
+    // No manuscript token maps directly to the old "info" blue, so —
+    // matching the same سرد card on the student dashboard
+    // (student_dashboard_screen.dart) and on sard_session_screen.dart —
+    // this uses tokens.maroon, the palette's rubrication/emphasis hue, as
+    // its own distinct accent.
     return AppCard(
-      backgroundColor: AppColors.info.withValues(alpha: 0.05),
+      backgroundColor: tokens.maroon.withValues(alpha: 0.05),
       child: Column(
         children: [
           Row(
@@ -489,13 +499,10 @@ class StudentProfileScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.info.withValues(alpha: 0.1),
+                  color: tokens.maroon.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.record_voice_over,
-                  color: AppColors.info,
-                ),
+                child: Icon(Icons.record_voice_over, color: tokens.maroon),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -508,9 +515,9 @@ class StudentProfileScreen extends ConsumerWidget {
                     ),
                     Text(
                       session.assessmentInstructionAr,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                     ),
                   ],
                 ),
@@ -528,7 +535,7 @@ class StudentProfileScreen extends ConsumerWidget {
               );
             },
             isFullWidth: true,
-            backgroundColor: AppColors.info,
+            backgroundColor: tokens.maroon,
             icon: Icons.play_arrow,
           ),
         ],
@@ -540,8 +547,9 @@ class StudentProfileScreen extends ConsumerWidget {
   /// teacher can see WHAT the supervisor will assess: this hizb, this juz, or
   /// the level so far.
   Widget _buildExamCard(BuildContext context, SessionModel session) {
+    final tokens = context.tokens;
     return AppCard(
-      backgroundColor: AppColors.secondary.withValues(alpha: 0.05),
+      backgroundColor: tokens.gold.withValues(alpha: 0.05),
       child: Column(
         children: [
           Row(
@@ -549,10 +557,10 @@ class StudentProfileScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.secondary.withValues(alpha: 0.1),
+                  color: tokens.gold.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.quiz, color: AppColors.secondary),
+                child: Icon(Icons.quiz, color: tokens.gold),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -565,9 +573,9 @@ class StudentProfileScreen extends ConsumerWidget {
                     ),
                     Text(
                       session.assessmentInstructionAr,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                     ),
                   ],
                 ),
@@ -578,23 +586,24 @@ class StudentProfileScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.warning.withValues(alpha: 0.1),
+              // No manuscript token for "warning" — maroon (the palette's
+              // rubrication/emphasis hue) carries the warning/emphasis role
+              // across these teacher screens, so the exam-referral notice
+              // reuses it. It does not collide with the gold exam-card
+              // identity above.
+              color: tokens.maroon.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
               children: [
-                const Icon(
-                  Icons.info_outline,
-                  color: AppColors.warning,
-                  size: 20,
-                ),
+                Icon(Icons.info_outline, color: tokens.maroon, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'يرجى توجيه الطالب للمشرف لإجراء الاختبار',
                     style: Theme.of(
                       context,
-                    ).textTheme.bodySmall?.copyWith(color: AppColors.warning),
+                    ).textTheme.bodySmall?.copyWith(color: tokens.maroon),
                   ),
                 ),
               ],
@@ -621,10 +630,11 @@ class _SessionPartTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: tokens.surfaceVariant,
         borderRadius: BorderRadius.circular(8),
         border: Border(right: BorderSide(color: accent, width: 4)),
       ),
@@ -652,9 +662,9 @@ class _SessionPartTile extends StatelessWidget {
                 Text(title, style: Theme.of(context).textTheme.labelMedium),
                 Text(
                   content.isNotEmpty ? content : '-',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                 ),
               ],
             ),
@@ -678,16 +688,17 @@ class _StudentHeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return AppCard(
       child: Row(
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+            backgroundColor: tokens.green.withValues(alpha: 0.1),
             child: Text(
               user.name.isNotEmpty ? user.name[0] : '?',
-              style: const TextStyle(
-                color: AppColors.primary,
+              style: TextStyle(
+                color: tokens.green,
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
               ),
@@ -703,17 +714,17 @@ class _StudentHeaderCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     'اسم المستخدم: ${user.username}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                   ),
                 ],
                 const SizedBox(height: 4),
                 Text(
                   'المستوى ${student.currentLevel} - الجزء ${student.currentJuz}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                 ),
               ],
             ),
@@ -722,12 +733,12 @@ class _StudentHeaderCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: 0.1),
+                color: tokens.maroon.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 'المحاولة ${student.currentAttempt}',
-                style: const TextStyle(fontSize: 11, color: AppColors.warning),
+                style: TextStyle(fontSize: 11, color: tokens.maroon),
               ),
             ),
         ],
@@ -793,8 +804,8 @@ class _SessionHistorySection extends ConsumerWidget {
           },
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Text('Error: $e'),
+      loading: () => const LoadingState(),
+      error: (e, _) => ErrorState(message: 'تعذر تحميل سجل الحلقات: $e'),
     );
   }
 }

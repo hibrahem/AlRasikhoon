@@ -2,8 +2,8 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/countries.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/institute_repository.dart';
@@ -104,11 +104,13 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
     if (_isLoading) return;
     if (!_formKey.currentState!.validate()) return;
 
+    final tokens = context.tokens;
+
     if (_selectedInstitute == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('يرجى اختيار المعهد'),
-          backgroundColor: AppColors.error,
+        SnackBar(
+          content: const Text('يرجى اختيار المعهد'),
+          backgroundColor: tokens.maroon,
         ),
       );
       return;
@@ -121,9 +123,9 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
     // the creating teacher below.
     if (widget.asSupervisor && _selectedTeacher == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('يرجى اختيار المعلم'),
-          backgroundColor: AppColors.error,
+        SnackBar(
+          content: const Text('يرجى اختيار المعلم'),
+          backgroundColor: tokens.maroon,
         ),
       );
       return;
@@ -132,9 +134,9 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
     final startingPosition = _startingPosition;
     if (startingPosition == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('يرجى اختيار نقطة بداية صالحة في المنهج'),
-          backgroundColor: AppColors.error,
+        SnackBar(
+          content: const Text('يرجى اختيار نقطة بداية صالحة في المنهج'),
+          backgroundColor: tokens.maroon,
         ),
       );
       return;
@@ -154,9 +156,9 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
       if (existingUser != null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('اسم المستخدم مسجل مسبقاً'),
-              backgroundColor: AppColors.error,
+            SnackBar(
+              content: const Text('اسم المستخدم مسجل مسبقاً'),
+              backgroundColor: tokens.maroon,
             ),
           );
         }
@@ -214,7 +216,10 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('تم إضافة الطالب: ${_nameController.text.trim()}'),
-            backgroundColor: AppColors.success,
+            // No manuscript token for a distinct "success" hue — the
+            // primary green already carries the positive/affirmative role
+            // elsewhere on this screen, so it is reused here too.
+            backgroundColor: tokens.green,
           ),
         );
         context.pop();
@@ -229,7 +234,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
             ? 'كلمة المرور ضعيفة'
             : 'فشل إنشاء الحساب: ${e.message ?? e.code}';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: AppColors.error),
+          SnackBar(content: Text(msg), backgroundColor: tokens.maroon),
         );
       }
     } catch (e) {
@@ -237,7 +242,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('حدث خطأ: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: tokens.maroon,
           ),
         );
       }
@@ -260,6 +265,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Scaffold(
       appBar: AppBar(title: const Text('إضافة طالب')),
       body: SingleChildScrollView(
@@ -274,14 +280,10 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                 height: 80,
                 margin: const EdgeInsets.only(bottom: 32),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: tokens.green.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.person_add,
-                  size: 40,
-                  color: AppColors.primary,
-                ),
+                child: Icon(Icons.person_add, size: 40, color: tokens.green),
               ),
               AppTextField(
                 label: 'اسم الطالب',
@@ -370,7 +372,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(color: tokens.hairline),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: DropdownButtonHideUnderline(
@@ -416,22 +418,25 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.info.withValues(alpha: 0.1),
+                  // No manuscript token for the old "info" blue. This banner
+                  // stands alone (no sibling accent card on this screen
+                  // competes for a hue), so it gets tokens.gold — the
+                  // palette's illumination/note hue — distinct from the
+                  // green already used for the avatar icon above.
+                  color: tokens.gold.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.info.withValues(alpha: 0.3),
-                  ),
+                  border: Border.all(color: tokens.gold.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline, color: AppColors.info),
+                    Icon(Icons.info_outline, color: tokens.gold),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'شارك اسم المستخدم وكلمة المرور مع الطالب.',
                         style: Theme.of(
                           context,
-                        ).textTheme.bodySmall?.copyWith(color: AppColors.info),
+                        ).textTheme.bodySmall?.copyWith(color: tokens.gold),
                       ),
                     ),
                   ],
@@ -469,6 +474,7 @@ class _TeacherPicker extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tokens = context.tokens;
     final teachersAsync = ref.watch(supervisorInstituteTeachersProvider);
 
     return Column(
@@ -479,7 +485,7 @@ class _TeacherPicker extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: tokens.hairline),
             borderRadius: BorderRadius.circular(8),
           ),
           child: DropdownButtonHideUnderline(
