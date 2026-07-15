@@ -9,10 +9,10 @@ import 'package:al_rasikhoon/features/admin/screens/teachers_screen.dart';
 
 /// Widget tests for the admin teacher list — al_rasikhoon-ib7.
 ///
-/// A teacher card lays the contact line (phone, or the synthesized
-/// `username@…` email when no phone was given) beside an avatar, a status
-/// badge and a chevron. On a phone-width screen the contact line gets ~180
-/// logical pixels, so a long email overflowed the row instead of ellipsizing.
+/// A teacher card lays the contact line (phone, or the login username when no
+/// phone was given) beside an avatar, a status badge and a chevron. On a
+/// phone-width screen the contact line gets ~180 logical pixels, so a long
+/// username overflowed the row instead of ellipsizing.
 
 UserModel _teacher({
   required String id,
@@ -64,17 +64,14 @@ void main() {
         _teacher(
           id: 'abdulrahman_almuhaisin',
           name: 'عبد الرحمن المحيسن',
-          // No phone: the card falls back to the synthesized login email, which
-          // is as long as the username the admin chose.
+          // No phone: the card falls back to the login username, which is as
+          // long as the username the admin chose.
           email: 'abdulrahman_almuhaisin@alrasikhoon.local',
         ),
       ]);
 
       expect(tester.takeException(), isNull);
-      expect(
-        find.text('abdulrahman_almuhaisin@alrasikhoon.local'),
-        findsOneWidget,
-      );
+      expect(find.text('abdulrahman_almuhaisin'), findsOneWidget);
     },
   );
 
