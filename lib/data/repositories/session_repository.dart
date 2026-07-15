@@ -488,6 +488,33 @@ class SessionRepository {
 
   // ==================== Statistics ====================
 
+  /// How many session records this teacher has recorded — optionally only
+  /// those on or after [startDate].
+  ///
+  /// A Firestore aggregation `.count()`, so it never downloads the records:
+  /// the profile screen needs the number, not the rows. Reuses the same
+  /// `(teacher_id, date)` composite index as [getSessionRecordsForTeacher],
+  /// so it adds no index.
+  Future<int> getSessionCountForTeacher(
+    String teacherId, {
+    DateTime? startDate,
+  }) async {
+    Query<Map<String, dynamic>> query = _sessionRecordsCollection.where(
+      'teacher_id',
+      isEqualTo: teacherId,
+    );
+
+    if (startDate != null) {
+      query = query.where(
+        'date',
+        isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
+      );
+    }
+
+    final result = await query.count().get();
+    return result.count ?? 0;
+  }
+
   /// Get student statistics
   Future<Map<String, dynamic>> getStudentStatistics(String studentId) async {
     final sessionRecords = await getSessionRecordsForStudent(studentId);
