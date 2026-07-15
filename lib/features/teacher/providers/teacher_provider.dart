@@ -556,3 +556,48 @@ final teacherHistoryProvider = FutureProvider<List<TeacherHistoryEntry>>((
   }
   return entries;
 });
+
+/// A teacher's at-a-glance activity, shown on the profile screen.
+class TeacherStats {
+  final int totalSessions;
+  final int sessionsThisMonth;
+  final int studentCount;
+  final int instituteCount;
+
+  const TeacherStats({
+    this.totalSessions = 0,
+    this.sessionsThisMonth = 0,
+    this.studentCount = 0,
+    this.instituteCount = 0,
+  });
+}
+
+/// Composes the signed-in teacher's profile stats: an all-time and a
+/// this-month session count (cheap `.count()` queries), plus the roster and
+/// institute sizes the students tab has already loaded.
+final teacherStatsProvider = FutureProvider<TeacherStats>((ref) async {
+  final currentUser = ref.watch(currentUserProvider);
+  if (currentUser == null) return const TeacherStats();
+
+  final sessionRepo = ref.watch(sessionRepositoryProvider);
+  final students = await ref.watch(teacherStudentsProvider.future);
+  final institutes = await ref.watch(teacherInstitutesProvider.future);
+
+  final now = DateTime.now();
+  final monthStart = DateTime(now.year, now.month, 1);
+
+  final totalSessions = await sessionRepo.getSessionCountForTeacher(
+    currentUser.id,
+  );
+  final sessionsThisMonth = await sessionRepo.getSessionCountForTeacher(
+    currentUser.id,
+    startDate: monthStart,
+  );
+
+  return TeacherStats(
+    totalSessions: totalSessions,
+    sessionsThisMonth: sessionsThisMonth,
+    studentCount: students.length,
+    instituteCount: institutes.length,
+  );
+});
