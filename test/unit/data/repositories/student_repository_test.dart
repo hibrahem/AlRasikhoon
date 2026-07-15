@@ -1279,6 +1279,82 @@ void main() {
       );
     });
 
+    // al_rasikhoon-3n6 — a multi-institute supervisor sees the UNION of their
+    // institutes' students. getStudentsForInstitutes chunks the whereIn at
+    // Firestore's 30-value cap, dedups by id, and sorts by created_at desc.
+    group('getStudentsForInstitutes', () {
+      test('unions active students across the given institutes', () async {
+        await seedUser(id: 'user-a', name: 'طالب أ');
+        await seedUser(id: 'user-b', name: 'طالب ب');
+        await seedUser(id: 'user-c', name: 'طالب ج');
+
+        await fakeFirestore.collection('students').doc('s-a').set({
+          'user_id': 'user-a',
+          'institute_id': 'inst-a',
+          'current_session_kind': 'lesson',
+          'is_active': true,
+          'created_at': Timestamp.fromDate(DateTime(2026, 1, 1)),
+        });
+        await fakeFirestore.collection('students').doc('s-b').set({
+          'user_id': 'user-b',
+          'institute_id': 'inst-b',
+          'current_session_kind': 'lesson',
+          'is_active': true,
+          'created_at': Timestamp.fromDate(DateTime(2026, 1, 3)),
+        });
+        // A student in a THIRD institute the supervisor is not a member of.
+        await fakeFirestore.collection('students').doc('s-c').set({
+          'user_id': 'user-c',
+          'institute_id': 'inst-c',
+          'current_session_kind': 'lesson',
+          'is_active': true,
+          'created_at': Timestamp.fromDate(DateTime(2026, 1, 2)),
+        });
+
+        final scoped = await studentRepository.getStudentsForInstitutes([
+          'inst-a',
+          'inst-b',
+        ]);
+
+        // Only the two in-scope institutes; inst-c excluded. Sorted by
+        // created_at DESCENDING across institutes → s-b (Jan 3) before s-a.
+        expect(scoped.map((s) => s.student.id), ['s-b', 's-a']);
+      });
+
+      test('returns empty for an empty institute list', () async {
+        expect(await studentRepository.getStudentsForInstitutes([]), isEmpty);
+      });
+
+      test(
+        'resolves ALL students when the institute set exceeds the whereIn cap '
+        '(chunking)',
+        () async {
+          // 31 institutes > Firestore's 30-value whereIn cap: a non-chunked
+          // query would be impossible / lossy. Each institute has one student;
+          // all 31 must come back.
+          final instituteIds = <String>[];
+          for (var i = 0; i < 31; i++) {
+            final instId = 'inst-$i';
+            instituteIds.add(instId);
+            await seedUser(id: 'user-$i', name: 'طالب $i');
+            await fakeFirestore.collection('students').doc('s-$i').set({
+              'user_id': 'user-$i',
+              'institute_id': instId,
+              'current_session_kind': 'lesson',
+              'is_active': true,
+              'created_at': Timestamp.fromDate(DateTime(2026, 1, 1, 0, i)),
+            });
+          }
+
+          final scoped = await studentRepository.getStudentsForInstitutes(
+            instituteIds,
+          );
+
+          expect(scoped, hasLength(31));
+        },
+      );
+    });
+
     group('streamStudentsForInstitute', () {
       test('streams only the active students of the given institute', () async {
         await fakeFirestore.collection('students').doc('s-a1').set({

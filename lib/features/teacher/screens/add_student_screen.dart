@@ -66,15 +66,11 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
 
     List<InstituteModel> institutes;
     if (widget.asSupervisor) {
-      // Supervisor mode: the only institute is the supervisor's canonical
-      // bound institute (users/{uid}.institute_id, AgDR-0003).
-      final instituteId = currentUser.instituteId;
-      if (instituteId == null || instituteId.isEmpty) {
-        institutes = const [];
-      } else {
-        final institute = await repo.getInstituteById(instituteId);
-        institutes = institute == null ? const [] : [institute];
-      }
+      // Supervisor mode: ALL institutes the supervisor is assigned to, resolved
+      // from the supervisor_institutes membership (al_rasikhoon-3n6). A
+      // supervisor may supervise several institutes, and picks which one the new
+      // student is created in from this list.
+      institutes = await repo.getInstitutesForSupervisor(currentUser.id);
     } else {
       institutes = await repo.getInstitutesForTeacher(currentUser.id);
     }
@@ -387,16 +383,23 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                           );
                         }).toList(),
                         onChanged: (value) {
-                          setState(() => _selectedInstitute = value);
+                          setState(() {
+                            _selectedInstitute = value;
+                            // The teacher pool is scoped to the chosen institute
+                            // (al_rasikhoon-3n6); a teacher from the previously
+                            // selected institute must not carry over.
+                            _selectedTeacher = null;
+                          });
                         },
                       ),
                     ),
                   ),
                 ],
               ),
-              if (widget.asSupervisor) ...[
+              if (widget.asSupervisor && _selectedInstitute != null) ...[
                 const SizedBox(height: 24),
                 _TeacherPicker(
+                  instituteId: _selectedInstitute!.id,
                   selectedTeacher: _selectedTeacher,
                   onChanged: (teacher) {
                     setState(() => _selectedTeacher = teacher);
@@ -459,15 +462,18 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
 }
 
 /// The required teacher picker shown only in supervisor mode
-/// (al_rasikhoon-6bw). Lists the teachers of the supervisor's own institute
-/// via [supervisorInstituteTeachersProvider] — the pool a teacher-less student
-/// can be rescued into, and the ONLY teachers a supervisor is scoped to
-/// assign at creation.
+/// (al_rasikhoon-6bw). Lists the teachers of the SELECTED institute via
+/// [supervisorInstituteTeachersProvider] — scoped to the one institute the
+/// student is being created in (al_rasikhoon-3n6), which must be one of the
+/// supervisor's institutes. This is the pool a teacher-less student can be
+/// rescued into, and the ONLY teachers a supervisor is scoped to assign.
 class _TeacherPicker extends ConsumerWidget {
+  final String instituteId;
   final UserModel? selectedTeacher;
   final ValueChanged<UserModel?> onChanged;
 
   const _TeacherPicker({
+    required this.instituteId,
     required this.selectedTeacher,
     required this.onChanged,
   });
@@ -475,7 +481,9 @@ class _TeacherPicker extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tokens = context.tokens;
-    final teachersAsync = ref.watch(supervisorInstituteTeachersProvider);
+    final teachersAsync = ref.watch(
+      supervisorInstituteTeachersProvider(instituteId),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

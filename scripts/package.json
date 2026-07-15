@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "seed-super-admin": "node seed_super_admin.mjs",
-    "wipe-users": "node wipe_users.mjs"
+    "wipe-users": "node wipe_users.mjs",
+    "backfill-supervisor-institutes": "node backfill_supervisor_institutes.mjs"
   },
   "dependencies": {
     "firebase-admin": "^12.0.0"

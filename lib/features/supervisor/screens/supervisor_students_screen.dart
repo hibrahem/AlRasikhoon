@@ -123,6 +123,7 @@ class SupervisorStudentsScreen extends ConsumerWidget {
                     builder: (_) => AssignTeacherDialog(
                       studentId: student.id,
                       studentDisplayName: userName,
+                      instituteId: student.instituteId,
                     ),
                   );
                 },

@@ -12,60 +12,80 @@ import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/providers/meeting_provider.dart' show composeMeetingFor;
 
-/// The canonical institute a supervisor is scoped to, read off
-/// `users/{uid}.institute_id` (AgDR-0003 — the single source of truth for
-/// authorization). `null` when the current user is not a supervisor or has no
-/// institute bound. All supervisor student-management providers scope through
-/// this value so a supervisor can never see or touch another institute's data.
-final supervisorInstituteIdProvider = Provider<String?>((ref) {
+/// The SET of institutes a supervisor is scoped to, resolved from the
+/// `supervisor_institutes` membership docs via
+/// `InstituteRepository.getInstitutesForSupervisor` (al_rasikhoon-3n6 — the
+/// source of truth for authorization, replacing the single
+/// `users/{uid}.institute_id`). A supervisor now has teacher parity and may
+/// supervise SEVERAL institutes at once. Empty when the current user is not a
+/// supervisor or is assigned to no institute. All supervisor student-management
+/// providers scope through this set so a supervisor can never see or touch an
+/// institute they are not assigned to.
+final supervisorInstituteIdsProvider = FutureProvider<List<String>>((
+  ref,
+) async {
   final currentUser = ref.watch(currentUserProvider);
-  return currentUser?.instituteId;
+  if (currentUser == null) return const [];
+
+  final instituteRepo = ref.watch(instituteRepositoryProvider);
+  final institutes = await instituteRepo.getInstitutesForSupervisor(
+    currentUser.id,
+  );
+  return institutes.map((institute) => institute.id).toList();
 });
 
-/// Students of the supervisor's institute — teacher-parity student management
-/// (#28) scoped to `users/{uid}.institute_id`. Reuses the same
-/// `StudentRepository.getStudentsForInstitute` backing query the teacher view
-/// uses, parameterized by the supervisor's institute rather than a teacher id.
-/// Returns empty when the supervisor has no institute bound.
+/// Students across ALL the supervisor's institutes — teacher-parity student
+/// management (al_rasikhoon-3n6) scoped to the `supervisor_institutes`
+/// membership set. Unions the per-institute view via
+/// `StudentRepository.getStudentsForInstitutes`, which chunks the `whereIn`
+/// (Firestore's 30-value cap) for a supervisor with many institutes. Returns
+/// empty when the supervisor is assigned to no institute.
 final supervisorStudentsProvider = FutureProvider<List<StudentWithUser>>((
   ref,
 ) async {
-  final instituteId = ref.watch(supervisorInstituteIdProvider);
-  if (instituteId == null || instituteId.isEmpty) return [];
+  final instituteIds = await ref.watch(supervisorInstituteIdsProvider.future);
+  if (instituteIds.isEmpty) return const [];
 
   final repo = ref.watch(studentRepositoryProvider);
-  return repo.getStudentsForInstitute(instituteId);
+  return repo.getStudentsForInstitutes(instituteIds);
 });
 
-/// Teachers of the supervisor's institute (al_rasikhoon-6bw) — the pool a
-/// supervisor picks from both when creating a student (a teacher is now
-/// REQUIRED at creation, so no new teacher-less student can exist) and when
-/// rescuing an already teacher-less one via [StudentRepository.assignTeacher].
-/// Composes `instituteRepository.getTeacherIdsForInstitute` with
+/// Teachers of a GIVEN institute (al_rasikhoon-6bw) — the pool a supervisor
+/// picks from both when creating a student (a teacher is now REQUIRED at
+/// creation, so no new teacher-less student can exist) and when rescuing an
+/// already teacher-less one via [StudentRepository.assignTeacher]. Composes
+/// `instituteRepository.getTeacherIdsForInstitute` with
 /// `userRepository.getUserById` — the same pattern as the admin's
 /// `teachersForInstituteProvider` (lib/features/admin/providers/admin_provider.dart)
-/// — but written here, scoped to [supervisorInstituteIdProvider], so
-/// supervisor code never reaches into the admin feature (al_rasikhoon-pz2).
-/// Empty when the supervisor has no institute bound.
-final supervisorInstituteTeachersProvider = FutureProvider<List<UserModel>>((
-  ref,
-) async {
-  final instituteId = ref.watch(supervisorInstituteIdProvider);
-  if (instituteId == null || instituteId.isEmpty) return [];
+/// — but written here so supervisor code never reaches into the admin feature
+/// (al_rasikhoon-pz2).
+///
+/// Parameterized by institute id (al_rasikhoon-3n6): a supervisor may supervise
+/// several institutes, and a student belongs to exactly ONE of them, so the
+/// teacher pool must be that student's institute — NOT a blur across the whole
+/// set (which would let a supervisor assign a teacher from a different
+/// institute). Callers pass the institute the student is being created in / the
+/// student already belongs to; it must be one of the supervisor's institutes.
+/// Empty when [instituteId] is empty.
+final supervisorInstituteTeachersProvider =
+    FutureProvider.family<List<UserModel>, String>((ref, instituteId) async {
+      if (instituteId.isEmpty) return const [];
 
-  final instituteRepo = ref.watch(instituteRepositoryProvider);
-  final userRepo = ref.watch(userRepositoryProvider);
+      final instituteRepo = ref.watch(instituteRepositoryProvider);
+      final userRepo = ref.watch(userRepositoryProvider);
 
-  final teacherIds = await instituteRepo.getTeacherIdsForInstitute(instituteId);
-  final teachers = <UserModel>[];
-  for (final id in teacherIds) {
-    final teacher = await userRepo.getUserById(id);
-    if (teacher != null) {
-      teachers.add(teacher);
-    }
-  }
-  return teachers;
-});
+      final teacherIds = await instituteRepo.getTeacherIdsForInstitute(
+        instituteId,
+      );
+      final teachers = <UserModel>[];
+      for (final id in teacherIds) {
+        final teacher = await userRepo.getUserById(id);
+        if (teacher != null) {
+          teachers.add(teacher);
+        }
+      }
+      return teachers;
+    });
 
 /// A single student within the supervisor's institute, looked up from
 /// [supervisorStudentsProvider] so the institute scope is enforced for
