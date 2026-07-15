@@ -244,3 +244,6 @@ Task 3: complete (commit 32592bd, review clean) — AppTheme.lightTheme/darkThem
   caught the original darkTheme=>lightTheme bug. No AppColors leaks, no non-bundled fonts. No findings.
 Task 4: complete (commit 69245f3, review clean) — persisted ThemeModeNotifier/themeModeProvider (plain
   Riverpod, key 'theme_mode', values light/dark/system, unrecognized->system). No findings.
+Task 5: complete (commits b0cdccb impl + 2861077 fix, review clean) — wired darkTheme + ref.watch(themeModeProvider)
+  into MaterialApp.router in lib/app.dart. Fixed: dart format incidentally collapsed 2 unrelated multi-line
+  properties (supportedLocales, builder) to single-line -> reverted to keep diff minimal. Re-review approved.
