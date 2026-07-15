@@ -191,11 +191,13 @@ class _StatTile extends StatelessWidget {
   final IconData icon;
   final String value;
   final String label;
+  final String? sublabel;
 
   const _StatTile({
     required this.icon,
     required this.value,
     required this.label,
+    this.sublabel,
   });
 
   @override
@@ -214,6 +216,13 @@ class _StatTile extends StatelessWidget {
               context,
             ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
           ),
+          if (sublabel != null && sublabel!.isNotEmpty)
+            Text(
+              sublabel!,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ),
         ],
       ),
     );
@@ -307,6 +316,7 @@ class _StudentStatsCard extends ConsumerWidget {
                   icon: Icons.trending_up_outlined,
                   value: '${stats.currentLevel}',
                   label: 'المستوى الحالي',
+                  sublabel: 'الجزء ${stats.currentJuz}',
                 ),
               ],
             ),

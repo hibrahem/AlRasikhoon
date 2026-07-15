@@ -181,6 +181,7 @@ void main() {
     expect(find.text('75%'), findsOneWidget);
     expect(find.text('المستويات المكتملة'), findsOneWidget);
     expect(find.text('المستوى الحالي'), findsOneWidget);
+    expect(find.text('الجزء 30'), findsOneWidget);
 
     // A student never sees the teacher-only metrics.
     expect(find.text('عدد المعاهد'), findsNothing);

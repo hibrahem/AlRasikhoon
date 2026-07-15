@@ -71,9 +71,9 @@ class TeachersScreen extends ConsumerWidget {
                                   color: AppColors.textSecondary,
                                 ),
                                 const SizedBox(width: 4),
-                                // A teacher with no phone falls back to the
-                                // synthesized login email, which is as long as
-                                // their username — it must shrink, not overflow.
+                                // A teacher with no phone falls back to their
+                                // login username, which can be just as long —
+                                // it must shrink, not overflow.
                                 Expanded(
                                   child: Text(
                                     teacher.phone ?? teacher.displayUsername,
