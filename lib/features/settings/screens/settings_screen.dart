@@ -7,12 +7,12 @@ import '../../../shared/providers/stats_provider.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/confirm_sign_out.dart';
+import '../widgets/theme_mode_selector.dart';
 
 /// Account screen for the teacher, supervisor and student shells.
 ///
-/// Deliberately small: it exists to give the account actions a home. There is
-/// no language or theme toggle — the app is locale-locked to `ar`
-/// (`lib/app.dart`) and has no theme mode, so a switch here would flip nothing.
+/// Provides user profile, role, activity stats, and appearance preferences.
+/// Theme mode can be toggled via the embedded [ThemeModeSelector].
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -30,6 +30,8 @@ class SettingsScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         children: [
           _ProfileCard(user: user),
+          const SizedBox(height: 16),
+          const ThemeModeSelector(),
           if (user.role == UserRole.teacher) ...[
             const SizedBox(height: 16),
             const _TeacherStatsCard(),

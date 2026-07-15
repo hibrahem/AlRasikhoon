@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:al_rasikhoon/data/models/institute_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/auth_repository.dart';
+import 'package:al_rasikhoon/data/services/shared_preferences_provider.dart';
 import 'package:al_rasikhoon/features/settings/screens/settings_screen.dart';
 import 'package:al_rasikhoon/shared/providers/institute_provider.dart';
 import 'package:al_rasikhoon/shared/providers/stats_provider.dart';
@@ -40,7 +42,9 @@ Future<void> _pump(
   AuthRepository? authRepository,
   TeacherStats teacherStats = const TeacherStats(),
   StudentStats studentStats = const StudentStats(),
-}) {
+}) async {
+  SharedPreferences.setMockInitialValues({});
+  final prefs = await SharedPreferences.getInstance();
   return tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -48,6 +52,7 @@ Future<void> _pump(
         teacherInstitutesProvider.overrideWith((ref) async => institutes),
         teacherStatsProvider.overrideWith((ref) async => teacherStats),
         studentStatsProvider.overrideWith((ref) async => studentStats),
+        sharedPreferencesProvider.overrideWithValue(prefs),
         if (authRepository != null)
           authRepositoryProvider.overrideWith(() => authRepository),
       ],

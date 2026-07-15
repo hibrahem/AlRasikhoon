@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../domain/session/session_duration.dart';
 import 'app_card.dart';
 
@@ -48,9 +49,10 @@ class SessionRecordRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final passColor = isTalqeen
-        ? AppColors.primary
-        : (passed ? AppColors.success : AppColors.error);
+        ? tokens.green
+        : (passed ? AppColors.success : tokens.maroon);
     final dateFormat = DateFormat('yyyy/MM/dd', 'ar');
 
     return AppCard(
@@ -84,15 +86,15 @@ class SessionRecordRow extends StatelessWidget {
                 for (final line in subtitleLines)
                   Text(
                     line,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                   ),
                 Text(
                   dateFormat.format(date),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                 ),
                 if (sessionDuration != null) ...[
                   const SizedBox(height: 4),
@@ -135,14 +137,15 @@ class _DurationDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final label = 'المدة: ${duration.clock}';
-    final color = _colorForStatus(duration.status);
+    final color = _colorForStatus(duration.status, tokens);
     if (color == null) {
       return Text(
         label,
         style: Theme.of(
           context,
-        ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+        ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
       );
     }
     return Container(
@@ -167,14 +170,14 @@ class _DurationDisplay extends StatelessWidget {
   ///   onTarget → green (on time), under → yellow (faster than target),
   ///   over → red (beyond target). Returns null when there is no target, so the
   ///   caller shows the time in a neutral color instead.
-  static Color? _colorForStatus(DurationStatus status) {
+  static Color? _colorForStatus(DurationStatus status, AppTokens tokens) {
     switch (status) {
       case DurationStatus.under:
         return AppColors.warning; // yellow — faster than target
       case DurationStatus.onTarget:
         return AppColors.success; // green — on time
       case DurationStatus.over:
-        return AppColors.error; // red — beyond target
+        return tokens.maroon; // red — beyond target
       case DurationStatus.none:
         return null;
     }

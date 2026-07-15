@@ -1,12 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:al_rasikhoon/app.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/data/services/session_cache.dart';
+import 'package:al_rasikhoon/data/services/shared_preferences_provider.dart';
 import 'package:al_rasikhoon/features/settings/screens/settings_screen.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/features/teacher/screens/teacher_students_screen.dart';
@@ -29,6 +31,9 @@ void main() {
 
     final mockSessionCache = _MockSessionCache();
     when(() => mockSessionCache.readUser()).thenReturn(null);
+
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
 
     final teacher = UserModel(
       id: 'teacher-1',
@@ -58,6 +63,7 @@ void main() {
           teacherStudentsProvider.overrideWith((ref) async => []),
           filteredTeacherStudentsProvider.overrideWith((ref) async => []),
           teacherInstitutesProvider.overrideWith((ref) async => []),
+          sharedPreferencesProvider.overrideWithValue(prefs),
         ],
         child: const AlRasikhoonApp(),
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_motion.dart';
+import '../../core/theme/app_tokens.dart';
 
 class ProgressBar extends StatelessWidget {
   final double progress;
@@ -21,6 +22,7 @@ class ProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final clampedProgress = progress.clamp(0.0, 1.0);
 
     return Column(
@@ -39,7 +41,7 @@ class ProgressBar extends StatelessWidget {
                     '${(clampedProgress * 100).toInt()}%',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: progressColor ?? AppColors.primary,
+                      color: progressColor ?? tokens.green,
                     ),
                   ),
               ],
@@ -48,17 +50,25 @@ class ProgressBar extends StatelessWidget {
         Container(
           height: height,
           decoration: BoxDecoration(
-            color: backgroundColor ?? AppColors.surfaceVariant,
+            color: backgroundColor ?? tokens.surfaceVariant,
             borderRadius: BorderRadius.circular(height / 2),
           ),
           child: Stack(
             children: [
-              FractionallySizedBox(
-                alignment: AlignmentDirectional.centerStart,
-                widthFactor: clampedProgress,
+              TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0, end: clampedProgress),
+                duration: AppMotion.of(context, AppMotion.base),
+                curve: Curves.easeOut,
+                builder: (context, animatedProgress, child) {
+                  return FractionallySizedBox(
+                    alignment: AlignmentDirectional.centerStart,
+                    widthFactor: animatedProgress,
+                    child: child,
+                  );
+                },
                 child: Container(
                   decoration: BoxDecoration(
-                    color: progressColor ?? AppColors.primary,
+                    color: progressColor ?? tokens.green,
                     borderRadius: BorderRadius.circular(height / 2),
                   ),
                 ),
@@ -132,6 +142,77 @@ class LevelProgressBar extends StatelessWidget {
   }
 }
 
+/// A horizontal 5-rung indicator of the grade scale — راسخ · متقن · حافظ ·
+/// مجتهد · محب — this app's "mastery ladder" motif. [fraction] (0..1) is how
+/// far up the ladder to light: rungs fully below it are solid, the rung it
+/// falls within is partially lit, rungs above stay unlit.
+class MasteryLadder extends StatelessWidget {
+  final double fraction;
+
+  const MasteryLadder({super.key, required this.fraction});
+
+  static const _labels = ['راسخ', 'متقن', 'حافظ', 'مجتهد', 'محب'];
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    final rungColors = [
+      tokens.gradeRasikh,
+      tokens.gradeMutqin,
+      tokens.gradeHafiz,
+      tokens.gradeMujtahid,
+      tokens.gradeMuhib,
+    ];
+    final clamped = fraction.clamp(0.0, 1.0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: List.generate(_labels.length, (i) {
+            final rungFill = (clamped * _labels.length - i).clamp(0.0, 1.0);
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: SizedBox(
+                    height: 10,
+                    child: Stack(
+                      children: [
+                        Container(color: tokens.hairline),
+                        FractionallySizedBox(
+                          alignment: AlignmentDirectional.centerStart,
+                          widthFactor: rungFill,
+                          child: Container(color: rungColors[i]),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          children: List.generate(_labels.length, (i) {
+            return Expanded(
+              child: Text(
+                _labels[i],
+                textAlign: TextAlign.center,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall?.copyWith(color: tokens.sepia),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+}
+
 class CircularProgress extends StatelessWidget {
   final double progress;
   final double size;
@@ -152,6 +233,7 @@ class CircularProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return SizedBox(
       width: size,
       height: size,
@@ -164,9 +246,9 @@ class CircularProgress extends StatelessWidget {
             child: CircularProgressIndicator(
               value: progress.clamp(0.0, 1.0),
               strokeWidth: strokeWidth,
-              backgroundColor: backgroundColor ?? AppColors.surfaceVariant,
+              backgroundColor: backgroundColor ?? tokens.surfaceVariant,
               valueColor: AlwaysStoppedAnimation<Color>(
-                progressColor ?? AppColors.primary,
+                progressColor ?? tokens.green,
               ),
             ),
           ),

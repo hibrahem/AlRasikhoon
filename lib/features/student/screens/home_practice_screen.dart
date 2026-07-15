@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../shared/providers/current_student_provider.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/states/empty_state.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/student_provider.dart';
 import '../widgets/home_assignment_card.dart';
 
@@ -28,12 +31,13 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
   }
 
   Future<void> _submitPractice() async {
+    final tokens = context.tokens;
     final repetitions = int.tryParse(_repetitionsController.text) ?? 0;
     if (repetitions <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('يرجى إدخال عدد التكرارات'),
-          backgroundColor: AppColors.error,
+        SnackBar(
+          content: const Text('يرجى إدخال عدد التكرارات'),
+          backgroundColor: tokens.maroon,
         ),
       );
       return;
@@ -54,9 +58,15 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('تم تسجيل التكرار بنجاح'),
-          backgroundColor: AppColors.success,
+        SnackBar(
+          content: const Text('تم تسجيل التكرار بنجاح'),
+          // AppColors.success has no direct AppTokens equivalent (not in
+          // the task-16 mapping table). Following the Task 13/14
+          // precedent, it maps to tokens.green — tokens.green and
+          // AppColors.gradeRasikh are byte-identical, and green already
+          // carries the "positive/affirmative" role elsewhere on this
+          // screen (today's-repetitions stat, session-info accent).
+          backgroundColor: tokens.green,
         ),
       );
       _repetitionsController.text = '1';
@@ -89,7 +99,7 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
               // Stats cards
               statsAsync.when(
                 data: (stats) => _buildStatsSection(stats),
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const LoadingState(lines: 1),
                 error: (_, _) => const SizedBox.shrink(),
               ),
 
@@ -105,15 +115,14 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
               studentAsync.when(
                 data: (student) {
                   if (student == null) {
-                    return const AppCard(
-                      child: Center(
-                        child: Text('لم يتم العثور على بيانات الطالب'),
-                      ),
+                    return const EmptyState(
+                      icon: Icons.person_off_outlined,
+                      title: 'لم يتم العثور على بيانات الطالب',
                     );
                   }
                   return _buildAddPracticeCard(student);
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const LoadingState(lines: 1),
                 error: (_, _) => const SizedBox.shrink(),
               ),
 
@@ -129,34 +138,16 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
               practicesAsync.when(
                 data: (practices) {
                   if (practices.isEmpty) {
-                    return const AppCard(
-                      child: Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(24),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.history,
-                                size: 48,
-                                color: AppColors.textSecondary,
-                              ),
-                              SizedBox(height: 12),
-                              Text(
-                                'لا يوجد سجل تكرارات',
-                                style: TextStyle(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                    return const EmptyState(
+                      icon: Icons.history,
+                      title: 'لا يوجد سجل تكرارات',
                     );
                   }
                   return _buildPracticeHistory(practices);
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text('Error: $e'),
+                loading: () => const LoadingState(),
+                error: (e, _) =>
+                    ErrorState(message: 'تعذر تحميل سجل التكرارات: $e'),
               ),
             ],
           ),
@@ -166,6 +157,7 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
   }
 
   Widget _buildStatsSection(HomePracticeStats stats) {
+    final tokens = context.tokens;
     return Column(
       children: [
         Row(
@@ -175,7 +167,7 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                 icon: Icons.today,
                 label: 'اليوم',
                 value: '${stats.todayRepetitions}',
-                color: AppColors.primary,
+                color: tokens.green,
               ),
             ),
             const SizedBox(width: 12),
@@ -184,7 +176,21 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                 icon: Icons.calendar_view_week,
                 label: 'هذا الأسبوع',
                 value: '${stats.weekRepetitions}',
-                color: AppColors.info,
+                // AppColors.info has no direct AppTokens equivalent, and the
+                // manuscript palette only has three saturated accent hues
+                // (green/gold/maroon), all three of which are already
+                // claimed by sibling stat cards in this same grid
+                // (today->green, total->gold, streak->maroon). tokens.ink
+                // was tried first, but it is the theme's default text color
+                // (applied to headlineSmall and most other text app-wide),
+                // so it is a no-op here: the value renders identically to
+                // unstyled text and the "accent" is invisible next to the
+                // other three cards. Since "today" and "this week" are
+                // naturally related time-window metrics (today's count is a
+                // subset of the week's count), this card intentionally
+                // reuses tokens.green, distinguished from the today card by
+                // icon and label rather than by color.
+                color: tokens.green,
               ),
             ),
           ],
@@ -197,7 +203,7 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                 icon: Icons.repeat,
                 label: 'إجمالي التكرارات',
                 value: '${stats.totalRepetitions}',
-                color: AppColors.secondary,
+                color: tokens.gold,
               ),
             ),
             const SizedBox(width: 12),
@@ -206,7 +212,13 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                 icon: Icons.local_fire_department,
                 label: 'أيام متتالية',
                 value: '${stats.streakDays}',
-                color: AppColors.warning,
+                // AppColors.warning has no direct AppTokens equivalent.
+                // tokens.maroon (the palette's rubrication/emphasis hue,
+                // per the Task 13 follow-up precedent) is used for the
+                // streak stat's "don't break the fire" urgency; it is
+                // distinct from tokens.sepia, so it does not collide with
+                // this card's own label beneath it.
+                color: tokens.maroon,
               ),
             ),
           ],
@@ -216,6 +228,7 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
   }
 
   Widget _buildAddPracticeCard(dynamic student) {
+    final tokens = context.tokens;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,12 +237,12 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              color: tokens.green.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
               children: [
-                const Icon(Icons.menu_book, color: AppColors.primary),
+                Icon(Icons.menu_book, color: tokens.green),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -245,9 +258,9 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                         // label (`scope.labelAr`) for the same session. The
                         // level and juz are always consistent with the data.
                         'المستوى ${student.currentLevel} - الجزء ${student.currentJuz}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                       ),
                     ],
                   ),
@@ -272,7 +285,7 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                   }
                 },
                 icon: const Icon(Icons.remove_circle_outline),
-                color: AppColors.primary,
+                color: tokens.green,
               ),
               Expanded(
                 child: TextField(
@@ -293,7 +306,7 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                   _repetitionsController.text = '${current + 1}';
                 },
                 icon: const Icon(Icons.add_circle_outline),
-                color: AppColors.primary,
+                color: tokens.green,
               ),
             ],
           ),
@@ -331,6 +344,7 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
   }
 
   Widget _buildPracticeHistory(List<dynamic> practices) {
+    final tokens = context.tokens;
     final dateFormat = DateFormat('EEEE، d MMMM yyyy', 'ar');
 
     return Column(
@@ -343,14 +357,14 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: tokens.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
                   child: Text(
                     '${practice.repetitions}',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: AppColors.primary,
+                      color: tokens.green,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -367,14 +381,14 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                     ),
                     Text(
                       dateFormat.format(practice.practiceDate),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.repeat, color: AppColors.textSecondary),
+              Icon(Icons.repeat, color: tokens.sepia),
             ],
           ),
         );
@@ -398,6 +412,7 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return AppCard(
       child: Column(
         children: [
@@ -415,7 +430,7 @@ class _StatCard extends StatelessWidget {
             label,
             style: Theme.of(
               context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
           ),
         ],
       ),
