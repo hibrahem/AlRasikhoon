@@ -21,7 +21,10 @@ class AlRasikhoonApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       locale: const Locale('ar'),
-      supportedLocales: const [Locale('ar'), Locale('en')],
+      supportedLocales: const [
+        Locale('ar'),
+        Locale('en'),
+      ],
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -30,7 +33,10 @@ class AlRasikhoonApp extends ConsumerWidget {
       ],
       routerConfig: router,
       builder: (context, child) {
-        return Directionality(textDirection: TextDirection.rtl, child: child!);
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: child!,
+        );
       },
     );
   }
