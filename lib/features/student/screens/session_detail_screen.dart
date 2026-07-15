@@ -156,23 +156,19 @@ class SessionDetailScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  _PartResultCard(
-                    title: 'الحفظ الجديد',
-                    errors: record.grades.newMemorizationErrors,
-                    level: record.levelId,
-                  ),
-                  const SizedBox(height: 8),
-                  _PartResultCard(
-                    title: 'المراجعة القريبة',
-                    errors: record.grades.recentReviewErrors,
-                    level: record.levelId,
-                  ),
-                  const SizedBox(height: 8),
-                  _PartResultCard(
-                    title: 'المراجعة البعيدة',
-                    errors: record.grades.distantReviewErrors,
-                    level: record.levelId,
-                  ),
+                  // Only the parts this meeting actually recited — a
+                  // review-only or short meeting omits parts 2/3, so a skipped
+                  // part is never rendered as a passing zero-error card. Legacy
+                  // records with no marker read back as all three (see
+                  // SessionRecordModel.presentParts).
+                  for (final part in record.presentParts) ...[
+                    _PartResultCard(
+                      title: _partTitleAr(part),
+                      errors: record.grades.errorsForPart(part),
+                      level: record.levelId,
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                 ],
 
                 // Notes
@@ -198,6 +194,21 @@ class SessionDetailScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
     );
+  }
+}
+
+/// The Arabic label for a recitation part: 1 = new memorization, 2 = recent
+/// review, 3 = distant review.
+String _partTitleAr(int part) {
+  switch (part) {
+    case 1:
+      return 'الحفظ الجديد';
+    case 2:
+      return 'المراجعة القريبة';
+    case 3:
+      return 'المراجعة البعيدة';
+    default:
+      return 'التسميع';
   }
 }
 

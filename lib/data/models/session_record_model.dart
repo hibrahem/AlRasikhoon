@@ -39,6 +39,23 @@ class SessionGrades {
   int get totalErrors =>
       newMemorizationErrors + recentReviewErrors + distantReviewErrors;
 
+  /// The error count recorded for a recitation [part]: 1 = new memorization,
+  /// 2 = recent review, 3 = distant review. Lets a reader walk
+  /// [SessionRecordModel.presentParts] instead of naming the three fields by
+  /// hand.
+  int errorsForPart(int part) {
+    switch (part) {
+      case 1:
+        return newMemorizationErrors;
+      case 2:
+        return recentReviewErrors;
+      case 3:
+        return distantReviewErrors;
+      default:
+        return 0;
+    }
+  }
+
   /// Whether the session passes at the student's [level], per
   /// hibrahem/AlRasikhoon#24: FAILED if ANY component grades محب (ويعاد),
   /// passes only if none is محب. No averaging, no level-agnostic threshold —
@@ -119,6 +136,20 @@ class SessionRecordModel {
   final DateTime date;
   final int attemptNumber;
   final SessionGrades grades;
+
+  /// The recitation parts (1 = new memorization, 2 = recent review, 3 =
+  /// distant review) this meeting actually evaluated, copied verbatim from the
+  /// meeting's `presentParts` at write time. A review-only or short meeting
+  /// omits parts 2 and/or 3, so history must render only these — a part left
+  /// out was never recited, and its zeroed grade is absence, not a perfect
+  /// score.
+  ///
+  /// Records written before this field existed do not carry it. They read back
+  /// as all three present ([1, 2, 3]): the parts they actually evaluated are
+  /// not reconstructable from an error count alone (0 errors is
+  /// indistinguishable from an absent part), so the legacy view is preserved
+  /// rather than guessed.
+  final List<int> presentParts;
   final bool passed;
 
   /// How many times teacher and student recited the passage through TOGETHER in
@@ -150,6 +181,7 @@ class SessionRecordModel {
     required this.date,
     required this.attemptNumber,
     required this.grades,
+    this.presentParts = const [1, 2, 3],
     required this.passed,
     this.repetitionsWithTeacher = 0,
     this.homeRepetitionsRequired = 0,
@@ -200,6 +232,12 @@ class SessionRecordModel {
       date: (json['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       attemptNumber: json['attempt_number'] ?? 1,
       grades: SessionGrades.fromJson(json['grades']),
+      // Records written before `present_parts` shipped do not carry it. They
+      // read back as all three present rather than guessed from grades — a
+      // zeroed part is indistinguishable from an absent one.
+      presentParts: json['present_parts'] != null
+          ? List<int>.from(json['present_parts'] as List)
+          : const [1, 2, 3],
       passed: json['passed'] ?? false,
       repetitionsWithTeacher: json['repetitions_with_teacher'] ?? 0,
       homeRepetitionsRequired: json['home_repetitions_required'] ?? 0,
@@ -230,6 +268,7 @@ class SessionRecordModel {
       'date': Timestamp.fromDate(date),
       'attempt_number': attemptNumber,
       'grades': grades.toJson(),
+      'present_parts': presentParts,
       'passed': passed,
       'repetitions_with_teacher': repetitionsWithTeacher,
       'home_repetitions_required': homeRepetitionsRequired,
@@ -260,6 +299,7 @@ class SessionRecordModel {
     DateTime? date,
     int? attemptNumber,
     SessionGrades? grades,
+    List<int>? presentParts,
     bool? passed,
     int? repetitionsWithTeacher,
     int? homeRepetitionsRequired,
@@ -283,6 +323,7 @@ class SessionRecordModel {
       date: date ?? this.date,
       attemptNumber: attemptNumber ?? this.attemptNumber,
       grades: grades ?? this.grades,
+      presentParts: presentParts ?? this.presentParts,
       passed: passed ?? this.passed,
       repetitionsWithTeacher:
           repetitionsWithTeacher ?? this.repetitionsWithTeacher,

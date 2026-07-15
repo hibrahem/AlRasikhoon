@@ -115,6 +115,9 @@ class SessionRepository {
         date: writtenAt,
         attemptNumber: attemptNumber,
         grades: grades,
+        // Which parts were actually recited, so history renders only these and
+        // never shows a skipped review part as a passing zero-error card.
+        presentParts: meeting.presentParts,
         passed: passed,
         repetitionsWithTeacher: repetitionsWithTeacher,
         homeRepetitionsRequired: homeRepetitionsRequired,

@@ -123,6 +123,75 @@ void main() {
     expect(find.text('المراجعة البعيدة'), findsOneWidget);
   });
 
+  // A review-only or short meeting omits recent/distant review. History must
+  // render only the parts actually recited — a skipped part is absence, not a
+  // passing zero-error card.
+  testWidgets(
+    'a meeting that skipped review parts shows only what it recited',
+    (tester) async {
+      final record = SessionRecordModel(
+        id: 'r4',
+        studentId: 'student1',
+        teacherId: 'teacher1',
+        curriculumSessionId: 'L1_J30_S2',
+        levelId: 1,
+        kind: SessionKind.lesson,
+        juzNumber: 30,
+        hizbNumber: 59,
+        sessionNumber: 2,
+        fromOrderInLevel: 2,
+        toOrderInLevel: 2,
+        coversSessionIds: const ['L1_J30_S2'],
+        date: DateTime(2026, 7, 14),
+        attemptNumber: 1,
+        grades: const SessionGrades(
+          newMemorizationErrors: 1,
+          recentReviewErrors: 0,
+          distantReviewErrors: 0,
+        ),
+        presentParts: const [1],
+        passed: true,
+        createdAt: DateTime(2026, 7, 14),
+      );
+
+      await pump(tester, record);
+
+      expect(find.text('تفاصيل الأجزاء'), findsOneWidget);
+      expect(find.text('الحفظ الجديد'), findsOneWidget);
+      // The skipped review parts must not appear at all.
+      expect(find.text('المراجعة القريبة'), findsNothing);
+      expect(find.text('المراجعة البعيدة'), findsNothing);
+    },
+  );
+
+  // A record written before the present-parts marker shipped carries no marker.
+  // It must fall back to all three parts — the parts it actually recited are
+  // not reconstructable, so the legacy view is preserved rather than guessed.
+  testWidgets('a legacy record with no marker still shows all three parts', (
+    tester,
+  ) async {
+    final record = SessionRecordModel.fromJson('r5', {
+      'student_id': 'student1',
+      'teacher_id': 'teacher1',
+      'curriculum_session_id': 'L1_J30_S6',
+      'level_id': 1,
+      'kind': 'lesson',
+      'grades': {
+        'new_memorization_errors': 0,
+        'recent_review_errors': 0,
+        'distant_review_errors': 0,
+      },
+      'passed': true,
+      // No `present_parts` key — a pre-marker record.
+    });
+
+    await pump(tester, record);
+
+    expect(find.text('الحفظ الجديد'), findsOneWidget);
+    expect(find.text('المراجعة القريبة'), findsOneWidget);
+    expect(find.text('المراجعة البعيدة'), findsOneWidget);
+  });
+
   // The record stores the curriculum session's ID (`L1_J30_S5`). That is a key,
   // not a name: a student reading his own history must see the session's Arabic
   // title, never the raw id.
