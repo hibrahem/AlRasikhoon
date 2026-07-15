@@ -26,15 +26,10 @@ class SupervisorStudentsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        // Sign-out is not offered here: it lives, confirmed, in الإعدادات
+        // (the shared SettingsScreen) so a destructive action never fires on a
+        // single unconfirmed tap next to routine navigation.
         title: const Text('طلاب المعهد'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await ref.read(authRepositoryProvider.notifier).signOut();
-            },
-          ),
-        ],
       ),
       body: studentsAsync.when(
         data: (students) {

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../data/repositories/auth_repository.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/stat_card.dart';
@@ -24,15 +23,10 @@ class _SupervisorDashboardScreenState
 
     return Scaffold(
       appBar: AppBar(
+        // Sign-out is not offered here: it lives, confirmed, in الإعدادات
+        // (the shared SettingsScreen) so a destructive action never fires on a
+        // single unconfirmed tap next to routine navigation.
         title: const Text('الراسخون - المشرف'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await ref.read(authRepositoryProvider.notifier).signOut();
-            },
-          ),
-        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
