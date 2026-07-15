@@ -9,7 +9,6 @@ import '../../data/models/student_model.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/student_repository.dart';
 import '../../domain/curriculum/paced_session.dart';
-import '../../routing/app_router.dart';
 import '../curriculum/assessment_copy.dart';
 import '../widgets/app_card.dart';
 import '../widgets/student_level_progress.dart';
@@ -29,12 +28,19 @@ class StudentProgressScreen extends ConsumerWidget {
   final FutureProviderFamily<List<SessionRecordModel>, String>
   sessionHistoryProvider;
 
+  /// The session-detail route template (containing `:recordId`) for the shell
+  /// this screen is mounted in. INJECTED by the router for the same reason the
+  /// providers are: tapping a history record must open the detail view WITHIN
+  /// the active shell, never cross into the student shell (al_rasikhoon-3hn).
+  final String sessionDetailRoute;
+
   const StudentProgressScreen({
     super.key,
     required this.studentId,
     required this.studentProvider,
     required this.currentMeetingProvider,
     required this.sessionHistoryProvider,
+    required this.sessionDetailRoute,
   });
 
   @override
@@ -61,6 +67,7 @@ class StudentProgressScreen extends ConsumerWidget {
                 studentWithUser: studentWithUser,
                 currentMeetingProvider: currentMeetingProvider,
                 sessionHistoryProvider: sessionHistoryProvider,
+                sessionDetailRoute: sessionDetailRoute,
               ),
             ),
           );
@@ -77,11 +84,13 @@ class _ProgressBody extends ConsumerWidget {
   final FutureProviderFamily<PacedSession?, String> currentMeetingProvider;
   final FutureProviderFamily<List<SessionRecordModel>, String>
   sessionHistoryProvider;
+  final String sessionDetailRoute;
 
   const _ProgressBody({
     required this.studentWithUser,
     required this.currentMeetingProvider,
     required this.sessionHistoryProvider,
+    required this.sessionDetailRoute,
   });
 
   @override
@@ -124,7 +133,10 @@ class _ProgressBody extends ConsumerWidget {
         Text('سجل الحلقات', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
         historyAsync.when(
-          data: (records) => _SessionHistoryList(records: records),
+          data: (records) => _SessionHistoryList(
+            records: records,
+            sessionDetailRoute: sessionDetailRoute,
+          ),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Text('Error: $e'),
         ),
@@ -422,8 +434,12 @@ class _PartTile extends StatelessWidget {
 
 class _SessionHistoryList extends StatelessWidget {
   final List<SessionRecordModel> records;
+  final String sessionDetailRoute;
 
-  const _SessionHistoryList({required this.records});
+  const _SessionHistoryList({
+    required this.records,
+    required this.sessionDetailRoute,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -464,7 +480,7 @@ class _SessionHistoryList extends StatelessWidget {
         return AppCard(
           margin: const EdgeInsets.only(bottom: 8),
           onTap: () => context.push(
-            AppRoutes.sessionDetail.replaceFirst(':recordId', record.id),
+            sessionDetailRoute.replaceFirst(':recordId', record.id),
           ),
           child: Row(
             children: [
