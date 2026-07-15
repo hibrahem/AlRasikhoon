@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../data/repositories/auth_repository.dart';
 
 /// Shows the shared sign-out confirmation dialog and, only when the user
@@ -22,9 +22,9 @@ Future<void> confirmSignOut(BuildContext context, WidgetRef ref) async {
         ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text(
+          child: Text(
             'تسجيل الخروج',
-            style: TextStyle(color: AppColors.error),
+            style: TextStyle(color: context.tokens.maroon),
           ),
         ),
       ],
