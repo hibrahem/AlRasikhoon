@@ -290,6 +290,54 @@ void main() {
       });
     });
 
+    group('displayUsername', () {
+      UserModel userWith({String username = '', String email = ''}) =>
+          UserModel(
+            id: 'u1',
+            username: username,
+            email: email,
+            name: 'Test',
+            role: UserRole.student,
+            createdAt: DateTime(2024),
+          );
+
+      test('returns the stored username when present', () {
+        final user = userWith(
+          username: 'mohammed.a',
+          email: 'mohammed.a@alrasikhoon.local',
+        );
+
+        expect(user.displayUsername, 'mohammed.a');
+      });
+
+      test(
+        'strips the synthesized domain for a legacy record with no username',
+        () {
+          final user = userWith(
+            username: '',
+            email: 'hassan@alrasikhoon.local',
+          );
+
+          expect(user.displayUsername, 'hassan');
+        },
+      );
+
+      test(
+        'returns a non-synthesized email unchanged when there is no username',
+        () {
+          final user = userWith(username: '', email: 'real@example.com');
+
+          expect(user.displayUsername, 'real@example.com');
+        },
+      );
+
+      test('returns empty string when both username and email are empty', () {
+        final user = userWith(username: '', email: '');
+
+        expect(user.displayUsername, '');
+      });
+    });
+
     group('fromFirestore', () {
       test('deserializes all fields correctly', () async {
         final createdAt = DateTime(2024, 1, 15, 10, 30);
@@ -332,8 +380,7 @@ void main() {
           'is_active': true,
         });
 
-        final doc =
-            await fakeFirestore.collection('users').doc('sup123').get();
+        final doc = await fakeFirestore.collection('users').doc('sup123').get();
         final user = UserModel.fromFirestore(doc);
 
         expect(user.role, UserRole.supervisor);
@@ -346,8 +393,10 @@ void main() {
           'role': 'teacher',
         });
 
-        final doc =
-            await fakeFirestore.collection('users').doc('user123').get();
+        final doc = await fakeFirestore
+            .collection('users')
+            .doc('user123')
+            .get();
         final user = UserModel.fromFirestore(doc);
 
         expect(user.instituteId, isNull);

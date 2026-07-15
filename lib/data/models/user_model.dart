@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../core/constants/app_constants.dart';
+
 enum UserRole { superAdmin, supervisor, teacher, student, guardian }
 
 extension UserRoleExtension on UserRole {
@@ -177,6 +179,21 @@ class UserModel {
       updatedAt: updatedAt ?? this.updatedAt,
       isActive: isActive ?? this.isActive,
     );
+  }
+
+  /// The user-visible login name — never the synthesized auth email.
+  ///
+  /// Prefers the stored [username]; falls back to stripping the synthesized
+  /// `@${AppConstants.synthesizedEmailDomain}` domain off legacy records that
+  /// predate the username field. A genuinely non-synthesized email (or an
+  /// empty one) is returned unchanged.
+  String get displayUsername {
+    if (username.isNotEmpty) return username;
+    final suffix = '@${AppConstants.synthesizedEmailDomain}';
+    if (email.endsWith(suffix)) {
+      return email.substring(0, email.length - suffix.length);
+    }
+    return email;
   }
 
   @override

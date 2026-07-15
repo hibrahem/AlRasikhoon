@@ -78,9 +78,9 @@ List<NavDestination> destinationsFor(UserRole role) {
           rootPath: AppRoutes.supervisorStudents,
         ),
         NavDestination(
-          icon: Icons.settings_outlined,
-          activeIcon: Icons.settings,
-          label: 'الإعدادات',
+          icon: Icons.person_outline,
+          activeIcon: Icons.person,
+          label: 'الملف الشخصي',
           rootPath: AppRoutes.supervisorSettings,
         ),
       ];
@@ -103,9 +103,9 @@ List<NavDestination> destinationsFor(UserRole role) {
           rootPath: AppRoutes.teacherHistory,
         ),
         NavDestination(
-          icon: Icons.settings_outlined,
-          activeIcon: Icons.settings,
-          label: 'الإعدادات',
+          icon: Icons.person_outline,
+          activeIcon: Icons.person,
+          label: 'الملف الشخصي',
           rootPath: AppRoutes.teacherSettings,
         ),
       ];
@@ -132,9 +132,9 @@ List<NavDestination> destinationsFor(UserRole role) {
           rootPath: AppRoutes.sessionHistory,
         ),
         NavDestination(
-          icon: Icons.settings_outlined,
-          activeIcon: Icons.settings,
-          label: 'الإعدادات',
+          icon: Icons.person_outline,
+          activeIcon: Icons.person,
+          label: 'الملف الشخصي',
           rootPath: AppRoutes.studentSettings,
         ),
       ];

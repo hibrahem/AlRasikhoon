@@ -98,12 +98,12 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                                   color: AppColors.textSecondary,
                                 ),
                                 const SizedBox(width: 4),
-                                // Falls back to the synthesized login email
-                                // when no phone was given — it must shrink
-                                // rather than overflow the row.
+                                // Falls back to the login username when no
+                                // phone was given — it must shrink rather
+                                // than overflow the row.
                                 Expanded(
                                   child: Text(
-                                    teacher.phone ?? teacher.email,
+                                    teacher.phone ?? teacher.displayUsername,
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium

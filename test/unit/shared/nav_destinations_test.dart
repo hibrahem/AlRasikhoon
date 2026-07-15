@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:al_rasikhoon/data/models/user_model.dart';
@@ -12,7 +13,7 @@ void main() {
       expect(destinations.map((d) => d.label), [
         'الطلاب',
         'السجل',
-        'الإعدادات',
+        'الملف الشخصي',
       ]);
       expect(destinations.map((d) => d.rootPath), [
         AppRoutes.teacherStudents,
@@ -44,6 +45,31 @@ void main() {
           paths.length,
           reason: '$role has duplicate root paths',
         );
+      }
+    });
+  });
+
+  group('destinationsFor account tab', () {
+    for (final role in [
+      UserRole.teacher,
+      UserRole.student,
+      UserRole.guardian,
+      UserRole.supervisor,
+    ]) {
+      test('$role has a الملف الشخصي tab with the person icon', () {
+        final destinations = destinationsFor(role);
+        final account = destinations.last;
+
+        expect(account.label, 'الملف الشخصي');
+        expect(account.icon, Icons.person_outline);
+        expect(account.activeIcon, Icons.person);
+      });
+    }
+
+    test('no destination is still labeled الإعدادات', () {
+      for (final role in UserRole.values) {
+        final labels = destinationsFor(role).map((d) => d.label);
+        expect(labels, isNot(contains('الإعدادات')));
       }
     });
   });
