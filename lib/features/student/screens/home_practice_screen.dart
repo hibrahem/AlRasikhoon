@@ -175,16 +175,21 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
                 icon: Icons.calendar_view_week,
                 label: 'هذا الأسبوع',
                 value: '${stats.weekRepetitions}',
-                // AppColors.info has no direct AppTokens equivalent. The
+                // AppColors.info has no direct AppTokens equivalent, and the
                 // manuscript palette only has three saturated accent hues
-                // (green/gold/maroon), both of which are already claimed by
-                // sibling stat cards in this same grid (today->green,
-                // total->gold). tokens.ink is used here instead of a
-                // repeated accent hue: it is the neutral "primary text"
-                // token, visually distinct from tokens.sepia (the caption
-                // color used for every stat card's label, including this
-                // one), so it cannot collide with the label beneath it.
-                color: tokens.ink,
+                // (green/gold/maroon), all three of which are already
+                // claimed by sibling stat cards in this same grid
+                // (today->green, total->gold, streak->maroon). tokens.ink
+                // was tried first, but it is the theme's default text color
+                // (applied to headlineSmall and most other text app-wide),
+                // so it is a no-op here: the value renders identically to
+                // unstyled text and the "accent" is invisible next to the
+                // other three cards. Since "today" and "this week" are
+                // naturally related time-window metrics (today's count is a
+                // subset of the week's count), this card intentionally
+                // reuses tokens.green, distinguished from the today card by
+                // icon and label rather than by color.
+                color: tokens.green,
               ),
             ),
           ],
