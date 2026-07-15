@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'firebase_options.dart';
 import 'app.dart';
-import 'data/services/local_storage_service.dart';
+import 'data/services/shared_preferences_provider.dart';
 import 'data/services/session_cache.dart';
 import 'core/config/firebase_emulator_config.dart';
 import 'core/constants/app_constants.dart';

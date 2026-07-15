@@ -9,15 +9,12 @@ import 'package:mocktail/mocktail.dart';
 import 'package:al_rasikhoon/core/constants/app_constants.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
-import 'package:al_rasikhoon/data/services/local_storage_service.dart';
 import 'package:al_rasikhoon/data/services/session_cache.dart';
 import 'package:al_rasikhoon/routing/app_router.dart';
 
 class _MockFirebaseService extends Mock implements FirebaseService {}
 
 class _MockUserRepository extends Mock implements UserRepository {}
-
-class _MockLocalStorageService extends Mock implements LocalStorageService {}
 
 List<StatefulShellRoute> _shellRoutes(GoRouter router) {
   return router.configuration.routes.whereType<StatefulShellRoute>().toList();
@@ -72,9 +69,6 @@ void main() {
       overrides: [
         firebaseServiceProvider.overrideWithValue(mockFirebaseService),
         userRepositoryProvider.overrideWithValue(_MockUserRepository()),
-        localStorageServiceProvider.overrideWithValue(
-          _MockLocalStorageService(),
-        ),
         sessionBoxProvider.overrideWithValue(sessionBox),
       ],
     );
