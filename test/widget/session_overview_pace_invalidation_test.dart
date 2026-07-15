@@ -8,6 +8,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/curriculum_repository.dart';
+import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
@@ -45,6 +46,7 @@ void main() {
         firebaseService: _MockFirebaseService(),
         userRepository: userRepository,
         curriculumRepository: curriculumRepository,
+        sessionRepository: SessionRepository(firestore: firestore),
       );
 
       await firestore.collection('levels').doc('level_1').set({

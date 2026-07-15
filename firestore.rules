@@ -240,6 +240,21 @@ service cloud.firestore {
          request.resource.data.user_id == request.auth.uid &&
          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['user_id', 'updated_at']));
       allow delete: if isSuperAdmin();
+
+      // Append-only audit of pre-start starting-point moves (al_rasikhoon-sne):
+      // who moved whom, and from/to which anchor. A supervisor scoped to the
+      // student's institute may append an entry; the same roles that may read
+      // the student may read its audit. Entries are immutable (no update/delete)
+      // so the trail cannot be rewritten. This is a NARROW, feature-local rule —
+      // it does not touch the institute-scoping primitives (al_rasikhoon-3n6).
+      match /reposition_audit/{auditId} {
+        function parentStudent() {
+          return get(/databases/$(database)/documents/students/$(studentId)).data;
+        }
+        allow read: if canReadStudent(parentStudent());
+        allow create: if isSupervisorOfStudentInstitute(parentStudent());
+        allow update, delete: if false;
+      }
     }
 
     // Curriculum (read-only for all authenticated users)

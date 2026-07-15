@@ -541,6 +541,31 @@ class SessionRepository {
     return result.count ?? 0;
   }
 
+  /// Whether the student has started: they have at least one progress record of
+  /// ANY kind — a session record, a سرد record, or an اختبار record.
+  ///
+  /// This is the invariant that gates moving an enrolled student's starting
+  /// point (al_rasikhoon-sne): with zero records the anchor can be re-derived
+  /// safely; with any record, history would be orphaned. It is deliberately an
+  /// EXISTENCE check (`limit(1)` per collection, short-circuiting on the first
+  /// hit) — never a full fetch — because the caller only needs "any" vs "none",
+  /// and because a Firestore security rule cannot aggregate across these three
+  /// collections, so this app-layer check is the authoritative enforcement.
+  Future<bool> hasAnyProgressRecords(String studentId) async {
+    for (final collection in [
+      _sessionRecordsCollection,
+      _sardRecordsCollection,
+      _examRecordsCollection,
+    ]) {
+      final hit = await collection
+          .where('student_id', isEqualTo: studentId)
+          .limit(1)
+          .get();
+      if (hit.docs.isNotEmpty) return true;
+    }
+    return false;
+  }
+
   /// Get student statistics
   Future<Map<String, dynamic>> getStudentStatistics(String studentId) async {
     final sessionRecords = await getSessionRecordsForStudent(studentId);

@@ -107,6 +107,7 @@ void main() {
       firebaseService: _MockFirebaseService(),
       userRepository: UserRepository(firestore: firestore),
       curriculumRepository: curriculumRepository,
+      sessionRepository: sessionRepository,
     );
 
     for (final session in _unit()) {

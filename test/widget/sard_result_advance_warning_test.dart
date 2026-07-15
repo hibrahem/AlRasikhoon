@@ -114,13 +114,14 @@ void main() {
     // `levels` documents at all: the walk forward from hizb 59 finds
     // nothing seeded anywhere ahead, so _nextPosition is guaranteed to
     // report `_CurriculumDataMissing` -> `StudentAdvanceOutcome.curriculumDataMissing`.
+    final sessionRepository = SessionRepository(firestore: firestore);
     final studentRepository = StudentRepository(
       firestore: firestore,
       firebaseService: _MockFirebaseService(),
       userRepository: UserRepository(firestore: firestore),
       curriculumRepository: CurriculumRepository(firestore: firestore),
+      sessionRepository: sessionRepository,
     );
-    final sessionRepository = SessionRepository(firestore: firestore);
 
     final router = GoRouter(
       initialLocation: '/',

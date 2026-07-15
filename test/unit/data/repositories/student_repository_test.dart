@@ -6,11 +6,13 @@ import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/curriculum_repository.dart';
+import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/domain/curriculum/curriculum_pace.dart';
 import 'package:al_rasikhoon/domain/curriculum/curriculum_position.dart';
+import 'package:al_rasikhoon/domain/curriculum/reposition_exceptions.dart';
 
 import 'curriculum_fixtures.dart';
 
@@ -72,6 +74,7 @@ void main() {
         firebaseService: firebaseService,
         userRepository: userRepository,
         curriculumRepository: CurriculumRepository(firestore: fakeFirestore),
+        sessionRepository: SessionRepository(firestore: fakeFirestore),
       );
     });
 
@@ -1412,6 +1415,235 @@ void main() {
           expect(doc['current_session_tier'], 'juz');
         },
       );
+    });
+
+    group('repositionEnrolledStudent', () {
+      setUp(() async {
+        await seedLevels(fakeFirestore);
+        await seedLevelOneJuz30(fakeFirestore);
+        await seedLevelTwoHead(fakeFirestore);
+      });
+
+      UserModel supervisor({String instituteId = 'i1'}) => UserModel(
+        id: 'sup1',
+        username: 'sup',
+        email: 'sup@example.com',
+        name: 'Supervisor',
+        role: UserRole.supervisor,
+        instituteId: instituteId,
+        createdAt: DateTime(2026),
+      );
+
+      Future<void> seedRecord(String collection, {String studentId = 's1'}) {
+        return fakeFirestore.collection(collection).add({
+          'student_id': studentId,
+          'date': Timestamp.now(),
+        });
+      }
+
+      test('re-derives the position fields from the new anchor, reusing the '
+          'enrollment derivation', () async {
+        // A not-yet-started student enrolled at the very first session.
+        await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+
+        // Moved onto session 2 of the same hizb (an ordinary lesson).
+        await studentRepository.repositionEnrolledStudent(
+          studentId: 's1',
+          newPosition: const CurriculumPosition(level: 1, juz: 30, session: 2),
+          actor: supervisor(),
+        );
+
+        final doc = await readStudent();
+        expect(doc['current_level'], 1);
+        expect(doc['current_juz'], 30);
+        expect(doc['current_session'], 2);
+        expect(doc['current_order_in_level'], 2);
+        expect(doc['current_session_id'], 'L1_J30_S2');
+        expect(doc['current_session_kind'], 'lesson');
+        expect(doc['current_attempt'], 1);
+        expect(doc['enrollment_position'], {
+          'level': 1,
+          'juz': 30,
+          'session': 2,
+        });
+        // Still level 1: nothing before it is a completed level.
+        expect(doc['completed_levels'], isEmpty);
+        expect(doc['unlocked_levels'], [1]);
+      });
+
+      test(
+        'moving into a higher level credits every level before it as complete',
+        () async {
+          await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+
+          // Level 2 / juz 27 / session 1 — the head of level 2.
+          await studentRepository.repositionEnrolledStudent(
+            studentId: 's1',
+            newPosition: const CurriculumPosition(
+              level: 2,
+              juz: 27,
+              session: 1,
+            ),
+            actor: supervisor(),
+          );
+
+          final doc = await readStudent();
+          expect(doc['current_level'], 2);
+          expect(doc['current_juz'], 27);
+          expect(doc['enrollment_position'], {
+            'level': 2,
+            'juz': 27,
+            'session': 1,
+          });
+          // Level 1 is now credited as memorized before joining.
+          expect(doc['completed_levels'], [1]);
+          expect(doc['unlocked_levels'], [1, 2]);
+        },
+      );
+
+      test('records a lightweight audit of who moved whom, from/to', () async {
+        await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+
+        await studentRepository.repositionEnrolledStudent(
+          studentId: 's1',
+          newPosition: const CurriculumPosition(level: 2, juz: 27, session: 1),
+          actor: supervisor(),
+        );
+
+        final audit = await fakeFirestore
+            .collection('students')
+            .doc('s1')
+            .collection('reposition_audit')
+            .get();
+        expect(audit.docs, hasLength(1));
+        final entry = audit.docs.first.data();
+        expect(entry['moved_by'], 'sup1');
+        expect(entry['from'], {'level': 1, 'juz': 30, 'session': 1});
+        expect(entry['to'], {'level': 2, 'juz': 27, 'session': 1});
+      });
+
+      test(
+        'rejects the move when the student has ANY session record and leaves '
+        'the student untouched',
+        () async {
+          await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+          await seedRecord('session_records');
+
+          await expectLater(
+            studentRepository.repositionEnrolledStudent(
+              studentId: 's1',
+              newPosition: const CurriculumPosition(
+                level: 2,
+                juz: 27,
+                session: 1,
+              ),
+              actor: supervisor(),
+            ),
+            throwsA(isA<StudentAlreadyStartedException>()),
+          );
+
+          final doc = await readStudent();
+          expect(doc['current_level'], 1);
+          expect(doc['current_session'], 1);
+        },
+      );
+
+      test('rejects the move when the student has a سرد record', () async {
+        await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+        await seedRecord('sard_records');
+
+        await expectLater(
+          studentRepository.repositionEnrolledStudent(
+            studentId: 's1',
+            newPosition: const CurriculumPosition(
+              level: 1,
+              juz: 30,
+              session: 2,
+            ),
+            actor: supervisor(),
+          ),
+          throwsA(isA<StudentAlreadyStartedException>()),
+        );
+      });
+
+      test('rejects the move when the student has an اختبار record', () async {
+        await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+        await seedRecord('exam_records');
+
+        await expectLater(
+          studentRepository.repositionEnrolledStudent(
+            studentId: 's1',
+            newPosition: const CurriculumPosition(
+              level: 1,
+              juz: 30,
+              session: 2,
+            ),
+            actor: supervisor(),
+          ),
+          throwsA(isA<StudentAlreadyStartedException>()),
+        );
+      });
+
+      test('rejects a caller who is not a supervisor', () async {
+        await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+
+        final teacher = UserModel(
+          id: 't1',
+          email: 't@example.com',
+          name: 'Teacher',
+          role: UserRole.teacher,
+          instituteId: 'i1',
+          createdAt: DateTime(2026),
+        );
+
+        await expectLater(
+          studentRepository.repositionEnrolledStudent(
+            studentId: 's1',
+            newPosition: const CurriculumPosition(
+              level: 1,
+              juz: 30,
+              session: 2,
+            ),
+            actor: teacher,
+          ),
+          throwsA(isA<RepositionNotAuthorizedException>()),
+        );
+      });
+
+      test('rejects a supervisor of a DIFFERENT institute', () async {
+        await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+
+        await expectLater(
+          studentRepository.repositionEnrolledStudent(
+            studentId: 's1',
+            newPosition: const CurriculumPosition(
+              level: 1,
+              juz: 30,
+              session: 2,
+            ),
+            actor: supervisor(instituteId: 'other-institute'),
+          ),
+          throwsA(isA<RepositionNotAuthorizedException>()),
+        );
+      });
+
+      test('rejects a position that has no curriculum session', () async {
+        await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+
+        await expectLater(
+          studentRepository.repositionEnrolledStudent(
+            studentId: 's1',
+            // No session 999 is seeded anywhere.
+            newPosition: const CurriculumPosition(
+              level: 1,
+              juz: 30,
+              session: 999,
+            ),
+            actor: supervisor(),
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
     });
   });
 }
