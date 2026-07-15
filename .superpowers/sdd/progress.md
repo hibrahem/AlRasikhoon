@@ -236,3 +236,5 @@ FINAL WHOLE-BRANCH REVIEW (opus): READY TO MERGE — no Critical/Important. Trac
 Task 1: complete (commit 1924423, review clean) — bundled Amiri + Aref Ruqaa TTFs into google_fonts/
   Minor (not fixed): tests use testWidgets() w/ unused tester param instead of plain test() — justified
   (Flutter binding init for asset loading), approved as-is.
+Task 2: complete (commit 54ee6b6, review clean) — AppTokens ThemeExtension (16 fields, light+dark, copyWith+lerp),
+  AppDimens, AppMotion. All hex values verified byte-for-byte against plan. No findings.
