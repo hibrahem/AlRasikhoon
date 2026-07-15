@@ -1,6 +1,6 @@
 # Al Rasikhoon - Test Cases Documentation
 
-Last updated: 2026-01-30
+Last updated: 2026-07-15
 
 ## Table of Contents
 1. [Domain Models](#1-domain-models)
@@ -86,6 +86,49 @@ Last updated: 2026-01-30
 | `test_level_1_contains_juz_30_29_28` | Level 1 covers correct juz range |
 | `test_level_contains_correct_hizb_count` | Each level has 6 hizbs |
 | `test_juzRangeAr_formatting` | "الجزء 30-28" format |
+
+### 1.6 SardRecordModel Tests
+**File**: `lib/data/models/sard_record_model.dart`
+
+| Test Case | Description |
+|-----------|-------------|
+| `fromFirestore_deserializes_every_field` | All fields read from stored doc |
+| `fromFirestore_defaults_when_optional_absent` | Missing fields → safe defaults |
+| `fromFirestore_rejects_unknown_tier` | Bad tier string throws ArgumentError |
+| `toFirestore_serializes_every_field` | Full serialization incl. teacher |
+| `toFirestore_null_duration_stores_null` | No duration → null seconds |
+| `round_trip_juz_tier_survives_unchanged` | Write/read preserves tier & scope |
+| `copyWith_updates_only_named_field` | CopyWith preserves other fields |
+| `equality_based_on_id_only` | Same id equal, different id not equal |
+
+### 1.7 ExamRecordModel Tests
+**File**: `lib/data/models/exam_record_model.dart`
+
+| Test Case | Description |
+|-----------|-------------|
+| `fromFirestore_deserializes_every_field` | All fields incl. supervisor read back |
+| `fromFirestore_defaults_when_optional_absent` | Missing fields → safe defaults |
+| `fromFirestore_rejects_unknown_tier` | Bad tier string throws ArgumentError |
+| `toFirestore_serializes_every_field` | Full serialization incl. supervisor |
+| `toFirestore_null_duration_stores_null` | No duration → null seconds |
+| `toFirestore_records_attempt_past_sard_cap` | Exams have no 3-attempt cap |
+| `round_trip_cumulative_survives_unchanged` | Write/read preserves juz list & scope |
+| `copyWith_updates_only_named_field` | CopyWith preserves other fields |
+| `equality_based_on_id_only` | Same id equal, different id not equal |
+
+### 1.8 HomePracticeModel Tests
+**File**: `lib/data/models/home_practice_model.dart`
+
+| Test Case | Description |
+|-----------|-------------|
+| `fromFirestore_deserializes_every_field` | All fields read from stored doc |
+| `fromFirestore_defaults_when_optional_absent` | Missing → level 1, juz 30, session 1, reps 0 |
+| `fromFirestore_hizb_null_for_level_3_plus` | hizb label stays null above level 2 |
+| `toFirestore_serializes_every_field` | Full serialization |
+| `toFirestore_files_against_assigned_session` | Stores assigned session id verbatim |
+| `round_trip_survives_unchanged` | Write/read preserves reps & session |
+| `copyWith_updates_only_named_field` | CopyWith preserves other fields |
+| `equality_based_on_id_only` | Same id equal, different id not equal |
 
 ---
 
@@ -361,6 +404,9 @@ test/
 │   │   │   ├── student_model_test.dart
 │   │   │   ├── session_model_test.dart
 │   │   │   ├── session_record_model_test.dart
+│   │   │   ├── sard_record_model_test.dart
+│   │   │   ├── exam_record_model_test.dart
+│   │   │   ├── home_practice_model_test.dart
 │   │   │   ├── institute_model_test.dart
 │   │   │   └── level_model_test.dart
 │   │   └── repositories/
