@@ -31,10 +31,46 @@ Runs with working directory `functions/`.
 | Build | `npm run build` | `tsc` per `functions/package.json`. |
 | Lint | `npm run lint --if-present` | Runs `eslint --ext .ts src/`; `--if-present` makes it a no-op if the script is ever removed. |
 
+### Job: `distribute-android` — ship a test build to stakeholders
+
+Runs **only on push to `main`**, and **only after `flutter` and `functions`
+pass** (`needs: [flutter, functions]`) — a red `main` never ships. Never runs on
+pull requests.
+
+Builds a release-signed APK and uploads it to Firebase App Distribution (group
+`beta-testers`) so stakeholders can test every change that lands on `main`.
+Reuses `scripts/distribute_android.sh` (build + upload) and
+`scripts/extract_release_notes.sh` (release notes). Design + rationale:
+[`AgDR-0004`](../../docs/agdr/AgDR-0004-android-firebase-distribution.md).
+
+| Step | Notes |
+|------|-------|
+| Set up JDK 17 | Android Gradle runs on JDK 17 (app source/target stays Java 11). |
+| Set up Flutter | Same pinned `FLUTTER_VERSION` as the `flutter` job. |
+| Set up Node + Firebase CLI | Node installs `firebase-tools` for the upload. |
+| Configure release signing | Decodes `ANDROID_KEYSTORE_BASE64` to `$RUNNER_TEMP` and writes `android/key.properties` pointing at it. |
+| Generate release notes | `scripts/extract_release_notes.sh CHANGELOG.md`; **fails if the top section is empty**. |
+| Build and distribute APK | `scripts/distribute_android.sh apk` with `BUILD_NUMBER=github.run_number` (unique `versionCode`) and the notes file. |
+
+**Release notes** are the top section of the root `CHANGELOG.md`, written for
+stakeholders. Keeping it current is a convention documented in `CLAUDE.md` /
+`AGENTS.md`.
+
 ## Secrets
 
-None required. This pipeline does no deploy, signing, or emulator work — those
-live under `scripts/` and are out of scope for issue #6.
+The `flutter` and `functions` jobs require no secrets. The `distribute-android`
+job requires these repo secrets (Settings → Secrets and variables → Actions);
+provision them once:
+
+| Secret | Source |
+|--------|--------|
+| `ANDROID_KEYSTORE_BASE64` | `base64 -i /path/to/upload.jks` (the whole file, base64-encoded) |
+| `ANDROID_KEYSTORE_PASSWORD` | keystore store password |
+| `ANDROID_KEY_ALIAS` | key alias (e.g. `al_rasikhoon`) |
+| `ANDROID_KEY_PASSWORD` | key password |
+| `FIREBASE_TOKEN` | `firebase login:ci` (account with Firebase App Distribution Admin on `alrasikhoon-57151`) |
+
+Also ensure the `beta-testers` group exists in Firebase App Distribution.
 
 ## Maintenance notes
 
