@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/teacher_provider.dart';
 import '../widgets/active_lesson_timer.dart';
 import '../widgets/recitation_counts_card.dart';
@@ -32,6 +34,7 @@ class _TalqeenSessionScreenState extends ConsumerState<TalqeenSessionScreen> {
 
   Future<void> _save() async {
     setState(() => _isSaving = true);
+    final tokens = context.tokens;
 
     try {
       final record = await ref
@@ -52,9 +55,10 @@ class _TalqeenSessionScreenState extends ConsumerState<TalqeenSessionScreen> {
                         'تالية في المنهج.'
                   : 'تم حفظ التلقين',
             ),
-            backgroundColor: progressNotAdvanced
-                ? AppColors.error
-                : AppColors.success,
+            // No manuscript token for "success" — the primary green already
+            // carries the positive/affirmative role, and maroon (the
+            // palette's rubrication/emphasis hue) already carries error.
+            backgroundColor: progressNotAdvanced ? tokens.maroon : tokens.green,
           ),
         );
         context.go(AppRoutes.teacherStudents);
@@ -64,7 +68,7 @@ class _TalqeenSessionScreenState extends ConsumerState<TalqeenSessionScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('حدث خطأ: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: tokens.maroon,
           ),
         );
       }
@@ -75,6 +79,7 @@ class _TalqeenSessionScreenState extends ConsumerState<TalqeenSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final meetingAsync = ref.watch(
       studentCurrentMeetingProvider(widget.studentId),
     );
@@ -109,14 +114,14 @@ class _TalqeenSessionScreenState extends ConsumerState<TalqeenSessionScreen> {
                       Text(
                         meeting.newContentAr,
                         style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(color: AppColors.primary),
+                            ?.copyWith(color: tokens.green),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'الجزء ${meeting.first.juzNumber}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                       ),
                       const SizedBox(height: 16),
                       const Divider(),
@@ -156,8 +161,8 @@ class _TalqeenSessionScreenState extends ConsumerState<TalqeenSessionScreen> {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل التلقين: $e'),
       ),
     );
   }

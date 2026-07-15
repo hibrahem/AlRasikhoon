@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_counter.dart';
 import '../../../shared/widgets/session_timer.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/teacher_provider.dart';
 
 class SardSessionScreen extends ConsumerStatefulWidget {
@@ -31,6 +33,7 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     // سرد is conducted by the TEACHER (al_rasikhoon-801). The student resolves
     // through the teacher-scoped studentProvider, the same lookup the rest of
     // the teacher's session flow uses.
@@ -75,10 +78,14 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
                   hasScrollBody: false,
                   child: Column(
                     children: [
-                      // Info card
+                      // Info card. No manuscript token maps directly to the
+                      // old "info" blue, so — matching the same سرد card on
+                      // the student dashboard (student_dashboard_screen.dart)
+                      // — this uses tokens.maroon, the palette's
+                      // rubrication/emphasis hue, as its own distinct accent.
                       AppCard(
                         margin: const EdgeInsets.all(16),
-                        backgroundColor: AppColors.info.withValues(alpha: 0.05),
+                        backgroundColor: tokens.maroon.withValues(alpha: 0.05),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -87,14 +94,12 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: AppColors.info.withValues(
-                                      alpha: 0.1,
-                                    ),
+                                    color: tokens.maroon.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.record_voice_over,
-                                    color: AppColors.info,
+                                    color: tokens.maroon,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -117,9 +122,7 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodySmall
-                                            ?.copyWith(
-                                              color: AppColors.textSecondary,
-                                            ),
+                                            ?.copyWith(color: tokens.sepia),
                                       ),
                                     ],
                                   ),
@@ -130,15 +133,18 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: AppColors.surface,
+                                color: tokens.card,
                                 borderRadius: BorderRadius.circular(8),
                               ),
+                              // Same tokens.maroon as the card's own icon
+                              // above — this instruction is still part of
+                              // the same سرد identity, not a separate accent.
                               child: Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.info_outline,
                                     size: 20,
-                                    color: AppColors.info,
+                                    color: tokens.maroon,
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(
@@ -147,7 +153,7 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
-                                          ?.copyWith(color: AppColors.info),
+                                          ?.copyWith(color: tokens.maroon),
                                     ),
                                   ),
                                 ],
@@ -205,13 +211,14 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل السرد: $e'),
       ),
     );
   }
 
   void _showExitConfirmation() {
+    final tokens = context.tokens;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -227,7 +234,7 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
               Navigator.pop(context);
               context.pop();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            style: ElevatedButton.styleFrom(backgroundColor: tokens.maroon),
             child: const Text('نعم، إلغاء'),
           ),
         ],

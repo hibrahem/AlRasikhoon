@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+// Kept only for the memorization-mode accent system (kNewColor,
+// textOnPrimary) — see the comment above `modeColor` below. These are fixed,
+// colorblind-safe, WCAG-AA-verified colors (hibrahem/AlRasikhoon#25), not
+// theme-adaptive tokens, so they intentionally stay raw.
 import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/teacher_provider.dart';
 import '../widgets/active_lesson_timer.dart';
 
@@ -12,6 +19,7 @@ class NewMemorizationScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tokens = context.tokens;
     final meetingAsync = ref.watch(studentCurrentMeetingProvider(studentId));
 
     // This is the standalone "new memorization" (الجديد) mode screen, so it
@@ -78,9 +86,7 @@ class NewMemorizationScreen extends ConsumerWidget {
                                 Text(
                                   'للحلقة القادمة',
                                   style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: AppColors.textSecondary,
-                                      ),
+                                      ?.copyWith(color: tokens.sepia),
                                 ),
                               ],
                             ),
@@ -137,8 +143,8 @@ class NewMemorizationScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل الحلقة: $e'),
       ),
     );
   }
@@ -157,17 +163,18 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: AppColors.textSecondary),
+          Icon(icon, size: 18, color: tokens.sepia),
           const SizedBox(width: 12),
           Text(
             label,
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodyMedium?.copyWith(color: tokens.sepia),
           ),
           const Spacer(),
           Text(
@@ -190,6 +197,7 @@ class _InstructionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -199,14 +207,14 @@ class _InstructionTile extends StatelessWidget {
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              color: tokens.green.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 '$number',
-                style: const TextStyle(
-                  color: AppColors.primary,
+                style: TextStyle(
+                  color: tokens.green,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),

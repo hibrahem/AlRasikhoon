@@ -9,21 +9,24 @@ import 'package:al_rasikhoon/features/supervisor/providers/supervisor_provider.d
 import 'package:al_rasikhoon/features/supervisor/screens/exam_result_screen.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/features/teacher/screens/sard_result_screen.dart';
+import 'package:al_rasikhoon/shared/widgets/states/loading_state.dart';
 
 /// Loading-state test for hibrahem/AlRasikhoon#36.
 ///
 /// Result screens must NOT render a grade computed from a default level=1 while
 /// the student async value is still loading — that flashes a harsher grade to a
-/// higher-level student. While loading, a placeholder (spinner) shows in place
-/// of the GradeDisplay, and no grade name appears.
+/// higher-level student. While loading, a placeholder shows in place of the
+/// GradeDisplay, and no grade name appears. SardResultScreen (teacher, manuscript
+/// UI, al_rasikhoon-ulz) uses the shared LoadingState widget; ExamResultScreen
+/// (supervisor) has not been reskinned yet and still shows a bare spinner.
 ///
 /// Each known grade name (راسخ / متقن / حافظ / مجتهد / محب) must be absent in the
 /// loading state — they only render once the real level resolves.
 const _gradeNames = ['راسخ', 'متقن', 'حافظ', 'مجتهد', 'محب'];
 
-void _expectNoGradeWhileLoading(WidgetTester tester) {
-  // Spinner placeholder shows in place of the grade.
-  expect(find.byType(CircularProgressIndicator), findsWidgets);
+void _expectNoGradeWhileLoading(WidgetTester tester, Finder placeholderFinder) {
+  // A placeholder shows in place of the grade.
+  expect(placeholderFinder, findsWidgets);
   // No grade name leaks while the level is still loading.
   for (final name in _gradeNames) {
     expect(
@@ -58,7 +61,7 @@ void main() {
         // Do NOT pumpAndSettle — that would wait for the future forever.
         await tester.pump();
 
-        _expectNoGradeWhileLoading(tester);
+        _expectNoGradeWhileLoading(tester, find.byType(LoadingState));
       },
     );
 
@@ -80,7 +83,10 @@ void main() {
         );
         await tester.pump();
 
-        _expectNoGradeWhileLoading(tester);
+        _expectNoGradeWhileLoading(
+          tester,
+          find.byType(CircularProgressIndicator),
+        );
       },
     );
   });
