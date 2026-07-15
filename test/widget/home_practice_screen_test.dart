@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/features/student/providers/student_provider.dart';
+import 'package:al_rasikhoon/shared/providers/current_student_provider.dart';
 import 'package:al_rasikhoon/features/student/screens/home_practice_screen.dart';
 
 /// Proves `HomeAssignmentCard` is actually wired onto `HomePracticeScreen`,

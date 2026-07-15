@@ -2,14 +2,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:al_rasikhoon/data/models/institute_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
-import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
+import 'package:al_rasikhoon/shared/providers/stats_provider.dart';
 import 'package:al_rasikhoon/shared/providers/institute_provider.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
+
+class MockStudentRepository extends Mock implements StudentRepository {}
 
 UserModel _teacher() => UserModel(
   id: 't1',
@@ -54,15 +57,21 @@ void main() {
         'date': Timestamp.fromDate(thisMonth),
       });
 
+      // The roster count now comes straight from the data-layer
+      // studentRepositoryProvider (teacherStatsProvider is role-agnostic by
+      // construction and no longer routes through the teacher feature).
+      final mockStudentRepository = MockStudentRepository();
+      when(
+        () => mockStudentRepository.getStudentsForTeacher('t1'),
+      ).thenAnswer((_) async => <StudentWithUser>[]);
+
       final container = ProviderContainer(
         overrides: [
           currentUserProvider.overrideWithValue(_teacher()),
           sessionRepositoryProvider.overrideWithValue(
             SessionRepository(firestore: fakeFirestore),
           ),
-          teacherStudentsProvider.overrideWith(
-            (ref) async => <StudentWithUser>[],
-          ),
+          studentRepositoryProvider.overrideWithValue(mockStudentRepository),
           teacherInstitutesProvider.overrideWith(
             (ref) async => [_institute('a'), _institute('b')],
           ),

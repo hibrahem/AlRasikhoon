@@ -8,6 +8,7 @@ import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/domain/curriculum/curriculum_pace.dart';
 import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/features/student/providers/student_provider.dart';
+import 'package:al_rasikhoon/shared/providers/current_student_provider.dart';
 
 /// A one-session meeting standing in for whatever `PacedSessionComposer`
 /// would have produced — these tests exercise `homeAssignmentProvider`, not

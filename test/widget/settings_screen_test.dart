@@ -6,9 +6,8 @@ import 'package:al_rasikhoon/data/models/institute_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/auth_repository.dart';
 import 'package:al_rasikhoon/features/settings/screens/settings_screen.dart';
-import 'package:al_rasikhoon/features/student/providers/student_provider.dart';
-import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/shared/providers/institute_provider.dart';
+import 'package:al_rasikhoon/shared/providers/stats_provider.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 
 UserModel _user(UserRole role) => UserModel(

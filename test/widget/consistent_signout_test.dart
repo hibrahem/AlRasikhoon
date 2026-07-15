@@ -8,6 +8,8 @@ import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/features/admin/providers/admin_provider.dart';
 import 'package:al_rasikhoon/features/admin/screens/admin_dashboard_screen.dart';
 import 'package:al_rasikhoon/features/student/providers/student_provider.dart';
+import 'package:al_rasikhoon/shared/providers/current_student_provider.dart';
+import 'package:al_rasikhoon/shared/providers/stats_provider.dart';
 import 'package:al_rasikhoon/features/student/screens/student_dashboard_screen.dart';
 import 'package:al_rasikhoon/features/supervisor/providers/supervisor_provider.dart';
 import 'package:al_rasikhoon/features/supervisor/screens/supervisor_dashboard_screen.dart';

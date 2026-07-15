@@ -6,6 +6,8 @@ import '../../../data/models/user_model.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
+import '../../../shared/providers/current_student_provider.dart';
+import '../../../shared/providers/stats_provider.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/stat_card.dart';
