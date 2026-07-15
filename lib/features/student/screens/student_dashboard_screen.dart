@@ -307,7 +307,7 @@ class _StudentDashboardScreenState
         final session = meeting.first;
 
         // The تلقين branch MUST come before isExam/isSard and the regular
-        // lesson fallthrough (see session_overview_screen.dart's identical
+        // lesson fallthrough (see student_profile_screen.dart's identical
         // ordering): a تلقين is neither graded nor new memorization for the
         // student to recite alone, and falling through to the lesson card
         // would tell him to memorize a passage the teacher has not yet read

@@ -12,7 +12,7 @@ import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/domain/curriculum/curriculum_pace.dart';
 import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
-import 'package:al_rasikhoon/features/teacher/screens/session_overview_screen.dart';
+import 'package:al_rasikhoon/features/teacher/screens/student_profile_screen.dart';
 
 class MockStudentRepository extends Mock implements StudentRepository {}
 
@@ -82,7 +82,7 @@ void main() {
         child: const MaterialApp(
           home: Directionality(
             textDirection: TextDirection.rtl,
-            child: SessionOverviewScreen(studentId: 's1'),
+            child: StudentProfileScreen(studentId: 's1'),
           ),
         ),
       ),

@@ -31,11 +31,11 @@ class AppColors {
   static const Color info = Color(0xFF2196F3);
 
   // Grade colors
-  static const Color gradeRasikh = Color(0xFF1B5E20);   // 5 stars - excellent
-  static const Color gradeMutqin = Color(0xFF388E3C);   // 4 stars - very good
-  static const Color gradeHafiz = Color(0xFF66BB6A);    // 3 stars - good
+  static const Color gradeRasikh = Color(0xFF1B5E20); // 5 stars - excellent
+  static const Color gradeMutqin = Color(0xFF388E3C); // 4 stars - very good
+  static const Color gradeHafiz = Color(0xFF66BB6A); // 3 stars - good
   static const Color gradeMujtahid = Color(0xFFFFB300); // 2 stars - pass
-  static const Color gradeMuhib = Color(0xFFE53935);    // 1 star - fail
+  static const Color gradeMuhib = Color(0xFFE53935); // 1 star - fail
 
   // Divider and border
   static const Color divider = Color(0xFFBDBDBD);
@@ -66,7 +66,7 @@ class AppColors {
   //   kNearColor orange #C8460E  -> 4.84:1
   //   kFarColor  purple #5E35B1  -> 8.02:1
   // NOTE: color is never the only signal — the Arabic mode label always
-  // accompanies the accent (see RecitationScreen / SessionOverviewScreen).
+  // accompanies the accent (see RecitationScreen / StudentProfileScreen).
   // Specific hexes are a design call and may be adjusted by the designer.
   static const Color kNewColor = Color(0xFF00695C); // الجديد — new memorization
   static const Color kNearColor = Color(0xFFC8460E); // القريب — near review

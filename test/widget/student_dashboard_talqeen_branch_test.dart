@@ -15,7 +15,7 @@ import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 /// card: a student standing on a تلقين MUST see the تلقين card, never the
 /// graded-lesson card that tells him to memorize a passage the teacher has
 /// not yet read to him. The teacher's mirror of this screen
-/// (`session_overview_screen.dart`) already checks `isTalqeen` before
+/// (`student_profile_screen.dart`) already checks `isTalqeen` before
 /// isExam/isSard and the lesson fallthrough — this test pins the same
 /// ordering on the student's screen.
 void main() {
