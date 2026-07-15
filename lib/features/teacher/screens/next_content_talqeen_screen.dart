@@ -7,6 +7,7 @@ import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../providers/teacher_provider.dart';
+import '../widgets/active_lesson_timer.dart';
 import '../widgets/recitation_counts_card.dart';
 
 /// The talqeen step that closes a session: before ending the الحلقة, the
@@ -115,13 +116,17 @@ class _NextContentTalqeenScreenState
               )
             else if (!passed)
               // Repeats the same session — recite the same new passage again.
-              _PassageCard(passage: active.meeting?.newContentAr ?? '')
+              _PassageCard(
+                studentId: widget.studentId,
+                passage: active.meeting?.newContentAr ?? '',
+              )
             else
               // Passed — preview the next meeting's new passage.
               ref
                   .watch(activeSessionNextMeetingProvider)
                   .when(
                     data: (next) => _PassageCard(
+                      studentId: widget.studentId,
                       passage: (next != null && next.hasNewContent)
                           ? next.newContentAr
                           : '',
@@ -132,7 +137,8 @@ class _NextContentTalqeenScreenState
                         child: CircularProgressIndicator(),
                       ),
                     ),
-                    error: (_, _) => const _PassageCard(passage: ''),
+                    error: (_, _) =>
+                        _PassageCard(studentId: widget.studentId, passage: ''),
                   ),
 
             const SizedBox(height: 24),
@@ -172,9 +178,10 @@ class _NextContentTalqeenScreenState
 
 /// The passage to recite, or the no-new-content note when [passage] is empty.
 class _PassageCard extends StatelessWidget {
+  final String studentId;
   final String passage;
 
-  const _PassageCard({required this.passage});
+  const _PassageCard({required this.studentId, required this.passage});
 
   @override
   Widget build(BuildContext context) {
@@ -202,6 +209,19 @@ class _PassageCard extends StatelessWidget {
                   hasPassage ? 'المقطع القادم للتلقين' : 'لا يوجد حفظ جديد',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
+              ),
+              const SizedBox(width: 12),
+              // The live session timer, shown as a filled status pill in the
+              // content-card header exactly as on the recitation screen
+              // (al_rasikhoon-8z6) — same widget, same treatment, so the
+              // teacher sees elapsed time consistently across the flow.
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: ActiveLessonTimer(studentId: studentId),
               ),
             ],
           ),
