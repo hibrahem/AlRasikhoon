@@ -139,6 +139,12 @@ class ActiveSessionState {
   /// student started on.
   final PacedSession? meeting;
 
+  /// The instant [ActiveSessionNotifier.startSession] set this state — the
+  /// wall-clock start of the recitation. Forwarded to
+  /// `completeSession`/`completeTalqeenSession` so the repository can stamp
+  /// the record's `duration`.
+  final DateTime? startedAt;
+
   const ActiveSessionState({
     required this.studentId,
     this.currentPart = 1,
@@ -151,6 +157,7 @@ class ActiveSessionState {
     this.isComplete = false,
     this.advanceOutcome,
     this.meeting,
+    this.startedAt,
   });
 
   ActiveSessionState copyWith({
@@ -165,6 +172,7 @@ class ActiveSessionState {
     bool? isComplete,
     StudentAdvanceOutcome? advanceOutcome,
     PacedSession? meeting,
+    DateTime? startedAt,
   }) {
     return ActiveSessionState(
       studentId: studentId ?? this.studentId,
@@ -180,6 +188,7 @@ class ActiveSessionState {
       isComplete: isComplete ?? this.isComplete,
       advanceOutcome: advanceOutcome ?? this.advanceOutcome,
       meeting: meeting ?? this.meeting,
+      startedAt: startedAt ?? this.startedAt,
     );
   }
 
@@ -230,7 +239,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
   /// (`setPartErrors`, `setNotes`, ...) can be called immediately after,
   /// exactly as before this method became asynchronous.
   Future<void> startSession(String studentId) async {
-    state = ActiveSessionState(studentId: studentId);
+    state = ActiveSessionState(studentId: studentId, startedAt: DateTime.now());
     await _loadMeetingBeingTaught(studentId);
   }
 
@@ -389,6 +398,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
       homeRepetitionsRequired: state!.homeRepetitionsRequired,
       pace: student.pace,
       notes: state!.notes,
+      startedAt: state!.startedAt,
     );
 
     // Update student progress
@@ -460,6 +470,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
       homeRepetitionsRequired: state!.homeRepetitionsRequired,
       pace: student.pace,
       notes: state!.notes,
+      startedAt: state!.startedAt,
     );
 
     final advanceOutcome = await studentRepo.advanceStudentSession(

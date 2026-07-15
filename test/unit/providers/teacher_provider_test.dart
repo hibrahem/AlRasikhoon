@@ -282,6 +282,14 @@ void main() {
       notifier.endSession();
       expect(container.read(activeSessionProvider), isNull);
     });
+
+    test('startSession stamps a start time', () async {
+      final container = makeContainer(user: buildTeacher());
+      await container
+          .read(activeSessionProvider.notifier)
+          .startSession('student-1');
+      expect(container.read(activeSessionProvider)!.startedAt, isNotNull);
+    });
   });
 
   // The zero-floor on both recitation counts is a domain invariant, not a UI
@@ -468,6 +476,22 @@ void main() {
 
       final student = await studentRepository.getStudentById('student-1');
       expect(student!.currentOrderInLevel, 9);
+    });
+
+    test('completeSession records a non-null duration', () async {
+      await seedStudent();
+
+      final container = makeRealContainer(user: buildTeacher());
+      final notifier = container.read(activeSessionProvider.notifier);
+      await notifier.startSession('student-1');
+      notifier.setPartErrors(1, 1);
+      notifier.setPartErrors(2, 0);
+      notifier.setPartErrors(3, 0);
+
+      final record = await notifier.completeSession();
+
+      expect(record, isNotNull);
+      expect(record!.duration, isNotNull);
     });
 
     // hibrahem/AlRasikhoon final-review finding #2: advanceStudentSession can
