@@ -11,7 +11,6 @@ import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/grade_display.dart';
 import '../../../shared/widgets/states/error_state.dart';
-import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/supervisor_provider.dart';
 
 class ExamResultScreen extends ConsumerStatefulWidget {
@@ -228,7 +227,16 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
                   showStars: true,
                   showPassStatus: true,
                 ),
-                loading: () => const LoadingState(lines: 1),
+                // Deliberately NOT LoadingState here: result_grade_loading_
+                // test.dart (#36) asserts find.byType(CircularProgressIndicator)
+                // specifically, to prove no grade is computed/shown before the
+                // real level resolves. LoadingState renders ShimmerBox, not a
+                // CircularProgressIndicator, so it would silently defeat that
+                // regression guard. The original bespoke spinner is kept.
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: CircularProgressIndicator(),
+                ),
                 error: (_, _) =>
                     const ErrorState(message: 'تعذّر تحميل النتيجة'),
               ),
