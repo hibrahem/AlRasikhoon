@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/constants/countries.dart';
 
 class AppTextField extends StatelessWidget {
@@ -55,10 +55,7 @@ class AppTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (label != null) ...[
-          Text(
-            label!,
-            style: Theme.of(context).textTheme.labelLarge,
-          ),
+          Text(label!, style: Theme.of(context).textTheme.labelLarge),
           const SizedBox(height: 8),
         ],
         TextFormField(
@@ -188,6 +185,7 @@ class _AppPasswordFieldState extends State<AppPasswordField> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -219,7 +217,7 @@ class _AppPasswordFieldState extends State<AppPasswordField> {
             suffixIcon: IconButton(
               icon: Icon(
                 _obscureText ? Icons.visibility_off : Icons.visibility,
-                color: AppColors.textSecondary,
+                color: tokens.sepia,
               ),
               onPressed: () {
                 setState(() => _obscureText = !_obscureText);
@@ -291,16 +289,14 @@ class _AppPhoneFieldState extends State<AppPhoneField> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final labelText = widget.label ?? 'رقم الجوال';
     final displayLabel = widget.isOptional ? '$labelText (اختياري)' : labelText;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          displayLabel,
-          style: Theme.of(context).textTheme.labelLarge,
-        ),
+        Text(displayLabel, style: Theme.of(context).textTheme.labelLarge),
         const SizedBox(height: 8),
         TextFormField(
           controller: widget.controller,
@@ -311,9 +307,7 @@ class _AppPhoneFieldState extends State<AppPhoneField> {
           textAlign: TextAlign.left,
           maxLength: _selectedCountry.phoneLength + 1,
           style: Theme.of(context).textTheme.bodyLarge,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-          ],
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           onChanged: widget.onChanged,
           decoration: InputDecoration(
             hintText: _selectedCountry.phoneHint,
@@ -337,21 +331,13 @@ class _AppPhoneFieldState extends State<AppPhoneField> {
                     const SizedBox(width: 4),
                     Text(
                       _selectedCountry.dialCode,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyLarge?.copyWith(color: tokens.sepia),
                     ),
-                    const Icon(
-                      Icons.arrow_drop_down,
-                      color: AppColors.textSecondary,
-                      size: 20,
-                    ),
+                    Icon(Icons.arrow_drop_down, color: tokens.sepia, size: 20),
                     const SizedBox(width: 4),
-                    Container(
-                      width: 1,
-                      height: 24,
-                      color: AppColors.divider,
-                    ),
+                    Container(width: 1, height: 24, color: tokens.hairline),
                   ],
                 ),
               ),
@@ -374,6 +360,7 @@ class _CountryPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Column(
@@ -383,7 +370,7 @@ class _CountryPickerSheet extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.divider,
+              color: tokens.hairline,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -415,7 +402,7 @@ class _CountryPickerSheet extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 trailing: isSelected
-                    ? const Icon(Icons.check, color: AppColors.primary)
+                    ? Icon(Icons.check, color: tokens.green)
                     : null,
                 selected: isSelected,
                 onTap: () => onCountrySelected(country),
@@ -518,9 +505,7 @@ class _AppOtpFieldState extends State<AppOtpField> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 onChanged: (value) => _onChanged(index, value),
               ),
             ),
