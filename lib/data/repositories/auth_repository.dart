@@ -2,7 +2,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/firebase_service.dart';
-import '../services/local_storage_service.dart';
+import '../services/session_cache.dart';
 import '../../core/constants/app_constants.dart';
 import 'user_repository.dart';
 import '../models/user_model.dart';
@@ -38,38 +38,54 @@ class AuthState {
 class AuthRepository extends Notifier<AuthState> {
   late final FirebaseService _firebaseService;
   late final UserRepository _userRepository;
-  late final LocalStorageService _localStorage;
+  late final SessionCache _sessionCache;
 
   @override
   AuthState build() {
     _firebaseService = ref.watch(firebaseServiceProvider);
     _userRepository = ref.watch(userRepositoryProvider);
-    _localStorage = ref.watch(localStorageServiceProvider);
+    _sessionCache = ref.watch(sessionCacheProvider);
+
+    // Optimistic seed: route the returning user from the locally cached
+    // profile before any network call. The authStateChanges listener below
+    // refreshes and reconciles in the background.
+    final cachedUser = _sessionCache.readUser();
+
     _init();
-    return const AuthState();
+
+    return AuthState(appUser: cachedUser);
   }
 
   void _init() {
-    _firebaseService.authStateChanges.listen((user) async {
+    _firebaseService.authStateChanges.listen((user) {
       if (user != null) {
         state = state.copyWith(firebaseUser: user);
-        await _loadAppUser(user.uid);
+        // Fire-and-forget: never blocks the UI-visible state.
+        _refreshAppUser(user.uid);
       } else {
+        // Genuine auth loss (no persisted session or revoked): drop the
+        // optimistic cache and fall back to login.
+        _sessionCache.clear();
         state = const AuthState();
       }
     });
   }
 
-  Future<void> _loadAppUser(String uid) async {
+  /// Background refresh + reconcile against Firestore. The server is the
+  /// source of truth; a role/profile change updates state (and the router
+  /// re-routes), a deleted/disabled account signs out, and an offline
+  /// failure leaves the cached optimistic state intact.
+  Future<void> _refreshAppUser(String uid) async {
     try {
       final appUser = await _userRepository.getUserById(uid);
-      if (appUser != null) {
-        state = state.copyWith(appUser: appUser);
-        await _localStorage.setUserId(appUser.id);
-        await _localStorage.setUserRole(appUser.role.value);
+      if (appUser == null || !appUser.isActive) {
+        await signOut();
+        return;
       }
-    } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(appUser: appUser);
+      await _sessionCache.cacheUser(appUser);
+    } catch (_) {
+      // Offline / transient: keep showing the cached profile.
     }
   }
 
@@ -111,8 +127,7 @@ class AuthRepository extends Notifier<AuthState> {
       }
 
       state = state.copyWith(isLoading: false, appUser: appUser);
-      await _localStorage.setUserId(appUser.id);
-      await _localStorage.setUserRole(appUser.role.value);
+      await _sessionCache.cacheUser(appUser);
       return appUser;
     } on FirebaseAuthException catch (e) {
       state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
@@ -141,7 +156,7 @@ class AuthRepository extends Notifier<AuthState> {
 
   Future<void> signOut() async {
     await _firebaseService.signOut();
-    await _localStorage.clearUserData();
+    await _sessionCache.clear();
     state = const AuthState();
   }
 
@@ -166,8 +181,7 @@ class AuthRepository extends Notifier<AuthState> {
     return error.toString();
   }
 
-  bool get isAuthenticated =>
-      state.firebaseUser != null && state.appUser != null;
+  bool get isAuthenticated => state.appUser != null;
   bool get isAccountNotFound => state.error == 'account_not_found';
   UserModel? get currentUser => state.appUser;
   UserRole? get currentUserRole => state.appUser?.role;
