@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/theme/app_tokens.dart';
 import '../../data/repositories/curriculum_repository.dart';
+import 'progress_bar.dart';
 
 /// A student's progress through their level, fed from the levels CATALOG.
 ///
@@ -68,78 +68,7 @@ class StudentLevelProgress extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 8),
-        _MasteryLadder(fraction: overallFraction),
-      ],
-    );
-  }
-}
-
-/// A horizontal 5-rung indicator of the grade scale — راسخ · متقن · حافظ ·
-/// مجتهد · محب — this app's "mastery ladder" motif. [fraction] (0..1) is how
-/// far up the ladder to light: rungs fully below it are solid, the rung it
-/// falls within is partially lit, rungs above stay unlit.
-class _MasteryLadder extends StatelessWidget {
-  final double fraction;
-
-  const _MasteryLadder({required this.fraction});
-
-  static const _labels = ['راسخ', 'متقن', 'حافظ', 'مجتهد', 'محب'];
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.tokens;
-    final rungColors = [
-      tokens.gradeRasikh,
-      tokens.gradeMutqin,
-      tokens.gradeHafiz,
-      tokens.gradeMujtahid,
-      tokens.gradeMuhib,
-    ];
-    final clamped = fraction.clamp(0.0, 1.0);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: List.generate(_labels.length, (i) {
-            final rungFill = (clamped * _labels.length - i).clamp(0.0, 1.0);
-            return Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: SizedBox(
-                    height: 10,
-                    child: Stack(
-                      children: [
-                        Container(color: tokens.hairline),
-                        FractionallySizedBox(
-                          alignment: AlignmentDirectional.centerStart,
-                          widthFactor: rungFill,
-                          child: Container(color: rungColors[i]),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }),
-        ),
-        const SizedBox(height: 4),
-        Row(
-          children: List.generate(_labels.length, (i) {
-            return Expanded(
-              child: Text(
-                _labels[i],
-                textAlign: TextAlign.center,
-                style: Theme.of(
-                  context,
-                ).textTheme.labelSmall?.copyWith(color: tokens.sepia),
-              ),
-            );
-          }),
-        ),
+        MasteryLadder(fraction: overallFraction),
       ],
     );
   }
