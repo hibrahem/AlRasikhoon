@@ -227,3 +227,12 @@ FINAL WHOLE-BRANCH REVIEW (opus): READY TO MERGE — no Critical/Important. Trac
   reimplementation. ValueKey(startedAt) mitigation verified at ALL 3 consumer sites (ActiveLessonTimer,
   Sard/ExamSessionScreen). DDD clean (domain imports only intl). All 5 Minors deferred (test-coverage/DRY only).
   Filed as follow-up beads issue. Suite 842/842, analyze clean.
+
+=== AL RASIKHOON MANUSCRIPT UI — plan: docs/superpowers/plans/2026-07-15-al-rasikhoon-manuscript-ui.md ===
+# Issue: al_rasikhoon-5ss (pass 1: foundation + student slice)
+# Worktree: .claude/worktrees/al_rasikhoon-5ss-ui-overhaul
+# Branch: worktree-al_rasikhoon-5ss-ui-overhaul (base 645a5a8)
+# 17 tasks. Baseline: plan committed at f13488b.
+Task 1: complete (commit 1924423, review clean) — bundled Amiri + Aref Ruqaa TTFs into google_fonts/
+  Minor (not fixed): tests use testWidgets() w/ unused tester param instead of plain test() — justified
+  (Flutter binding init for asset loading), approved as-is.
