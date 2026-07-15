@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:al_rasikhoon/core/constants/app_colors.dart';
 import 'package:al_rasikhoon/core/theme/app_tokens.dart';
 import 'package:al_rasikhoon/domain/session/session_duration.dart';
 import 'package:al_rasikhoon/shared/widgets/session_record_row.dart';
@@ -74,7 +73,7 @@ void main() {
         ),
       ),
     );
-    expect(durationColor(tester, 'المدة: 20:00'), AppColors.success);
+    expect(durationColor(tester, 'المدة: 20:00'), AppTokens.light.green);
     expect(find.textContaining('ضمن المستهدف'), findsNothing);
   });
 
@@ -91,8 +90,8 @@ void main() {
         ),
       ),
     );
-    // Faster than target is yellow (the amber status color), not blue/info.
-    expect(durationColor(tester, 'المدة: 05:00'), AppColors.warning);
+    // Faster than target is gold (the adaptive warning token), not blue/info.
+    expect(durationColor(tester, 'المدة: 05:00'), AppTokens.light.gold);
     expect(find.textContaining('أقصر من المستهدف'), findsNothing);
   });
 
