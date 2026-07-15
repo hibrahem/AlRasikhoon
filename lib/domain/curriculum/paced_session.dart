@@ -135,6 +135,28 @@ class PacedSession {
   bool get hasRecentReview => recentReview.isNotEmpty;
   bool get hasDistantReview => distantReview.isNotEmpty;
 
+  /// The recitation parts (1 = new memorization, 2 = recent review, 3 =
+  /// distant review) worth evaluating in this meeting. Part 1 is ALWAYS
+  /// present — الحفظ الجديد is shown even on a review-only lesson where it is
+  /// empty. Parts 2 and 3 appear only when their stream carries content, so a
+  /// meeting with no recent/distant review skips those evaluation steps
+  /// entirely. Screens walk this list instead of a fixed 1..3.
+  List<int> get presentParts => [
+    1,
+    if (hasRecentReview) 2,
+    if (hasDistantReview) 3,
+  ];
+
+  /// The present part after [part], or null when [part] is the last present
+  /// part (or is not itself present). Drives "next part" navigation so an
+  /// empty recent/distant part is never landed on.
+  int? partAfter(int part) {
+    final parts = presentParts;
+    final index = parts.indexOf(part);
+    if (index < 0 || index == parts.length - 1) return null;
+    return parts[index + 1];
+  }
+
   @override
   String toString() =>
       'PacedSession($fromOrderInLevel..$toOrderInLevel, '

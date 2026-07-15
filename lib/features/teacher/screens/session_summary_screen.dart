@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/grade_calculator.dart';
-import '../../../data/repositories/student_repository.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/grade_display.dart';
 import '../providers/teacher_provider.dart';
+import '../recitation_parts.dart';
 import '../widgets/recitation_counts_card.dart';
 
 class SessionSummaryScreen extends ConsumerStatefulWidget {
@@ -22,73 +22,12 @@ class SessionSummaryScreen extends ConsumerStatefulWidget {
 }
 
 class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
-  bool _isSaving = false;
   final _notesController = TextEditingController();
 
   @override
   void dispose() {
     _notesController.dispose();
     super.dispose();
-  }
-
-  Future<void> _saveSession() async {
-    setState(() => _isSaving = true);
-
-    try {
-      // Set notes
-      ref
-          .read(activeSessionProvider.notifier)
-          .setNotes(_notesController.text.trim());
-
-      // Complete session
-      final record = await ref
-          .read(activeSessionProvider.notifier)
-          .completeSession();
-
-      // Read after completeSession() so this reflects the outcome of the
-      // advance it just triggered (null when the record failed, since
-      // progress is never advanced on a fail).
-      final advanceOutcome = ref.read(activeSessionProvider)?.advanceOutcome;
-      final progressNotAdvanced =
-          record != null &&
-          record.passed &&
-          (advanceOutcome == StudentAdvanceOutcome.curriculumDataMissing ||
-              advanceOutcome == StudentAdvanceOutcome.studentNotFound);
-
-      if (record != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              progressNotAdvanced
-                  ? 'تم حفظ النتيجة، لكن تعذر تحديث تقدم الطالب: لا توجد حلقات '
-                        'تالية في المنهج.'
-                  : (record.passed
-                        ? 'تم حفظ الحلقة - ناجح'
-                        : 'تم حفظ الحلقة - راسب'),
-            ),
-            backgroundColor: progressNotAdvanced
-                ? AppColors.error
-                : (record.passed ? AppColors.success : AppColors.warning),
-          ),
-        );
-
-        // Navigate back to students list
-        context.go(AppRoutes.teacherStudents);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('حدث خطأ: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isSaving = false);
-      }
-    }
   }
 
   @override
@@ -182,6 +121,8 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
               data: (_) {
                 // level/sessionGrade are guaranteed non-null in the data state.
                 final resolvedLevel = level!;
+                final presentParts =
+                    activeSession.meeting?.presentParts ?? const [1, 2, 3];
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -203,23 +144,14 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    _PartResultCard(
-                      title: 'الحفظ الجديد',
-                      errors: activeSession.part1Errors,
-                      level: resolvedLevel,
-                    ),
-                    const SizedBox(height: 8),
-                    _PartResultCard(
-                      title: 'المراجعة القريبة',
-                      errors: activeSession.part2Errors,
-                      level: resolvedLevel,
-                    ),
-                    const SizedBox(height: 8),
-                    _PartResultCard(
-                      title: 'المراجعة البعيدة',
-                      errors: activeSession.part3Errors,
-                      level: resolvedLevel,
-                    ),
+                    for (final p in presentParts) ...[
+                      _PartResultCard(
+                        title: recitationPartTitleAr(p),
+                        errors: recitationPartErrors(activeSession, p),
+                        level: resolvedLevel,
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                   ],
                 );
               },
@@ -277,9 +209,21 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
 
             // Action buttons
             AppButton(
-              text: 'حفظ وإنهاء الحلقة',
-              onPressed: _saveSession,
-              isLoading: _isSaving,
+              text: 'التالي: تلقين المقطع القادم',
+              onPressed: () {
+                // Notes and counts persist in the active-session provider, so
+                // the talqeen step that follows can complete the session with
+                // them. This screen no longer ends the session.
+                ref
+                    .read(activeSessionProvider.notifier)
+                    .setNotes(_notesController.text.trim());
+                context.push(
+                  AppRoutes.nextContentTalqeen.replaceFirst(
+                    ':studentId',
+                    widget.studentId,
+                  ),
+                );
+              },
               isFullWidth: true,
               size: AppButtonSize.large,
             ),

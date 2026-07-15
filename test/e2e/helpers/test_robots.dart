@@ -496,10 +496,12 @@ class TeacherRobot extends TestRobot {
     expect(find.textContaining(gradeAr), findsWidgets);
   }
 
-  /// Save and complete session from summary screen.
-  /// The button can be below the fold; scroll into view first.
+  /// From the summary screen, hand off to the talqeen step and close the
+  /// session there — the summary no longer completes the session itself
+  /// (Task 7). Both buttons can be below the fold; scroll into view first.
   Future<void> completeSession() async {
-    await scrollAndTapByText('حفظ وإنهاء الحلقة');
+    await scrollAndTapByText('التالي: تلقين المقطع القادم');
+    await scrollAndTapByText('إنهاء الحلقة');
   }
 
   /// Verify the teacher is offered the Sard entry point (al_rasikhoon-801).
