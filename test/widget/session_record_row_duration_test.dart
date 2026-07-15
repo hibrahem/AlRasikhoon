@@ -16,94 +16,95 @@ void main() {
     home: Scaffold(body: child),
   );
 
-  /// The color the flag pill paints its label in — the status→color mapping
-  /// under test. Reads it off the flag's own [Text] rather than any of the
-  /// row's other (pass/fail, subtitle) texts.
-  Color? flagColor(WidgetTester tester, String label) =>
-      tester.widget<Text>(find.text(label)).style?.color;
+  /// The color the duration text paints itself in — the status→color mapping
+  /// under test. Reads it off the duration [Text] found by its `المدة:` prefix,
+  /// not the row's other (pass/fail, subtitle) texts.
+  Color? durationColor(WidgetTester tester, String text) =>
+      tester.widget<Text>(find.text(text)).style?.color;
 
-  testWidgets('shows the duration and an over-target flag colored warning', (
+  SessionRecordRow rowWith(SessionDuration duration) => SessionRecordRow(
+    title: 'أحمد',
+    subtitleLines: const ['الحلقة ٥'],
+    passed: true,
+    date: DateTime(2026, 1, 1),
+    sessionDuration: duration,
+  );
+
+  testWidgets('shows the duration as mm:ss including seconds', (tester) async {
+    await tester.pumpWidget(
+      host(
+        rowWith(
+          SessionDuration(elapsed: const Duration(minutes: 18, seconds: 7)),
+        ),
+      ),
+    );
+    // Seconds are shown, not rounded away to a whole-minute label.
+    expect(find.text('المدة: 18:07'), findsOneWidget);
+  });
+
+  testWidgets('color-codes an over-target session red, with no band label', (
     tester,
   ) async {
     await tester.pumpWidget(
       host(
-        SessionRecordRow(
-          title: 'أحمد',
-          subtitleLines: const ['الحلقة ٥'],
-          passed: true,
-          date: DateTime(2026, 1, 1),
-          sessionDuration: SessionDuration(
-            elapsed: const Duration(minutes: 40),
-            target: SessionDuration.targetForPace(1), // 20 min → 40 is over
+        rowWith(
+          SessionDuration(
+            elapsed: const Duration(minutes: 40, seconds: 30),
+            target: SessionDuration.targetForPace(1), // 20 min → 40:30 is over
           ),
         ),
       ),
     );
-    expect(find.textContaining('المدة'), findsOneWidget);
-    expect(find.text('أطول من المستهدف'), findsOneWidget); // over-target label
-    // An over-target session flags in the warning color, not success/info.
-    expect(flagColor(tester, 'أطول من المستهدف'), AppColors.warning);
+    expect(find.text('المدة: 40:30'), findsOneWidget);
+    // Beyond target is red — color carries the meaning, so the old verbose
+    // Arabic band labels are gone.
+    expect(durationColor(tester, 'المدة: 40:30'), AppColors.error);
+    expect(find.textContaining('أطول من المستهدف'), findsNothing);
   });
 
-  testWidgets('flags an on-target session in the success color', (
-    tester,
-  ) async {
+  testWidgets('color-codes an on-target session green', (tester) async {
     await tester.pumpWidget(
       host(
-        SessionRecordRow(
-          title: 'أحمد',
-          subtitleLines: const ['الحلقة ٥'],
-          passed: true,
-          date: DateTime(2026, 1, 1),
-          sessionDuration: SessionDuration(
+        rowWith(
+          SessionDuration(
             elapsed: const Duration(minutes: 20),
             target: SessionDuration.targetForPace(1), // 20 min → on target
           ),
         ),
       ),
     );
-    expect(find.text('ضمن المستهدف'), findsOneWidget);
-    expect(flagColor(tester, 'ضمن المستهدف'), AppColors.success);
+    expect(durationColor(tester, 'المدة: 20:00'), AppColors.success);
+    expect(find.textContaining('ضمن المستهدف'), findsNothing);
   });
 
-  testWidgets('flags an under-target session in the info color', (
+  testWidgets('color-codes a faster-than-target session yellow', (
     tester,
   ) async {
     await tester.pumpWidget(
       host(
-        SessionRecordRow(
-          title: 'أحمد',
-          subtitleLines: const ['الحلقة ٥'],
-          passed: true,
-          date: DateTime(2026, 1, 1),
-          sessionDuration: SessionDuration(
+        rowWith(
+          SessionDuration(
             elapsed: const Duration(minutes: 5),
-            target: SessionDuration.targetForPace(1), // 20 min → under
+            target: SessionDuration.targetForPace(1), // 20 min → under (faster)
           ),
         ),
       ),
     );
-    expect(find.text('أقصر من المستهدف'), findsOneWidget);
-    expect(flagColor(tester, 'أقصر من المستهدف'), AppColors.info);
+    // Faster than target is yellow (the amber status color), not blue/info.
+    expect(durationColor(tester, 'المدة: 05:00'), AppColors.warning);
+    expect(find.textContaining('أقصر من المستهدف'), findsNothing);
   });
 
-  testWidgets('shows the duration but no flag for an assessment (no target)', (
+  testWidgets('shows a neutral duration for an assessment (no target)', (
     tester,
   ) async {
     await tester.pumpWidget(
-      host(
-        SessionRecordRow(
-          title: 'أحمد',
-          subtitleLines: const ['سرد'],
-          passed: true,
-          date: DateTime(2026, 1, 1),
-          sessionDuration: SessionDuration(
-            elapsed: const Duration(minutes: 18),
-          ),
-        ),
-      ),
+      host(rowWith(SessionDuration(elapsed: const Duration(minutes: 18)))),
     );
-    expect(find.textContaining('المدة'), findsOneWidget);
+    // No target → time shown plainly in the neutral secondary color, no color
+    // coding and no band label.
+    expect(find.text('المدة: 18:00'), findsOneWidget);
+    expect(durationColor(tester, 'المدة: 18:00'), AppColors.textSecondary);
     expect(find.textContaining('أطول'), findsNothing);
     expect(find.textContaining('أقصر'), findsNothing);
     expect(find.textContaining('ضمن'), findsNothing);
@@ -119,7 +120,7 @@ void main() {
           subtitleLines: const ['الحلقة ٥'],
           passed: true,
           date: DateTime(2026, 1, 1),
-          // sessionDuration omitted → no duration line, no flag.
+          // sessionDuration omitted → no duration line.
         ),
       ),
     );
