@@ -14,10 +14,14 @@ final currentUserRoleProvider = Provider<UserRole?>((ref) {
   return user?.role;
 });
 
-/// Provider to check if user is authenticated
+/// Provider to check if user is authenticated (routing signal).
+///
+/// Keyed on [appUser] alone — which is only ever populated by a prior real
+/// login (cached) or a live Firestore load — so a returning user routes
+/// optimistically without waiting on the Firebase session to re-restore.
 final isAuthenticatedProvider = Provider<bool>((ref) {
   final authState = ref.watch(authRepositoryProvider);
-  return authState.firebaseUser != null && authState.appUser != null;
+  return authState.appUser != null;
 });
 
 /// Provider to check if user is a super admin

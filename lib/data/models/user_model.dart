@@ -153,6 +153,47 @@ class UserModel {
     };
   }
 
+  /// Framework-free JSON for the local session cache. Unlike [toFirestore],
+  /// this includes the [id] and uses ISO-8601 date strings (no Firestore
+  /// Timestamp), so it round-trips through plain storage.
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'username': username,
+      'email': email,
+      'phone': phone,
+      'name': name,
+      'role': role.value,
+      'auth_provider': authProvider.value,
+      'institute_id': instituteId,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+      'is_active': isActive,
+    };
+  }
+
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['id'] as String,
+      username: (json['username'] as String?) ?? '',
+      email: (json['email'] as String?) ?? '',
+      phone: json['phone'] as String?,
+      name: (json['name'] as String?) ?? '',
+      role: UserRoleExtension.fromString(
+        (json['role'] as String?) ?? 'student',
+      ),
+      authProvider: UserAuthProviderExtension.fromString(
+        json['auth_provider'] as String?,
+      ),
+      instituteId: json['institute_id'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : null,
+      isActive: (json['is_active'] as bool?) ?? true,
+    );
+  }
+
   UserModel copyWith({
     String? id,
     String? username,

@@ -7,6 +7,7 @@ import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/data/services/local_storage_service.dart';
+import 'package:al_rasikhoon/data/services/session_cache.dart';
 import 'package:al_rasikhoon/routing/app_router.dart';
 import 'package:al_rasikhoon/shared/widgets/nav_destinations.dart';
 
@@ -15,6 +16,8 @@ class _MockFirebaseService extends Mock implements FirebaseService {}
 class _MockUserRepository extends Mock implements UserRepository {}
 
 class _MockLocalStorageService extends Mock implements LocalStorageService {}
+
+class _MockSessionCache extends Mock implements SessionCache {}
 
 /// Every StatefulShellRoute in the app, keyed by the root path of its first
 /// branch — which is also the first destination of the role that owns it.
@@ -37,6 +40,9 @@ void main() {
       () => mockFirebaseService.authStateChanges,
     ).thenAnswer((_) => const Stream.empty());
 
+    final mockSessionCache = _MockSessionCache();
+    when(() => mockSessionCache.readUser()).thenReturn(null);
+
     container = ProviderContainer(
       overrides: [
         firebaseServiceProvider.overrideWithValue(mockFirebaseService),
@@ -44,6 +50,7 @@ void main() {
         localStorageServiceProvider.overrideWithValue(
           _MockLocalStorageService(),
         ),
+        sessionCacheProvider.overrideWithValue(mockSessionCache),
       ],
     );
     router = container.read(routerProvider);
