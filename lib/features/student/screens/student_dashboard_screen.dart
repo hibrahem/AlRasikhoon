@@ -428,21 +428,22 @@ class _StudentDashboardScreenState
         }
 
         if (session.isSard) {
-          // No manuscript token maps directly to the old "info" blue — سرد
-          // needs a THIRD accent, visually distinct from the lesson's green
-          // and the exam's gold, so it borrows the neutral ink-toned sepia
-          // rather than reusing either of those two roles.
+          // No manuscript token maps directly to the old "info" blue, so
+          // سرد is given tokens.maroon — the palette's rubrication/emphasis
+          // hue — as its own distinct accent: distinct from the lesson's
+          // green, the exam's gold, and (unlike sepia) distinct from this
+          // same card's own sepia-toned caption text below.
           return AppCard(
-            backgroundColor: tokens.sepia.withValues(alpha: 0.05),
+            backgroundColor: tokens.maroon.withValues(alpha: 0.05),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: tokens.sepia.withValues(alpha: 0.1),
+                    color: tokens.maroon.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(Icons.record_voice_over, color: tokens.sepia),
+                  child: Icon(Icons.record_voice_over, color: tokens.maroon),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
