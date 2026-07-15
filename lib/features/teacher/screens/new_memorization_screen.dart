@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../providers/teacher_provider.dart';
+import '../widgets/active_lesson_timer.dart';
 
 class NewMemorizationScreen extends ConsumerWidget {
   final String studentId;
@@ -22,6 +23,7 @@ class NewMemorizationScreen extends ConsumerWidget {
         title: const Text('الحفظ الجديد'),
         backgroundColor: modeColor,
         foregroundColor: AppColors.textOnPrimary,
+        actions: [ActiveLessonTimer(studentId: studentId)],
       ),
       body: meetingAsync.when(
         data: (meeting) {

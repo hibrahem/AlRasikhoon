@@ -9,6 +9,7 @@ import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/grade_display.dart';
 import '../providers/teacher_provider.dart';
+import '../widgets/active_lesson_timer.dart';
 import '../widgets/recitation_counts_card.dart';
 
 class SessionSummaryScreen extends ConsumerStatefulWidget {
@@ -122,6 +123,7 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
       appBar: AppBar(
         title: const Text('ملخص الحلقة'),
         automaticallyImplyLeading: false,
+        actions: [ActiveLessonTimer(studentId: widget.studentId)],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

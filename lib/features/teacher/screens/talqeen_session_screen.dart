@@ -7,6 +7,7 @@ import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../providers/teacher_provider.dart';
+import '../widgets/active_lesson_timer.dart';
 import '../widgets/recitation_counts_card.dart';
 
 /// A تلقين session: the teacher recites the new passage TO the student and
@@ -83,6 +84,7 @@ class _TalqeenSessionScreenState extends ConsumerState<TalqeenSessionScreen> {
       appBar: AppBar(
         title: const Text('تلقين'),
         automaticallyImplyLeading: false,
+        actions: [ActiveLessonTimer(studentId: widget.studentId)],
       ),
       body: meetingAsync.when(
         data: (meeting) {

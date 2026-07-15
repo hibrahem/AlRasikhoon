@@ -7,6 +7,7 @@ import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_counter.dart';
 import '../providers/teacher_provider.dart';
+import '../widgets/active_lesson_timer.dart';
 
 class RecitationScreen extends ConsumerStatefulWidget {
   final String studentId;
@@ -59,6 +60,7 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
             _showExitConfirmation();
           },
         ),
+        actions: [ActiveLessonTimer(studentId: widget.studentId)],
       ),
       body: meetingAsync.when(
         data: (meeting) {
