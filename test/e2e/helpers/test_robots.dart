@@ -18,6 +18,43 @@ abstract class TestRobot {
     await tester.pumpAndSettle();
   }
 
+  /// Pump until [finder] resolves to at least one widget, or the budget is
+  /// exhausted. Returns whether it was ultimately found.
+  ///
+  /// This exists because several screen transitions in this app are gated on
+  /// *real* async work — a fake_cloud_firestore read/write, an async provider
+  /// re-fetch — that resolves on the microtask/event queue rather than by
+  /// scheduling an animation frame. In particular, advancing between recitation
+  /// parts does a `context.push` to a screen whose body is a provider
+  /// `.when(data/loading/error)`: it renders a `LoadingState` (no counter, no
+  /// "التالي" button) until that future resolves. `pumpAndSettle()` returns as
+  /// soon as no frame is scheduled and does NOT advance the real futures inside
+  /// the fake-async test zone, so it can return while the next part is still
+  /// loading. A caller that then reads a not-yet-mounted widget — e.g.
+  /// `find.byIcon(Icons.add).last`, or a bare `tester.tap(find.text('التالي'))`
+  /// — hits a `StateError` ("Bad state: No element"). That is the intermittent
+  /// failure this guards against (al_rasikhoon-obt).
+  ///
+  /// Each iteration first drains frames/animations (`pumpAndSettle`), checks,
+  /// then advances real time via `tester.runAsync` — the same technique
+  /// `verifyTeacherInList` uses — so pending futures can actually settle. This
+  /// waits on a concrete condition instead of a fixed timeout; the default
+  /// ~4s budget (40 × 100ms) is only an upper bound and is returned from the
+  /// instant the widget appears.
+  Future<bool> pumpUntilFound(
+    Finder finder, {
+    int attempts = 40,
+    Duration interval = const Duration(milliseconds: 100),
+  }) async {
+    for (var i = 0; i < attempts; i++) {
+      await pumpAndSettle();
+      if (finder.evaluate().isNotEmpty) return true;
+      await tester.runAsync(() => Future<void>.delayed(interval));
+    }
+    await pumpAndSettle();
+    return finder.evaluate().isNotEmpty;
+  }
+
   /// Tap a widget by key
   Future<void> tapByKey(String key) async {
     await tester.tap(find.byKey(Key(key)));
@@ -39,6 +76,11 @@ abstract class TestRobot {
   /// nothing to reveal — tap it as-is.
   Future<void> tapByText(String text) async {
     final finder = find.text(text);
+    // Wait for the target to actually mount before tapping. When it is the
+    // action button of a screen still resolving its async provider (e.g.
+    // "التالي" / "إنهاء التسميع" after advancing a recitation part), a bare tap
+    // on the not-yet-present finder throws a StateError — see [pumpUntilFound].
+    await pumpUntilFound(finder);
     await ensureVisible(finder);
     await tester.tap(finder);
     await pumpAndSettle();
@@ -460,6 +502,12 @@ class TeacherRobot extends TestRobot {
     // Find the add button within the ErrorCounter
     for (int i = 0; i < errors; i++) {
       final addButtons = find.byIcon(Icons.add);
+      // Wait for the counter to mount before reading `.last`. On the first tap
+      // of a freshly-advanced part the screen may still be showing its
+      // LoadingState (no Icons.add yet); `.last` on an empty finder throws a
+      // StateError. Waiting on the concrete widget removes that race —
+      // see [pumpUntilFound].
+      await pumpUntilFound(addButtons);
       // The last Icons.add is usually the error counter's add button
       // (not the FAB)
       await tester.tap(addButtons.last);
@@ -480,7 +528,11 @@ class TeacherRobot extends TestRobot {
 
   /// Verify grade displayed
   Future<void> verifyGrade(String gradeAr) async {
-    await pumpAndSettle();
+    // "إنهاء التسميع" pushes to the session summary, whose body is likewise a
+    // provider `.when(...)` that loads asynchronously. Wait for the grade to
+    // mount rather than asserting on a still-loading screen — the assertion
+    // strength is unchanged (see [pumpUntilFound]).
+    await pumpUntilFound(find.textContaining(gradeAr));
     expect(find.textContaining(gradeAr), findsWidgets);
   }
 
