@@ -238,3 +238,7 @@ Task 1: complete (commit 1924423, review clean) — bundled Amiri + Aref Ruqaa T
   (Flutter binding init for asset loading), approved as-is.
 Task 2: complete (commit 54ee6b6, review clean) — AppTokens ThemeExtension (16 fields, light+dark, copyWith+lerp),
   AppDimens, AppMotion. All hex values verified byte-for-byte against plan. No findings.
+Task 3: complete (commit 32592bd, review clean) — AppTheme.lightTheme/darkTheme both built from a single
+  _build(tokens, brightness) helper; dark is genuinely dark (Brightness.dark, AppTokens.dark), AppTokens
+  extension attached to both, scaffoldBackgroundColor=tokens.page. Reviewer confirmed the test would have
+  caught the original darkTheme=>lightTheme bug. No AppColors leaks, no non-bundled fonts. No findings.
