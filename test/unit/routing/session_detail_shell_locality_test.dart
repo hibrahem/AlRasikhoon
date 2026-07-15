@@ -1,11 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:al_rasikhoon/core/constants/app_constants.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/data/services/local_storage_service.dart';
+import 'package:al_rasikhoon/data/services/session_cache.dart';
 import 'package:al_rasikhoon/routing/app_router.dart';
 
 class _MockFirebaseService extends Mock implements FirebaseService {}
@@ -48,8 +53,16 @@ StatefulShellRoute _shellStartingAt(GoRouter router, String rootPath) {
 void main() {
   late ProviderContainer container;
   late GoRouter router;
+  late Directory tempDir;
+  late Box sessionBox;
 
-  setUp(() {
+  setUp(() async {
+    tempDir = await Directory.systemTemp.createTemp(
+      'session_detail_shell_locality_test',
+    );
+    Hive.init(tempDir.path);
+    sessionBox = await Hive.openBox(AppConstants.boxSession);
+
     final mockFirebaseService = _MockFirebaseService();
     when(
       () => mockFirebaseService.authStateChanges,
@@ -62,12 +75,18 @@ void main() {
         localStorageServiceProvider.overrideWithValue(
           _MockLocalStorageService(),
         ),
+        sessionBoxProvider.overrideWithValue(sessionBox),
       ],
     );
     router = container.read(routerProvider);
   });
 
-  tearDown(() => container.dispose());
+  tearDown(() async {
+    container.dispose();
+    await sessionBox.deleteFromDisk();
+    await Hive.close();
+    await tempDir.delete(recursive: true);
+  });
 
   // Regression for al_rasikhoon-3hn: opening a session record from a student's
   // progress view must stay inside the shell that showed the progress view.
