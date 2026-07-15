@@ -7,6 +7,7 @@ import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/repositories/home_practice_repository.dart';
 import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/features/student/providers/student_provider.dart';
+import 'package:al_rasikhoon/shared/providers/current_student_provider.dart';
 
 class MockSessionRepository extends Mock implements SessionRepository {}
 
