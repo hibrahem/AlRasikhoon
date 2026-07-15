@@ -435,10 +435,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: AppRoutes.sardResult,
                 builder: (context, state) {
                   final studentId = state.pathParameters['studentId']!;
-                  final errorCount = state.extra as int? ?? 0;
+                  final args =
+                      state.extra as ({int errorCount, DateTime startedAt})?;
                   return SardResultScreen(
                     studentId: studentId,
-                    errorCount: errorCount,
+                    errorCount: args?.errorCount ?? 0,
+                    startedAt: args?.startedAt,
                   );
                 },
               ),

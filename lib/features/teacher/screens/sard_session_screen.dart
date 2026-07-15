@@ -7,6 +7,7 @@ import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_counter.dart';
+import '../../../shared/widgets/session_timer.dart';
 import '../providers/teacher_provider.dart';
 
 class SardSessionScreen extends ConsumerStatefulWidget {
@@ -20,6 +21,13 @@ class SardSessionScreen extends ConsumerStatefulWidget {
 
 class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
   int _errorCount = 0;
+  late final DateTime _startedAt;
+
+  @override
+  void initState() {
+    super.initState();
+    _startedAt = DateTime.now();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +46,9 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('السرد'),
+        actions: [
+          SessionTimer(key: ValueKey(_startedAt), startedAt: _startedAt),
+        ],
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () {
@@ -177,7 +188,10 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
                                 ':studentId',
                                 widget.studentId,
                               ),
-                              extra: _errorCount,
+                              extra: (
+                                errorCount: _errorCount,
+                                startedAt: _startedAt,
+                              ),
                             );
                           },
                           isFullWidth: true,

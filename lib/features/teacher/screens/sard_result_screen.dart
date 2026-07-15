@@ -15,11 +15,13 @@ import '../providers/teacher_provider.dart';
 class SardResultScreen extends ConsumerStatefulWidget {
   final String studentId;
   final int errorCount;
+  final DateTime? startedAt;
 
   const SardResultScreen({
     super.key,
     required this.studentId,
     required this.errorCount,
+    this.startedAt,
   });
 
   @override
@@ -85,6 +87,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
         levelId: student.currentLevel,
         attemptNumber: attemptCount + 1,
         errorCount: widget.errorCount,
+        startedAt: widget.startedAt,
         notes: _notesController.text.trim().isNotEmpty
             ? _notesController.text.trim()
             : null,
