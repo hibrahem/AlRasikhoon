@@ -77,6 +77,10 @@ class AppConstants {
   static const String keyTheme = 'theme';
   static const String keyFirstLaunch = 'first_launch';
 
+  // Session cache (Hive)
+  static const String boxSession = 'session';
+  static const String keyCachedUser = 'current_user';
+
   /// Domain used to synthesize a Firebase Auth email from a username.
   /// Format: `<username>@alrasikhoon.local`. RFC-6762 reserves '.local',
   /// so this can never collide with a real deliverable domain.
