@@ -439,6 +439,107 @@ def test_level_3_cumulative_labels_name_no_juz(corpus):
         assert not ex.JUZ_WORD_RE.search(session["scope"]["label_ar"])
 
 
+def test_the_surah_ordering_table_is_the_whole_mushaf(corpus):
+    """The levels 3-10 cross-check reasons over a canonical 114-surah ordering.
+
+    It must fold the source's spelling variants exactly as `normalise_surah`
+    does, so a label spelling (سبأ vs سبا) still lands on one ordinal.
+    """
+    assert len(ex.SURAH_INDEX) == 114
+    assert ex.surah_ordinal("الفاتحة") == 1
+    assert ex.surah_ordinal("البقرة") == 2
+    assert ex.surah_ordinal("آل عمران") == 3
+    assert ex.surah_ordinal("الناس") == 114
+    assert ex.surah_ordinal("سبأ") == ex.surah_ordinal("سبا") == 34
+    assert ex.surah_ordinal("المعار ج") is None  # a typo, not a surah
+
+
+def test_a_surah_range_label_parses_to_mushaf_ordinals():
+    """"من أول X إلى (أخر|نهاية) Y" -> the ordinals of X and Y, filler stripped."""
+    assert ex.parse_surah_range(
+        "سرد من أول الفرقان إلى أخر السجدة على المحفظ المتابع"
+    ) == ex.SurahRange(start=25, end=32)
+    # "نهاية سورة" end-marker and a "سورة"-wrapped, multi-word start name both fold
+    assert ex.parse_surah_range(
+        "سرد المستوى كاملًا  من أول سورة آل عمران إلى نهاية سورة المائدة على المحفظ المتابع"
+    ) == ex.SurahRange(start=3, end=5)
+    # not a range at all
+    assert ex.parse_surah_range("سرد سورة هود كاملةَ على المحفظ المتابع") is None
+    # a range whose start surah the source omitted: matched, but unresolved (soft miss)
+    assert ex.parse_surah_range(
+        "سرد من أول سورة إلى أخر هود على المحفظ المتابع"
+    ) == ex.SurahRange(start=None, end=11)
+
+
+def test_a_level_10_verse_range_label_parses_to_verse_numbers():
+    assert ex.parse_verse_range(
+        "سرد من في سورة البقرة من [ 1 : 252 ] على المحفظ المتابع"
+    ) == ex.VerseRange(surah=2, from_verse=1, to_verse=252)
+    assert ex.parse_verse_range(
+        "سرد  في سورة البقرة من [ 1 : 286 ] على المحفظ المتابع"
+    ) == ex.VerseRange(surah=2, from_verse=1, to_verse=286)
+
+
+def test_the_cross_check_is_a_warning_and_never_an_error(corpus):
+    """The whole point of the levels 3-10 cross-check: a parse miss or an
+    inconsistency is SOFT. It may add warnings but must never add an error, so a
+    heterogeneous label can never block `--write` across all ten levels."""
+    assert corpus["errors"] == []
+    # the real corpus is internally consistent: no scope ever fails to grow
+    assert [w for w in corpus["warnings"] if "does not grow" in w] == []
+
+
+def test_level_7_juz_11_missing_start_surah_is_surfaced_not_swallowed(corpus):
+    """L7 J11's cumulative label — "سرد من أول سورة إلى أخر هود" — omits the
+    start surah name. That is the concrete free-text gap the check must report as
+    a skip (a WARNING) rather than crash on or silently ignore."""
+    skips = [w for w in corpus["warnings"] if "cross-check skipped" in w]
+    assert any("L7 J11" in w for w in skips)
+    # ... and it is the ONLY label in levels 3-10 the check cannot parse
+    assert len(skips) == 1
+
+
+def test_the_cross_check_catches_a_scope_that_grows_the_wrong_way():
+    """Non-vacuity: feed a level-4 whose later-taught juz reaches FORWARD through
+    the mushaf instead of back — against its declared descending order — and the
+    checker must warn. (The real corpus never does this; this proves the check
+    would notice if it did.)"""
+    warnings: list[str] = []
+    sessions = [
+        {"juz_number": 20, "kind": "sard", "scope": {"tier": "cumulative",
+         "label_ar": "سرد من أول الفرقان إلى أخر السجدة على المحفظ المتابع"}},
+        {"juz_number": 19, "kind": "sard", "scope": {"tier": "cumulative",
+         "label_ar": "سرد من أول سورة النمل إلى أخر السجدة على المحفظ المتابع"}},
+    ]
+    ex.check_cumulative_teaching_order(4, [21, 20, 19], sessions, warnings)
+    assert any("does not grow" in w for w in warnings)
+
+
+def test_the_cross_check_catches_level_10_verse_scope_shrinking():
+    """Level 10 is ascending inside سورة البقرة: the end verse must move forward.
+    A later-taught juz whose end verse is EARLIER must warn."""
+    warnings: list[str] = []
+    sessions = [
+        {"juz_number": 2, "kind": "sard", "scope": {"tier": "cumulative",
+         "label_ar": "سرد في سورة البقرة من [ 1 : 252 ] على المحفظ المتابع"}},
+        {"juz_number": 3, "kind": "sard", "scope": {"tier": "cumulative",
+         "label_ar": "سرد في سورة البقرة من [ 1 : 200 ] على المحفظ المتابع"}},
+    ]
+    ex.check_cumulative_teaching_order(10, [1, 2, 3], sessions, warnings)
+    assert any("verse scope does not grow" in w for w in warnings)
+
+
+def test_levels_1_and_2_keep_their_juz_numbered_cross_check(corpus):
+    """The new surah/verse checker is for levels 3-10 only. Levels 1-2 label by
+    juz number and are covered by the JUZ_WORD_RE check in build_juz_sessions();
+    the new checker must leave them untouched and emit nothing for them."""
+    warnings: list[str] = []
+    for level in (1, 2):
+        order = ex.juz_teaching_order(level)
+        ex.check_cumulative_teaching_order(level, order, corpus["sessions"][level], warnings)
+    assert warnings == []
+
+
 def test_juz_teaching_order_comment_does_not_overstate_verification():
     """`juz_teaching_order()`'s header comment must not claim a blanket
     machine cross-check that does not exist: the automatic cumulative

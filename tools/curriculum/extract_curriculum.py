@@ -70,17 +70,25 @@ CURRICULUM_DIR = _find_curriculum_dir()
 # (= juz 1 + 2 + 3). Cumulative scope strictly grows in that order, so that is
 # the teaching order.
 #
-# THIS IS NOT MACHINE-VERIFIED FOR EVERY LEVEL. build_juz_sessions() only
-# cross-checks a juz-/cumulative-tier label against the declared teaching
-# order when the label actually NAMES a juz (JUZ_WORD_RE: "الجزء" /
-# "الجزئين" / "الأجزاء") — true for levels 1-2 only, whose unit is a hizb.
-# Levels 3-10 label their juz- and cumulative-tier assessments by SURAH
-# ("من أول ... إلى أخر ...") or, for level 10, by verse number — never by juz
-# number — so that cross-check is silently skipped for them (see
-# test_level_3_cumulative_labels_name_no_juz). The derivation above for level
-# 10 (and the descending order asserted for 1-9) was verified BY HAND against
-# the source and is recorded here for whoever next touches this file; no code
-# in this module re-derives or re-checks it.
+# HOW MUCH OF THIS IS MACHINE-CHECKED. build_juz_sessions() cross-checks a
+# juz-/cumulative-tier label against the declared teaching order when the label
+# NAMES a juz (JUZ_WORD_RE: "الجزء" / "الجزئين" / "الأجزاء") — true for levels
+# 1-2 only, whose unit is a hizb. Levels 3-10 label their juz- and
+# cumulative-tier assessments by SURAH ("من أول ... إلى أخر ...") or, for level
+# 10, by verse number — never by juz number — so that first check is skipped for
+# them (see test_level_3_cumulative_labels_name_no_juz).
+#
+# For levels 3-10, check_cumulative_teaching_order() supplies a SECOND,
+# independent cross-check: it parses those surah-/verse-scoped cumulative labels
+# against the canonical mushaf ordering (SURAH_INDEX) and confirms the scope
+# grows in the direction this teaching order implies (descending juz -> reaching
+# further back through the mushaf; level 10 ascending -> reaching further forward
+# inside سورة البقرة). That check is a SOFT WARNING, not a validation gate: the
+# labels are free text and occasionally omit an anchor (e.g. L7 J11), so a parse
+# miss is reported and skipped rather than allowed to block --write. The
+# descending order asserted for 1-9 and the ascending order for level 10 were
+# also verified BY HAND against the source and are recorded here for whoever next
+# touches this file.
 LEVEL_NAMES_AR = {
     1: "المستوى الأول",
     2: "المستوى الثاني",
@@ -244,9 +252,22 @@ def normalise_surah(name: str) -> str:
 
 KNOWN_SURAH_NAMES = {normalise_surah(n) for n in SURAH_NAMES}
 
+# The canonical mushaf ordering, folded through `normalise_surah` so the source's
+# spelling variants all resolve to the same 1-based position (الفاتحة = 1 …
+# الناس = 114). This is the ordering table the levels 3-10 teaching-order
+# cross-check reasons over (see check_cumulative_teaching_order).
+SURAH_INDEX: dict[str, int] = {
+    normalise_surah(name): position for position, name in enumerate(SURAH_NAMES, start=1)
+}
+
 
 def is_known_surah(name: str) -> bool:
     return normalise_surah(name) in KNOWN_SURAH_NAMES
+
+
+def surah_ordinal(name: str) -> Optional[int]:
+    """The 1-based mushaf position of `name`, or None if it is not a surah."""
+    return SURAH_INDEX.get(normalise_surah(name))
 
 
 # --------------------------------------------------------------------------
@@ -1118,6 +1139,197 @@ def insert_talqeen_sessions(sessions: list[dict]) -> list[dict]:
 
 
 # --------------------------------------------------------------------------
+# Levels 3-10 cumulative teaching-order cross-check (soft; WARNING only)
+# --------------------------------------------------------------------------
+# Levels 1-2 label their cumulative-tier assessments by JUZ NUMBER, and
+# build_juz_sessions() already cross-checks those against `juz_taught_so_far`
+# via JUZ_WORD_RE. Levels 3-10 never name a juz: they name the cumulative scope
+# by SURAH range ("من أول X إلى أخر Y") — or, for level 10, by verse number
+# inside سورة البقرة ("[ 1 : 252 ]"). This checker parses those labels and
+# confirms the scope GROWS in the direction the declared teaching order implies:
+#
+#   * Descending-juz levels (3-9): each later-taught juz is EARLIER in the
+#     mushaf, so its cumulative must reach FURTHER BACK (a smaller start ordinal)
+#     while the end anchor holds.
+#   * Level 10 (ascending, all three juz inside سورة البقرة): the start verse
+#     holds while the end verse moves FORWARD.
+#
+# Everything here is a WARNING, never an error: the source's free-text labels are
+# heterogeneous (e.g. L7 J11's "من أول سورة إلى أخر هود" omits the start surah),
+# and a single parse miss must not block `--write` across all ten levels. A real
+# inconsistency (scope shrinking, or growing against the declared order) is
+# surfaced for a human; it never fails validation on its own.
+_CUMULATIVE_TAIL_RE = re.compile(r"على\s+المحفظ|من\s+قِبل|من\s+قبل")
+# Words that pad a surah name inside a range segment but are not part of it.
+_RANGE_FILLER_WORDS = {"سورة", "سور", "سورتي", "أخر", "اخر", "نهاية"}
+_SURAH_RANGE_RE = re.compile(r"من\s+أول\s+(.+?)\s+إلى\s+(?:أخر\s+|اخر\s+|نهاية\s+)?(.+)$")
+_VERSE_RANGE_RE = re.compile(r"(\d+)\s*:\s*(\d+)")
+_VERSE_SURAH_RE = re.compile(r"سورة\s+(\S+)")
+
+
+@dataclass(frozen=True)
+class SurahRange:
+    start: Optional[int]  # mushaf ordinal of the start surah (None if unparseable)
+    end: Optional[int]    # mushaf ordinal of the end surah
+
+
+@dataclass(frozen=True)
+class VerseRange:
+    surah: Optional[int]  # mushaf ordinal of the (single) surah
+    from_verse: int
+    to_verse: int
+
+
+def _label_body(label: str) -> str:
+    """A cumulative label without its trailing 'على المحفظ المتابع' assessor tail."""
+    match = _CUMULATIVE_TAIL_RE.search(label)
+    return (label[: match.start()] if match else label).strip()
+
+
+def _resolve_range_surah(segment: str) -> Optional[int]:
+    """The mushaf ordinal of the surah named in a range segment, or None.
+
+    Strips the filler words the source wraps names in ("سورة الأحزاب" -> الأحزاب)
+    and looks the remainder up in the canonical ordering table. Multi-word names
+    (آل عمران) survive because only filler tokens are removed.
+    """
+    tokens = [t for t in segment.split() if t not in _RANGE_FILLER_WORDS]
+    if not tokens:
+        return None
+    return surah_ordinal(" ".join(tokens))
+
+
+def parse_surah_range(label: str) -> Optional[SurahRange]:
+    """Parse a "من أول X إلى (أخر|نهاية) Y" cumulative label into mushaf ordinals.
+
+    Returns None when the label is not a surah range at all; returns a SurahRange
+    with a None endpoint when the pattern matches but an anchor surah cannot be
+    resolved (e.g. the source omitted the name). Both are soft parse misses.
+    """
+    match = _SURAH_RANGE_RE.search(_label_body(label))
+    if not match:
+        return None
+    return SurahRange(
+        start=_resolve_range_surah(match.group(1)),
+        end=_resolve_range_surah(match.group(2)),
+    )
+
+
+def parse_verse_range(label: str) -> Optional[VerseRange]:
+    """Parse a level-10 "سورة البقرة ... [ from : to ]" cumulative label."""
+    body = _label_body(label)
+    verses = _VERSE_RANGE_RE.search(body)
+    if not verses:
+        return None
+    surah_match = _VERSE_SURAH_RE.search(body)
+    return VerseRange(
+        surah=surah_ordinal(surah_match.group(1)) if surah_match else None,
+        from_verse=int(verses.group(1)),
+        to_verse=int(verses.group(2)),
+    )
+
+
+def _cumulative_labels_in_teaching_order(
+    order: list[int], sessions: list[dict]
+) -> list[tuple[int, str]]:
+    """(juz, sard label) for every cumulative-tier pair, in the level's teaching order."""
+    out: list[tuple[int, str]] = []
+    for juz in order:
+        for s in sessions:
+            if (
+                s["juz_number"] == juz
+                and s["kind"] == "sard"
+                and s["scope"]
+                and s["scope"]["tier"] == "cumulative"
+            ):
+                out.append((juz, s["scope"]["label_ar"]))
+    return out
+
+
+def check_cumulative_teaching_order(
+    level: int, order: list[int], sessions: list[dict], warnings: list[str]
+) -> None:
+    """Confirm levels 3-10's cumulative scope grows with the declared teaching order.
+
+    Soft by design: a parse miss or an inconsistency appends a WARNING and never
+    an error, so it cannot block `--write`. Levels 1-2 are skipped — their
+    juz-numbered labels are already cross-checked in build_juz_sessions().
+    """
+    if level <= 2:
+        return
+
+    cumulative = _cumulative_labels_in_teaching_order(order, sessions)
+    descending = order[0] > order[-1]
+
+    if level == 10:
+        _check_verse_growth(level, cumulative, warnings)
+    else:
+        _check_surah_growth(level, cumulative, descending, warnings)
+
+
+def _check_surah_growth(
+    level: int, cumulative: list[tuple[int, str]], descending: bool, warnings: list[str]
+) -> None:
+    scopes: list[Optional[tuple[int, int, int]]] = []  # (juz, start_ord, end_ord)
+    for juz, label in cumulative:
+        rng = parse_surah_range(label)
+        if rng is None or rng.start is None or rng.end is None:
+            warnings.append(
+                f"L{level} J{juz}: cumulative teaching-order cross-check skipped — could not "
+                f"resolve a surah range from the label: {label!r}"
+            )
+            scopes.append(None)
+            continue
+        scopes.append((juz, rng.start, rng.end))
+
+    for previous, current in zip(scopes, scopes[1:]):
+        if previous is None or current is None:
+            continue
+        prev_juz, prev_start, prev_end = previous
+        cur_juz, cur_start, cur_end = current
+        if descending:
+            grows = cur_start < prev_start and cur_end == prev_end
+        else:
+            grows = cur_start == prev_start and cur_end > prev_end
+        if not grows:
+            direction = "descending" if descending else "ascending"
+            warnings.append(
+                f"L{level}: cumulative scope does not grow with the declared {direction} "
+                f"teaching order — juz {prev_juz} covers surahs [{prev_start}..{prev_end}] "
+                f"and the later-taught juz {cur_juz} covers [{cur_start}..{cur_end}]"
+            )
+
+
+def _check_verse_growth(
+    level: int, cumulative: list[tuple[int, str]], warnings: list[str]
+) -> None:
+    scopes: list[Optional[tuple[int, int, int, int]]] = []  # (juz, surah, from, to)
+    for juz, label in cumulative:
+        rng = parse_verse_range(label)
+        if rng is None or rng.surah is None:
+            warnings.append(
+                f"L{level} J{juz}: cumulative teaching-order cross-check skipped — could not "
+                f"resolve a verse range from the label: {label!r}"
+            )
+            scopes.append(None)
+            continue
+        scopes.append((juz, rng.surah, rng.from_verse, rng.to_verse))
+
+    for previous, current in zip(scopes, scopes[1:]):
+        if previous is None or current is None:
+            continue
+        prev_juz, prev_surah, prev_from, prev_to = previous
+        cur_juz, cur_surah, cur_from, cur_to = current
+        grows = cur_surah == prev_surah and cur_from == prev_from and cur_to > prev_to
+        if not grows:
+            warnings.append(
+                f"L{level}: cumulative verse scope does not grow with the declared ascending "
+                f"teaching order — juz {prev_juz} covers surah {prev_surah} {prev_from}:{prev_to} "
+                f"and the later-taught juz {cur_juz} covers surah {cur_surah} {cur_from}:{cur_to}"
+            )
+
+
+# --------------------------------------------------------------------------
 # Driver
 # --------------------------------------------------------------------------
 def extract() -> tuple[dict, dict, list[str], list[str], list[str]]:
@@ -1182,6 +1394,11 @@ def extract() -> tuple[dict, dict, list[str], list[str], list[str]]:
                 "source_files": src.files,
                 "notes": src.notes,
             })
+
+        # Soft cross-check: levels 3-10 name their cumulative scope by surah (or,
+        # for level 10, by verse), so confirm that scope grows with the declared
+        # teaching order. WARNING only — a parse miss must never block --write.
+        check_cumulative_teaching_order(level, order, level_sessions, warnings)
 
         levels[level] = {
             "id": level,
