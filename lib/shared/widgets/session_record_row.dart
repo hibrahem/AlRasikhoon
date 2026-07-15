@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
+import '../../domain/session/session_duration.dart';
 import 'app_card.dart';
 
 /// One row of a session-record listing (student history, teacher history).
@@ -27,6 +28,11 @@ class SessionRecordRow extends StatelessWidget {
   /// [passed] for one would report a pass the student never earned.
   final bool isTalqeen;
 
+  /// The recorded length of the session, or null for records with no timing.
+  /// When present the row shows the duration; when it also has a target
+  /// (lessons/تلقين) it shows an over/under-target flag.
+  final SessionDuration? sessionDuration;
+
   const SessionRecordRow({
     super.key,
     required this.title,
@@ -35,6 +41,7 @@ class SessionRecordRow extends StatelessWidget {
     required this.date,
     this.onTap,
     this.isTalqeen = false,
+    this.sessionDuration,
   });
 
   @override
@@ -85,6 +92,20 @@ class SessionRecordRow extends StatelessWidget {
                     color: AppColors.textSecondary,
                   ),
                 ),
+                if (sessionDuration != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'المدة: ${sessionDuration!.arabicMinutesLabel}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  if (sessionDuration!.status != DurationStatus.none)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: _DurationFlag(status: sessionDuration!.status),
+                    ),
+                ],
               ],
             ),
           ),
@@ -105,6 +126,49 @@ class SessionRecordRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _DurationFlag extends StatelessWidget {
+  final DurationStatus status;
+  const _DurationFlag({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    late final Color color;
+    late final String label;
+    switch (status) {
+      case DurationStatus.under:
+        color = AppColors.info;
+        label = 'أقصر من المستهدف';
+        break;
+      case DurationStatus.onTarget:
+        color = AppColors.success;
+        label = 'ضمن المستهدف';
+        break;
+      case DurationStatus.over:
+        color = AppColors.warning;
+        label = 'أطول من المستهدف';
+        break;
+      case DurationStatus.none:
+        return const SizedBox.shrink();
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
       ),
     );
   }

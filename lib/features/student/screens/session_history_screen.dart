@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../domain/session/session_duration.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/session_record_row.dart';
 import '../providers/student_provider.dart';
@@ -47,6 +48,14 @@ class SessionHistoryScreen extends ConsumerWidget {
                   subtitleLines: ['المستوى ${record.levelId}'],
                   passed: record.passed,
                   date: record.date,
+                  sessionDuration: record.duration == null
+                      ? null
+                      : SessionDuration(
+                          elapsed: record.duration!,
+                          target: SessionDuration.targetForPace(
+                            record.paceAtTime,
+                          ),
+                        ),
                   onTap: () {
                     context.push(
                       AppRoutes.sessionDetail.replaceFirst(
