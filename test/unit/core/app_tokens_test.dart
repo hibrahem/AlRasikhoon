@@ -20,4 +20,26 @@ void main() {
     final result = AppTokens.light.lerp(AppTokens.dark, 0);
     expect(result.page, AppTokens.light.page);
   });
+
+  testWidgets(
+    'context.tokens falls back to AppTokens.light when theme has no extension',
+    (WidgetTester tester) async {
+      late AppTokens resolvedTokens;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) {
+              resolvedTokens = context.tokens;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+
+      expect(resolvedTokens, AppTokens.light);
+      expect(resolvedTokens.page, AppTokens.light.page);
+      expect(resolvedTokens.card, AppTokens.light.card);
+    },
+  );
 }
