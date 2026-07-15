@@ -524,4 +524,60 @@ void main() {
       );
     },
   );
+
+  testWidgets(
+    'shows a loading indication for the session field until the initial fetch '
+    'resolves, then offers the first session',
+    (tester) async {
+      final firestore = await _seedCurriculum();
+      // The initial juz (30, auto-selected for level 1) is slow, so the test
+      // can observe the picker before it knows which sessions the juz holds.
+      final repo = _RacyCurriculumRepository(firestore, {
+        30: const Duration(seconds: 5),
+      });
+      CurriculumPosition? reported;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            firestoreProvider.overrideWithValue(firestore),
+            curriculumRepositoryProvider.overrideWithValue(repo),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: StartingPointPicker(
+                  initialValue: CurriculumPosition.start,
+                  onChanged: (position) => reported = position,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      // Let the (undelayed) levels catalog resolve and the dropdowns build,
+      // while the initial session fetch is still far from its 5s delay.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      // The session field shows a loading indicator — not a settled, empty
+      // dropdown that would read as "this juz has no sessions".
+      expect(
+        find.byKey(const Key('starting_point_session_loading')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('starting_point_session')), findsNothing);
+
+      // Once the fetch resolves, the indicator is gone and the first session is
+      // both offered and reported.
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const Key('starting_point_session_loading')),
+        findsNothing,
+      );
+      expect(find.byKey(const Key('starting_point_session')), findsOneWidget);
+      expect(reported, const CurriculumPosition(level: 1, juz: 30, session: 1));
+    },
+  );
 }

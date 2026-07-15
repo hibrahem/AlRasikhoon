@@ -294,7 +294,12 @@ class SessionModel {
       id: id,
       levelId: json['level_id'] as int,
       juzNumber: json['juz_number'] as int,
-      sessionNumber: json['session_number'] as int,
+      // Firestore hands back whole numbers as `int` OR `double` depending on
+      // how the document was written (a JSON import, a hand-edit in the
+      // console, a `FieldValue` round-trip), so a bare `as int` throws on a
+      // `70.0`. Read it as a `num` and narrow — the same defensive shape used
+      // for every other numeric field that crosses the Firestore boundary.
+      sessionNumber: (json['session_number'] as num).toInt(),
       orderInLevel: json['order_in_level'] as int,
       kind: SessionKindX.fromString(json['kind'] as String),
       assessedBy: AssessedByX.maybeFromString(json['assessed_by']),

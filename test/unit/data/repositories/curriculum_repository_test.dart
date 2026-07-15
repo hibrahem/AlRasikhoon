@@ -96,6 +96,39 @@ void main() {
         isNull,
       );
     });
+
+    test(
+      'reads a session whose session_number was stored as a Firestore double '
+      '(a JSON import or console edit) without throwing',
+      () async {
+        // Firestore hands whole numbers back as `int` OR `double` depending on
+        // how the document was written; a bare `as int` on a `70.0` throws.
+        // The read must narrow through `num`, so a double-valued session_number
+        // round-trips to the same int.
+        await firestore.collection('sessions').doc('L1_J30_S70').set({
+          'level_id': 1,
+          'juz_number': 30,
+          'session_number': 70.0,
+          'order_in_level': 70,
+          'kind': 'exam',
+          'assessed_by': 'supervisor',
+          'scope': {
+            'tier': 'juz',
+            'label_ar': 'اختبار في الجزء رقم 30 كاملًا من قِبل إدارة الحلقات',
+            'juz_numbers': [30],
+          },
+        });
+
+        final session = await repository.getSessionByOrderInLevel(
+          level: 1,
+          orderInLevel: 70,
+        );
+
+        expect(session, isNotNull);
+        expect(session!.sessionNumber, 70);
+        expect(session.sessionNumber, isA<int>());
+      },
+    );
   });
 
   group('getSessionsForJuz / getSessionNumbersForJuz', () {
