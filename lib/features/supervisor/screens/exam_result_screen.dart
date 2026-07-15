@@ -15,11 +15,13 @@ import '../providers/supervisor_provider.dart';
 class ExamResultScreen extends ConsumerStatefulWidget {
   final String studentId;
   final int errorCount;
+  final DateTime? startedAt;
 
   const ExamResultScreen({
     super.key,
     required this.studentId,
     required this.errorCount,
+    this.startedAt,
   });
 
   @override
@@ -85,6 +87,7 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
         notes: _notesController.text.trim().isNotEmpty
             ? _notesController.text.trim()
             : null,
+        startedAt: widget.startedAt,
       );
 
       // Update student progress

@@ -304,10 +304,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: AppRoutes.examResult,
                 builder: (context, state) {
                   final studentId = state.pathParameters['studentId']!;
-                  final errorCount = state.extra as int? ?? 0;
+                  final args =
+                      state.extra as ({int errorCount, DateTime startedAt})?;
                   return ExamResultScreen(
                     studentId: studentId,
-                    errorCount: errorCount,
+                    errorCount: args?.errorCount ?? 0,
+                    startedAt: args?.startedAt,
                   );
                 },
               ),

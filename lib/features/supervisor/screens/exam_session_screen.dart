@@ -7,6 +7,7 @@ import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_counter.dart';
+import '../../../shared/widgets/session_timer.dart';
 import '../providers/supervisor_provider.dart';
 
 class ExamSessionScreen extends ConsumerStatefulWidget {
@@ -20,6 +21,13 @@ class ExamSessionScreen extends ConsumerStatefulWidget {
 
 class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
   int _errorCount = 0;
+  late final DateTime _startedAt;
+
+  @override
+  void initState() {
+    super.initState();
+    _startedAt = DateTime.now();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +40,9 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('الاختبار'),
+        actions: [
+          SessionTimer(key: ValueKey(_startedAt), startedAt: _startedAt),
+        ],
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () {
@@ -219,7 +230,10 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                                 ':studentId',
                                 widget.studentId,
                               ),
-                              extra: _errorCount,
+                              extra: (
+                                errorCount: _errorCount,
+                                startedAt: _startedAt,
+                              ),
                             );
                           },
                           isFullWidth: true,
