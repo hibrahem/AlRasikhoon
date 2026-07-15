@@ -2,15 +2,16 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/countries.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/models/institute_model.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/services/firebase_service.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/admin_provider.dart';
 
 /// Admin flow to create a Supervisor account bound to a single institute.
@@ -55,9 +56,9 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
 
     if (_selectedInstitute == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('يرجى اختيار المعهد'),
-          backgroundColor: AppColors.error,
+        SnackBar(
+          content: const Text('يرجى اختيار المعهد'),
+          backgroundColor: context.tokens.maroon,
         ),
       );
       return;
@@ -78,9 +79,9 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
       if (existing != null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('اسم المستخدم مسجل مسبقاً'),
-              backgroundColor: AppColors.error,
+            SnackBar(
+              content: const Text('اسم المستخدم مسجل مسبقاً'),
+              backgroundColor: context.tokens.maroon,
             ),
           );
         }
@@ -112,7 +113,7 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('تم إضافة المشرف: ${_nameController.text.trim()}'),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.tokens.green,
           ),
         );
         context.pop();
@@ -129,7 +130,7 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
             ? 'المعهد المحدد غير موجود'
             : 'فشل إنشاء الحساب: ${e.message ?? e.code}';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: AppColors.error),
+          SnackBar(content: Text(msg), backgroundColor: context.tokens.maroon),
         );
       }
     } catch (e) {
@@ -137,7 +138,7 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('حدث خطأ: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: context.tokens.maroon,
           ),
         );
       }
@@ -150,6 +151,7 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final institutesAsync = ref.watch(institutesProvider);
 
     return Scaffold(
@@ -166,13 +168,13 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
                 height: 80,
                 margin: const EdgeInsets.only(bottom: 32),
                 decoration: BoxDecoration(
-                  color: AppColors.secondary.withValues(alpha: 0.1),
+                  color: tokens.gold.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.admin_panel_settings,
                   size: 40,
-                  color: AppColors.secondary,
+                  color: tokens.gold,
                 ),
               ),
               AppTextField(
@@ -223,26 +225,27 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'المعهد',
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
+                  Text('المعهد', style: Theme.of(context).textTheme.labelLarge),
                   const SizedBox(height: 8),
                   institutesAsync.when(
                     data: (institutes) {
                       if (institutes.isEmpty) {
+                        // A compact inline warning inside the form (not a
+                        // full-page empty state) — the admin must create an
+                        // institute before this form can proceed, so maroon
+                        // (the palette's rubrication/emphasis hue) applies.
                         return Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: AppColors.error.withValues(alpha: 0.08),
+                            color: tokens.maroon.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: AppColors.error.withValues(alpha: 0.3),
+                              color: tokens.maroon.withValues(alpha: 0.3),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'لا توجد معاهد. أنشئ معهداً أولاً قبل إضافة مشرف.',
-                            style: TextStyle(color: AppColors.error),
+                            style: TextStyle(color: tokens.maroon),
                           ),
                         );
                       }
@@ -254,7 +257,7 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
                       return Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.border),
+                          border: Border.all(color: tokens.hairline),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: DropdownButtonHideUnderline(
@@ -275,13 +278,16 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
                         ),
                       );
                     },
-                    loading: () => const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
+                    // Compact loading placeholder scoped to this one dropdown
+                    // slot, not a full-screen section — LoadingState(lines: 1)
+                    // matches the compact home-practice-card precedent.
+                    loading: () => const LoadingState(lines: 1),
+                    // Inline, compact error text tied to this one form field
+                    // — the shared ErrorState's icon+retry chrome is built for
+                    // full-section failures and would not fit naturally here.
                     error: (e, _) => Text(
                       'تعذر تحميل المعاهد: $e',
-                      style: const TextStyle(color: AppColors.error),
+                      style: TextStyle(color: tokens.maroon),
                     ),
                   ),
                 ],
@@ -290,20 +296,25 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.info.withValues(alpha: 0.1),
+                  // No manuscript token for the old "info" blue. This is a
+                  // neutral instructional notice (share the credentials),
+                  // not a success/error/warning — gold follows the same
+                  // neutral-notice precedent as the exam card on the
+                  // student dashboard (student_dashboard_screen.dart).
+                  color: tokens.gold.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+                  border: Border.all(color: tokens.gold.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline, color: AppColors.info),
+                    Icon(Icons.info_outline, color: tokens.gold),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'شارك اسم المستخدم وكلمة المرور مع المشرف. يمكنه تسجيل الدخول مباشرة بهما ضمن المعهد المحدد.',
                         style: Theme.of(
                           context,
-                        ).textTheme.bodySmall?.copyWith(color: AppColors.info),
+                        ).textTheme.bodySmall?.copyWith(color: tokens.gold),
                       ),
                     ),
                   ],

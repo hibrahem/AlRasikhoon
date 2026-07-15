@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/institute_model.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/states/empty_state.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/student_card.dart';
 import '../providers/admin_provider.dart';
 
@@ -43,6 +46,7 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final teacherAsync = ref.watch(teacherProvider(teacherId));
     final institutesAsync = ref.watch(institutesForTeacherProvider(teacherId));
     final studentsAsync = ref.watch(studentsForTeacherAdminProvider(teacherId));
@@ -66,13 +70,11 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                     children: [
                       CircleAvatar(
                         radius: 32,
-                        backgroundColor: AppColors.primary.withValues(
-                          alpha: 0.1,
-                        ),
+                        backgroundColor: tokens.green.withValues(alpha: 0.1),
                         child: Text(
                           teacher.name.isNotEmpty ? teacher.name[0] : '?',
-                          style: const TextStyle(
-                            color: AppColors.primary,
+                          style: TextStyle(
+                            color: tokens.green,
                             fontWeight: FontWeight.bold,
                             fontSize: 24,
                           ),
@@ -95,7 +97,7 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                                       ? Icons.phone
                                       : Icons.email,
                                   size: 16,
-                                  color: AppColors.textSecondary,
+                                  color: tokens.sepia,
                                 ),
                                 const SizedBox(width: 4),
                                 // Falls back to the login username when no
@@ -107,9 +109,7 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium
-                                        ?.copyWith(
-                                          color: AppColors.textSecondary,
-                                        ),
+                                        ?.copyWith(color: tokens.sepia),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -123,9 +123,11 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
+                                // "success"/"error" reused as green/maroon,
+                                // same as the teacher list's status badge.
                                 color: teacher.isActive
-                                    ? AppColors.success.withValues(alpha: 0.1)
-                                    : AppColors.error.withValues(alpha: 0.1),
+                                    ? tokens.green.withValues(alpha: 0.1)
+                                    : tokens.maroon.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -133,8 +135,8 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: teacher.isActive
-                                      ? AppColors.success
-                                      : AppColors.error,
+                                      ? tokens.green
+                                      : tokens.maroon,
                                 ),
                               ),
                             ),
@@ -175,20 +177,9 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                 institutesAsync.when(
                   data: (institutes) {
                     if (institutes.isEmpty) {
-                      return AppCard(
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.account_balance_outlined,
-                              size: 48,
-                              color: AppColors.textSecondary.withValues(
-                                alpha: 0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text('غير معين لأي معهد'),
-                          ],
-                        ),
+                      return const EmptyState(
+                        icon: Icons.account_balance_outlined,
+                        title: 'غير معين لأي معهد',
                       );
                     }
 
@@ -205,14 +196,12 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(
-                                    alpha: 0.1,
-                                  ),
+                                  color: tokens.green.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.account_balance,
-                                  color: AppColors.primary,
+                                  color: tokens.green,
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -231,9 +220,7 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
-                                          ?.copyWith(
-                                            color: AppColors.textSecondary,
-                                          ),
+                                          ?.copyWith(color: tokens.sepia),
                                     ),
                                   ],
                                 ),
@@ -244,9 +231,9 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                       },
                     );
                   },
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Text('Error: $e'),
+                  loading: () => const LoadingState(),
+                  error: (e, _) =>
+                      ErrorState(message: 'تعذر تحميل المعاهد: $e'),
                 ),
 
                 const SizedBox(height: 24),
@@ -266,20 +253,9 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                     };
 
                     if (students.isEmpty) {
-                      return AppCard(
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.school_outlined,
-                              size: 48,
-                              color: AppColors.textSecondary.withValues(
-                                alpha: 0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text('لا يوجد طلاب لهذا المعلم'),
-                          ],
-                        ),
+                      return const EmptyState(
+                        icon: Icons.school_outlined,
+                        title: 'لا يوجد طلاب لهذا المعلم',
                       );
                     }
 
@@ -314,20 +290,9 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                         ),
                         const SizedBox(height: 12),
                         if (filtered.isEmpty)
-                          AppCard(
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.filter_alt_off_outlined,
-                                  size: 48,
-                                  color: AppColors.textSecondary.withValues(
-                                    alpha: 0.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                const Text('لا يوجد طلاب في المعهد المحدد'),
-                              ],
-                            ),
+                          const EmptyState(
+                            icon: Icons.filter_alt_off_outlined,
+                            title: 'لا يوجد طلاب في المعهد المحدد',
                           )
                         else
                           ListView.builder(
@@ -358,16 +323,15 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                       ],
                     );
                   },
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Text('Error: $e'),
+                  loading: () => const LoadingState(),
+                  error: (e, _) => ErrorState(message: 'تعذر تحميل الطلاب: $e'),
                 ),
               ],
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل المعلم: $e'),
       ),
     );
   }
@@ -395,6 +359,7 @@ class _InstituteFilterBar extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final tokens = context.tokens;
     final allSelected = selectedInstituteIds.isEmpty;
 
     return SingleChildScrollView(
@@ -407,8 +372,8 @@ class _InstituteFilterBar extends StatelessWidget {
             selected: allSelected,
             onSelected: (_) => onClear(),
             showCheckmark: false,
-            selectedColor: AppColors.primary.withValues(alpha: 0.15),
-            checkmarkColor: AppColors.primary,
+            selectedColor: tokens.green.withValues(alpha: 0.15),
+            checkmarkColor: tokens.green,
           ),
           const SizedBox(width: 8),
           for (final institute in institutes) ...[
@@ -416,8 +381,8 @@ class _InstituteFilterBar extends StatelessWidget {
               label: Text(institute.name),
               selected: selectedInstituteIds.contains(institute.id),
               onSelected: (selected) => onToggle(institute.id, selected),
-              selectedColor: AppColors.primary.withValues(alpha: 0.15),
-              checkmarkColor: AppColors.primary,
+              selectedColor: tokens.green.withValues(alpha: 0.15),
+              checkmarkColor: tokens.green,
             ),
             const SizedBox(width: 8),
           ],

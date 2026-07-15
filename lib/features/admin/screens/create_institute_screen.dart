@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/repositories/institute_repository.dart';
 import '../../../shared/providers/user_provider.dart';
@@ -50,9 +50,9 @@ class _CreateInstituteScreenState extends ConsumerState<CreateInstituteScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تم إنشاء المعهد بنجاح'),
-            backgroundColor: AppColors.success,
+          SnackBar(
+            content: const Text('تم إنشاء المعهد بنجاح'),
+            backgroundColor: context.tokens.green,
           ),
         );
         context.pop();
@@ -62,7 +62,7 @@ class _CreateInstituteScreenState extends ConsumerState<CreateInstituteScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('حدث خطأ: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: context.tokens.maroon,
           ),
         );
       }
@@ -75,10 +75,9 @@ class _CreateInstituteScreenState extends ConsumerState<CreateInstituteScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('إضافة معهد'),
-      ),
+      appBar: AppBar(title: const Text('إضافة معهد')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -92,13 +91,13 @@ class _CreateInstituteScreenState extends ConsumerState<CreateInstituteScreen> {
                 height: 80,
                 margin: const EdgeInsets.only(bottom: 32),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: tokens.green.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.account_balance,
                   size: 40,
-                  color: AppColors.primary,
+                  color: tokens.green,
                 ),
               ),
 

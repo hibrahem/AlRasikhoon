@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/confirm_sign_out.dart';
 import '../../../shared/widgets/stat_card.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/admin_provider.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
@@ -41,6 +43,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   Widget _buildBody() {
+    final tokens = context.tokens;
     final statsAsync = ref.watch(adminStatsProvider);
 
     return RefreshIndicator(
@@ -63,15 +66,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               'إدارة المعاهد والمعلمين',
               style: Theme.of(
                 context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+              ).textTheme.bodyMedium?.copyWith(color: tokens.sepia),
             ),
             const SizedBox(height: 24),
 
             // Stats
             statsAsync.when(
               data: (stats) => _buildStats(stats),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Text('Error: $e'),
+              loading: () => const LoadingState(),
+              error: (e, _) => ErrorState(message: 'تعذر تحميل الإحصائيات: $e'),
             ),
 
             const SizedBox(height: 24),
@@ -90,6 +93,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   Widget _buildStats(AdminStats stats) {
+    final tokens = context.tokens;
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -102,28 +106,36 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           title: 'المعاهد',
           value: '${stats.institutesCount}',
           icon: Icons.account_balance,
-          iconColor: AppColors.primary,
+          iconColor: tokens.green,
           onTap: () => context.go(AppRoutes.institutes),
         ),
         StatCard(
           title: 'المعلمون',
           value: '${stats.teachersCount}',
           icon: Icons.people,
-          iconColor: AppColors.info,
+          // No manuscript token for the old "info" blue; maroon (the
+          // palette's rubrication/emphasis hue) keeps this card visually
+          // distinct from the green institutes card and gold
+          // supervisors/students cards below, with no collision against
+          // this card's own sepia caption text.
+          iconColor: tokens.maroon,
           onTap: () => context.go(AppRoutes.teachers),
         ),
         StatCard(
           title: 'المشرفون',
           value: '${stats.supervisorsCount}',
           icon: Icons.admin_panel_settings,
-          iconColor: AppColors.secondary,
+          iconColor: tokens.gold,
           onTap: () => context.push(AppRoutes.addSupervisor),
         ),
         StatCard(
           title: 'الطلاب',
           value: '${stats.studentsCount}',
           icon: Icons.school,
-          iconColor: AppColors.success,
+          // "success" reused as green — the positive/affirmative role
+          // green already carries elsewhere (see student dashboard
+          // precedent).
+          iconColor: tokens.green,
           onTap: () => context.push(AppRoutes.adminStudents),
         ),
       ],
@@ -131,6 +143,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   Widget _buildQuickActions() {
+    final tokens = context.tokens;
     return Column(
       children: [
         AppListTile(
@@ -139,10 +152,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              color: tokens.green.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.add_business, color: AppColors.primary),
+            child: Icon(Icons.add_business, color: tokens.green),
           ),
           trailing: const Icon(Icons.chevron_left),
           onTap: () => context.push(AppRoutes.createInstitute),
@@ -154,10 +167,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.info.withValues(alpha: 0.1),
+              // Same "info" -> maroon judgment call as the teachers stat
+              // card above, kept consistent across this screen.
+              color: tokens.maroon.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.person_add, color: AppColors.info),
+            child: Icon(Icons.person_add, color: tokens.maroon),
           ),
           trailing: const Icon(Icons.chevron_left),
           onTap: () => context.push(AppRoutes.addTeacher),
@@ -169,13 +184,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.secondary.withValues(alpha: 0.1),
+              color: tokens.gold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
-              Icons.admin_panel_settings,
-              color: AppColors.secondary,
-            ),
+            child: Icon(Icons.admin_panel_settings, color: tokens.gold),
           ),
           trailing: const Icon(Icons.chevron_left),
           onTap: () => context.push(AppRoutes.addSupervisor),
@@ -187,10 +199,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.secondary.withValues(alpha: 0.1),
+              color: tokens.gold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.menu_book, color: AppColors.secondary),
+            child: Icon(Icons.menu_book, color: tokens.gold),
           ),
           trailing: const Icon(Icons.chevron_left),
           onTap: () => context.go(AppRoutes.curriculum),
