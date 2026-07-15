@@ -335,3 +335,15 @@ Task 15: complete (commit b1eb02d, review clean) — session_history_screen: Emp
   real outcome indicator). No new provider calls, data-fetching byte-identical. No findings.
   Minor (not fixed, cross-cutting pre-existing pattern, not this task's): no screen in the app passes
   onRetry to ErrorState - consistent gap across sibling screens, follow-up only.
+Task 16: complete (commits f50fc3f impl + 395ad19 fix, review clean) — home_practice_screen adopts full
+  system: token mapping, LoadingState/EmptyState/ErrorState swapped in, no new provider calls, practice-
+  logging logic byte-identical. success->green (routine), warning->maroon (routine, no collision).
+  Fixed (review-found, Important): AppColors.info->tokens.ink for the "هذا الأسبوع" stat card was a NO-OP
+  accent (tokens.ink IS the theme's default headlineSmall text color app-wide, so icon+value rendered
+  identical to plain unstyled text vs the other 3 cards' real green/gold/maroon pop). Fixed -> reuse
+  tokens.green (shared with "اليوم"/today card, justified: today+week are naturally related time-window
+  metrics, distinguished by icon+label not color - common dashboard pattern, not a defect).
+  Confirmed: manuscript palette (AppTokens) genuinely has only 3 saturated accent hues (green/gold/maroon) -
+  a real design-system gap (no 4th accent token) noted as backlog, not blocking, across both Task 14 and 16.
+  Full test/widget suite: 143 passing, 0 failing throughout.
+  === ALL 4 STUDENT SCREENS (Tasks 13-16) COMPLETE. Starting Task 17: final verification + follow-ups. ===
