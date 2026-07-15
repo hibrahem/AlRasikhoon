@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/user_model.dart';
+import '../../../data/repositories/curriculum_repository.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
@@ -43,15 +43,10 @@ class _StudentDashboardScreenState
         // (the shared SettingsScreen) so a destructive action never fires on a
         // single unconfirmed tap next to routine navigation.
         //
-        // Aref Ruqaa is reserved for this ONE hero wordmark in the whole app.
-        title: Text(
-          'الراسخون',
-          style: GoogleFonts.arefRuqaa(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).appBarTheme.foregroundColor,
-          ),
-        ),
+        // The wordmark inherits the shared AppBar title style
+        // (GoogleFonts.amiri) so it matches the admin, teacher, and supervisor
+        // dashboards — never a one-off font just for this screen.
+        title: const Text('الراسخون'),
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -92,27 +87,43 @@ class _StudentDashboardScreenState
               ),
               const SizedBox(height: 24),
 
-              // Hero: the Illuminated Juz Ring, fed by the same
-              // level-progress fraction the progress card already shows via
-              // StudentLevelProgress — no new domain concept, no new
-              // provider call. Guarded against a level with an unknown/zero
-              // session count so the ring never divides by zero.
+              // Hero: the Illuminated Juz Ring, showing progress through the
+              // CURRENT LEVEL against the level's real session count from the
+              // catalog (210 in level 1, 49 in level 10) — the same fraction
+              // the progress card below shows via StudentLevelProgress. Never
+              // `currentOrderInLevel / totalSessions`: totalSessions is the
+              // all-time session count, which sits at ~100% from the very first
+              // level. Guarded against an unknown/zero session count (catalog
+              // still loading, or no entry for the level) so the ring reports
+              // no progress rather than dividing by zero.
               statsAsync.when(
-                data: (stats) => Column(
-                  children: [
-                    Center(
-                      child: JuzRing(
-                        juz: stats.currentJuz,
-                        progress: stats.totalSessions > 0
-                            ? (stats.currentOrderInLevel / stats.totalSessions)
-                                  .clamp(0.0, 1.0)
-                            : 0.0,
+                data: (stats) {
+                  final levelSessionCount =
+                      ref
+                          .watch(levelProvider(stats.currentLevel))
+                          .value
+                          ?.sessionCount ??
+                      0;
+                  final ringProgress = levelSessionCount > 0
+                      ? (stats.currentOrderInLevel - 1).clamp(
+                              0,
+                              levelSessionCount,
+                            ) /
+                            levelSessionCount
+                      : 0.0;
+                  return Column(
+                    children: [
+                      Center(
+                        child: JuzRing(
+                          juz: stats.currentJuz,
+                          progress: ringProgress,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    _buildProgressCard(stats),
-                  ],
-                ),
+                      const SizedBox(height: 24),
+                      _buildProgressCard(stats),
+                    ],
+                  );
+                },
                 loading: () => const LoadingState(),
                 error: (e, _) => ErrorState(message: 'تعذر تحميل التقدم: $e'),
               ),
