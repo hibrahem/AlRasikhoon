@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/theme/grade_color_tokens.dart';
 import '../../core/utils/grade_calculator.dart';
 
 class ErrorCounter extends StatelessWidget {
@@ -56,7 +57,7 @@ class ErrorCounter extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 64,
                       fontWeight: FontWeight.bold,
-                      color: gradeInfo.color,
+                      color: tokens.colorForGrade(gradeInfo.grade),
                     ),
                   ),
                   Text(
@@ -105,16 +106,20 @@ class ErrorCounter extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: gradeInfo.color.withValues(alpha: 0.1),
+                    color: tokens
+                        .colorForGrade(gradeInfo.grade)
+                        .withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: gradeInfo.color),
+                    border: Border.all(
+                      color: tokens.colorForGrade(gradeInfo.grade),
+                    ),
                   ),
                   child: Text(
                     gradeInfo.nameAr,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: gradeInfo.color,
+                      color: tokens.colorForGrade(gradeInfo.grade),
                     ),
                   ),
                 ),
@@ -212,7 +217,9 @@ class ErrorCounterCompact extends StatelessWidget {
           child: Text(
             '$errorCount',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: GradeCalculator.getGradeColor(errorCount),
+              color: tokens.colorForGrade(
+                GradeCalculator.calculate(errorCount).grade,
+              ),
               fontWeight: FontWeight.bold,
             ),
           ),

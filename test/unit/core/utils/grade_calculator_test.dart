@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/core/utils/grade_calculator.dart';
-import 'package:al_rasikhoon/core/constants/app_colors.dart';
 
 void main() {
   group('GradeCalculator', () {
@@ -14,7 +13,6 @@ void main() {
         expect(grade.nameEn, 'Rasikh');
         expect(grade.stars, 5);
         expect(grade.passed, true);
-        expect(grade.color, AppColors.gradeRasikh);
       });
 
       // متقن: 1-2 errors
@@ -26,7 +24,6 @@ void main() {
         expect(grade.nameEn, 'Mutqin');
         expect(grade.stars, 4);
         expect(grade.passed, true);
-        expect(grade.color, AppColors.gradeMutqin);
       });
 
       test('2 errors returns متقن with 4 stars and passed', () {
@@ -37,7 +34,6 @@ void main() {
         expect(grade.nameEn, 'Mutqin');
         expect(grade.stars, 4);
         expect(grade.passed, true);
-        expect(grade.color, AppColors.gradeMutqin);
       });
 
       // حافظ: 3-4 errors
@@ -49,7 +45,6 @@ void main() {
         expect(grade.nameEn, 'Hafiz');
         expect(grade.stars, 3);
         expect(grade.passed, true);
-        expect(grade.color, AppColors.gradeHafiz);
       });
 
       test('4 errors returns حافظ with 3 stars and passed', () {
@@ -60,7 +55,6 @@ void main() {
         expect(grade.nameEn, 'Hafiz');
         expect(grade.stars, 3);
         expect(grade.passed, true);
-        expect(grade.color, AppColors.gradeHafiz);
       });
 
       // مجتهد: 5-6 errors
@@ -72,7 +66,6 @@ void main() {
         expect(grade.nameEn, 'Mujtahid');
         expect(grade.stars, 2);
         expect(grade.passed, true);
-        expect(grade.color, AppColors.gradeMujtahid);
       });
 
       test('6 errors returns مجتهد with 2 stars and passed', () {
@@ -83,7 +76,6 @@ void main() {
         expect(grade.nameEn, 'Mujtahid');
         expect(grade.stars, 2);
         expect(grade.passed, true);
-        expect(grade.color, AppColors.gradeMujtahid);
       });
 
       // محب: 7+ errors (fail)
@@ -95,7 +87,6 @@ void main() {
         expect(grade.nameEn, 'Muhib');
         expect(grade.stars, 1);
         expect(grade.passed, false);
-        expect(grade.color, AppColors.gradeMuhib);
       });
 
       test('10 errors returns محب (fail)', () {
@@ -222,19 +213,6 @@ void main() {
       });
     });
 
-    group('getGradeColor', () {
-      test('returns correct color for each grade', () {
-        expect(GradeCalculator.getGradeColor(0), AppColors.gradeRasikh);
-        expect(GradeCalculator.getGradeColor(1), AppColors.gradeMutqin);
-        expect(GradeCalculator.getGradeColor(2), AppColors.gradeMutqin);
-        expect(GradeCalculator.getGradeColor(3), AppColors.gradeHafiz);
-        expect(GradeCalculator.getGradeColor(4), AppColors.gradeHafiz);
-        expect(GradeCalculator.getGradeColor(5), AppColors.gradeMujtahid);
-        expect(GradeCalculator.getGradeColor(6), AppColors.gradeMujtahid);
-        expect(GradeCalculator.getGradeColor(7), AppColors.gradeMuhib);
-      });
-    });
-
     // Session-level aggregation (hibrahem/AlRasikhoon#24): a session is
     // FAILED if ANY one component (new/near/far) grades محب (ويعاد); it
     // passes only if none is محب. NO averaging — a single محب can never be
@@ -253,33 +231,37 @@ void main() {
         );
       });
 
-      test('passes when worst non-محب grade is مجتهد (3 errors at level 1)',
-          () {
-        expect(
-          GradeCalculator.sessionPassesForLevel(
-            level: 1,
-            newMemorizationErrors: 3,
-            recentReviewErrors: 3,
-            distantReviewErrors: 3,
-          ),
-          true,
-        );
-      });
+      test(
+        'passes when worst non-محب grade is مجتهد (3 errors at level 1)',
+        () {
+          expect(
+            GradeCalculator.sessionPassesForLevel(
+              level: 1,
+              newMemorizationErrors: 3,
+              recentReviewErrors: 3,
+              distantReviewErrors: 3,
+            ),
+            true,
+          );
+        },
+      );
 
-      test('FAILS when NEW (الجديد) is محب — even with راسخ/متقن elsewhere',
-          () {
-        // Repro from the issue: new = محب (4 @ L1), near = متقن (1),
-        // far = راسخ (0). Averaging would have masked the محب; any-محب fails.
-        expect(
-          GradeCalculator.sessionPassesForLevel(
-            level: 1,
-            newMemorizationErrors: 4,
-            recentReviewErrors: 1,
-            distantReviewErrors: 0,
-          ),
-          false,
-        );
-      });
+      test(
+        'FAILS when NEW (الجديد) is محب — even with راسخ/متقن elsewhere',
+        () {
+          // Repro from the issue: new = محب (4 @ L1), near = متقن (1),
+          // far = راسخ (0). Averaging would have masked the محب; any-محب fails.
+          expect(
+            GradeCalculator.sessionPassesForLevel(
+              level: 1,
+              newMemorizationErrors: 4,
+              recentReviewErrors: 1,
+              distantReviewErrors: 0,
+            ),
+            false,
+          );
+        },
+      );
 
       test('FAILS when NEAR (القريب) is محب — masked by good others', () {
         expect(
@@ -293,19 +275,21 @@ void main() {
         );
       });
 
-      test('FAILS when FAR (البعيد) is محب — the issue repro (راسخ/متقن/محب)',
-          () {
-        // new = راسخ (0), near = متقن (1), far = محب (4 @ L1).
-        expect(
-          GradeCalculator.sessionPassesForLevel(
-            level: 1,
-            newMemorizationErrors: 0,
-            recentReviewErrors: 1,
-            distantReviewErrors: 4,
-          ),
-          false,
-        );
-      });
+      test(
+        'FAILS when FAR (البعيد) is محب — the issue repro (راسخ/متقن/محب)',
+        () {
+          // new = راسخ (0), near = متقن (1), far = محب (4 @ L1).
+          expect(
+            GradeCalculator.sessionPassesForLevel(
+              level: 1,
+              newMemorizationErrors: 0,
+              recentReviewErrors: 1,
+              distantReviewErrors: 4,
+            ),
+            false,
+          );
+        },
+      );
 
       test('respects level — same 4 errors is NOT محب at a high level', () {
         // Level 9: B = 4, محب only at >= 8 mistakes; 4 errors → راسخ.
@@ -321,58 +305,60 @@ void main() {
       });
     });
 
-    group('calculateSessionGrade (worst-component, no averaging — issue #24)',
-        () {
-      test('all parts راسخ returns راسخ and passes', () {
-        final grade = GradeCalculator.calculateSessionGrade(
-          level: 1,
-          newMemorizationErrors: 0,
-          recentReviewErrors: 0,
-          distantReviewErrors: 0,
-        );
+    group(
+      'calculateSessionGrade (worst-component, no averaging — issue #24)',
+      () {
+        test('all parts راسخ returns راسخ and passes', () {
+          final grade = GradeCalculator.calculateSessionGrade(
+            level: 1,
+            newMemorizationErrors: 0,
+            recentReviewErrors: 0,
+            distantReviewErrors: 0,
+          );
 
-        expect(grade.grade, Grade.rasikh);
-        expect(grade.passed, true);
-      });
+          expect(grade.grade, Grade.rasikh);
+          expect(grade.passed, true);
+        });
 
-      test('returns the WORST component grade, never an average', () {
-        // new = راسخ (0), near = راسخ (0), far = مجتهد (3 @ L1).
-        // Old averaging gave متقن (ceil(3/3)=1); worst-component gives مجتهد.
-        final grade = GradeCalculator.calculateSessionGrade(
-          level: 1,
-          newMemorizationErrors: 0,
-          recentReviewErrors: 0,
-          distantReviewErrors: 3,
-        );
+        test('returns the WORST component grade, never an average', () {
+          // new = راسخ (0), near = راسخ (0), far = مجتهد (3 @ L1).
+          // Old averaging gave متقن (ceil(3/3)=1); worst-component gives مجتهد.
+          final grade = GradeCalculator.calculateSessionGrade(
+            level: 1,
+            newMemorizationErrors: 0,
+            recentReviewErrors: 0,
+            distantReviewErrors: 3,
+          );
 
-        expect(grade.grade, Grade.mujtahid);
-        expect(grade.passed, true);
-      });
+          expect(grade.grade, Grade.mujtahid);
+          expect(grade.passed, true);
+        });
 
-      test('returns محب (failed) when any single part is محب', () {
-        final grade = GradeCalculator.calculateSessionGrade(
-          level: 1,
-          newMemorizationErrors: 0,
-          recentReviewErrors: 0,
-          distantReviewErrors: 4,
-        );
+        test('returns محب (failed) when any single part is محب', () {
+          final grade = GradeCalculator.calculateSessionGrade(
+            level: 1,
+            newMemorizationErrors: 0,
+            recentReviewErrors: 0,
+            distantReviewErrors: 4,
+          );
 
-        expect(grade.grade, Grade.muhib);
-        expect(grade.passed, false);
-      });
+          expect(grade.grade, Grade.muhib);
+          expect(grade.passed, false);
+        });
 
-      test('a single محب is never masked by راسخ in the other two parts', () {
-        final grade = GradeCalculator.calculateSessionGrade(
-          level: 1,
-          newMemorizationErrors: 4,
-          recentReviewErrors: 0,
-          distantReviewErrors: 0,
-        );
+        test('a single محب is never masked by راسخ in the other two parts', () {
+          final grade = GradeCalculator.calculateSessionGrade(
+            level: 1,
+            newMemorizationErrors: 4,
+            recentReviewErrors: 0,
+            distantReviewErrors: 0,
+          );
 
-        expect(grade.grade, Grade.muhib);
-        expect(grade.passed, false);
-      });
-    });
+          expect(grade.grade, Grade.muhib);
+          expect(grade.passed, false);
+        });
+      },
+    );
 
     group('calculateForLevel (level-based grading — issue #22)', () {
       // Exhaustive per-level-pair threshold table. B = (level - 1) ~/ 2.
@@ -422,13 +408,15 @@ void main() {
               expect(g.passed, true);
             });
 
-            test('mistakes == B+4 (${base + 4}) → محب (must repeat / fail)',
-                () {
-              final g = GradeCalculator.calculateForLevel(level, base + 4);
-              expect(g.grade, Grade.muhib);
-              expect(g.nameAr, 'محب');
-              expect(g.passed, false);
-            });
+            test(
+              'mistakes == B+4 (${base + 4}) → محب (must repeat / fail)',
+              () {
+                final g = GradeCalculator.calculateForLevel(level, base + 4);
+                expect(g.grade, Grade.muhib);
+                expect(g.nameAr, 'محب');
+                expect(g.passed, false);
+              },
+            );
 
             // ≤B boundary: 0 mistakes is always راسخ (even when B > 0).
             test('mistakes 0 (<= B) → راسخ', () {
@@ -451,17 +439,11 @@ void main() {
 
       group('issue #22 repro examples', () {
         test('level 1 with 2 mistakes → حافظ', () {
-          expect(
-            GradeCalculator.calculateForLevel(1, 2).grade,
-            Grade.hafiz,
-          );
+          expect(GradeCalculator.calculateForLevel(1, 2).grade, Grade.hafiz);
         });
 
         test('level 9 with 2 mistakes → راسخ', () {
-          expect(
-            GradeCalculator.calculateForLevel(9, 2).grade,
-            Grade.rasikh,
-          );
+          expect(GradeCalculator.calculateForLevel(9, 2).grade, Grade.rasikh);
         });
 
         test('same mistake count yields different grades across levels', () {
@@ -491,10 +473,7 @@ void main() {
         });
 
         test('negative mistakes treated as 0 → راسخ', () {
-          expect(
-            GradeCalculator.calculateForLevel(1, -3).grade,
-            Grade.rasikh,
-          );
+          expect(GradeCalculator.calculateForLevel(1, -3).grade, Grade.rasikh);
         });
       });
 
@@ -527,7 +506,6 @@ void main() {
           nameEn: 'Rasikh',
           stars: 5,
           passed: true,
-          color: AppColors.gradeRasikh,
         );
 
         expect(gradeInfo.grade, Grade.rasikh);

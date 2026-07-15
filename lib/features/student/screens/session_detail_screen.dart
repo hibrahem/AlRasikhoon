@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/theme/grade_color_tokens.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/grade_display.dart';
@@ -269,8 +270,9 @@ class _PartResultCard extends StatelessWidget {
             // "positive/passed" role elsewhere in this screen (تلقين icon,
             // header icon). AppColors.error maps to tokens.maroon per the
             // table. No collision: the errors-count/grade-name text to the
-            // right uses gradeInfo.color (GradeCalculator's own grade-tier
-            // palette), a separate signal from this pass/fail icon.
+            // right uses tokens.colorForGrade (the brightness-aware
+            // grade-tier palette), a separate signal from this pass/fail
+            // icon.
             color: gradeInfo.passed ? tokens.green : tokens.maroon,
           ),
           const SizedBox(width: 12),
@@ -284,14 +286,14 @@ class _PartResultCard extends StatelessWidget {
                 '$errors أخطاء',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: gradeInfo.color,
+                  color: tokens.colorForGrade(gradeInfo.grade),
                 ),
               ),
               Text(
                 gradeInfo.nameAr,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: gradeInfo.color),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: tokens.colorForGrade(gradeInfo.grade),
+                ),
               ),
             ],
           ),
