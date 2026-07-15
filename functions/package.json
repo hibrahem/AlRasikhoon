@@ -12,7 +12,8 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "lint": "eslint --ext .ts src/",
-    "lint:fix": "eslint --ext .ts src/ --fix"
+    "lint:fix": "eslint --ext .ts src/ --fix",
+    "verify:build-fresh": "bash scripts/verify-build-fresh.sh"
   },
   "engines": {
     "node": "22"
