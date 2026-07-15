@@ -8,6 +8,7 @@ import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
+import 'package:al_rasikhoon/shared/providers/institute_provider.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 
 UserModel _teacher() => UserModel(

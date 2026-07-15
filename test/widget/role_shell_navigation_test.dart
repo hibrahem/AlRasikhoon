@@ -11,6 +11,7 @@ import 'package:al_rasikhoon/features/settings/screens/settings_screen.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/features/teacher/screens/teacher_history_screen.dart';
 import 'package:al_rasikhoon/features/teacher/screens/teacher_students_screen.dart';
+import 'package:al_rasikhoon/shared/providers/institute_provider.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 
 class _MockFirebaseService extends Mock implements FirebaseService {}

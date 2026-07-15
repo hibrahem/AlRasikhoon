@@ -1,15 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/repositories/institute_repository.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/session_repository.dart';
-import '../../../data/models/institute_model.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/user_provider.dart';
+import '../../../shared/providers/institute_provider.dart';
 import '../../../shared/providers/meeting_provider.dart'
     show composeMeetingFor, composeNextMeetingAfter;
 
@@ -22,17 +21,6 @@ final teacherStudentsProvider = FutureProvider<List<StudentWithUser>>((
 
   final repo = ref.watch(studentRepositoryProvider);
   return repo.getStudentsForTeacher(currentUser.id);
-});
-
-/// Institutes the current teacher is assigned to.
-final teacherInstitutesProvider = FutureProvider<List<InstituteModel>>((
-  ref,
-) async {
-  final currentUser = ref.watch(currentUserProvider);
-  if (currentUser == null) return [];
-
-  final repo = ref.watch(instituteRepositoryProvider);
-  return repo.getInstitutesForTeacher(currentUser.id);
 });
 
 /// Selected institute id to filter the teacher's students view.

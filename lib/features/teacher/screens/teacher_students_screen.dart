@@ -6,6 +6,7 @@ import '../../../data/models/institute_model.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/providers/institute_provider.dart';
 import '../../../shared/widgets/student_card.dart';
 import '../providers/teacher_provider.dart';
 
