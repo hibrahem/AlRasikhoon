@@ -7,7 +7,9 @@ import '../services/firebase_service.dart';
 import '../../core/constants/app_constants.dart';
 import '../../domain/curriculum/curriculum_pace.dart';
 import '../../domain/curriculum/curriculum_position.dart';
+import '../../domain/curriculum/reposition_exceptions.dart';
 import 'curriculum_repository.dart';
+import 'session_repository.dart';
 import 'user_repository.dart';
 
 class StudentWithUser {
@@ -75,16 +77,19 @@ class StudentRepository {
   final FirebaseService _firebaseService;
   final UserRepository _userRepository;
   final CurriculumRepository _curriculumRepository;
+  final SessionRepository _sessionRepository;
 
   StudentRepository({
     FirebaseFirestore? firestore,
     required FirebaseService firebaseService,
     required UserRepository userRepository,
     required CurriculumRepository curriculumRepository,
+    required SessionRepository sessionRepository,
   }) : _firestore = firestore ?? FirebaseFirestore.instance,
        _firebaseService = firebaseService,
        _userRepository = userRepository,
-       _curriculumRepository = curriculumRepository;
+       _curriculumRepository = curriculumRepository,
+       _sessionRepository = sessionRepository;
 
   CollectionReference<Map<String, dynamic>> get _studentsCollection =>
       _firestore.collection(AppConstants.collectionStudents);
@@ -243,6 +248,121 @@ class StudentRepository {
     });
 
     return StudentWithUser(student: student, user: user);
+  }
+
+  /// Moves an ALREADY-ENROLLED student's starting point to [newPosition] and
+  /// re-derives every position field from the new anchor — the authoritative,
+  /// server-side path for al_rasikhoon-sne.
+  ///
+  /// This is only safe, and is only permitted, while the student has NOT started
+  /// (zero session/سرد/اختبار records): with no history, moving the anchor
+  /// cannot orphan a record, so it is a pure re-derivation. The three
+  /// invariants are ALL enforced here rather than in a Firestore rule — a rule
+  /// cannot aggregate across the record collections, and a stale UI must not be
+  /// trusted to have checked:
+  ///
+  /// 1. **Supervisor of the student's institute.** [actor] must be a supervisor
+  ///    bound to the student's own institute. A teacher, guardian, or supervisor
+  ///    of another institute is rejected with [RepositionNotAuthorizedException].
+  /// 2. **Not started.** If any progress record exists the move is refused with
+  ///    [StudentAlreadyStartedException], even if the caller believed otherwise.
+  /// 3. **The new position exists.** Resolved against the curriculum exactly as
+  ///    enrollment does; a position with no session is a rejected placement.
+  ///
+  /// The re-derivation REUSES the enrollment code path verbatim:
+  /// [StudentModel.enrolledAt] computes `completed_levels`, `unlocked_levels` and
+  /// the anchor, and [_writePosition] writes the denormalized `current_*` facts —
+  /// the same two functions `createStudent` uses — so a repositioned student and
+  /// a freshly-enrolled one are indistinguishable in shape. Nothing here
+  /// duplicates that logic.
+  ///
+  /// The student update and the audit entry are written in one [WriteBatch] so
+  /// the move and the record of who made it commit together or not at all.
+  Future<void> repositionEnrolledStudent({
+    required String studentId,
+    required CurriculumPosition newPosition,
+    required UserModel actor,
+  }) async {
+    // (a) Only a supervisor may move an anchor.
+    if (actor.role != UserRole.supervisor) {
+      throw const RepositionNotAuthorizedException(
+        'Only a supervisor may move a student\'s starting point',
+      );
+    }
+
+    final student = await getStudentById(studentId);
+    if (student == null) {
+      throw ArgumentError.value(studentId, 'studentId', 'No such student');
+    }
+
+    // (a cont.) …and only within their OWN institute (AgDR-0003: the supervisor
+    // is bound to a single institute, compared against the student's
+    // denormalized institute_id).
+    if (actor.instituteId == null ||
+        actor.instituteId!.isEmpty ||
+        actor.instituteId != student.instituteId) {
+      throw const RepositionNotAuthorizedException(
+        'Supervisor is not scoped to this student\'s institute',
+      );
+    }
+
+    // (b) The move is only safe with zero history — the invariant a Firestore
+    // rule cannot check, so it is checked here and is authoritative.
+    if (await _sessionRepository.hasAnyProgressRecords(studentId)) {
+      throw StudentAlreadyStartedException(studentId);
+    }
+
+    // (c) Topology first (level/juz/session could name a real point), then the
+    // data: the curriculum decides whether that session exists.
+    CurriculumPosition.validated(
+      level: newPosition.level,
+      juz: newPosition.juz,
+      session: newPosition.session,
+    );
+    final newSession = await _curriculumRepository.getSessionAt(newPosition);
+    if (newSession == null) {
+      throw ArgumentError.value(
+        newPosition.sessionId,
+        'newPosition',
+        'No curriculum session exists at this position',
+      );
+    }
+
+    // Re-derive through the SAME enrollment factory the creation path uses, so
+    // completed_levels / unlocked_levels / the anchor are computed in exactly
+    // one place. The student's identity (id, user, institute, teacher, guardian,
+    // createdAt) is carried through unchanged; pace, attempt state and any other
+    // field the update below does not touch stay exactly as they were.
+    final rederived = StudentModel.enrolledAt(
+      id: student.id,
+      userId: student.userId,
+      instituteId: student.instituteId,
+      teacherId: student.teacherId,
+      guardianId: student.guardianId,
+      session: newSession,
+      createdAt: student.createdAt,
+    );
+
+    final studentRef = _studentsCollection.doc(studentId);
+    final auditRef = studentRef.collection('reposition_audit').doc();
+    final batch = _firestore.batch();
+    batch.update(studentRef, {
+      ..._writePosition(newSession),
+      'completed_levels': rederived.completedLevels,
+      'unlocked_levels': rederived.unlockedLevels,
+      'enrollment_position': rederived.enrollmentPosition.toMap(),
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+    // Lightweight audit trail: who moved whom, and from/to which anchor. Kept as
+    // an append-only subcollection so repeated pre-start corrections each leave a
+    // record, rather than a single last-write field on the student.
+    batch.set(auditRef, {
+      'moved_by': actor.id,
+      'from': student.enrollmentPosition.toMap(),
+      'to': newPosition.toMap(),
+      'moved_at': FieldValue.serverTimestamp(),
+    });
+    await batch.commit();
   }
 
   /// Get student by ID
@@ -598,17 +718,26 @@ class StudentRepository {
   ///
   /// 1. `fromOrderInLevel + 1` within the current level — the whole advancement
   ///    rule, juz boundaries included.
-  /// 2. If there is none, the level is finished: take the first session
-  ///    (`order_in_level == 1`) of the next level that has one, so a level with
-  ///    no seeded sessions is stepped over rather than mistaken for the end.
-  /// 3. If the student was already in the last level, the curriculum is
-  ///    finished.
+  /// 2. If no session is seeded there, whether the level is FINISHED or merely
+  ///    HOLED is a data question, answered from the levels catalog — never from
+  ///    the structural fact that the student happens to stand in the last level.
+  ///    Terminality is credited ONLY when the catalog positively accounts for
+  ///    the student's position as the level's last session
+  ///    (`fromOrderInLevel >= sessionCount`). An absent catalog, an empty one,
+  ///    or one that still lists sessions after [fromOrderInLevel] proves
+  ///    nothing: the missing `fromOrderInLevel + 1` is a HOLE in the seeded
+  ///    data, and the student is left exactly as they are.
+  /// 3. Once the level is confirmed finished, the walk steps into the first
+  ///    session (`order_in_level == 1`) of the next level that has one, so a
+  ///    wholly-unseeded level is stepped over rather than mistaken for the end.
+  /// 4. If that confirmed-finished level was the last level and nothing is
+  ///    seeded ahead, the curriculum is complete.
   ///
-  /// Before concluding a level is finished, the levels catalog is consulted: if
-  /// it says the level has more sessions after [fromOrderInLevel], then the
-  /// missing `fromOrderInLevel + 1` is a HOLE in the data, not the end of the
-  /// level, and the student must not be marched into the next level on the
-  /// strength of a missing document.
+  /// This ordering — consult the data, THEN conclude — is what stops an
+  /// unseeded last-level student (e.g. a hizb-2 placement in level 10 whose
+  /// sessions were never seeded) from being silently graduated: with no catalog
+  /// to confirm the last session, the only honest answer is that the data is
+  /// missing, never that the curriculum is done.
   Future<_NextSessionOutcome> _nextSession(
     StudentModel student,
     int fromOrderInLevel,
@@ -626,12 +755,17 @@ class StudentRepository {
     );
     if (next != null) return _Advanced(next);
 
-    // No next session in this level. Is the level really finished, or is the
-    // data holed?
+    // No next session is seeded in this level. Consult the catalog BEFORE
+    // concluding anything: only a catalog that positively confirms the level
+    // ends at or before [fromOrderInLevel] proves the level is finished.
+    // Anything else — a missing catalog, an empty one, or one that still lists
+    // later sessions — means the data is holed, not that the curriculum ended.
     final catalog = await _curriculumRepository.getLevelByNumber(level);
-    if (catalog != null &&
+    final levelIsFinished =
+        catalog != null &&
         catalog.sessionCount > 0 &&
-        fromOrderInLevel < catalog.sessionCount) {
+        fromOrderInLevel >= catalog.sessionCount;
+    if (!levelIsFinished) {
       return const _CurriculumDataMissing();
     }
 
@@ -647,10 +781,9 @@ class StudentRepository {
       if (first != null) return _Advanced(first);
     }
 
-    // Nothing ahead. If the student was in the last level, that is the end of
-    // the curriculum — a structural fact. Otherwise the levels ahead simply
-    // have no seeded data, which is a data problem and must not be credited as
-    // completion.
+    // The level is confirmed finished and nothing is seeded ahead. Only the
+    // last level ending this way is genuine completion; an earlier level with
+    // no seeded successor is a data problem and must not be credited.
     if (level == CurriculumPosition.totalLevels) {
       return const _CurriculumCompleted();
     }
@@ -755,5 +888,6 @@ final studentRepositoryProvider = Provider<StudentRepository>((ref) {
     firebaseService: ref.watch(firebaseServiceProvider),
     userRepository: ref.watch(userRepositoryProvider),
     curriculumRepository: ref.watch(curriculumRepositoryProvider),
+    sessionRepository: ref.watch(sessionRepositoryProvider),
   );
 });

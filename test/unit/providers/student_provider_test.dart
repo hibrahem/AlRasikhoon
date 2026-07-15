@@ -5,7 +5,8 @@ import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
-import 'package:al_rasikhoon/features/student/providers/student_provider.dart';
+import 'package:al_rasikhoon/shared/providers/current_student_provider.dart';
+import 'package:al_rasikhoon/shared/providers/stats_provider.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 
 class MockStudentRepository extends Mock implements StudentRepository {}
@@ -98,7 +99,9 @@ void main() {
       expect(result, isNotNull);
       expect(result?.id, 'student-1');
       expect(result?.userId, 'user-1');
-      verify(() => mockStudentRepository.getStudentByUserId('user-1')).called(1);
+      verify(
+        () => mockStudentRepository.getStudentByUserId('user-1'),
+      ).called(1);
     });
 
     test('returns null when no user is authenticated', () async {
@@ -174,9 +177,7 @@ void main() {
       ).thenAnswer((_) async => student);
       when(
         () => mockSessionRepository.getStudentStatistics('student-1'),
-      ).thenAnswer(
-        (_) async => {'total_sessions': 10, 'passed_sessions': 8},
-      );
+      ).thenAnswer((_) async => {'total_sessions': 10, 'passed_sessions': 8});
 
       final container = makeContainer(user: buildUser());
 
@@ -200,9 +201,7 @@ void main() {
       ).thenAnswer((_) async => student);
       when(
         () => mockSessionRepository.getStudentStatistics('student-1'),
-      ).thenAnswer(
-        (_) async => {'total_sessions': 4, 'passed_sessions': 3},
-      );
+      ).thenAnswer((_) async => {'total_sessions': 4, 'passed_sessions': 3});
 
       final container = makeContainer(user: buildUser());
 
@@ -211,24 +210,24 @@ void main() {
       expect(stats.passRate, closeTo(0.75, 1e-9));
     });
 
-    test('pass rate is 0 when there are no sessions (no divide-by-zero)',
-        () async {
-      final student = buildStudent();
-      when(
-        () => mockStudentRepository.getStudentByUserId('user-1'),
-      ).thenAnswer((_) async => student);
-      when(
-        () => mockSessionRepository.getStudentStatistics('student-1'),
-      ).thenAnswer(
-        (_) async => {'total_sessions': 0, 'passed_sessions': 0},
-      );
+    test(
+      'pass rate is 0 when there are no sessions (no divide-by-zero)',
+      () async {
+        final student = buildStudent();
+        when(
+          () => mockStudentRepository.getStudentByUserId('user-1'),
+        ).thenAnswer((_) async => student);
+        when(
+          () => mockSessionRepository.getStudentStatistics('student-1'),
+        ).thenAnswer((_) async => {'total_sessions': 0, 'passed_sessions': 0});
 
-      final container = makeContainer(user: buildUser());
+        final container = makeContainer(user: buildUser());
 
-      final stats = await container.read(studentStatsProvider.future);
+        final stats = await container.read(studentStatsProvider.future);
 
-      expect(stats.passRate, 0);
-    });
+        expect(stats.passRate, 0);
+      },
+    );
 
     test('isLevelLocked is true for a level not in unlockedLevels', () async {
       final student = buildStudent(unlockedLevels: [1, 2]);

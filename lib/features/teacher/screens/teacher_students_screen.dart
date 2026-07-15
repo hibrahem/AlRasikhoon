@@ -67,7 +67,7 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
                             studentWithUser: studentWithUser,
                             onTap: () {
                               context.push(
-                                AppRoutes.sessionOverview.replaceFirst(
+                                AppRoutes.studentProfile.replaceFirst(
                                   ':studentId',
                                   studentWithUser.student.id,
                                 ),

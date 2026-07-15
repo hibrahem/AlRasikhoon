@@ -112,6 +112,14 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
     // Legacy student with NO institute_id AND NO teacher_id (must fail closed
     // for both supervisor institute scoping and teacher record scoping).
     await seed("students", "stu_legacy", { name: "Legacy student" });
+    // Teacher-less student that DOES carry an institute (institute A). This is
+    // the rescue case for the supervisor assign-teacher flow (al_rasikhoon-9qz):
+    // it has no teacher_id yet, but the supervisor may fill one in because the
+    // supervisor branch scopes on institute_id, not teacher_id.
+    await seed("students", "stu_teacherless_a", {
+      institute_id: INST_A,
+      name: "Teacher-less student A",
+    });
 
     // Read-scoping students: each has a linked user (user_id) and guardian
     // (guardian_id), an institute for supervisor scoping, and a teacher_id for
@@ -603,6 +611,105 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
     const db = asUser("teacher_a");
     await assertFails(
       updateDoc(doc(db, "sard_records", "sard_a"), { student_id: "stu_b" })
+    );
+  });
+
+  // === al_rasikhoon-9qz — teacher students-collection WRITE scoping ========
+  // The /students create+update rules previously allowed a bare isTeacher(), so
+  // ANY teacher could create/edit ANY student doc (repoint teacher_id, move
+  // enrollment, alter progress) — including another teacher's student. Teacher
+  // writes are now scoped to the teacher's OWN students via
+  // isTeacherOfStudent(students.teacher_id == uid), with a dual old+new check on
+  // update, mirroring the session_records rule. stu_a belongs to teacher_a,
+  // stu_b to teacher_b.
+
+  // --- create ---------------------------------------------------------------
+  it("DENIES a teacher creating a student assigned to ANOTHER teacher (al_rasikhoon-9qz)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      setDoc(doc(db, "students", "stu_new_cross"), {
+        institute_id: INST_A,
+        teacher_id: "teacher_b",
+        name: "New cross",
+      })
+    );
+  });
+
+  it("ALLOWS a teacher creating a student assigned to THEMSELVES (al_rasikhoon-9qz)", async () => {
+    const db = asUser("teacher_a");
+    await assertSucceeds(
+      setDoc(doc(db, "students", "stu_new_own"), {
+        institute_id: INST_A,
+        teacher_id: "teacher_a",
+        name: "New own",
+      })
+    );
+  });
+
+  it("DENIES a teacher creating a teacher-less student (fail-closed, al_rasikhoon-9qz)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      setDoc(doc(db, "students", "stu_new_teacherless"), {
+        institute_id: INST_A,
+        name: "New teacher-less",
+      })
+    );
+  });
+
+  // --- update ---------------------------------------------------------------
+  it("DENIES a teacher updating ANOTHER teacher's student (al_rasikhoon-9qz)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      updateDoc(doc(db, "students", "stu_b"), { name: "tampered" })
+    );
+  });
+
+  it("ALLOWS a teacher updating their OWN student (al_rasikhoon-9qz)", async () => {
+    const db = asUser("teacher_a");
+    await assertSucceeds(
+      updateDoc(doc(db, "students", "stu_a"), { name: "Student A (renamed)" })
+    );
+  });
+
+  it("DENIES a teacher repointing an OWNED student's teacher_id to another teacher (al_rasikhoon-9qz)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      updateDoc(doc(db, "students", "stu_a"), { teacher_id: "teacher_b" })
+    );
+  });
+
+  it("DENIES a teacher updating a teacher-less student (fail-closed, al_rasikhoon-9qz)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      updateDoc(doc(db, "students", "stu_teacherless_a"), { name: "tampered" })
+    );
+  });
+
+  // --- regression: teacher advancing their OWN student's session ------------
+  // advanceStudentSession writes current_session*/curriculum_completed to the
+  // student doc from a teacher after سرد. This must keep working under the new
+  // scoping (teacher_id is unchanged, so both isTeacherOfStudent checks hold).
+  it("ALLOWS a teacher advancing their OWN student's session (current_session/curriculum_completed) (al_rasikhoon-9qz)", async () => {
+    const db = asUser("teacher_a");
+    await assertSucceeds(
+      updateDoc(doc(db, "students", "stu_a"), {
+        current_session: 12,
+        curriculum_completed: true,
+      })
+    );
+  });
+
+  // --- legitimate assign-teacher-to-a-teacher-less-student (supervisor) ------
+  // The only flow that fills a MISSING teacher_id is supervisor-driven
+  // (assign_teacher_dialog → assignTeacher). It rides the supervisor branch,
+  // which scopes on institute_id, so it keeps working for an in-institute
+  // teacher-less student.
+  it("ALLOWS a supervisor assigning a teacher to a teacher-less in-institute student (al_rasikhoon-9qz)", async () => {
+    const db = asUser("sup_a");
+    await assertSucceeds(
+      updateDoc(doc(db, "students", "stu_teacherless_a"), {
+        teacher_id: "teacher_a",
+      })
     );
   });
 

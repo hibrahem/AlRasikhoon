@@ -382,6 +382,7 @@ void main() {
         firebaseService: _MockFirebaseService(),
         userRepository: UserRepository(firestore: firestore),
         curriculumRepository: curriculumRepository,
+        sessionRepository: sessionRepository,
       );
 
       await _seedUnit(firestore);
@@ -682,6 +683,7 @@ void main() {
         firebaseService: _MockFirebaseService(),
         userRepository: UserRepository(firestore: firestore),
         curriculumRepository: curriculumRepository,
+        sessionRepository: sessionRepository,
       );
 
       await _seedUnit(firestore);

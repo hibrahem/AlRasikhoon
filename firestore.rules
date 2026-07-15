@@ -202,18 +202,37 @@ service cloud.firestore {
       // sees only their own doc. A blanket authenticated read here previously
       // exposed every student across institutes.
       allow read: if canReadStudent(resource.data);
-      // Allow create if: teacher, supervisor (only within their own institute —
-      // teacher-parity student management, AgDR-0003 / #28), OR student creating
-      // their own record (for invitation flow).
-      allow create: if isTeacher() ||
+      // Allow create if: a teacher creating a student assigned to THEMSELVES
+      // (isTeacherOfStudent on the incoming doc requires teacher_id ==
+      // request.auth.uid — the only teacher create flow, add_student_screen,
+      // always sets teacher_id to the teacher's own uid), supervisor (only
+      // within their own institute — teacher-parity student management,
+      // AgDR-0003 / #28), OR student creating their own record (for invitation
+      // flow). A bare isTeacher() here previously let any teacher create a
+      // student assigned to ANOTHER teacher / institute (al_rasikhoon-9qz).
+      allow create: if isTeacherOfStudent(request.resource.data) ||
         isSupervisorOfStudentInstitute(request.resource.data) ||
         (isAuthenticated() && getUserRole() == 'student' && request.resource.data.user_id == request.auth.uid);
-      // Allow update if: teacher, supervisor (scoped to their institute on BOTH
-      // the existing doc and the incoming doc, so a supervisor can neither edit
-      // a student outside their institute nor move one in/out of it), OR student
-      // claiming their own record (setting user_id to their own UID during
-      // migration repair).
-      allow update: if isTeacher() ||
+      // Allow update if: a teacher owns the student on BOTH the existing doc and
+      // the incoming doc (isTeacherOfStudent on old AND new — the caller must
+      // already be the student's teacher, and the new teacher_id must remain the
+      // caller). This lets a teacher edit only their OWN student (advance
+      // session writing current_session*/curriculum_completed, set pace, bump
+      // attempts) while blocking two attacks a bare isTeacher() left open
+      // (al_rasikhoon-9qz): tampering with ANOTHER teacher's student, and
+      // repointing an owned student's teacher_id to someone else. Mirrors the
+      // dual old/new check on the session_records update rule. The legitimate
+      // "assign a teacher to a teacher-less student" flow is SUPERVISOR-driven
+      // (assign_teacher_dialog → assignTeacher) and rides the supervisor branch
+      // below, which turns on institute_id only — so no teacher-branch carve-out
+      // for a teacher-less old doc is needed (there is no such teacher flow), and
+      // the teacher branch stays fail-closed on a missing teacher_id. Supervisor
+      // is scoped to their institute on BOTH the existing and incoming doc, so a
+      // supervisor can neither edit a student outside their institute nor move
+      // one in/out of it. OR student claiming their own record (setting user_id
+      // to their own UID during migration repair).
+      allow update: if (isTeacherOfStudent(resource.data) &&
+         isTeacherOfStudent(request.resource.data)) ||
         (isSupervisorOfStudentInstitute(resource.data) &&
          isSupervisorOfStudentInstitute(request.resource.data)) ||
         (isAuthenticated() &&
@@ -221,6 +240,21 @@ service cloud.firestore {
          request.resource.data.user_id == request.auth.uid &&
          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['user_id', 'updated_at']));
       allow delete: if isSuperAdmin();
+
+      // Append-only audit of pre-start starting-point moves (al_rasikhoon-sne):
+      // who moved whom, and from/to which anchor. A supervisor scoped to the
+      // student's institute may append an entry; the same roles that may read
+      // the student may read its audit. Entries are immutable (no update/delete)
+      // so the trail cannot be rewritten. This is a NARROW, feature-local rule —
+      // it does not touch the institute-scoping primitives (al_rasikhoon-3n6).
+      match /reposition_audit/{auditId} {
+        function parentStudent() {
+          return get(/databases/$(database)/documents/students/$(studentId)).data;
+        }
+        allow read: if canReadStudent(parentStudent());
+        allow create: if isSupervisorOfStudentInstitute(parentStudent());
+        allow update, delete: if false;
+      }
     }
 
     // Curriculum (read-only for all authenticated users)

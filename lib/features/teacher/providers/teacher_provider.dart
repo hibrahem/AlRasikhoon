@@ -8,7 +8,6 @@ import '../../../data/models/session_record_model.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/user_provider.dart';
-import '../../../shared/providers/institute_provider.dart';
 import '../../../shared/providers/meeting_provider.dart'
     show composeMeetingFor, composeNextMeetingAfter;
 
@@ -519,109 +518,20 @@ final activeSessionProvider =
       ActiveSessionNotifier.new,
     );
 
-/// One row of the teacher's history: the record, plus the student identity the
-/// record itself does not carry.
-class TeacherHistoryEntry {
-  final SessionRecordModel record;
-  final String studentName;
-  final String instituteId;
-
-  const TeacherHistoryEntry({
-    required this.record,
-    required this.studentName,
-    required this.instituteId,
-  });
-}
-
-/// Every recitation this teacher recorded, newest first.
+/// One student's recitation history, newest first — embedded in that student's
+/// profile screen (al_rasikhoon-pb7). This replaced the teacher-wide "who did I
+/// hear across all students" history tab: the teacher now sees a student's own
+/// past sessions in context, on the same screen that shows their identity,
+/// progress, pace, and current session.
 ///
-/// Scoped by the SAME institute filter as the students list, so selecting a
-/// معهد means one thing across the whole teacher shell.
-final teacherHistoryProvider = FutureProvider<List<TeacherHistoryEntry>>((
-  ref,
-) async {
-  final currentUser = ref.watch(currentUserProvider);
-  if (currentUser == null) return [];
-
-  final repo = ref.watch(sessionRepositoryProvider);
-  // Bounded the same way as the student-facing history: without a limit, a
-  // teacher who has recorded a year of sessions re-downloads every one of
-  // them on every tab open and pull-to-refresh. Note this limit applies
-  // BEFORE the roster/institute filtering below, so fewer than 20 entries can
-  // end up on screen — acceptable, since the student-facing history has the
-  // same shape.
-  final records = await repo.getSessionRecordsForTeacher(
-    currentUser.id,
-    limit: 20,
-  );
-
-  // Records carry a studentId only; the name and institute come from the
-  // teacher's roster, which the students tab has already loaded.
-  final students = await ref.watch(teacherStudentsProvider.future);
-  final byStudentId = {for (final s in students) s.student.id: s};
-
-  final filter = ref.watch(selectedTeacherInstituteFilterProvider);
-
-  final entries = <TeacherHistoryEntry>[];
-  for (final record in records) {
-    final student = byStudentId[record.studentId];
-    // A student who has since left this teacher's roster: we can no longer
-    // name or scope the record, so it is not shown.
-    if (student == null) continue;
-    if (filter != null && student.student.instituteId != filter) continue;
-
-    entries.add(
-      TeacherHistoryEntry(
-        record: record,
-        studentName: student.user.name,
-        instituteId: student.student.instituteId,
-      ),
-    );
-  }
-  return entries;
-});
-
-/// A teacher's at-a-glance activity, shown on the profile screen.
-class TeacherStats {
-  final int totalSessions;
-  final int sessionsThisMonth;
-  final int studentCount;
-  final int instituteCount;
-
-  const TeacherStats({
-    this.totalSessions = 0,
-    this.sessionsThisMonth = 0,
-    this.studentCount = 0,
-    this.instituteCount = 0,
-  });
-}
-
-/// Composes the signed-in teacher's profile stats: an all-time and a
-/// this-month session count (cheap `.count()` queries), plus the roster and
-/// institute sizes the students tab has already loaded.
-final teacherStatsProvider = FutureProvider<TeacherStats>((ref) async {
-  final currentUser = ref.watch(currentUserProvider);
-  if (currentUser == null) return const TeacherStats();
-
-  final sessionRepo = ref.watch(sessionRepositoryProvider);
-  final students = await ref.watch(teacherStudentsProvider.future);
-  final institutes = await ref.watch(teacherInstitutesProvider.future);
-
-  final now = DateTime.now();
-  final monthStart = DateTime(now.year, now.month, 1);
-
-  final totalSessions = await sessionRepo.getSessionCountForTeacher(
-    currentUser.id,
-  );
-  final sessionsThisMonth = await sessionRepo.getSessionCountForTeacher(
-    currentUser.id,
-    startDate: monthStart,
-  );
-
-  return TeacherStats(
-    totalSessions: totalSessions,
-    sessionsThisMonth: sessionsThisMonth,
-    studentCount: students.length,
-    instituteCount: institutes.length,
-  );
-});
+/// Bounded the same way as the student-facing history: without a limit, a
+/// student who has recorded a year of sessions re-downloads every one of them
+/// on every profile open and pull-to-refresh.
+final teacherStudentSessionHistoryProvider =
+    FutureProvider.family<List<SessionRecordModel>, String>((
+      ref,
+      studentId,
+    ) async {
+      final repo = ref.watch(sessionRepositoryProvider);
+      return repo.getSessionRecordsForStudent(studentId, limit: 50);
+    });

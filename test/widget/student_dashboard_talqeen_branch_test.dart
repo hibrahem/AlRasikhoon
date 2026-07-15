@@ -6,6 +6,8 @@ import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/features/student/providers/student_provider.dart';
+import 'package:al_rasikhoon/shared/providers/current_student_provider.dart';
+import 'package:al_rasikhoon/shared/providers/stats_provider.dart';
 import 'package:al_rasikhoon/features/student/screens/student_dashboard_screen.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 
@@ -13,7 +15,7 @@ import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 /// card: a student standing on a تلقين MUST see the تلقين card, never the
 /// graded-lesson card that tells him to memorize a passage the teacher has
 /// not yet read to him. The teacher's mirror of this screen
-/// (`session_overview_screen.dart`) already checks `isTalqeen` before
+/// (`student_profile_screen.dart`) already checks `isTalqeen` before
 /// isExam/isSard and the lesson fallthrough — this test pins the same
 /// ordering on the student's screen.
 void main() {

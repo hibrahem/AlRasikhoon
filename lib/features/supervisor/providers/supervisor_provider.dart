@@ -96,6 +96,19 @@ final supervisorStudentSessionHistoryProvider =
       return repo.getSessionRecordsForStudent(studentId, limit: 50);
     });
 
+/// Whether a student in the supervisor's institute has STARTED — has any
+/// session/سرد/اختبار record. This gates the "edit starting point" affordance
+/// (al_rasikhoon-sne): a not-yet-started student can still be repositioned, a
+/// started one cannot, so the UI only offers the edit while this is `false`.
+/// The authoritative check lives in the repository write path too — this
+/// provider only drives visibility, never enforcement.
+final supervisorStudentHasStartedProvider = FutureProvider.family<bool, String>(
+  (ref, studentId) async {
+    final repo = ref.watch(sessionRepositoryProvider);
+    return repo.hasAnyProgressRecords(studentId);
+  },
+);
+
 /// The MEETING a student in the supervisor's institute stands on — the
 /// institute-scoped twin of `studentCurrentMeetingProvider`. Resolves the
 /// student via [supervisorStudentProvider] (institute-scoped, AgDR-0003)

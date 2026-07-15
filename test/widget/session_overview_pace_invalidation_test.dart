@@ -8,10 +8,11 @@ import 'package:mocktail/mocktail.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/curriculum_repository.dart';
+import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
-import 'package:al_rasikhoon/features/teacher/screens/session_overview_screen.dart';
+import 'package:al_rasikhoon/features/teacher/screens/student_profile_screen.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 
 class _MockFirebaseService extends Mock implements FirebaseService {}
@@ -45,6 +46,7 @@ void main() {
         firebaseService: _MockFirebaseService(),
         userRepository: userRepository,
         curriculumRepository: curriculumRepository,
+        sessionRepository: SessionRepository(firestore: firestore),
       );
 
       await firestore.collection('levels').doc('level_1').set({
@@ -204,7 +206,7 @@ void main() {
           child: const MaterialApp(
             home: Directionality(
               textDirection: TextDirection.rtl,
-              child: SessionOverviewScreen(studentId: 's1'),
+              child: StudentProfileScreen(studentId: 's1'),
             ),
           ),
         ),

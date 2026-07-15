@@ -14,7 +14,7 @@ import '../widgets/app_card.dart';
 import '../widgets/student_level_progress.dart';
 
 /// Read-only student progress view. Mirrors what a teacher sees for their own
-/// student in `SessionOverviewScreen`, but never offers any action that would
+/// student in `StudentProfileScreen`, but never offers any action that would
 /// start, advance, or end a session.
 ///
 /// Role-agnostic by construction: the three providers it reads are INJECTED by
@@ -34,6 +34,14 @@ class StudentProgressScreen extends ConsumerWidget {
   /// the active shell, never cross into the student shell (al_rasikhoon-3hn).
   final String sessionDetailRoute;
 
+  /// An optional role-specific section rendered under the header, INJECTED by
+  /// the router like everything else so this screen stays role-agnostic. The
+  /// supervisor shell passes the "edit starting point" affordance
+  /// (al_rasikhoon-sne) here; the admin shell passes nothing. The widget owns
+  /// its own visibility (it hides itself once the student has started), so this
+  /// screen neither knows the rule nor imports the supervisor feature.
+  final Widget? repositionSection;
+
   const StudentProgressScreen({
     super.key,
     required this.studentId,
@@ -41,6 +49,7 @@ class StudentProgressScreen extends ConsumerWidget {
     required this.currentMeetingProvider,
     required this.sessionHistoryProvider,
     required this.sessionDetailRoute,
+    this.repositionSection,
   });
 
   @override
@@ -68,6 +77,7 @@ class StudentProgressScreen extends ConsumerWidget {
                 currentMeetingProvider: currentMeetingProvider,
                 sessionHistoryProvider: sessionHistoryProvider,
                 sessionDetailRoute: sessionDetailRoute,
+                repositionSection: repositionSection,
               ),
             ),
           );
@@ -85,12 +95,14 @@ class _ProgressBody extends ConsumerWidget {
   final FutureProviderFamily<List<SessionRecordModel>, String>
   sessionHistoryProvider;
   final String sessionDetailRoute;
+  final Widget? repositionSection;
 
   const _ProgressBody({
     required this.studentWithUser,
     required this.currentMeetingProvider,
     required this.sessionHistoryProvider,
     required this.sessionDetailRoute,
+    this.repositionSection,
   });
 
   @override
@@ -104,6 +116,10 @@ class _ProgressBody extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _StudentHeaderCard(user: user, student: student),
+        if (repositionSection != null) ...[
+          const SizedBox(height: 16),
+          repositionSection!,
+        ],
         const SizedBox(height: 24),
 
         Text('الحلقة الحالية', style: Theme.of(context).textTheme.titleMedium),
@@ -205,7 +221,7 @@ class _StudentHeaderCard extends StatelessWidget {
 /// The MEETING the student stands on, described by the CURRICULUM — the
 /// student record is not consulted at all, because the curriculum is the
 /// authority on what the meeting is. A batch (a 2x/3x student) merges into
-/// one card, exactly like the teacher's `SessionOverviewScreen`: showing
+/// one card, exactly like the teacher's `StudentProfileScreen`: showing
 /// only the meeting's first session would silently understate a fast
 /// student's assignment.
 class _CurrentSessionCard extends StatelessWidget {
@@ -225,7 +241,7 @@ class _CurrentSessionCard extends StatelessWidget {
     // curriculum's own `kind`, never from its number.
     //
     // The تلقين branch MUST come before isExam/isSard and the regular-lesson
-    // fallthrough (see session_overview_screen.dart's identical ordering): a
+    // fallthrough (see student_profile_screen.dart's identical ordering): a
     // تلقين is neither an assessment nor a graded lesson — falling through to
     // the lesson card would show a supervisor "الحفظ الجديد" (new
     // memorization) framing and part tiles for a session that is graded on

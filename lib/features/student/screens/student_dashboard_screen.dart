@@ -7,6 +7,8 @@ import '../../../data/models/user_model.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
+import '../../../shared/providers/current_student_provider.dart';
+import '../../../shared/providers/stats_provider.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/juz_ring.dart';
@@ -329,7 +331,7 @@ class _StudentDashboardScreenState
         final session = meeting.first;
 
         // The تلقين branch MUST come before isExam/isSard and the regular
-        // lesson fallthrough (see session_overview_screen.dart's identical
+        // lesson fallthrough (see student_profile_screen.dart's identical
         // ordering): a تلقين is neither graded nor new memorization for the
         // student to recite alone, and falling through to the lesson card
         // would tell him to memorize a passage the teacher has not yet read

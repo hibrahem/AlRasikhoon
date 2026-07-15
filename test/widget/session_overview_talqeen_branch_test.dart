@@ -7,7 +7,7 @@ import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
-import 'package:al_rasikhoon/features/teacher/screens/session_overview_screen.dart';
+import 'package:al_rasikhoon/features/teacher/screens/student_profile_screen.dart';
 
 /// Pins the load-bearing branch of the session overview: a student standing
 /// on a تلقين MUST reach the تلقين entry point, never the graded-lesson one.
@@ -78,11 +78,17 @@ void main() {
               ],
             ),
           ),
+          // The profile embeds this student's history; this test only exercises
+          // the current-session branch, so stub the history empty to keep it
+          // off Firestore.
+          teacherStudentSessionHistoryProvider(
+            's1',
+          ).overrideWith((ref) async => const []),
         ],
         child: const MaterialApp(
           home: Directionality(
             textDirection: TextDirection.rtl,
-            child: SessionOverviewScreen(studentId: 's1'),
+            child: StudentProfileScreen(studentId: 's1'),
           ),
         ),
       ),

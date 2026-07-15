@@ -15,7 +15,7 @@ import 'package:al_rasikhoon/shared/screens/student_progress_screen.dart';
 /// single `SessionModel`, so a 2x student's progress view showed only the
 /// FIRST of the two lessons he is actually working on, silently understating
 /// his assignment. The screen now reads a `PacedSession` (the meeting), the
-/// same way `SessionOverviewScreen` already does
+/// same way `StudentProfileScreen` already does
 /// (`paced_meeting_rendering_test.dart` pins the teacher-side twin of this).
 void main() {
   QuranContent content(String surah, int from, int to) => QuranContent(

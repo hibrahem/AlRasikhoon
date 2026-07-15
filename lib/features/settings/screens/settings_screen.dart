@@ -3,11 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/user_model.dart';
 import '../../../shared/providers/institute_provider.dart';
+import '../../../shared/providers/stats_provider.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/confirm_sign_out.dart';
-import '../../student/providers/student_provider.dart';
-import '../../teacher/providers/teacher_provider.dart';
 import '../widgets/theme_mode_selector.dart';
 
 /// Account screen for the teacher, supervisor and student shells.

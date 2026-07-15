@@ -85,9 +85,11 @@ List<NavDestination> destinationsFor(UserRole role) {
         ),
       ];
 
-    // No الحلقة tab: picking an institute and then seeing that institute's
-    // students is already what الطلاب does (the المعهد filter on
-    // TeacherStudentsScreen), so the tab had no job of its own.
+    // Two tabs: الطلاب and الملف الشخصي. There is no الحلقة tab (picking an
+    // institute and seeing its students is already what الطلاب does via the
+    // المعهد filter), and no السجل tab either: a student's session history now
+    // lives INSIDE that student's profile screen, in context with their
+    // identity, progress, pace, and current session (al_rasikhoon-pb7).
     case UserRole.teacher:
       return const [
         NavDestination(
@@ -95,12 +97,6 @@ List<NavDestination> destinationsFor(UserRole role) {
           activeIcon: Icons.school,
           label: 'الطلاب',
           rootPath: AppRoutes.teacherStudents,
-        ),
-        NavDestination(
-          icon: Icons.history_outlined,
-          activeIcon: Icons.history,
-          label: 'السجل',
-          rootPath: AppRoutes.teacherHistory,
         ),
         NavDestination(
           icon: Icons.person_outline,

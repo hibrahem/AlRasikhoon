@@ -133,18 +133,12 @@ void main() {
       // Part 1: New memorization - 0 errors
       await teacherRobot.enterErrorCount(0);
       await teacherRobot.submitRecitation(part: 1);
-      await teacherRobot.goToNextPart();
-
       // Part 2: Recent review - 1 error
       await teacherRobot.enterErrorCount(1);
       await teacherRobot.submitRecitation(part: 2);
-      await teacherRobot.goToNextPart();
-
       // Part 3: Distant review - 2 errors
       await teacherRobot.enterErrorCount(2);
       await teacherRobot.submitRecitation(part: 3);
-      await teacherRobot.goToSessionSummary();
-
       // Assert - Summary screen shows passing grade, then session completes
       await teacherRobot.verifyGrade('متقن'); // 1 error average = متقن
       await teacherRobot.completeSession();
@@ -188,18 +182,12 @@ void main() {
       // Part 1: 7 errors — exceeds maxErrorsToPass (6), so session fails.
       await teacherRobot.enterErrorCount(7);
       await teacherRobot.submitRecitation(part: 1);
-      await teacherRobot.goToNextPart();
-
       // Part 2: Recent review - 0 errors
       await teacherRobot.enterErrorCount(0);
       await teacherRobot.submitRecitation(part: 2);
-      await teacherRobot.goToNextPart();
-
       // Part 3: Distant review - 0 errors
       await teacherRobot.enterErrorCount(0);
       await teacherRobot.submitRecitation(part: 3);
-      await teacherRobot.goToSessionSummary();
-
       // Assert - Summary screen shows fail grade for over-threshold part 1
       await teacherRobot.verifyGrade('محب'); // Any part >6 errors = محب (fail)
       await teacherRobot.completeSession();
@@ -241,18 +229,12 @@ void main() {
       // Part 1: 7 errors — exceeds maxErrorsToPass (6), so session fails.
       await teacherRobot.enterErrorCount(7);
       await teacherRobot.submitRecitation(part: 1);
-      await teacherRobot.goToNextPart();
-
       // Part 2: 0 errors
       await teacherRobot.enterErrorCount(0);
       await teacherRobot.submitRecitation(part: 2);
-      await teacherRobot.goToNextPart();
-
       // Part 3: 0 errors
       await teacherRobot.enterErrorCount(0);
       await teacherRobot.submitRecitation(part: 3);
-      await teacherRobot.goToSessionSummary();
-
       // Assert - Failed grade is shown on the summary screen before saving
       expect(find.textContaining('محب'), findsWidgets); // Failed grade
       await teacherRobot.completeSession();
@@ -339,9 +321,9 @@ void main() {
         // The الحلقة tab was removed by design; it must not be present.
         await teacherRobot.verifyNoHalaqahTab();
 
-        // Assert - tapping السجل lands on the history screen, students gone.
-        await teacherRobot.goToHistory();
-        await teacherRobot.verifyHistoryScreen();
+        // There is no longer a السجل tab either: a student's session history
+        // now lives inside that student's profile (al_rasikhoon-pb7).
+        await teacherRobot.verifyNoHistoryTab();
 
         // Assert - tapping الملف الشخصي lands on the settings screen.
         await teacherRobot.goToSettings();
