@@ -291,3 +291,9 @@ Task 10: complete (commits 878fbfe impl + 90f9a8d fix, review clean) — reskinn
   Dead code left in place, not removed (Minor, acceptable restraint): LevelProgressBar in progress_bar.dart
   now unreferenced anywhere; unlockedLevels ctor param on LevelProgressionWidget accepted but unused by the
   new ladder motif (documented in class doc comment). Full test/widget suite: 140 passing, 0 failing.
+Task 11: complete (commit 63a21ec, review clean) — bottom_nav_bar (selected=gold/unselected=sepia),
+  role_shell (Scaffold bg=tokens.page, nav logic byte-identical, verified), confirm_sign_out (error->maroon).
+  nav_destinations.dart needed no changes (icon/label/route data only, no colors) - claim independently
+  verified. All 4 constructors unchanged. role_shell_navigation_test.dart 1/1, full suite 140/0. No findings.
+  === SHARED-WIDGET RESKIN SWEEP (Tasks 7-11) COMPLETE. Next: Task 12 empty/error/loading states, then
+  Tasks 13-16 student screens adopt everything. ===
