@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/teacher_provider.dart';
 import '../widgets/active_lesson_timer.dart';
 import '../widgets/recitation_counts_card.dart';
@@ -35,6 +36,7 @@ class _NextContentTalqeenScreenState
 
   Future<void> _closeSession() async {
     setState(() => _isSaving = true);
+    final tokens = context.tokens;
     try {
       final record = await ref
           .read(activeSessionProvider.notifier)
@@ -58,9 +60,14 @@ class _NextContentTalqeenScreenState
                         ? 'تم حفظ الحلقة - ناجح'
                         : 'تم حفظ الحلقة - راسب'),
             ),
+            // No manuscript token for "success"/"warning" — the primary
+            // green already carries the positive/affirmative role and
+            // maroon (the palette's rubrication/emphasis hue) already
+            // carries error, so a failed-but-saved result reuses maroon too
+            // (these three branches never render together).
             backgroundColor: progressNotAdvanced
-                ? AppColors.error
-                : (record.passed ? AppColors.success : AppColors.warning),
+                ? tokens.maroon
+                : (record.passed ? tokens.green : tokens.maroon),
           ),
         );
         context.go(AppRoutes.teacherStudents);
@@ -70,7 +77,7 @@ class _NextContentTalqeenScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('حدث خطأ: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: tokens.maroon,
           ),
         );
       }
@@ -108,12 +115,7 @@ class _NextContentTalqeenScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (passed == null)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: CircularProgressIndicator(),
-                ),
-              )
+              const LoadingState(lines: 1)
             else if (!passed)
               // Repeats the same session — recite the same new passage again.
               _PassageCard(
@@ -131,12 +133,7 @@ class _NextContentTalqeenScreenState
                           ? next.newContentAr
                           : '',
                     ),
-                    loading: () => const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: CircularProgressIndicator(),
-                      ),
-                    ),
+                    loading: () => const LoadingState(lines: 1),
                     error: (_, _) =>
                         _PassageCard(studentId: widget.studentId, passage: ''),
                   ),
@@ -185,6 +182,7 @@ class _PassageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final hasPassage = passage.isNotEmpty;
     return AppCard(
       child: Column(
@@ -195,13 +193,10 @@ class _PassageCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: tokens.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.record_voice_over,
-                  color: AppColors.primary,
-                ),
+                child: Icon(Icons.record_voice_over, color: tokens.green),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -218,7 +213,7 @@ class _PassageCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: tokens.green,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: ActiveLessonTimer(studentId: studentId),
@@ -233,7 +228,7 @@ class _PassageCard extends StatelessWidget {
               passage,
               style: Theme.of(
                 context,
-              ).textTheme.headlineSmall?.copyWith(color: AppColors.primary),
+              ).textTheme.headlineSmall?.copyWith(color: tokens.green),
             ),
             const SizedBox(height: 12),
             Text(
