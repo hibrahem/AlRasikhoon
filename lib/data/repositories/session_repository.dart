@@ -336,11 +336,14 @@ class SessionRepository {
     required int attemptNumber,
     required int errorCount,
     String? notes,
+    DateTime? startedAt,
+    DateTime? now,
   }) async {
     // Per-component grade is level-based (hibrahem/AlRasikhoon#22): the same
     // error count maps to a different grade depending on the student's level.
     final gradeInfo = GradeCalculator.calculateForLevel(levelId, errorCount);
 
+    final writtenAt = now ?? DateTime.now();
     final docRef = _sardRecordsCollection.doc();
     final record = SardRecordModel(
       id: docRef.id,
@@ -352,13 +355,14 @@ class SessionRepository {
       hizbNumber: hizbNumber,
       scopeLabelAr: scopeLabelAr,
       levelId: levelId,
-      date: DateTime.now(),
+      date: writtenAt,
       errorCount: errorCount,
       grade: gradeInfo.nameAr,
       passed: gradeInfo.passed,
       attemptNumber: attemptNumber,
       notes: notes,
-      createdAt: DateTime.now(),
+      createdAt: writtenAt,
+      duration: startedAt == null ? null : writtenAt.difference(startedAt),
     );
 
     await docRef.set(record.toFirestore());
@@ -414,11 +418,14 @@ class SessionRepository {
     required int attemptNumber,
     required int errorCount,
     String? notes,
+    DateTime? startedAt,
+    DateTime? now,
   }) async {
     // Per-component grade is level-based (hibrahem/AlRasikhoon#22): the same
     // error count maps to a different grade depending on the student's level.
     final gradeInfo = GradeCalculator.calculateForLevel(levelId, errorCount);
 
+    final writtenAt = now ?? DateTime.now();
     final docRef = _examRecordsCollection.doc();
     final record = ExamRecordModel(
       id: docRef.id,
@@ -430,13 +437,14 @@ class SessionRepository {
       hizbNumber: hizbNumber,
       scopeLabelAr: scopeLabelAr,
       levelId: levelId,
-      date: DateTime.now(),
+      date: writtenAt,
       errorCount: errorCount,
       grade: gradeInfo.nameAr,
       passed: gradeInfo.passed,
       attemptNumber: attemptNumber,
       notes: notes,
-      createdAt: DateTime.now(),
+      createdAt: writtenAt,
+      duration: startedAt == null ? null : writtenAt.difference(startedAt),
     );
 
     await docRef.set(record.toFirestore());

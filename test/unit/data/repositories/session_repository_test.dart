@@ -797,6 +797,40 @@ void main() {
       });
     });
 
+    group('createSardRecord duration', () {
+      test('records raw wall-clock duration, uncapped', () async {
+        final started = DateTime(2026, 1, 1, 10, 0, 0);
+        final record = await sessionRepository.createSardRecord(
+          studentId: 's1',
+          teacherId: 't1',
+          curriculumSessionId: 'L1_J30_S7',
+          tier: AssessmentTier.unit,
+          levelId: 1,
+          attemptNumber: 1,
+          errorCount: 0,
+          startedAt: started,
+          now: started.add(const Duration(hours: 2)),
+        );
+        expect(
+          record.duration,
+          const Duration(hours: 2),
+        ); // no cap for assessments
+      });
+
+      test('leaves duration null when no start was captured', () async {
+        final record = await sessionRepository.createSardRecord(
+          studentId: 's1',
+          teacherId: 't1',
+          curriculumSessionId: 'L1_J30_S7',
+          tier: AssessmentTier.unit,
+          levelId: 1,
+          attemptNumber: 1,
+          errorCount: 0,
+        );
+        expect(record.duration, isNull);
+      });
+    });
+
     group('getSardRecordsForStudent', () {
       test('returns sard records for student', () async {
         await fakeFirestore.collection('sard_records').doc('sard1').set({
@@ -952,6 +986,24 @@ void main() {
             .get();
         expect(doc.exists, true);
         expect(doc.data()?['supervisor_id'], 'supervisor1');
+      });
+    });
+
+    group('createExamRecord duration', () {
+      test('records raw wall-clock duration', () async {
+        final started = DateTime(2026, 1, 1, 10, 0, 0);
+        final record = await sessionRepository.createExamRecord(
+          studentId: 's1',
+          supervisorId: 'sup1',
+          curriculumSessionId: 'L1_J30_S9',
+          tier: AssessmentTier.juz,
+          levelId: 1,
+          attemptNumber: 1,
+          errorCount: 0,
+          startedAt: started,
+          now: started.add(const Duration(minutes: 35)),
+        );
+        expect(record.duration, const Duration(minutes: 35));
       });
     });
 
