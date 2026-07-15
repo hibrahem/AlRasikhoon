@@ -6,7 +6,6 @@ import '../../../core/utils/grade_calculator.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/grade_display.dart';
 import '../providers/teacher_provider.dart';
 import '../recitation_parts.dart';
 import '../widgets/active_lesson_timer.dart';
@@ -47,15 +46,6 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
         body: const Center(child: Text('لا توجد جلسة نشطة')),
       );
     }
-
-    final sessionGrade = level != null
-        ? GradeCalculator.calculateSessionGrade(
-            level: level,
-            newMemorizationErrors: activeSession.part1Errors,
-            recentReviewErrors: activeSession.part2Errors,
-            distantReviewErrors: activeSession.part3Errors,
-          )
-        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -116,29 +106,29 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
               error: (_, _) => const SizedBox(),
             ),
 
-            // Overall grade + part-by-part results — withheld until the real
+            // Overall pass/fail + per-part results — withheld until the real
             // level resolves so no grade is computed at a default level=1 (#36).
             studentAsync.when(
               data: (_) {
-                // level/sessionGrade are guaranteed non-null in the data state.
+                // level is guaranteed non-null in the data state.
                 final resolvedLevel = level!;
                 final presentParts =
                     activeSession.meeting?.presentParts ?? const [1, 2, 3];
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Overall grade
+                    // Overall result — the summary shows ONLY pass/fail
+                    // (ناجح / راسب), never a per-grade category. The pass rule
+                    // is the domain's (سرد fails on ANY محب component, #24), so
+                    // this screen asks the session, it does not re-derive it.
                     Center(
-                      child: GradeDisplay(
-                        errorCount: activeSession.totalErrors,
-                        gradeInfo: sessionGrade,
-                        showStars: true,
-                        showPassStatus: true,
+                      child: _OverallResultCard(
+                        passed: activeSession.passesForLevel(resolvedLevel),
                       ),
                     ),
                     const SizedBox(height: 24),
 
-                    // Part-by-part results
+                    // Per-part results
                     Text(
                       'تفاصيل الأجزاء',
                       style: Theme.of(context).textTheme.titleMedium,
@@ -149,6 +139,10 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
                       _PartResultCard(
                         title: recitationPartTitleAr(p),
                         errors: recitationPartErrors(activeSession, p),
+                        content: recitationPartContentAr(
+                          activeSession.meeting,
+                          p,
+                        ),
                         level: resolvedLevel,
                       ),
                       const SizedBox(height: 8),
@@ -225,14 +219,61 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
   }
 }
 
+/// The overall session outcome — pass/fail ONLY (al_rasikhoon-nzg). The
+/// per-grade category (راسخ / متقن / حافظ …) deliberately does NOT appear here;
+/// the summary states whether the الحلقة is ناجحة, and the granular grade lives
+/// on each part card below.
+class _OverallResultCard extends StatelessWidget {
+  final bool passed;
+
+  const _OverallResultCard({required this.passed});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = passed ? AppColors.success : AppColors.error;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color, width: 2),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            passed ? Icons.check_circle : Icons.cancel,
+            color: color,
+            size: 40,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            passed ? 'ناجح' : 'راسب',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One part's detailed result: its own level-based grade AND the passage the
+/// student recited for it (al_rasikhoon-nzg).
 class _PartResultCard extends StatelessWidget {
   final String title;
   final int errors;
+  final String content;
   final int level;
 
   const _PartResultCard({
     required this.title,
     required this.errors,
+    required this.content,
     required this.level,
   });
 
@@ -243,34 +284,63 @@ class _PartResultCard extends StatelessWidget {
     return AppCard(
       margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(12),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            gradeInfo.passed ? Icons.check_circle : Icons.cancel,
-            color: gradeInfo.passed ? AppColors.success : AppColors.error,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(title, style: Theme.of(context).textTheme.bodyMedium),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          Row(
             children: [
-              Text(
-                '$errors أخطاء',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: gradeInfo.color,
+              Icon(
+                gradeInfo.passed ? Icons.check_circle : Icons.cancel,
+                color: gradeInfo.passed ? AppColors.success : AppColors.error,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
-              Text(
-                gradeInfo.nameAr,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: gradeInfo.color),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '$errors أخطاء',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: gradeInfo.color,
+                    ),
+                  ),
+                  Text(
+                    gradeInfo.nameAr,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: gradeInfo.color),
+                  ),
+                ],
               ),
             ],
           ),
+          // The recited passage for this part. Hidden when the stream carries
+          // no content (e.g. an empty الحفظ الجديد on a review-only lesson) so
+          // the card never shows a dangling label with a blank range.
+          if (content.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.menu_book, size: 16, color: AppColors.textSecondary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    content,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
