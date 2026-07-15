@@ -23,12 +23,41 @@ interface CreateUserAccountPayload {
   name: string;
   username: string;
   phone?: string | null;
-  // Required when role === "supervisor": the single institute the
-  // supervisor is bound to. Ignored for other roles.
+  // For role === "supervisor": an INITIAL institute to seed the supervisor's
+  // membership with, as a convenience at creation. It is NOT "the" institute —
+  // a supervisor may be assigned to several institutes over time via the
+  // supervisor_institutes membership docs (al_rasikhoon-3n6). Ignored for other
+  // roles.
   instituteId?: string | null;
 }
 
 const MIN_PASSWORD_LENGTH = 6;
+
+/**
+ * The set of institute ids a supervisor is CURRENTLY assigned to, read off the
+ * supervisor_institutes membership docs (al_rasikhoon-3n6). This is the source
+ * of truth for supervisor scoping — users/{uid}.institute_id is no longer
+ * authoritative (a supervisor may supervise several institutes at once, or be
+ * unassigned). Mirrors the firestore.rules supervisorInInstitute() check and
+ * honours the same soft-delete: removeSupervisorFromInstitute sets
+ * is_active:false rather than deleting, so inactive memberships are excluded.
+ */
+async function supervisorInstituteIds(uid: string): Promise<Set<string>> {
+  const snapshot = await admin
+    .firestore()
+    .collection("supervisor_institutes")
+    .where("supervisor_id", "==", uid)
+    .where("is_active", "==", true)
+    .get();
+  const ids = new Set<string>();
+  for (const docSnap of snapshot.docs) {
+    const instituteId = docSnap.data().institute_id;
+    if (typeof instituteId === "string" && instituteId.length > 0) {
+      ids.add(instituteId);
+    }
+  }
+  return ids;
+}
 
 const ROLES_BY_CALLER: Record<string, ReadonlySet<ProvisionableRole>> = {
   super_admin: new Set<ProvisionableRole>([
@@ -38,11 +67,12 @@ const ROLES_BY_CALLER: Record<string, ReadonlySet<ProvisionableRole>> = {
     "guardian",
   ]),
   teacher: new Set<ProvisionableRole>(["student", "guardian"]),
-  // Supervisors have teacher-parity student management scoped to their own
-  // institute (#28 / AgDR-0003): they may provision student + guardian
+  // Supervisors have teacher-parity student management across the institutes
+  // they supervise (al_rasikhoon-3n6): they may provision student + guardian
   // accounts. The institute scoping itself is enforced by (a) requiring the
-  // supervisor caller to have a bound institute (checked below) and (b) the
-  // student doc carrying that institute, enforced in firestore.rules.
+  // supervisor caller to have at least one active supervisor_institutes
+  // membership (checked below) and (b) the student doc carrying an institute
+  // the caller is a member of, enforced in firestore.rules.
   supervisor: new Set<ProvisionableRole>(["student", "guardian"]),
 };
 
@@ -57,10 +87,12 @@ const ROLES_BY_CALLER: Record<string, ReadonlySet<ProvisionableRole>> = {
  *   - super_admin can provision supervisor | teacher | student | guardian.
  *   - teacher    can provision student | guardian.
  *
- * Supervisor accounts are bound to exactly one institute: the caller must
- * pass `instituteId`, which is persisted onto users/{uid}.institute_id AND
- * recorded as a supervisor_institutes/{uid}_{instituteId} assignment so the
- * existing supervisor experience (getInstitutesForSupervisor) resolves it.
+ * Supervisor accounts are seeded with an INITIAL institute: the caller passes
+ * `instituteId`, which is recorded as a supervisor_institutes/{uid}_{instituteId}
+ * membership (the source of truth the supervisor experience resolves via
+ * getInstitutesForSupervisor) and also mirrored onto users/{uid}.institute_id
+ * for legacy/convenience. Scoping reads the MEMBERSHIP, not that field
+ * (al_rasikhoon-3n6): a supervisor may later be assigned to more institutes.
  *
  * Atomicity: pre-checks username uniqueness, creates the auth user, then
  * writes users/{uid} (+ the supervisor_institutes assignment for
@@ -111,22 +143,18 @@ export const createUserAccount = onCall<CreateUserAccountPayload>(
       );
     }
 
-    // A supervisor caller may only provision accounts within their own
-    // institute (#28 / AgDR-0003). The supervisor's canonical institute is
-    // users/{caller}.institute_id; a supervisor with no bound institute cannot
-    // provision at all. The provisioned student/guardian is then scoped to
-    // that institute by the student doc the client writes (enforced in rules).
+    // A supervisor caller may only provision accounts for institutes they
+    // supervise (al_rasikhoon-3n6). Scoping is now the supervisor_institutes
+    // MEMBERSHIP, not users/{caller}.institute_id: a supervisor assigned to NO
+    // institute cannot provision at all. The provisioned student/guardian is
+    // then bound to a specific institute by the student doc the client writes,
+    // and firestore.rules (isSupervisorOfStudentInstitute → supervisorInInstitute)
+    // enforces that the student's institute_id is one of the caller's memberships
+    // — so per-institute scoping is enforced at that write, and this gate only
+    // rejects a supervisor with an empty membership set.
     if (callerRole === "supervisor") {
-      const callerDoc = await admin
-        .firestore()
-        .collection("users")
-        .doc(request.auth.uid)
-        .get();
-      const callerInstituteId = callerDoc.data()?.institute_id;
-      if (
-        typeof callerInstituteId !== "string" ||
-        callerInstituteId.trim().length === 0
-      ) {
+      const callerInstitutes = await supervisorInstituteIds(request.auth.uid);
+      if (callerInstitutes.size === 0) {
         throw new HttpsError(
           "permission-denied",
           "supervisor-has-no-institute",
@@ -265,8 +293,9 @@ export const createUserAccount = onCall<CreateUserAccountPayload>(
  * detail screens. Authorization:
  *   - super_admin can reset any user.
  *   - teacher can reset a student whose teacher_id matches the caller.
- *   - supervisor can reset a student/guardian in their own institute
- *     (teacher-parity student management, #28 / AgDR-0003).
+ *   - supervisor can reset a student/guardian in one of the institutes they
+ *     supervise (teacher-parity student management, al_rasikhoon-3n6:
+ *     scoped by supervisor_institutes membership, not users.institute_id).
  * Custom claim 'role' is set by syncRoleClaim below.
  */
 export const setUserPassword = onCall<SetUserPasswordPayload>(
@@ -330,8 +359,11 @@ export const setUserPassword = onCall<SetUserPasswordPayload>(
         );
       }
     } else if (callerRole === "supervisor") {
-      // Teacher-parity (#28 / AgDR-0003): a supervisor may reset a
-      // student/guardian password only for a student in their own institute.
+      // Teacher-parity (al_rasikhoon-3n6): a supervisor may reset a
+      // student/guardian password only for a student in ONE OF the institutes
+      // they supervise. Scoping is the supervisor_institutes MEMBERSHIP set, not
+      // users/{caller}.institute_id — a supervisor may supervise several
+      // institutes at once.
       const targetUserDoc = await admin
         .firestore()
         .collection("users")
@@ -347,35 +379,38 @@ export const setUserPassword = onCall<SetUserPasswordPayload>(
           "Supervisors may only reset student/guardian passwords",
         );
       }
-      const callerDoc = await admin
-        .firestore()
-        .collection("users")
-        .doc(request.auth.uid)
-        .get();
-      const supervisorInstituteId = callerDoc.data()?.institute_id;
-      if (
-        typeof supervisorInstituteId !== "string" ||
-        supervisorInstituteId.trim().length === 0
-      ) {
+      const supervisorInstitutes = await supervisorInstituteIds(
+        request.auth.uid,
+      );
+      if (supervisorInstitutes.size === 0) {
         throw new HttpsError("permission-denied", "supervisor-has-no-institute");
       }
-      // The target must be a student in the supervisor's institute (a guardian
-      // is reachable via the student they guard).
-      const ownedStudent = await admin
+      // The target must be a student in one of the supervisor's institutes (a
+      // guardian is reachable via the student they guard). We resolve the
+      // candidate student docs by the user link, then check their institute_id
+      // against the membership set in code — this avoids a `whereIn` on
+      // institute_id (capped at 30) when a supervisor spans many institutes.
+      const candidateStudents = await admin
         .firestore()
         .collection("students")
-        .where("institute_id", "==", supervisorInstituteId)
         .where(
           targetRole === "guardian" ? "guardian_id" : "user_id",
           "==",
           userId,
         )
-        .limit(1)
+        .limit(20)
         .get();
-      if (ownedStudent.empty) {
+      const inScope = candidateStudents.docs.some((docSnap) => {
+        const instituteId = docSnap.data().institute_id;
+        return (
+          typeof instituteId === "string" &&
+          supervisorInstitutes.has(instituteId)
+        );
+      });
+      if (!inScope) {
         throw new HttpsError(
           "permission-denied",
-          "Supervisor cannot reset this user (not in their institute)",
+          "Supervisor cannot reset this user (not in their institutes)",
         );
       }
     } else {
