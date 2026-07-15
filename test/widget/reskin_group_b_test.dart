@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/shared/widgets/grade_display.dart';
 import 'package:al_rasikhoon/shared/widgets/level_progression_widget.dart';
-import 'package:al_rasikhoon/shared/widgets/progress_bar.dart';
 import '../support/theme_test_harness.dart';
 
 void main() {
@@ -18,10 +17,10 @@ void main() {
     }
   });
 
-  testWidgets('LevelProgressionWidget mastery ladder renders in both themes', (
+  testWidgets('LevelProgressionWidget numbered grid renders in both themes', (
     tester,
   ) async {
-    await tester.binding.setSurfaceSize(const Size(400, 300));
+    await tester.binding.setSurfaceSize(const Size(400, 400));
     for (final b in Brightness.values) {
       await pumpInTheme(
         tester,
@@ -33,44 +32,41 @@ void main() {
         ),
       );
       expect(tester.takeException(), isNull);
-      expect(find.text('راسخ'), findsOneWidget);
-      expect(find.text('محب'), findsOneWidget);
+      // Real level NUMBERS, not grade terms: the tiles span 1..10 and none of
+      // the mastery-ladder rungs (راسخ · متقن · …) appear.
+      expect(find.text('1'), findsOneWidget);
+      expect(find.text('10'), findsOneWidget);
+      expect(find.text('راسخ'), findsNothing);
+      expect(find.text('متقن'), findsNothing);
     }
   });
 
-  testWidgets(
-    'LevelProgressionWidget ladder fill fraction matches completedLevels, '
-    'never currentLevel',
-    (tester) async {
-      await tester.binding.setSurfaceSize(const Size(400, 300));
+  testWidgets('LevelProgressionWidget completed count matches completedLevels, '
+      'never currentLevel', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(400, 400));
 
-      // Nothing completed yet: the header reads "0/10 مكتمل", so the ladder
-      // must show essentially no fill — even though currentLevel is 1 (a
-      // naive currentLevel/totalLevels fraction would wrongly show 0.1).
-      await pumpInTheme(
-        tester,
-        child: const LevelProgressionWidget(
-          currentLevel: 1,
-          unlockedLevels: [1],
-          completedLevels: [],
-        ),
-      );
-      var ladder = tester.widget<MasteryLadder>(find.byType(MasteryLadder));
-      expect(ladder.fraction, closeTo(0.0, 1e-9));
+    // Nothing completed yet: the header reads "0/10 مكتمل" even though
+    // currentLevel is 1 (currentLevel is not a completed level).
+    await pumpInTheme(
+      tester,
+      child: const LevelProgressionWidget(
+        currentLevel: 1,
+        unlockedLevels: [1],
+        completedLevels: [],
+      ),
+    );
+    expect(find.text('0/10 مكتمل'), findsOneWidget);
 
-      // 3 levels completed, currently working on level 4: the header reads
-      // "3/10 مكتمل", so the fill must reflect 3 done — not 4 (a naive
-      // currentLevel/totalLevels fraction would wrongly show 0.4).
-      await pumpInTheme(
-        tester,
-        child: const LevelProgressionWidget(
-          currentLevel: 4,
-          unlockedLevels: [1, 2, 3, 4],
-          completedLevels: [1, 2, 3],
-        ),
-      );
-      ladder = tester.widget<MasteryLadder>(find.byType(MasteryLadder));
-      expect(ladder.fraction, closeTo(0.3, 1e-9));
-    },
-  );
+    // 3 levels completed, currently working on level 4: the header reads
+    // "3/10 مكتمل" — the current level does not count as completed.
+    await pumpInTheme(
+      tester,
+      child: const LevelProgressionWidget(
+        currentLevel: 4,
+        unlockedLevels: [1, 2, 3, 4],
+        completedLevels: [1, 2, 3],
+      ),
+    );
+    expect(find.text('3/10 مكتمل'), findsOneWidget);
+  });
 }

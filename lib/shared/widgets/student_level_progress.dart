@@ -11,11 +11,10 @@ import 'progress_bar.dart';
 /// if it holds no entry for the level, the bar reports no progress instead of
 /// falling back to a made-up denominator.
 ///
-/// Rendered as a 5-rung "mastery ladder" (راسخ · متقن · حافظ · مجتهد · محب):
-/// the fixed 1..10 level scale is split into 5 two-level bands, one per rung.
-/// Bands fully below the student's level are lit solid; the band containing
-/// the current level is lit in proportion to how far through it the student
-/// is (including their in-level session progress); bands ahead stay unlit.
+/// Rendered as a plain session progress bar with an `orderInLevel/sessionCount`
+/// count — never the grade-scale mastery ladder (راسخ · متقن · …), which names
+/// how well a session was recited, not how far through the level the student
+/// is. The two are different axes and must not share one indicator.
 ///
 /// There is no "hizbs" bar: a hizb is a nullable LABEL of levels 1-2, not a
 /// unit of progress, and levels 3-10 have none at all.
@@ -32,22 +31,16 @@ class StudentLevelProgress extends ConsumerWidget {
     required this.orderInLevel,
   });
 
-  /// The curriculum's fixed level scale, matched to the 5 grade rungs two
-  /// levels at a time.
-  static const int _totalLevels = 10;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final levelModel = ref.watch(levelProvider(level)).value;
     final sessionCount = levelModel?.sessionCount ?? 0;
     final known = sessionCount > 0;
 
-    final clampedLevel = level.clamp(1, _totalLevels);
+    // Sessions COMPLETED is the session before the one being worked on.
     final sessionFraction = known
         ? ((orderInLevel - 1).clamp(0, sessionCount) / sessionCount)
         : 0.0;
-    final overallFraction =
-        ((clampedLevel - 1) + sessionFraction) / _totalLevels;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,7 +61,7 @@ class StudentLevelProgress extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 8),
-        MasteryLadder(fraction: overallFraction),
+        ProgressBar(progress: sessionFraction, height: 8),
       ],
     );
   }
