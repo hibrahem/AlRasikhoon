@@ -468,26 +468,15 @@ class TeacherRobot extends TestRobot {
     }
   }
 
-  /// Submit recitation and go to result (parts 1-2: "التالي", part 3: "إنهاء التسميع")
+  /// Submit a recitation part. Since al_rasikhoon-2d8 removed the per-part
+  /// result screens, "التالي" (parts 1-2) goes straight to the next part and
+  /// "إنهاء التسميع" (part 3) goes directly to the session summary.
   Future<void> submitRecitation({required int part}) async {
     if (part < 3) {
       await tapByText('التالي');
     } else {
       await tapByText('إنهاء التسميع');
     }
-  }
-
-  /// Go to next part from the result screen (parts 1-2)
-  Future<void> goToNextPart() async {
-    // The button text is "التالي: [part title]", find by prefix
-    final nextButton = find.textContaining('التالي:');
-    await tester.tap(nextButton.first);
-    await pumpAndSettle();
-  }
-
-  /// Go to session summary from part 3 result screen
-  Future<void> goToSessionSummary() async {
-    await tapByText('عرض ملخص الحلقة');
   }
 
   /// Verify grade displayed
