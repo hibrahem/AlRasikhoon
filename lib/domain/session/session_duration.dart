@@ -1,5 +1,3 @@
-import 'package:intl/intl.dart';
-
 /// How a measured session length compares to its target.
 enum DurationStatus { none, under, onTarget, over }
 
@@ -66,12 +64,10 @@ class SessionDuration {
     return DurationStatus.onTarget;
   }
 
+  /// The measured length as zero-padded `mm:ss`, e.g. `18:05`. This is the
+  /// canonical way to show a finished session's length to the teacher — seconds
+  /// included — so every call site reads the same format.
   String get clock => formatClock(elapsed);
-
-  String get arabicMinutesLabel {
-    final minutes = (elapsed.inSeconds / 60).round();
-    return '${NumberFormat('#', 'ar_EG').format(minutes)} دقيقة';
-  }
 
   static String formatClock(Duration d) {
     final minutes = d.inMinutes;

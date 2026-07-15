@@ -29,8 +29,10 @@ class SessionRecordRow extends StatelessWidget {
   final bool isTalqeen;
 
   /// The recorded length of the session, or null for records with no timing.
-  /// When present the row shows the duration; when it also has a target
-  /// (lessons/تلقين) it shows an over/under-target flag.
+  /// When present the row shows the duration as `mm:ss`; when it also has a
+  /// target (lessons/تلقين) the time is color-coded by pace — green on target,
+  /// yellow when faster than target, red when beyond it — so color, not a
+  /// verbose label, carries the meaning.
   final SessionDuration? sessionDuration;
 
   const SessionRecordRow({
@@ -94,17 +96,7 @@ class SessionRecordRow extends StatelessWidget {
                 ),
                 if (sessionDuration != null) ...[
                   const SizedBox(height: 4),
-                  Text(
-                    'المدة: ${sessionDuration!.arabicMinutesLabel}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  if (sessionDuration!.status != DurationStatus.none)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: _DurationFlag(status: sessionDuration!.status),
-                    ),
+                  _DurationDisplay(duration: sessionDuration!),
                 ],
               ],
             ),
@@ -131,29 +123,27 @@ class SessionRecordRow extends StatelessWidget {
   }
 }
 
-class _DurationFlag extends StatelessWidget {
-  final DurationStatus status;
-  const _DurationFlag({required this.status});
+/// Shows a finished session's length as `المدة: mm:ss`.
+///
+/// For a paced session (lesson/تلقين) the time is color-coded by pace against
+/// its target — the color, not a verbose Arabic band label, tells the teacher
+/// how the session went. For a session with no target (سرد/اختبار) the time is
+/// shown plainly, since color would carry no meaning.
+class _DurationDisplay extends StatelessWidget {
+  final SessionDuration duration;
+  const _DurationDisplay({required this.duration});
 
   @override
   Widget build(BuildContext context) {
-    late final Color color;
-    late final String label;
-    switch (status) {
-      case DurationStatus.under:
-        color = AppColors.info;
-        label = 'أقصر من المستهدف';
-        break;
-      case DurationStatus.onTarget:
-        color = AppColors.success;
-        label = 'ضمن المستهدف';
-        break;
-      case DurationStatus.over:
-        color = AppColors.warning;
-        label = 'أطول من المستهدف';
-        break;
-      case DurationStatus.none:
-        return const SizedBox.shrink();
+    final label = 'المدة: ${duration.clock}';
+    final color = _colorForStatus(duration.status);
+    if (color == null) {
+      return Text(
+        label,
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+      );
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -171,5 +161,22 @@ class _DurationFlag extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// The pace-vs-target color for [status], per al_rasikhoon-xkd:
+  ///   onTarget → green (on time), under → yellow (faster than target),
+  ///   over → red (beyond target). Returns null when there is no target, so the
+  ///   caller shows the time in a neutral color instead.
+  static Color? _colorForStatus(DurationStatus status) {
+    switch (status) {
+      case DurationStatus.under:
+        return AppColors.warning; // yellow — faster than target
+      case DurationStatus.onTarget:
+        return AppColors.success; // green — on time
+      case DurationStatus.over:
+        return AppColors.error; // red — beyond target
+      case DurationStatus.none:
+        return null;
+    }
   }
 }

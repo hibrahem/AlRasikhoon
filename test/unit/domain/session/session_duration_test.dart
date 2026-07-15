@@ -163,11 +163,12 @@ void main() {
         expect(SessionDuration.formatClock(Duration.zero), '00:00');
       });
 
-      test('arabic minutes label rounds to the nearest minute', () {
+      test('clock getter shows the elapsed length with its seconds', () {
+        // Seconds are part of the display — 22:20 must NOT round to 22 minutes.
         final d = SessionDuration(
           elapsed: const Duration(minutes: 22, seconds: 20),
         );
-        expect(d.arabicMinutesLabel, '٢٢ دقيقة');
+        expect(d.clock, '22:20');
       });
     });
 
