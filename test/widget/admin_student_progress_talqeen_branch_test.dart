@@ -164,6 +164,7 @@ void main() {
               studentProvider: adminStudentProvider,
               currentMeetingProvider: adminStudentCurrentMeetingProvider,
               sessionHistoryProvider: adminStudentSessionHistoryProvider,
+              sessionDetailRoute: '/admin/students/history/:recordId',
             ),
           ),
         ),

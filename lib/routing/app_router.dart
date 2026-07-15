@@ -64,6 +64,13 @@ class AppRoutes {
   static const String levelDetail = '/admin/curriculum/:levelNumber';
   static const String adminStudents = '/admin/students';
   static const String adminStudentProgress = '/admin/students/:id';
+  // A past record opened from a student's progress view. Same screen as the
+  // student's own session detail, but registered in the ADMIN shell so opening
+  // it never crosses a shell boundary (#45 duplicate-page-key crash) and never
+  // jumps into the student shell (al_rasikhoon-3hn). 4 segments, so it never
+  // collides with the 3-segment `:id` progress route.
+  static const String adminStudentSessionDetail =
+      '/admin/students/history/:recordId';
 
   // Supervisor
   static const String supervisorDashboard = '/supervisor';
@@ -79,6 +86,12 @@ class AppRoutes {
   // never an action.
   static const String supervisorStudentProgress =
       '/supervisor/students/:studentId';
+  // Supervisor twin of adminStudentSessionDetail — shell-local so opening a
+  // record from a student's progress view stays in the supervisor shell
+  // (al_rasikhoon-3hn). 4 segments, so no collision with the 3-segment
+  // `:studentId` progress route or the literal `add` route.
+  static const String supervisorStudentSessionDetail =
+      '/supervisor/students/history/:recordId';
   static const String supervisorSettings = '/supervisor/settings';
 
   // Teacher
@@ -196,7 +209,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                     studentProvider: adminStudentProvider,
                     currentMeetingProvider: adminStudentCurrentMeetingProvider,
                     sessionHistoryProvider: adminStudentSessionHistoryProvider,
+                    sessionDetailRoute: AppRoutes.adminStudentSessionDetail,
                   );
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.adminStudentSessionDetail,
+                builder: (context, state) {
+                  final recordId = state.pathParameters['recordId']!;
+                  return SessionDetailScreen(recordId: recordId);
                 },
               ),
             ],
@@ -342,7 +363,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                         supervisorStudentCurrentMeetingProvider,
                     sessionHistoryProvider:
                         supervisorStudentSessionHistoryProvider,
+                    sessionDetailRoute:
+                        AppRoutes.supervisorStudentSessionDetail,
                   );
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.supervisorStudentSessionDetail,
+                builder: (context, state) {
+                  final recordId = state.pathParameters['recordId']!;
+                  return SessionDetailScreen(recordId: recordId);
                 },
               ),
             ],
