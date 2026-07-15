@@ -346,6 +346,31 @@ void main() {
         expect(record.duration, const Duration(minutes: 60));
       });
 
+      test('scales the duration target/cap with pace — a 2x student is not '
+          'clamped at the 1x cap', () async {
+        // 2x target = 40 min, cap = 3 * 40 = 120 min. 90 min elapsed
+        // exceeds the 1x cap (60 min) but is within the 2x cap, so an
+        // uncapped 90 min proves the target scaled with `pace.multiplier`
+        // instead of being hardcoded to the 1x 20 min target.
+        final started = DateTime(2026, 1, 1, 10, 0, 0);
+        final record = await sessionRepository.createSessionRecord(
+          studentId: 's1',
+          teacherId: 't1',
+          meeting: _meeting(id: 'L1_J30_S1', sessionNumber: 1, orderInLevel: 1),
+          levelId: 1,
+          attemptNumber: 1,
+          newMemorizationErrors: 0,
+          recentReviewErrors: 0,
+          distantReviewErrors: 0,
+          repetitionsWithTeacher: 0,
+          homeRepetitionsRequired: 0,
+          pace: CurriculumPace(2),
+          startedAt: started,
+          now: started.add(const Duration(minutes: 90)),
+        );
+        expect(record.duration, const Duration(minutes: 90));
+      });
+
       test('leaves duration null when no start was captured', () async {
         final record = await sessionRepository.createSessionRecord(
           studentId: 's1',
@@ -395,6 +420,30 @@ void main() {
               .doc(record.id)
               .get();
           expect(stored.data()!['home_repetitions_required'], 10);
+        },
+      );
+
+      test(
+        'records the capped wall-clock duration from startedAt to write',
+        () async {
+          final started = DateTime(2026, 1, 1, 10, 0, 0);
+          final record = await sessionRepository.createTalqeenRecord(
+            studentId: 'student1',
+            teacherId: 'teacher1',
+            meeting: _meeting(
+              id: 'L1_J30_S1',
+              sessionNumber: 1,
+              orderInLevel: 1,
+              kind: SessionKind.talqeen,
+            ),
+            levelId: 1,
+            repetitionsWithTeacher: 4,
+            homeRepetitionsRequired: 10,
+            pace: CurriculumPace.standard, // 1x → 20 min target, 60 min cap
+            startedAt: started,
+            now: started.add(const Duration(minutes: 15)),
+          );
+          expect(record.duration, const Duration(minutes: 15));
         },
       );
     });
