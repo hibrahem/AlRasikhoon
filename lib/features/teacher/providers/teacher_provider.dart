@@ -531,16 +531,6 @@ final activeSessionProvider =
       ActiveSessionNotifier.new,
     );
 
-/// Provider for student's session history
-final studentSessionHistoryProvider =
-    FutureProvider.family<List<SessionRecordModel>, String>((
-      ref,
-      studentId,
-    ) async {
-      final repo = ref.watch(sessionRepositoryProvider);
-      return repo.getSessionRecordsForStudent(studentId, limit: 20);
-    });
-
 /// One row of the teacher's history: the record, plus the student identity the
 /// record itself does not carry.
 class TeacherHistoryEntry {
@@ -566,11 +556,11 @@ final teacherHistoryProvider = FutureProvider<List<TeacherHistoryEntry>>((
   if (currentUser == null) return [];
 
   final repo = ref.watch(sessionRepositoryProvider);
-  // Bounded the same way as studentSessionHistoryProvider: without a limit,
-  // a teacher who has recorded a year of sessions re-downloads every one of
+  // Bounded the same way as the student-facing history: without a limit, a
+  // teacher who has recorded a year of sessions re-downloads every one of
   // them on every tab open and pull-to-refresh. Note this limit applies
   // BEFORE the roster/institute filtering below, so fewer than 20 entries can
-  // end up on screen — acceptable, since the student-facing provider has the
+  // end up on screen — acceptable, since the student-facing history has the
   // same shape.
   final records = await repo.getSessionRecordsForTeacher(
     currentUser.id,
