@@ -1005,6 +1005,19 @@ void main() {
         );
         expect(record.duration, const Duration(minutes: 35));
       });
+
+      test('leaves duration null when no start was captured', () async {
+        final record = await sessionRepository.createExamRecord(
+          studentId: 's1',
+          supervisorId: 'sup1',
+          curriculumSessionId: 'L1_J30_S9',
+          tier: AssessmentTier.juz,
+          levelId: 1,
+          attemptNumber: 1,
+          errorCount: 0,
+        );
+        expect(record.duration, isNull);
+      });
     });
 
     group('getExamRecordsForStudent', () {
