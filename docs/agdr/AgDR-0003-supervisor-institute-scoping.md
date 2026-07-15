@@ -1,5 +1,13 @@
 # AgDR-0003 — Canonical source of truth for supervisor institute scoping
 
+> **⚠️ SUPERSEDED by [AgDR-0004](./AgDR-0004-supervisor-multi-institute-membership.md) (al_rasikhoon-3n6).**
+> The core premise below — "one institute per supervisor", with
+> `users/{uid}.institute_id` as the single scalar source of truth — no longer
+> holds. Supervisors now have teacher parity: freely assigned/unassigned to
+> institutes and may supervise SEVERAL at once. The source of truth moved to the
+> `supervisor_institutes/{uid}_{instituteId}` membership docs (admin-write-only).
+> This document is retained for history; read AgDR-0004 for the current model.
+
 > In the context of enforcing that a supervisor can only act within their institute (issue #28, epic #26), facing two places that store a supervisor's institute after #27 (`users/{uid}.institute_id` and the `supervisor_institutes/{uid}_{instituteId}` join doc), I decided to make **`users/{uid}.institute_id` the single canonical source of truth** for scoping/authorization and treat `supervisor_institutes` as a **derived read-model**, to achieve simple, cheap, drift-free permission checks, accepting that the derived doc must be kept in sync by a single writer.
 
 ## Context

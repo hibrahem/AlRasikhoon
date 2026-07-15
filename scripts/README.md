@@ -44,6 +44,32 @@ FIREBASE_PROJECT_ID=alrasikhoon-57151 \
 npm run wipe-users -- --confirm --i-know-what-im-doing
 ```
 
+## Backfill supervisor_institutes memberships (al_rasikhoon-3n6)
+
+Supervisor institute scoping moved from `users/{uid}.institute_id` to the
+`supervisor_institutes/{uid}_{instituteId}` membership docs. `createUserAccount`
+has written both since #28, so recent supervisors already have a membership;
+this script reconciles OLDER supervisors whose legacy `institute_id` has no
+matching membership doc.
+
+**DRY-RUN is the default — it writes nothing.** It only reports what it would
+create. Pass `--write` to actually create the missing membership docs. It is
+idempotent (an existing membership, active or soft-deleted, is left untouched),
+never deletes, and never touches `users/{uid}.institute_id` (dropping that field
+is a separate, later, human-run step).
+
+```bash
+# DRY-RUN (writes nothing) — inspect the plan first:
+GOOGLE_APPLICATION_CREDENTIALS=./service-account.json \
+FIREBASE_PROJECT_ID=alrasikhoon-57151 \
+npm run backfill-supervisor-institutes
+
+# APPLY (only after reviewing the dry-run output):
+GOOGLE_APPLICATION_CREDENTIALS=./service-account.json \
+FIREBASE_PROJECT_ID=alrasikhoon-57151 \
+npm run backfill-supervisor-institutes -- --write
+```
+
 ## Cloud Functions IAM audit
 
 `audit_functions_iam.sh` asserts that every Gen2 Cloud Function is publicly
