@@ -73,11 +73,57 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
     await testEnv.clearFirestore();
 
     // --- Actors -------------------------------------------------------------
-    // Supervisor bound to institute A.
+    // Supervisor scoped to institute A. As of al_rasikhoon-3n6 supervisor
+    // scoping is the supervisor_institutes MEMBERSHIP doc, NOT
+    // users/{uid}.institute_id. We deliberately still seed institute_id on the
+    // user doc (a supervisor may carry a legacy/convenience institute_id) to
+    // prove the rules no longer read it — sup_a is authorized purely by the
+    // membership doc seeded below.
     await seed("users", "sup_a", {
       role: "supervisor",
       institute_id: INST_A,
       name: "Supervisor A",
+    });
+    // THE source of truth for sup_a's scope: an active membership in institute A.
+    await seed("supervisor_institutes", "sup_a_" + INST_A, {
+      supervisor_id: "sup_a",
+      institute_id: INST_A,
+      is_active: true,
+    });
+
+    // Multi-institute supervisor — teacher parity means a supervisor may
+    // supervise SEVERAL institutes at once (al_rasikhoon-3n6). sup_multi is a
+    // member of BOTH A and B. NOTE its users/{uid} doc has NO institute_id at
+    // all, proving membership alone drives scope.
+    await seed("users", "sup_multi", {
+      role: "supervisor",
+      name: "Supervisor Multi",
+    });
+    await seed("supervisor_institutes", "sup_multi_" + INST_A, {
+      supervisor_id: "sup_multi",
+      institute_id: INST_A,
+      is_active: true,
+    });
+    await seed("supervisor_institutes", "sup_multi_" + INST_B, {
+      supervisor_id: "sup_multi",
+      institute_id: INST_B,
+      is_active: true,
+    });
+
+    // Removed supervisor — was a member of institute A but the membership was
+    // SOFT-deleted (is_active:false, as removeSupervisorFromInstitute writes).
+    // Its users/{uid}.institute_id STILL points at INST_A to prove the rules
+    // ignore that field: an inactive membership must DENY, even though the doc
+    // still exists() and the legacy field still names the institute.
+    await seed("users", "sup_removed", {
+      role: "supervisor",
+      institute_id: INST_A,
+      name: "Supervisor Removed",
+    });
+    await seed("supervisor_institutes", "sup_removed_" + INST_A, {
+      supervisor_id: "sup_removed",
+      institute_id: INST_A,
+      is_active: false,
     });
     // Teachers. Record writes are scoped to a teacher's OWN students via
     // students.teacher_id (al_rasikhoon-ob7); teacher_b exists so we can assert
@@ -194,6 +240,126 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
       updateDoc(doc(db, "users", "sup_a"), {
         role: "super_admin",
         institute_id: INST_B,
+      })
+    );
+  });
+
+  // === al_rasikhoon-3n6 — supervisor_institutes is the escalation boundary ==
+  // Supervisor scoping moved from users/{uid}.institute_id to the
+  // supervisor_institutes MEMBERSHIP doc. The self-promotion guard MUST move
+  // with it: a supervisor writing supervisor_institutes/{ownUid}_{institute}
+  // would self-grant that institute — the exact privilege escalation, relocated.
+  // These docs are admin-write-only.
+
+  it("DENIES a supervisor creating their OWN supervisor_institutes membership (escalation blocked, al_rasikhoon-3n6)", async () => {
+    const db = asUser("sup_a");
+    await assertFails(
+      setDoc(doc(db, "supervisor_institutes", "sup_a_" + INST_B), {
+        supervisor_id: "sup_a",
+        institute_id: INST_B,
+        is_active: true,
+      })
+    );
+  });
+
+  it("DENIES a supervisor creating a membership for a THIRD institute they don't belong to (escalation blocked, al_rasikhoon-3n6)", async () => {
+    const db = asUser("sup_a");
+    await assertFails(
+      setDoc(doc(db, "supervisor_institutes", "sup_a_institute_c"), {
+        supervisor_id: "sup_a",
+        institute_id: "institute_c",
+        is_active: true,
+      })
+    );
+  });
+
+  it("DENIES a removed supervisor RE-ACTIVATING their own membership (is_active flip, al_rasikhoon-3n6)", async () => {
+    const db = asUser("sup_removed");
+    await assertFails(
+      updateDoc(doc(db, "supervisor_institutes", "sup_removed_" + INST_A), {
+        is_active: true,
+      })
+    );
+  });
+
+  it("DENIES a supervisor deleting their own membership (al_rasikhoon-3n6)", async () => {
+    const db = asUser("sup_a");
+    await assertFails(
+      deleteDoc(doc(db, "supervisor_institutes", "sup_a_" + INST_A))
+    );
+  });
+
+  it("ALLOWS a super_admin creating a supervisor_institutes membership (al_rasikhoon-3n6)", async () => {
+    const db = asUser("admin");
+    await assertSucceeds(
+      setDoc(doc(db, "supervisor_institutes", "sup_a_institute_c"), {
+        supervisor_id: "sup_a",
+        institute_id: "institute_c",
+        is_active: true,
+      })
+    );
+  });
+
+  it("ALLOWS a super_admin removing (soft-delete) a membership (al_rasikhoon-3n6)", async () => {
+    const db = asUser("admin");
+    await assertSucceeds(
+      updateDoc(doc(db, "supervisor_institutes", "sup_a_" + INST_A), {
+        is_active: false,
+      })
+    );
+  });
+
+  // === al_rasikhoon-3n6 — student scoping resolves via membership ===========
+  // A supervisor may act on a student in an institute they are a MEMBER of, and
+  // is denied in one they are not — driven by supervisor_institutes, not
+  // users/{uid}.institute_id.
+
+  it("DENIES a REMOVED supervisor (inactive membership) reading an institute-A student, even though users.institute_id still names A (al_rasikhoon-3n6)", async () => {
+    const db = asUser("sup_removed");
+    await assertFails(getDoc(doc(db, "students", "stu_child_a")));
+  });
+
+  it("DENIES a REMOVED supervisor updating an institute-A student (inactive membership, al_rasikhoon-3n6)", async () => {
+    const db = asUser("sup_removed");
+    await assertFails(
+      updateDoc(doc(db, "students", "stu_a"), { name: "tampered" })
+    );
+  });
+
+  // --- multi-institute supervisor (teacher parity) --------------------------
+  it("ALLOWS a multi-institute supervisor reading a student in institute A (al_rasikhoon-3n6)", async () => {
+    const db = asUser("sup_multi");
+    await assertSucceeds(getDoc(doc(db, "students", "stu_child_a")));
+  });
+
+  it("ALLOWS a multi-institute supervisor reading a student in institute B (al_rasikhoon-3n6)", async () => {
+    const db = asUser("sup_multi");
+    await assertSucceeds(getDoc(doc(db, "students", "stu_child_b")));
+  });
+
+  it("ALLOWS a multi-institute supervisor creating a student in EITHER of their institutes (al_rasikhoon-3n6)", async () => {
+    const db = asUser("sup_multi");
+    await assertSucceeds(
+      setDoc(doc(db, "students", "stu_multi_b"), {
+        institute_id: INST_B,
+        name: "Multi B",
+      })
+    );
+  });
+
+  it("ALLOWS a multi-institute supervisor updating a session_record for an institute-B student (al_rasikhoon-3n6)", async () => {
+    const db = asUser("sup_multi");
+    await assertSucceeds(
+      updateDoc(doc(db, "session_records", "sess_child_b"), { score: 9 })
+    );
+  });
+
+  it("DENIES a multi-institute supervisor acting on a student in a THIRD institute they don't belong to (al_rasikhoon-3n6)", async () => {
+    const db = asUser("sup_multi");
+    await assertFails(
+      setDoc(doc(db, "students", "stu_third"), {
+        institute_id: "institute_c",
+        name: "Third",
       })
     );
   });

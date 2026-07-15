@@ -31,25 +31,44 @@ service cloud.firestore {
       return isAuthenticated() && getUserRole() == 'guardian';
     }
 
-    // The canonical institute the signed-in user is bound to, read off
-    // users/{uid}.institute_id (AgDR-0003: single source of truth for
-    // supervisor scoping). Null when the field is absent.
-    function callerInstituteId() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.institute_id;
+    // Membership check: is the signed-in supervisor ASSIGNED to `instituteId`?
+    // (al_rasikhoon-3n6) This RETIRES the single-institute model where
+    // users/{uid}.institute_id was the source of truth for supervisor scoping.
+    // A supervisor now has teacher parity: freely assigned/unassigned to
+    // institutes and may supervise SEVERAL at once. The source of truth is the
+    // membership doc supervisor_institutes/{uid}_{instituteId}.
+    //
+    // Because the doc id is exactly {uid}_{instituteId}, membership is a single
+    // deterministic doc lookup — NO multi-hop read, NO collection query, NO
+    // fan-out. We also require is_active == true: removeSupervisorFromInstitute
+    // SOFT-deletes (sets is_active:false) rather than deleting the doc, so a bare
+    // exists() would keep granting a REMOVED supervisor. The exists() guard runs
+    // first so get() is only reached for a doc that is present (a get() on a
+    // missing doc would error-and-deny anyway; this keeps it cheap and explicit).
+    //
+    // ⚠️ PRIVILEGE BOUNDARY: supervisor_institutes is admin-write-only (see its
+    // match block below). If a supervisor could create
+    // supervisor_institutes/{ownUid}_{anyInstitute} they would grant themselves
+    // that institute — the escalation this whole model must prevent.
+    function supervisorInInstitute(instituteId) {
+      return instituteId != null &&
+        exists(/databases/$(database)/documents/supervisor_institutes/$(request.auth.uid + '_' + instituteId)) &&
+        get(/databases/$(database)/documents/supervisor_institutes/$(request.auth.uid + '_' + instituteId)).data.is_active == true;
     }
 
     // A supervisor scoped to the institute of the given student document data.
-    // Compares student.institute_id against the supervisor's
-    // users/{uid}.institute_id with NO multi-hop read (AgDR-0003 denormalizes
-    // institute_id onto student docs). Defensive against students that pre-date
-    // the field: a student with no institute_id ('institute_id' in data == false)
-    // is treated as out-of-scope and DENIED, so a missing field never widens
-    // access. Backfilling existing student docs is a tracked follow-up.
+    // Compares student.institute_id against the supervisor's MEMBERSHIP docs
+    // (supervisorInInstitute, al_rasikhoon-3n6) with NO multi-hop read (AgDR-0003
+    // denormalizes institute_id onto student docs). Defensive against students
+    // that pre-date the field: a student with no institute_id ('institute_id' in
+    // data == false) is treated as out-of-scope and DENIED, so a missing field
+    // never widens access. Backfilling existing student docs is a tracked
+    // follow-up.
     function isSupervisorOfStudentInstitute(studentData) {
       return isSupervisor() &&
         ('institute_id' in studentData) &&
         studentData.institute_id != null &&
-        studentData.institute_id == callerInstituteId();
+        supervisorInInstitute(studentData.institute_id);
     }
 
     // A teacher scoped to their OWN students. "A teacher's student" is
@@ -65,12 +84,15 @@ service cloud.firestore {
     }
 
     // A supervisor scoped to the institute of the student referenced by a
-    // session record. Single get() on the student doc to read its
-    // denormalized institute_id, compared against the supervisor's institute.
+    // session/exam record. Single get() on the student doc to read its
+    // denormalized institute_id, checked against the supervisor's MEMBERSHIP
+    // (supervisorInInstitute, al_rasikhoon-3n6). Fail-closed when the student has
+    // no institute_id: get().data.institute_id is then null, and
+    // supervisorInInstitute(null) returns false.
     function isSupervisorOfRecordStudent(recordData) {
       return isSupervisor() &&
         ('student_id' in recordData) &&
-        get(/databases/$(database)/documents/students/$(recordData.student_id)).data.institute_id == callerInstituteId();
+        supervisorInInstitute(get(/databases/$(database)/documents/students/$(recordData.student_id)).data.institute_id);
     }
 
     // A teacher scoped to the student referenced by a session/sard record.
@@ -91,8 +113,10 @@ service cloud.firestore {
     // every record collection, so any signed-in user could read every student
     // and all progress across institutes. The helpers below scope reads by role
     // and REUSE the existing write-side institute primitives so read and write
-    // stay consistent (al_rasikhoon-3n6 will migrate the supervisor helper for
-    // both at once).
+    // stay consistent. al_rasikhoon-3n6 migrated the supervisor primitive
+    // (supervisorInInstitute) from users/{uid}.institute_id to
+    // supervisor_institutes membership, so BOTH read and write scoping picked up
+    // multi-institute support at once.
 
     // A guardian may read a student they are the guardian of. The guardian↔child
     // link is students.guardian_id == the caller's uid (server-side counterpart
@@ -178,10 +202,15 @@ service cloud.firestore {
       // SuperAdmin may update any field on any user. A self-update (a
       // non-superadmin editing their own doc) is allowed for normal profile
       // fields ONLY — `role` and `institute_id` are frozen to their current
-      // values. Without this guard a supervisor could self-promote to
-      // role: 'super_admin' (mirrored into the Auth claim by syncRoleClaim) or
-      // change their own institute_id and rescope every #28 check. Privilege
-      // boundary: only a superadmin may move a user between roles/institutes.
+      // values. Freezing `role` is the load-bearing guard: without it a
+      // supervisor could self-promote to role: 'super_admin' (mirrored into the
+      // Auth claim by syncRoleClaim). `institute_id` is ALSO frozen here as
+      // defense-in-depth; note that as of al_rasikhoon-3n6 it is NO LONGER the
+      // source of truth for supervisor scoping (that moved to the
+      // supervisor_institutes membership docs, which are admin-write-only), so
+      // this freeze is now belt-and-suspenders rather than the primary boundary.
+      // Privilege boundary: only a superadmin may move a user between roles, and
+      // only a superadmin may write supervisor_institutes memberships.
       allow update: if isSuperAdmin() ||
         (request.auth.uid == userId &&
          request.resource.data.role == resource.data.role &&
@@ -324,10 +353,24 @@ service cloud.firestore {
       allow write: if isSuperAdmin();
     }
 
-    // Supervisor-Institute mapping
+    // Supervisor-Institute membership (al_rasikhoon-3n6: THE source of truth for
+    // supervisor institute scoping, replacing users/{uid}.institute_id). Doc id
+    // is {supervisorId}_{instituteId}; supervisorInInstitute() above reads these.
+    //
+    // ⚠️ ADMIN-WRITE-ONLY — THE core privilege boundary of this model. A
+    // supervisor granting themselves an institute is exactly the escalation that
+    // freezing users/{uid}.role/institute_id used to block; that guard MOVES HERE
+    // when scoping moves here. If a supervisor could create
+    // supervisor_institutes/{ownUid}_{anyInstitute}, or flip is_active on their
+    // own removed membership back to true, they would self-grant that institute.
+    // So EVERY write (create/update/delete) requires super_admin. The
+    // createUserAccount Cloud Function and the admin assign/remove flows write via
+    // the Admin SDK, which bypasses these rules; no client-role write path exists.
+    // Reads stay open to any authenticated user (the client resolves a
+    // supervisor's institutes and the admin lists memberships).
     match /supervisor_institutes/{docId} {
       allow read: if isAuthenticated();
-      allow write: if isSuperAdmin();
+      allow create, update, delete: if isSuperAdmin();
     }
 
     // Home practice records — a student self-reports practice against their own
