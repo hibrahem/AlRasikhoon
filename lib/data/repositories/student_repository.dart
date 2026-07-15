@@ -7,7 +7,9 @@ import '../services/firebase_service.dart';
 import '../../core/constants/app_constants.dart';
 import '../../domain/curriculum/curriculum_pace.dart';
 import '../../domain/curriculum/curriculum_position.dart';
+import '../../domain/curriculum/reposition_exceptions.dart';
 import 'curriculum_repository.dart';
+import 'session_repository.dart';
 import 'user_repository.dart';
 
 class StudentWithUser {
@@ -75,16 +77,19 @@ class StudentRepository {
   final FirebaseService _firebaseService;
   final UserRepository _userRepository;
   final CurriculumRepository _curriculumRepository;
+  final SessionRepository _sessionRepository;
 
   StudentRepository({
     FirebaseFirestore? firestore,
     required FirebaseService firebaseService,
     required UserRepository userRepository,
     required CurriculumRepository curriculumRepository,
+    required SessionRepository sessionRepository,
   }) : _firestore = firestore ?? FirebaseFirestore.instance,
        _firebaseService = firebaseService,
        _userRepository = userRepository,
-       _curriculumRepository = curriculumRepository;
+       _curriculumRepository = curriculumRepository,
+       _sessionRepository = sessionRepository;
 
   CollectionReference<Map<String, dynamic>> get _studentsCollection =>
       _firestore.collection(AppConstants.collectionStudents);
@@ -243,6 +248,121 @@ class StudentRepository {
     });
 
     return StudentWithUser(student: student, user: user);
+  }
+
+  /// Moves an ALREADY-ENROLLED student's starting point to [newPosition] and
+  /// re-derives every position field from the new anchor — the authoritative,
+  /// server-side path for al_rasikhoon-sne.
+  ///
+  /// This is only safe, and is only permitted, while the student has NOT started
+  /// (zero session/سرد/اختبار records): with no history, moving the anchor
+  /// cannot orphan a record, so it is a pure re-derivation. The three
+  /// invariants are ALL enforced here rather than in a Firestore rule — a rule
+  /// cannot aggregate across the record collections, and a stale UI must not be
+  /// trusted to have checked:
+  ///
+  /// 1. **Supervisor of the student's institute.** [actor] must be a supervisor
+  ///    bound to the student's own institute. A teacher, guardian, or supervisor
+  ///    of another institute is rejected with [RepositionNotAuthorizedException].
+  /// 2. **Not started.** If any progress record exists the move is refused with
+  ///    [StudentAlreadyStartedException], even if the caller believed otherwise.
+  /// 3. **The new position exists.** Resolved against the curriculum exactly as
+  ///    enrollment does; a position with no session is a rejected placement.
+  ///
+  /// The re-derivation REUSES the enrollment code path verbatim:
+  /// [StudentModel.enrolledAt] computes `completed_levels`, `unlocked_levels` and
+  /// the anchor, and [_writePosition] writes the denormalized `current_*` facts —
+  /// the same two functions `createStudent` uses — so a repositioned student and
+  /// a freshly-enrolled one are indistinguishable in shape. Nothing here
+  /// duplicates that logic.
+  ///
+  /// The student update and the audit entry are written in one [WriteBatch] so
+  /// the move and the record of who made it commit together or not at all.
+  Future<void> repositionEnrolledStudent({
+    required String studentId,
+    required CurriculumPosition newPosition,
+    required UserModel actor,
+  }) async {
+    // (a) Only a supervisor may move an anchor.
+    if (actor.role != UserRole.supervisor) {
+      throw const RepositionNotAuthorizedException(
+        'Only a supervisor may move a student\'s starting point',
+      );
+    }
+
+    final student = await getStudentById(studentId);
+    if (student == null) {
+      throw ArgumentError.value(studentId, 'studentId', 'No such student');
+    }
+
+    // (a cont.) …and only within their OWN institute (AgDR-0003: the supervisor
+    // is bound to a single institute, compared against the student's
+    // denormalized institute_id).
+    if (actor.instituteId == null ||
+        actor.instituteId!.isEmpty ||
+        actor.instituteId != student.instituteId) {
+      throw const RepositionNotAuthorizedException(
+        'Supervisor is not scoped to this student\'s institute',
+      );
+    }
+
+    // (b) The move is only safe with zero history — the invariant a Firestore
+    // rule cannot check, so it is checked here and is authoritative.
+    if (await _sessionRepository.hasAnyProgressRecords(studentId)) {
+      throw StudentAlreadyStartedException(studentId);
+    }
+
+    // (c) Topology first (level/juz/session could name a real point), then the
+    // data: the curriculum decides whether that session exists.
+    CurriculumPosition.validated(
+      level: newPosition.level,
+      juz: newPosition.juz,
+      session: newPosition.session,
+    );
+    final newSession = await _curriculumRepository.getSessionAt(newPosition);
+    if (newSession == null) {
+      throw ArgumentError.value(
+        newPosition.sessionId,
+        'newPosition',
+        'No curriculum session exists at this position',
+      );
+    }
+
+    // Re-derive through the SAME enrollment factory the creation path uses, so
+    // completed_levels / unlocked_levels / the anchor are computed in exactly
+    // one place. The student's identity (id, user, institute, teacher, guardian,
+    // createdAt) is carried through unchanged; pace, attempt state and any other
+    // field the update below does not touch stay exactly as they were.
+    final rederived = StudentModel.enrolledAt(
+      id: student.id,
+      userId: student.userId,
+      instituteId: student.instituteId,
+      teacherId: student.teacherId,
+      guardianId: student.guardianId,
+      session: newSession,
+      createdAt: student.createdAt,
+    );
+
+    final studentRef = _studentsCollection.doc(studentId);
+    final auditRef = studentRef.collection('reposition_audit').doc();
+    final batch = _firestore.batch();
+    batch.update(studentRef, {
+      ..._writePosition(newSession),
+      'completed_levels': rederived.completedLevels,
+      'unlocked_levels': rederived.unlockedLevels,
+      'enrollment_position': rederived.enrollmentPosition.toMap(),
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+    // Lightweight audit trail: who moved whom, and from/to which anchor. Kept as
+    // an append-only subcollection so repeated pre-start corrections each leave a
+    // record, rather than a single last-write field on the student.
+    batch.set(auditRef, {
+      'moved_by': actor.id,
+      'from': student.enrollmentPosition.toMap(),
+      'to': newPosition.toMap(),
+      'moved_at': FieldValue.serverTimestamp(),
+    });
+    await batch.commit();
   }
 
   /// Get student by ID
@@ -768,5 +888,6 @@ final studentRepositoryProvider = Provider<StudentRepository>((ref) {
     firebaseService: ref.watch(firebaseServiceProvider),
     userRepository: ref.watch(userRepositoryProvider),
     curriculumRepository: ref.watch(curriculumRepositoryProvider),
+    sessionRepository: ref.watch(sessionRepositoryProvider),
   );
 });

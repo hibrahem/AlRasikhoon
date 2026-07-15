@@ -26,6 +26,7 @@ import '../features/supervisor/screens/exam_session_screen.dart';
 import '../features/supervisor/screens/exam_result_screen.dart';
 import '../features/supervisor/screens/supervisor_students_screen.dart';
 import '../features/supervisor/providers/supervisor_provider.dart';
+import '../features/supervisor/widgets/reposition_starting_point_section.dart';
 import '../features/teacher/screens/sard_session_screen.dart';
 import '../features/teacher/screens/sard_result_screen.dart';
 import '../features/teacher/screens/teacher_students_screen.dart';
@@ -364,6 +365,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                         supervisorStudentSessionHistoryProvider,
                     sessionDetailRoute:
                         AppRoutes.supervisorStudentSessionDetail,
+                    // Supervisor-only affordance to move a not-yet-started
+                    // student's starting point (al_rasikhoon-sne). It hides
+                    // itself once the student has started; the admin shell
+                    // passes nothing here.
+                    repositionSection: RepositionStartingPointSection(
+                      studentId: studentId,
+                    ),
                   );
                 },
               ),
