@@ -8,13 +8,13 @@ import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/auth_repository.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
-import 'package:al_rasikhoon/data/services/local_storage_service.dart';
+import 'package:al_rasikhoon/data/services/session_cache.dart';
 
 class MockFirebaseService extends Mock implements FirebaseService {}
 
 class MockUserRepository extends Mock implements UserRepository {}
 
-class MockLocalStorageService extends Mock implements LocalStorageService {}
+class MockSessionCache extends Mock implements SessionCache {}
 
 class MockUserCredential extends Mock implements UserCredential {}
 
@@ -33,23 +33,38 @@ class FakeFirebaseAuthException extends Fake implements FirebaseAuthException {
 void main() {
   late MockFirebaseService mockFirebaseService;
   late MockUserRepository mockUserRepository;
-  late MockLocalStorageService mockLocalStorageService;
+  late MockSessionCache mockSessionCache;
   late ProviderContainer container;
+
+  setUpAll(() {
+    registerFallbackValue(
+      UserModel(
+        id: 'fallback',
+        email: 'fallback@x.local',
+        name: 'fallback',
+        role: UserRole.teacher,
+        createdAt: DateTime(2026, 1, 1),
+      ),
+    );
+  });
 
   setUp(() {
     mockFirebaseService = MockFirebaseService();
     mockUserRepository = MockUserRepository();
-    mockLocalStorageService = MockLocalStorageService();
+    mockSessionCache = MockSessionCache();
 
     when(
       () => mockFirebaseService.authStateChanges,
     ).thenAnswer((_) => Stream.empty());
+    when(() => mockSessionCache.readUser()).thenReturn(null);
+    when(() => mockSessionCache.cacheUser(any())).thenAnswer((_) async {});
+    when(() => mockSessionCache.clear()).thenAnswer((_) async {});
 
     container = ProviderContainer(
       overrides: [
         firebaseServiceProvider.overrideWithValue(mockFirebaseService),
         userRepositoryProvider.overrideWithValue(mockUserRepository),
-        localStorageServiceProvider.overrideWithValue(mockLocalStorageService),
+        sessionCacheProvider.overrideWithValue(mockSessionCache),
       ],
     );
   });
@@ -99,12 +114,6 @@ void main() {
         when(
           () => mockUserRepository.getUserByUsername(username),
         ).thenAnswer((_) async => appUser);
-        when(
-          () => mockLocalStorageService.setUserId(any()),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.setUserRole(any()),
-        ).thenAnswer((_) async {});
 
         final authRepo = container.read(authRepositoryProvider.notifier);
         final result = await authRepo.signInWithUsernameAndPassword(
@@ -115,10 +124,7 @@ void main() {
         expect(result, isNotNull);
         expect(result?.id, uid);
         expect(result?.username, username);
-        verify(() => mockLocalStorageService.setUserId(uid)).called(1);
-        verify(
-          () => mockLocalStorageService.setUserRole(UserRole.teacher.value),
-        ).called(1);
+        verify(() => mockSessionCache.cacheUser(appUser)).called(1);
       });
 
       test('lowercases and trims the username before sign-in', () async {
@@ -139,12 +145,6 @@ void main() {
         when(
           () => mockUserRepository.getUserByUsername('mohammed.a'),
         ).thenAnswer((_) async => appUser);
-        when(
-          () => mockLocalStorageService.setUserId(any()),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.setUserRole(any()),
-        ).thenAnswer((_) async {});
 
         final authRepo = container.read(authRepositoryProvider.notifier);
         await authRepo.signInWithUsernameAndPassword(
@@ -180,12 +180,6 @@ void main() {
         when(
           () => mockUserRepository.getUserById(uid),
         ).thenAnswer((_) async => appUser);
-        when(
-          () => mockLocalStorageService.setUserId(any()),
-        ).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.setUserRole(any()),
-        ).thenAnswer((_) async {});
 
         final authRepo = container.read(authRepositoryProvider.notifier);
         final result = await authRepo.signInWithUsernameAndPassword(
@@ -292,17 +286,14 @@ void main() {
     // the setUserPassword Cloud Function (covered by functions/test/).
 
     group('signOut', () {
-      test('signs out and clears local storage', () async {
+      test('signs out and clears the cached session', () async {
         when(() => mockFirebaseService.signOut()).thenAnswer((_) async {});
-        when(
-          () => mockLocalStorageService.clearUserData(),
-        ).thenAnswer((_) async {});
 
         final authRepo = container.read(authRepositoryProvider.notifier);
         await authRepo.signOut();
 
         verify(() => mockFirebaseService.signOut()).called(1);
-        verify(() => mockLocalStorageService.clearUserData()).called(1);
+        verify(() => mockSessionCache.clear()).called(1);
 
         final state = container.read(authRepositoryProvider);
         expect(state.firebaseUser, isNull);

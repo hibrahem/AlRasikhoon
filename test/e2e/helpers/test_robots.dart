@@ -496,10 +496,12 @@ class TeacherRobot extends TestRobot {
     expect(find.textContaining(gradeAr), findsWidgets);
   }
 
-  /// Save and complete session from summary screen.
-  /// The button can be below the fold; scroll into view first.
+  /// From the summary screen, hand off to the talqeen step and close the
+  /// session there — the summary no longer completes the session itself
+  /// (Task 7). Both buttons can be below the fold; scroll into view first.
   Future<void> completeSession() async {
-    await scrollAndTapByText('حفظ وإنهاء الحلقة');
+    await scrollAndTapByText('التالي: تلقين المقطع القادم');
+    await scrollAndTapByText('إنهاء الحلقة');
   }
 
   /// Verify the teacher is offered the Sard entry point (al_rasikhoon-801).
@@ -579,7 +581,7 @@ class TeacherRobot extends TestRobot {
   }
 
   // --- Bottom nav (al_rasikhoon-256) ---------------------------------------
-  // The teacher shell has exactly three tabs — الطلاب / السجل / الإعدادات —
+  // The teacher shell has exactly three tabs — الطلاب / السجل / الملف الشخصي —
   // each backed by its own StatefulShellBranch. Tap them the way a user
   // actually would: through the BottomNavigationBar, mirroring the
   // Admin/SupervisorRobot nav helpers above.
@@ -611,7 +613,7 @@ class TeacherRobot extends TestRobot {
     final navBar = find.byType(BottomNavigationBar);
     final settingsTab = find.descendant(
       of: navBar,
-      matching: find.text('الإعدادات'),
+      matching: find.text('الملف الشخصي'),
     );
     await tester.tap(settingsTab);
     await pumpAndSettle();
@@ -632,7 +634,7 @@ class TeacherRobot extends TestRobot {
 
   /// Verify the settings screen (SettingsScreen) is showing and the students
   /// screen is gone. See [verifyHistoryScreen] for why this asserts on the
-  /// widget type rather than the ('الإعدادات') label text, which is shared
+  /// widget type rather than the ('الملف الشخصي') label text, which is shared
   /// with the nav tab.
   Future<void> verifySettingsScreen() async {
     await pumpAndSettle();

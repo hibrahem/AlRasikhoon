@@ -11,6 +11,7 @@ import 'package:al_rasikhoon/data/repositories/curriculum_repository.dart';
 import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
+import 'package:al_rasikhoon/features/teacher/screens/next_content_talqeen_screen.dart';
 import 'package:al_rasikhoon/features/teacher/screens/session_summary_screen.dart';
 import 'package:al_rasikhoon/routing/app_router.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
@@ -18,9 +19,11 @@ import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 class MockStudentRepository extends Mock implements StudentRepository {}
 
 /// Drives `SessionSummaryScreen` end to end through the REAL wiring: pumps the
-/// actual screen (not just the standalone `RecitationCountsCard`), taps both
-/// steppers, taps the real save button, and reads the persisted session
-/// record back out of a fake-Firestore-backed `SessionRepository`.
+/// actual screen, taps the summary's hand-off button, then on the real
+/// `NextContentTalqeenScreen` it navigates to (the summary no longer closes the
+/// session itself — Task 6/7 — nor carries the counts) taps both repetition
+/// steppers and completes the session, and reads the persisted session record
+/// back out of a fake-Firestore-backed `SessionRepository`.
 ///
 /// Nothing else exercised this integration: `grep -rn "RecitationCountsCard"
 /// test/` only matched the standalone widget test, and there was no
@@ -120,6 +123,13 @@ void main() {
                 const SessionSummaryScreen(studentId: 'student-1'),
           ),
           GoRoute(
+            path: AppRoutes.nextContentTalqeen,
+            builder: (context, state) {
+              final studentId = state.pathParameters['studentId']!;
+              return NextContentTalqeenScreen(studentId: studentId);
+            },
+          ),
+          GoRoute(
             path: AppRoutes.teacherStudents,
             builder: (context, state) =>
                 const Scaffold(body: Text('قائمة الطلاب')),
@@ -135,18 +145,27 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Tap the increment stepper for "repetitions with teacher" 3 times and
-      // for "home repetitions required" 5 times — two DIFFERENT numbers so a
-      // swapped wiring (or a dropped setter) cannot pass by coincidence.
+      // The summary no longer carries the counts or closes the session (Task 7
+      // + the counts move) — it hands off to the talqeen step, which is now
+      // where the teacher records the repetitions and ends the الحلقة.
+      final nextButton = find.text('التالي: تلقين المقطع القادم');
+      await tester.ensureVisible(nextButton);
+      await tester.tap(nextButton);
+      await tester.pumpAndSettle();
+
+      // On the talqeen screen: tap the increment stepper for "repetitions with
+      // teacher" 3 times and for "home repetitions required" 5 times — two
+      // DIFFERENT numbers so a swapped wiring (or a dropped setter) cannot pass
+      // by coincidence.
       final withTeacherButton = find.byKey(
         const Key('increment_repetitions_with_teacher'),
       );
       final atHomeButton = find.byKey(
         const Key('increment_home_repetitions_required'),
       );
-      // The steppers live inside a SingleChildScrollView, below the grade
-      // summary — scroll them into view before tapping so the tap isn't
-      // silently dropped for landing outside the test viewport.
+      // The steppers live inside a SingleChildScrollView — scroll them into
+      // view before tapping so the tap isn't silently dropped for landing
+      // outside the test viewport.
       await tester.ensureVisible(withTeacherButton);
       for (var i = 0; i < 3; i++) {
         await tester.tap(withTeacherButton);
@@ -161,7 +180,9 @@ void main() {
       expect(find.text('3'), findsOneWidget);
       expect(find.text('5'), findsOneWidget);
 
-      await tester.tap(find.text('حفظ وإنهاء الحلقة'));
+      final closeButton = find.text('إنهاء الحلقة');
+      await tester.ensureVisible(closeButton);
+      await tester.tap(closeButton);
       // Let the async save flow (record write, advance, SnackBar, navigation)
       // run to completion without waiting on the SnackBar's auto-dismiss.
       await tester.pump();

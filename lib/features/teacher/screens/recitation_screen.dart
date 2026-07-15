@@ -7,6 +7,7 @@ import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_counter.dart';
 import '../providers/teacher_provider.dart';
+import '../recitation_parts.dart';
 import '../widgets/active_lesson_timer.dart';
 
 class RecitationScreen extends ConsumerStatefulWidget {
@@ -26,32 +27,19 @@ class RecitationScreen extends ConsumerStatefulWidget {
 class _RecitationScreenState extends ConsumerState<RecitationScreen> {
   int _errorCount = 0;
 
-  String get _partTitle {
-    switch (widget.part) {
-      case 1:
-        return 'الحفظ الجديد';
-      case 2:
-        return 'المراجعة القريبة';
-      case 3:
-        return 'المراجعة البعيدة';
-      default:
-        return 'التسميع';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final meetingAsync = ref.watch(
       studentCurrentMeetingProvider(widget.studentId),
     );
     // Distinct accent per memorization mode (hibrahem/AlRasikhoon#25).
-    // The Arabic label (_partTitle) is always shown alongside, so the mode is
-    // never communicated by color alone.
+    // The Arabic label (recitationPartTitleAr) is always shown alongside, so
+    // the mode is never communicated by color alone.
     final modeColor = AppColors.forMemorizationPart(widget.part);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_partTitle),
+        title: Text(recitationPartTitleAr(widget.part)),
         backgroundColor: modeColor,
         foregroundColor: AppColors.textOnPrimary,
         leading: IconButton(
@@ -98,6 +86,10 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
               content = '';
           }
 
+          final presentParts = meeting.presentParts;
+          final position = presentParts.indexOf(widget.part) + 1;
+          final isLastPart = meeting.partAfter(widget.part) == null;
+
           // The content card, the error counter and the actions are taller than
           // the viewport the teacher shell leaves on a phone, so the content
           // scrolls. SliverFillRemaining keeps the Spacer honest: when there IS
@@ -127,7 +119,7 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                   child: Text(
-                                    'الجزء ${widget.part} من 3',
+                                    'الجزء $position من ${presentParts.length}',
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: modeColor,
@@ -139,7 +131,7 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              _partTitle,
+                              recitationPartTitleAr(widget.part),
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                             const SizedBox(height: 8),
@@ -217,9 +209,7 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
                             Expanded(
                               flex: 2,
                               child: AppButton(
-                                text: widget.part < 3
-                                    ? 'التالي'
-                                    : 'إنهاء التسميع',
+                                text: isLastPart ? 'إنهاء التسميع' : 'التالي',
                                 onPressed: () {
                                   // Save current part errors
                                   ref

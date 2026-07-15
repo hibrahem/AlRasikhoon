@@ -36,6 +36,7 @@ import '../features/teacher/screens/recitation_result_screen.dart';
 import '../features/teacher/screens/new_memorization_screen.dart';
 import '../features/teacher/screens/session_summary_screen.dart';
 import '../features/teacher/screens/talqeen_session_screen.dart';
+import '../features/teacher/screens/next_content_talqeen_screen.dart';
 import '../features/teacher/screens/add_student_screen.dart';
 import '../features/student/screens/student_dashboard_screen.dart';
 import '../features/student/screens/session_history_screen.dart';
@@ -63,6 +64,13 @@ class AppRoutes {
   static const String levelDetail = '/admin/curriculum/:levelNumber';
   static const String adminStudents = '/admin/students';
   static const String adminStudentProgress = '/admin/students/:id';
+  // A past record opened from a student's progress view. Same screen as the
+  // student's own session detail, but registered in the ADMIN shell so opening
+  // it never crosses a shell boundary (#45 duplicate-page-key crash) and never
+  // jumps into the student shell (al_rasikhoon-3hn). 4 segments, so it never
+  // collides with the 3-segment `:id` progress route.
+  static const String adminStudentSessionDetail =
+      '/admin/students/history/:recordId';
 
   // Supervisor
   static const String supervisorDashboard = '/supervisor';
@@ -78,6 +86,12 @@ class AppRoutes {
   // never an action.
   static const String supervisorStudentProgress =
       '/supervisor/students/:studentId';
+  // Supervisor twin of adminStudentSessionDetail — shell-local so opening a
+  // record from a student's progress view stays in the supervisor shell
+  // (al_rasikhoon-3hn). 4 segments, so no collision with the 3-segment
+  // `:studentId` progress route or the literal `add` route.
+  static const String supervisorStudentSessionDetail =
+      '/supervisor/students/history/:recordId';
   static const String supervisorSettings = '/supervisor/settings';
 
   // Teacher
@@ -90,6 +104,8 @@ class AppRoutes {
       '/teacher/session/:studentId/recitation/:part/result';
   static const String newMemorization = '/teacher/session/:studentId/new';
   static const String sessionSummary = '/teacher/session/:studentId/summary';
+  static const String nextContentTalqeen =
+      '/teacher/session/:studentId/next-content';
   static const String talqeenSession = '/teacher/session/:studentId/talqeen';
   // Sard (السرد) — TEACHER-conducted (al_rasikhoon-801, reversing #29). Lives
   // in the teacher shell alongside the rest of the session flow, so the whole
@@ -193,7 +209,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                     studentProvider: adminStudentProvider,
                     currentMeetingProvider: adminStudentCurrentMeetingProvider,
                     sessionHistoryProvider: adminStudentSessionHistoryProvider,
+                    sessionDetailRoute: AppRoutes.adminStudentSessionDetail,
                   );
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.adminStudentSessionDetail,
+                builder: (context, state) {
+                  final recordId = state.pathParameters['recordId']!;
+                  return SessionDetailScreen(recordId: recordId);
                 },
               ),
             ],
@@ -341,7 +365,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                         supervisorStudentCurrentMeetingProvider,
                     sessionHistoryProvider:
                         supervisorStudentSessionHistoryProvider,
+                    sessionDetailRoute:
+                        AppRoutes.supervisorStudentSessionDetail,
                   );
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.supervisorStudentSessionDetail,
+                builder: (context, state) {
+                  final recordId = state.pathParameters['recordId']!;
+                  return SessionDetailScreen(recordId: recordId);
                 },
               ),
             ],
@@ -414,6 +447,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) {
                   final studentId = state.pathParameters['studentId']!;
                   return SessionSummaryScreen(studentId: studentId);
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.nextContentTalqeen,
+                builder: (context, state) {
+                  final studentId = state.pathParameters['studentId']!;
+                  return NextContentTalqeenScreen(studentId: studentId);
                 },
               ),
               GoRoute(

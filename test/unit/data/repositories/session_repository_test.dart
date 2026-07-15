@@ -1412,5 +1412,51 @@ void main() {
         expect(records.first.supervisorId, 'supervisor1');
       });
     });
+
+    group('getSessionCountForTeacher', () {
+      Future<void> seedRecord({
+        required String teacherId,
+        required DateTime date,
+      }) async {
+        await fakeFirestore.collection('session_records').add({
+          'teacher_id': teacherId,
+          'date': Timestamp.fromDate(date),
+        });
+      }
+
+      test(
+        'counts all records for the teacher when no startDate is given',
+        () async {
+          await seedRecord(teacherId: 't1', date: DateTime(2026, 1, 10));
+          await seedRecord(teacherId: 't1', date: DateTime(2026, 7, 2));
+          await seedRecord(teacherId: 't2', date: DateTime(2026, 7, 2));
+
+          final count = await sessionRepository.getSessionCountForTeacher('t1');
+
+          expect(count, 2);
+        },
+      );
+
+      test('counts only records on or after startDate', () async {
+        await seedRecord(teacherId: 't1', date: DateTime(2026, 6, 30));
+        await seedRecord(teacherId: 't1', date: DateTime(2026, 7, 1));
+        await seedRecord(teacherId: 't1', date: DateTime(2026, 7, 15));
+
+        final count = await sessionRepository.getSessionCountForTeacher(
+          't1',
+          startDate: DateTime(2026, 7, 1),
+        );
+
+        expect(count, 2);
+      });
+
+      test('returns zero for a teacher with no records', () async {
+        await seedRecord(teacherId: 't1', date: DateTime(2026, 7, 2));
+
+        final count = await sessionRepository.getSessionCountForTeacher('none');
+
+        expect(count, 0);
+      });
+    });
   });
 }

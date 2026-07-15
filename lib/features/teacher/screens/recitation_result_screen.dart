@@ -8,6 +8,7 @@ import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/grade_display.dart';
 import '../providers/teacher_provider.dart';
+import '../recitation_parts.dart';
 
 class RecitationResultScreen extends ConsumerWidget {
   final String studentId;
@@ -21,22 +22,17 @@ class RecitationResultScreen extends ConsumerWidget {
     required this.errorCount,
   });
 
-  String get _partTitle {
-    switch (part) {
-      case 1:
-        return 'الحفظ الجديد';
-      case 2:
-        return 'المراجعة القريبة';
-      case 3:
-        return 'المراجعة البعيدة';
-      default:
-        return 'التسميع';
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activeSession = ref.watch(activeSessionProvider);
+    final meeting = activeSession?.meeting;
+    final presentParts = meeting?.presentParts ?? const [1, 2, 3];
+    final int? nextPart = meeting != null
+        ? meeting.partAfter(part)
+        : (part < 3 ? part + 1 : null);
+    final int position = presentParts.contains(part)
+        ? presentParts.indexOf(part) + 1
+        : part;
     // Per-part grade is level-based (hibrahem/AlRasikhoon#22). The grade is
     // only computed once the student value resolves — never from a default
     // level=1 while loading, which would flash a harsher grade (#36).
@@ -52,7 +48,7 @@ class RecitationResultScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('نتيجة $_partTitle'),
+        title: Text('نتيجة ${recitationPartTitleAr(part)}'),
         backgroundColor: modeColor,
         foregroundColor: AppColors.textOnPrimary,
         automaticallyImplyLeading: false,
@@ -75,11 +71,11 @@ class RecitationResultScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'الجزء $part من 3',
+                  'الجزء $position من ${presentParts.length}',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: modeColor,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: modeColor,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -117,16 +113,10 @@ class RecitationResultScreen extends ConsumerWidget {
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                       const SizedBox(height: 12),
-                      if (part >= 2)
+                      for (final p in presentParts.where((p) => p < part))
                         _SummaryRow(
-                          title: 'الحفظ الجديد',
-                          errors: activeSession.part1Errors,
-                          level: level,
-                        ),
-                      if (part >= 3)
-                        _SummaryRow(
-                          title: 'المراجعة القريبة',
-                          errors: activeSession.part2Errors,
+                          title: recitationPartTitleAr(p),
+                          errors: recitationPartErrors(activeSession, p),
                           level: level,
                         ),
                     ],
@@ -134,16 +124,16 @@ class RecitationResultScreen extends ConsumerWidget {
                 ),
 
               // Action buttons
-              if (part < 3)
+              if (nextPart != null)
                 Column(
                   children: [
                     AppButton(
-                      text: 'التالي: ${_getNextPartTitle()}',
+                      text: 'التالي: ${recitationPartTitleAr(nextPart)}',
                       onPressed: () {
                         context.pushReplacement(
                           AppRoutes.recitation
                               .replaceFirst(':studentId', studentId)
-                              .replaceFirst(':part', '${part + 1}'),
+                              .replaceFirst(':part', '$nextPart'),
                         );
                       },
                       isFullWidth: true,
@@ -152,7 +142,7 @@ class RecitationResultScreen extends ConsumerWidget {
                     const SizedBox(height: 12),
                     if (gradeInfo != null && !gradeInfo.passed)
                       AppButton(
-                        text: 'إعادة $_partTitle',
+                        text: 'إعادة ${recitationPartTitleAr(part)}',
                         onPressed: () {
                           context.pushReplacement(
                             AppRoutes.recitation
@@ -172,8 +162,10 @@ class RecitationResultScreen extends ConsumerWidget {
                       text: 'عرض ملخص الحلقة',
                       onPressed: () {
                         context.push(
-                          AppRoutes.sessionSummary
-                              .replaceFirst(':studentId', studentId),
+                          AppRoutes.sessionSummary.replaceFirst(
+                            ':studentId',
+                            studentId,
+                          ),
                         );
                       },
                       isFullWidth: true,
@@ -182,7 +174,7 @@ class RecitationResultScreen extends ConsumerWidget {
                     const SizedBox(height: 12),
                     if (gradeInfo != null && !gradeInfo.passed)
                       AppButton(
-                        text: 'إعادة $_partTitle',
+                        text: 'إعادة ${recitationPartTitleAr(part)}',
                         onPressed: () {
                           context.pushReplacement(
                             AppRoutes.recitation
@@ -200,17 +192,6 @@ class RecitationResultScreen extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String _getNextPartTitle() {
-    switch (part + 1) {
-      case 2:
-        return 'المراجعة القريبة';
-      case 3:
-        return 'المراجعة البعيدة';
-      default:
-        return '';
-    }
   }
 }
 
@@ -240,17 +221,14 @@ class _SummaryRow extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              title,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            child: Text(title, style: Theme.of(context).textTheme.bodyMedium),
           ),
           Text(
             '$errors أخطاء',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: gradeInfo.color,
-                  fontWeight: FontWeight.bold,
-                ),
+              color: gradeInfo.color,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),

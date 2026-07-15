@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/institute_repository.dart';
 import '../../../data/repositories/student_repository.dart';
@@ -9,7 +10,8 @@ import '../../../data/models/session_record_model.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/user_provider.dart';
-import '../../../shared/providers/meeting_provider.dart' show composeMeetingFor;
+import '../../../shared/providers/meeting_provider.dart'
+    show composeMeetingFor, composeNextMeetingAfter;
 
 /// Provider for teacher's students
 final teacherStudentsProvider = FutureProvider<List<StudentWithUser>>((
@@ -105,6 +107,33 @@ final studentCurrentMeetingProvider =
 
       return composeMeetingFor(ref, studentAsync.student);
     });
+
+/// The meeting to PREVIEW after the active session — the passage the teacher
+/// recites (تلقين) with the student before closing. Recomposed from the
+/// student's live pace like every other meeting. Null when there is no active
+/// meeting, the student can't be resolved, or the active meeting is the last
+/// in the level.
+final activeSessionNextMeetingProvider = FutureProvider<PacedSession?>((
+  ref,
+) async {
+  // Subscribe only to the two fields the next passage is composed from — the
+  // meeting being taught and whose session it is — NOT the whole active
+  // session. The recitation counts (and every other field) live on the same
+  // state object and are edited on the very screen that shows this preview;
+  // watching the whole object would reload the preview — flashing a spinner
+  // over the passage card — on every count tap.
+  final studentId = ref.watch(
+    activeSessionProvider.select((s) => s?.studentId),
+  );
+  final meeting = ref.watch(activeSessionProvider.select((s) => s?.meeting));
+  if (studentId == null || meeting == null) return null;
+
+  final studentAsync = ref.watch(studentProvider(studentId));
+  final student = studentAsync.value?.student;
+  if (student == null) return null;
+
+  return composeNextMeetingAfter(ref, student, meeting);
+});
 
 /// Session state for recording a session
 class ActiveSessionState {
@@ -222,6 +251,12 @@ class ActiveSessionState {
 class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
   @override
   ActiveSessionState? build() => null;
+
+  /// Seeds an active session directly, bypassing `startSession` and Firestore.
+  /// Test-only: widget tests for the recitation/summary/talqeen screens need a
+  /// composed meeting in state without a full session start.
+  @visibleForTesting
+  void seedForTest(ActiveSessionState state) => this.state = state;
 
   /// Starts a session and — while the teacher is teaching it, not only once
   /// it is graded — composes and stores the meeting being taught.
@@ -566,4 +601,49 @@ final teacherHistoryProvider = FutureProvider<List<TeacherHistoryEntry>>((
     );
   }
   return entries;
+});
+
+/// A teacher's at-a-glance activity, shown on the profile screen.
+class TeacherStats {
+  final int totalSessions;
+  final int sessionsThisMonth;
+  final int studentCount;
+  final int instituteCount;
+
+  const TeacherStats({
+    this.totalSessions = 0,
+    this.sessionsThisMonth = 0,
+    this.studentCount = 0,
+    this.instituteCount = 0,
+  });
+}
+
+/// Composes the signed-in teacher's profile stats: an all-time and a
+/// this-month session count (cheap `.count()` queries), plus the roster and
+/// institute sizes the students tab has already loaded.
+final teacherStatsProvider = FutureProvider<TeacherStats>((ref) async {
+  final currentUser = ref.watch(currentUserProvider);
+  if (currentUser == null) return const TeacherStats();
+
+  final sessionRepo = ref.watch(sessionRepositoryProvider);
+  final students = await ref.watch(teacherStudentsProvider.future);
+  final institutes = await ref.watch(teacherInstitutesProvider.future);
+
+  final now = DateTime.now();
+  final monthStart = DateTime(now.year, now.month, 1);
+
+  final totalSessions = await sessionRepo.getSessionCountForTeacher(
+    currentUser.id,
+  );
+  final sessionsThisMonth = await sessionRepo.getSessionCountForTeacher(
+    currentUser.id,
+    startDate: monthStart,
+  );
+
+  return TeacherStats(
+    totalSessions: totalSessions,
+    sessionsThisMonth: sessionsThisMonth,
+    studentCount: students.length,
+    instituteCount: institutes.length,
+  );
 });

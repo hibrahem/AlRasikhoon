@@ -39,10 +39,9 @@ class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
 /// so every test reproduces the same on-screen real estate a user actually
 /// has — not just the ones whose author remembered to ask for it.
 void pinPhoneViewport() {
-  final view =
-      TestWidgetsFlutterBinding.ensureInitialized()
-          .platformDispatcher
-          .implicitView!;
+  final view = TestWidgetsFlutterBinding.ensureInitialized()
+      .platformDispatcher
+      .implicitView!;
   view.physicalSize = const Size(390, 844);
   view.devicePixelRatio = 1.0;
 
@@ -103,17 +102,17 @@ void stubHeadlessPlatformChannels() {
   const pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(pathProviderChannel, (MethodCall call) async {
-    switch (call.method) {
-      case 'getTemporaryDirectory':
-      case 'getApplicationSupportDirectory':
-      case 'getApplicationDocumentsDirectory':
-      case 'getApplicationCacheDirectory':
-      case 'getLibraryDirectory':
-        return tempDir.path;
-      default:
-        return null;
-    }
-  });
+        switch (call.method) {
+          case 'getTemporaryDirectory':
+          case 'getApplicationSupportDirectory':
+          case 'getApplicationDocumentsDirectory':
+          case 'getApplicationCacheDirectory':
+          case 'getLibraryDirectory':
+            return tempDir.path;
+          default:
+            return null;
+        }
+      });
 }
 
 /// Test app wrapper that provides mocked dependencies
@@ -448,6 +447,24 @@ class TestEnvironment {
               'from_verse': 1,
               'to_surah': surah,
               'to_verse': 11,
+            },
+            // An ordinary lesson also carries a recent and a distant review
+            // block — without these, PacedSession.presentParts (see
+            // lib/domain/curriculum/paced_session.dart) sees no recent/distant
+            // content and the teacher screens correctly skip those parts. The
+            // 3-part e2e flows below rely on all three parts being present, so
+            // these fixtures must carry real (if arbitrary) content.
+            'recent_review_content': {
+              'from_surah': surah,
+              'from_verse': 12,
+              'to_surah': surah,
+              'to_verse': 20,
+            },
+            'distant_review_content': {
+              'from_surah': 'الفاتحة',
+              'from_verse': 1,
+              'to_surah': 'الفاتحة',
+              'to_verse': 7,
             },
           });
     }

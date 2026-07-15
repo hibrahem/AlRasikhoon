@@ -308,6 +308,65 @@ void main() {
       });
     });
 
+    group('presentParts', () {
+      test('serializes and reads back the parts actually recited', () async {
+        final now = DateTime(2026, 7, 15);
+        final record = SessionRecordModel(
+          id: 'sr1',
+          studentId: 'student1',
+          teacherId: 'teacher1',
+          curriculumSessionId: 'cs1',
+          kind: SessionKind.lesson,
+          juzNumber: 30,
+          fromOrderInLevel: 2,
+          toOrderInLevel: 2,
+          coversSessionIds: const ['cs1'],
+          date: now,
+          attemptNumber: 1,
+          grades: const SessionGrades(
+            newMemorizationErrors: 1,
+            recentReviewErrors: 0,
+            distantReviewErrors: 0,
+          ),
+          presentParts: const [1],
+          passed: true,
+          createdAt: now,
+        );
+
+        expect(record.toFirestore()['present_parts'], [1]);
+
+        await fakeFirestore
+            .collection('session_records')
+            .doc('sr1')
+            .set(record.toFirestore());
+        final doc = await fakeFirestore
+            .collection('session_records')
+            .doc('sr1')
+            .get();
+
+        expect(SessionRecordModel.fromFirestore(doc).presentParts, [1]);
+      });
+
+      test('a record with no marker reads back as all three parts', () async {
+        await fakeFirestore.collection('session_records').doc('sr1').set({
+          'student_id': 'student1',
+          'teacher_id': 'teacher1',
+          'curriculum_session_id': 'cs1',
+          'date': Timestamp.now(),
+          'attempt_number': 1,
+          'passed': true,
+          'created_at': Timestamp.now(),
+        });
+
+        final doc = await fakeFirestore
+            .collection('session_records')
+            .doc('sr1')
+            .get();
+
+        expect(SessionRecordModel.fromFirestore(doc).presentParts, [1, 2, 3]);
+      });
+    });
+
     group('kind', () {
       test('a تلقين record is marked as such, not inferred from a number', () {
         final record = SessionRecordModel(

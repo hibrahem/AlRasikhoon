@@ -7,6 +7,7 @@ import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/data/services/local_storage_service.dart';
+import 'package:al_rasikhoon/data/services/session_cache.dart';
 import 'package:al_rasikhoon/features/settings/screens/settings_screen.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/features/teacher/screens/teacher_history_screen.dart';
@@ -19,6 +20,8 @@ class _MockUserRepository extends Mock implements UserRepository {}
 
 class _MockLocalStorageService extends Mock implements LocalStorageService {}
 
+class _MockSessionCache extends Mock implements SessionCache {}
+
 void main() {
   testWidgets('every teacher nav tab actually changes the visible screen '
       '(al_rasikhoon-256)', (tester) async {
@@ -26,6 +29,9 @@ void main() {
     when(
       () => mockFirebaseService.authStateChanges,
     ).thenAnswer((_) => const Stream.empty());
+
+    final mockSessionCache = _MockSessionCache();
+    when(() => mockSessionCache.readUser()).thenReturn(null);
 
     final teacher = UserModel(
       id: 'teacher-1',
@@ -51,6 +57,7 @@ void main() {
           localStorageServiceProvider.overrideWithValue(
             _MockLocalStorageService(),
           ),
+          sessionCacheProvider.overrideWithValue(mockSessionCache),
           isAuthenticatedProvider.overrideWithValue(true),
           currentUserRoleProvider.overrideWithValue(UserRole.teacher),
           currentUserProvider.overrideWithValue(teacher),
@@ -79,8 +86,8 @@ void main() {
     expect(find.byType(TeacherStudentsScreen), findsNothing);
     expect(find.byType(SettingsScreen), findsNothing);
 
-    // Tap الإعدادات.
-    await tester.tap(find.text('الإعدادات'));
+    // Tap الملف الشخصي.
+    await tester.tap(find.text('الملف الشخصي'));
     await tester.pumpAndSettle();
 
     expect(find.byType(SettingsScreen), findsOneWidget);
