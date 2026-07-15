@@ -9,18 +9,24 @@ import '../providers/supervisor_provider.dart';
 /// Supervisor-only dialog that gives a student a teacher (al_rasikhoon-6bw).
 /// This is the rescue path for a student who is ALREADY teacher-less: a
 /// student with no `teacher_id` sits in no teacher's roster, so nobody can
-/// ever conduct their حلقة or their سرد. Lists the teachers of the
-/// supervisor's own institute via [supervisorInstituteTeachersProvider] and
-/// writes the choice with [StudentRepository.assignTeacher] — a focused,
-/// single-field write, not [StudentRepository.updateStudent].
+/// ever conduct their حلقة or their سرد. Lists the teachers of the STUDENT's
+/// OWN institute via [supervisorInstituteTeachersProvider] (al_rasikhoon-3n6:
+/// a supervisor may supervise several institutes, so the pool is scoped to the
+/// student's institute — not a blur across all of them) and writes the choice
+/// with [StudentRepository.assignTeacher] — a focused, single-field write, not
+/// [StudentRepository.updateStudent].
 class AssignTeacherDialog extends ConsumerStatefulWidget {
   final String studentId;
   final String studentDisplayName;
+
+  /// The institute the student belongs to — the teacher pool is scoped to it.
+  final String instituteId;
 
   const AssignTeacherDialog({
     super.key,
     required this.studentId,
     required this.studentDisplayName,
+    required this.instituteId,
   });
 
   @override
@@ -80,7 +86,9 @@ class _AssignTeacherDialogState extends ConsumerState<AssignTeacherDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final teachersAsync = ref.watch(supervisorInstituteTeachersProvider);
+    final teachersAsync = ref.watch(
+      supervisorInstituteTeachersProvider(widget.instituteId),
+    );
 
     return AlertDialog(
       title: Text('تعيين معلم لـ ${widget.studentDisplayName}'),

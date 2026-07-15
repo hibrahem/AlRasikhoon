@@ -514,6 +514,60 @@ class StudentRepository {
     return studentsWithUsers;
   }
 
+  /// Active students across SEVERAL institutes — the union a multi-institute
+  /// supervisor sees (al_rasikhoon-3n6, teacher parity). A supervisor may now
+  /// supervise any number of institutes, so this fans the single-institute
+  /// query out over the caller's whole set.
+  ///
+  /// Firestore caps `whereIn` at 30 values, so [instituteIds] is CHUNKED into
+  /// groups of 30 and one query is issued per chunk; a supervisor with more than
+  /// 30 institutes still resolves correctly. Results are de-duplicated by student
+  /// id (a student belongs to exactly one institute, so overlaps only arise if
+  /// the id set itself has duplicates) and sorted by created_at descending in
+  /// code — the sort is done here rather than in the query because ordering must
+  /// hold ACROSS chunks, not just within one.
+  Future<List<StudentWithUser>> getStudentsForInstitutes(
+    List<String> instituteIds,
+  ) async {
+    if (instituteIds.isEmpty) return [];
+
+    // De-duplicate the incoming ids so a repeated institute never inflates the
+    // whereIn payload or double-counts.
+    final uniqueIds = instituteIds.toSet().toList();
+
+    const chunkSize = 30; // Firestore whereIn hard limit.
+    final byId = <String, StudentModel>{};
+    for (var start = 0; start < uniqueIds.length; start += chunkSize) {
+      final chunk = uniqueIds.sublist(
+        start,
+        start + chunkSize > uniqueIds.length
+            ? uniqueIds.length
+            : start + chunkSize,
+      );
+      final query = await _studentsCollection
+          .where('institute_id', whereIn: chunk)
+          .where('is_active', isEqualTo: true)
+          .get();
+      for (final docSnap in query.docs) {
+        final student = StudentModel.fromFirestore(docSnap);
+        byId[student.id] = student;
+      }
+    }
+
+    final students = byId.values.toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    final studentsWithUsers = <StudentWithUser>[];
+    for (final student in students) {
+      final user = await _userRepository.getUserById(student.userId);
+      if (user != null) {
+        studentsWithUsers.add(StudentWithUser(student: student, user: user));
+      }
+    }
+
+    return studentsWithUsers;
+  }
+
   /// The supervisor's exam queue: the institute's active students who are
   /// standing on an اختبار.
   ///
