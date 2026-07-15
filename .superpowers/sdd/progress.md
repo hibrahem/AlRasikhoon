@@ -266,3 +266,6 @@ Task 7: complete (commits 6cfe372 impl + 81fe70c fix + 92d34bd fix, review clean
   Minor (not fixed): `width: illuminated ? 1 : 1` no-op ternary in app_card.dart, cosmetic only.
   PROCESS NOTE for tasks 8-16: use pumpInTheme() harness for all new tests; context.tokens now safe to use
   in any test context (falls back to light tokens if untHEMEd).
+Task 8: complete (commit 8a6b2ac, review clean) — Illuminated Juz Ring signature widget (juzRingSweep pure
+  fn + JuzRing widget + _JuzRingPainter custom paint). Token-driven colors, no data-fetching (pure presentational).
+  No findings.
