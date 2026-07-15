@@ -11,6 +11,7 @@ import 'package:al_rasikhoon/data/repositories/curriculum_repository.dart';
 import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
+import 'package:al_rasikhoon/features/teacher/screens/next_content_talqeen_screen.dart';
 import 'package:al_rasikhoon/features/teacher/screens/session_summary_screen.dart';
 import 'package:al_rasikhoon/routing/app_router.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
@@ -19,8 +20,10 @@ class MockStudentRepository extends Mock implements StudentRepository {}
 
 /// Drives `SessionSummaryScreen` end to end through the REAL wiring: pumps the
 /// actual screen (not just the standalone `RecitationCountsCard`), taps both
-/// steppers, taps the real save button, and reads the persisted session
-/// record back out of a fake-Firestore-backed `SessionRepository`.
+/// steppers, taps the summary's hand-off button, then completes the session
+/// from the real `NextContentTalqeenScreen` it navigates to (the summary no
+/// longer closes the session itself — see Task 6/7), and reads the persisted
+/// session record back out of a fake-Firestore-backed `SessionRepository`.
 ///
 /// Nothing else exercised this integration: `grep -rn "RecitationCountsCard"
 /// test/` only matched the standalone widget test, and there was no
@@ -120,6 +123,13 @@ void main() {
                 const SessionSummaryScreen(studentId: 'student-1'),
           ),
           GoRoute(
+            path: AppRoutes.nextContentTalqeen,
+            builder: (context, state) {
+              final studentId = state.pathParameters['studentId']!;
+              return NextContentTalqeenScreen(studentId: studentId);
+            },
+          ),
+          GoRoute(
             path: AppRoutes.teacherStudents,
             builder: (context, state) =>
                 const Scaffold(body: Text('قائمة الطلاب')),
@@ -161,7 +171,16 @@ void main() {
       expect(find.text('3'), findsOneWidget);
       expect(find.text('5'), findsOneWidget);
 
-      await tester.tap(find.text('حفظ وإنهاء الحلقة'));
+      // The summary no longer closes the session (Task 7) — it hands off to
+      // the talqeen step, which is now the only place that does.
+      final nextButton = find.text('التالي: تلقين المقطع القادم');
+      await tester.ensureVisible(nextButton);
+      await tester.tap(nextButton);
+      await tester.pumpAndSettle();
+
+      final closeButton = find.text('إنهاء الحلقة');
+      await tester.ensureVisible(closeButton);
+      await tester.tap(closeButton);
       // Let the async save flow (record write, advance, SnackBar, navigation)
       // run to completion without waiting on the SnackBar's auto-dismiss.
       await tester.pump();
