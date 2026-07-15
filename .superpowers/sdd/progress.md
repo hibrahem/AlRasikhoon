@@ -251,3 +251,18 @@ Task 6: complete (commit 40da117, review clean) — ThemeModeSelector (AppCard +
   فاتح/داكن/تلقائي) embedded in settings_screen.dart after _ProfileCard; stale "no theme toggle" doc comment
   replaced. No findings. === FOUNDATION (Tasks 1-6) DONE: fonts, tokens, real dark theme, persistence,
   MaterialApp wiring, Settings toggle. Next: shared-widget reskin (7-12), then student screens (13-16). ===
+Task 7: complete (commits 6cfe372 impl + 81fe70c fix + 92d34bd fix, review clean) — theme_test_harness.dart
+  (pumpInTheme, real AppTheme light/dark, RTL) + AppCard reskinned (context.tokens.card default bg,
+  backgroundColor still wins, new illuminated=true draws gold hairline border via tokens.gold).
+  *** ARCHITECTURE DECISION (escalated to user) ***: context.tokens was `Theme.of(this).extension<AppTokens>()!`
+  (hard crash) -> broke 88 pre-existing tests across 32 files pumping bare MaterialApp() w/o AppTheme. User
+  chose: fallback to AppTokens.light instead of touching 32 test files. Fix confirmed PRODUCTION-UNREACHABLE
+  (app_theme.dart._build always sets extensions:[t]; app.dart always supplies AppTheme.light/darkTheme; grep
+  confirms context.tokens is the only extension<AppTokens>() call site) — only fires in themeless tests.
+  SEPARATE regression also found+fixed: Tasks 5/6 wired themeModeProvider into AlRasikhoonApp/SettingsScreen;
+  2 pre-existing test files (settings_screen_test.dart x7, role_shell_navigation_test.dart x1) never overrode
+  sharedPreferencesProvider (didn't need to, before). Fixed via the established SharedPreferences mock pattern,
+  no assertions weakened. Full test/widget suite: 135 passing, 0 failing (true baseline was 131/0 pre-plan).
+  Minor (not fixed): `width: illuminated ? 1 : 1` no-op ternary in app_card.dart, cosmetic only.
+  PROCESS NOTE for tasks 8-16: use pumpInTheme() harness for all new tests; context.tokens now safe to use
+  in any test context (falls back to light tokens if untHEMEd).
