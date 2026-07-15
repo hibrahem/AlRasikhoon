@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/user_model.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/juz_ring.dart';
 import '../../../shared/widgets/stat_card.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/student_level_progress.dart';
 import '../../../shared/widgets/level_progression_widget.dart';
 import '../providers/student_provider.dart';
@@ -26,6 +30,7 @@ class _StudentDashboardScreenState
     extends ConsumerState<StudentDashboardScreen> {
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final currentUser = ref.watch(currentUserProvider);
     final statsAsync = ref.watch(studentStatsProvider);
     final meetingAsync = ref.watch(studentDashboardMeetingProvider);
@@ -35,7 +40,16 @@ class _StudentDashboardScreenState
         // Sign-out is not offered here: it lives, confirmed, in الإعدادات
         // (the shared SettingsScreen) so a destructive action never fires on a
         // single unconfirmed tap next to routine navigation.
-        title: const Text('الراسخون'),
+        //
+        // Aref Ruqaa is reserved for this ONE hero wordmark in the whole app.
+        title: Text(
+          'الراسخون',
+          style: GoogleFonts.arefRuqaa(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).appBarTheme.foregroundColor,
+          ),
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -70,17 +84,35 @@ class _StudentDashboardScreenState
               const SizedBox(height: 8),
               Text(
                 'تقدمك في حفظ القرآن الكريم',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: tokens.sepia),
               ),
               const SizedBox(height: 24),
 
-              // Current progress card
+              // Hero: the Illuminated Juz Ring, fed by the same
+              // level-progress fraction the progress card already shows via
+              // StudentLevelProgress — no new domain concept, no new
+              // provider call. Guarded against a level with an unknown/zero
+              // session count so the ring never divides by zero.
               statsAsync.when(
-                data: (stats) => _buildProgressCard(stats),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text('Error: $e'),
+                data: (stats) => Column(
+                  children: [
+                    Center(
+                      child: JuzRing(
+                        juz: stats.currentJuz,
+                        progress: stats.totalSessions > 0
+                            ? (stats.currentOrderInLevel / stats.totalSessions)
+                                  .clamp(0.0, 1.0)
+                            : 0.0,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildProgressCard(stats),
+                  ],
+                ),
+                loading: () => const LoadingState(),
+                error: (e, _) => ErrorState(message: 'تعذر تحميل التقدم: $e'),
               ),
 
               const SizedBox(height: 24),
@@ -106,8 +138,8 @@ class _StudentDashboardScreenState
               const SizedBox(height: 12),
               meetingAsync.when(
                 data: (meeting) => _buildCurrentSessionCard(meeting),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text('Error: $e'),
+                loading: () => const LoadingState(),
+                error: (e, _) => ErrorState(message: 'تعذر تحميل الحلقة: $e'),
               ),
 
               const SizedBox(height: 24),
@@ -140,6 +172,7 @@ class _StudentDashboardScreenState
   }
 
   Widget _buildHomePracticeCard() {
+    final tokens = context.tokens;
     final practiceStatsAsync = ref.watch(homePracticeStatsProvider);
 
     return Column(
@@ -179,7 +212,7 @@ class _StudentDashboardScreenState
                     value: '${stats.todayRepetitions}',
                   ),
                 ),
-                Container(width: 1, height: 40, color: AppColors.divider),
+                Container(width: 1, height: 40, color: tokens.hairline),
                 Expanded(
                   child: _PracticeStatItem(
                     icon: Icons.local_fire_department,
@@ -187,7 +220,7 @@ class _StudentDashboardScreenState
                     value: '${stats.streakDays}',
                   ),
                 ),
-                Container(width: 1, height: 40, color: AppColors.divider),
+                Container(width: 1, height: 40, color: tokens.hairline),
                 Expanded(
                   child: _PracticeStatItem(
                     icon: Icons.repeat,
@@ -198,14 +231,7 @@ class _StudentDashboardScreenState
               ],
             ),
           ),
-          loading: () => const AppCard(
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: CircularProgressIndicator(),
-              ),
-            ),
-          ),
+          loading: () => const LoadingState(lines: 1),
           error: (_, _) => const SizedBox(),
         ),
       ],
@@ -213,8 +239,9 @@ class _StudentDashboardScreenState
   }
 
   Widget _buildProgressCard(StudentStats stats) {
+    final tokens = context.tokens;
     return AppCard(
-      backgroundColor: AppColors.primary.withValues(alpha: 0.05),
+      backgroundColor: tokens.green.withValues(alpha: 0.05),
       child: Column(
         children: [
           Row(
@@ -222,14 +249,10 @@ class _StudentDashboardScreenState
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: tokens.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.school,
-                  color: AppColors.primary,
-                  size: 28,
-                ),
+                child: Icon(Icons.school, color: tokens.green, size: 28),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -247,9 +270,9 @@ class _StudentDashboardScreenState
                       // known to contradict its source text). The juz is
                       // always consistent with the data.
                       'الجزء ${stats.currentJuz}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                     ),
                   ],
                 ),
@@ -260,14 +283,14 @@ class _StudentDashboardScreenState
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.secondary.withValues(alpha: 0.1),
+                  color: tokens.gold.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
                   '${stats.completedLevels}/10',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.secondary,
+                    color: tokens.gold,
                   ),
                 ),
               ),
@@ -291,6 +314,7 @@ class _StudentDashboardScreenState
   /// curriculum's own label — never `'سرد الحزب $hizb'`, which cannot name a
   /// juz- or level-tier سرد at all.
   Widget _buildCurrentSessionCard(PacedSession? meeting) {
+    final tokens = context.tokens;
     final studentAsync = ref.watch(currentStudentProvider);
 
     return studentAsync.when(
@@ -320,13 +344,10 @@ class _StudentDashboardScreenState
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
+                        color: tokens.green.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(
-                        Icons.record_voice_over,
-                        color: AppColors.primary,
-                      ),
+                      child: Icon(Icons.record_voice_over, color: tokens.green),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -340,7 +361,7 @@ class _StudentDashboardScreenState
                           Text(
                             'الجزء ${session.juzNumber}',
                             style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: AppColors.textSecondary),
+                                ?.copyWith(color: tokens.sepia),
                           ),
                         ],
                       ),
@@ -350,9 +371,9 @@ class _StudentDashboardScreenState
                 const SizedBox(height: 16),
                 Text(
                   'المقطع الجديد',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -372,16 +393,16 @@ class _StudentDashboardScreenState
 
         if (session.isExam) {
           return AppCard(
-            backgroundColor: AppColors.secondary.withValues(alpha: 0.05),
+            backgroundColor: tokens.gold.withValues(alpha: 0.05),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.1),
+                    color: tokens.gold.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.quiz, color: AppColors.secondary),
+                  child: Icon(Icons.quiz, color: tokens.gold),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -394,9 +415,9 @@ class _StudentDashboardScreenState
                       ),
                       Text(
                         'توجه للمشرف لإجراء الاختبار',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                       ),
                     ],
                   ),
@@ -407,20 +428,21 @@ class _StudentDashboardScreenState
         }
 
         if (session.isSard) {
+          // No manuscript token maps directly to the old "info" blue — سرد
+          // needs a THIRD accent, visually distinct from the lesson's green
+          // and the exam's gold, so it borrows the neutral ink-toned sepia
+          // rather than reusing either of those two roles.
           return AppCard(
-            backgroundColor: AppColors.info.withValues(alpha: 0.05),
+            backgroundColor: tokens.sepia.withValues(alpha: 0.05),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.info.withValues(alpha: 0.1),
+                    color: tokens.sepia.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
-                    Icons.record_voice_over,
-                    color: AppColors.info,
-                  ),
+                  child: Icon(Icons.record_voice_over, color: tokens.sepia),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -433,9 +455,9 @@ class _StudentDashboardScreenState
                       ),
                       Text(
                         session.assessmentInstructionAr,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                       ),
                     ],
                   ),
@@ -454,13 +476,10 @@ class _StudentDashboardScreenState
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
+                      color: tokens.green.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
-                      Icons.menu_book,
-                      color: AppColors.primary,
-                    ),
+                    child: Icon(Icons.menu_book, color: tokens.green),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -475,8 +494,9 @@ class _StudentDashboardScreenState
                           // Never an app-derived hizb — see the comment on
                           // the progress-card header above.
                           'الجزء ${session.juzNumber}',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: AppColors.textSecondary),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                         ),
                       ],
                     ),
@@ -489,12 +509,13 @@ class _StudentDashboardScreenState
           ),
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Text('Error: $e'),
+      loading: () => const LoadingState(),
+      error: (e, _) => ErrorState(message: 'تعذر تحميل الطالب: $e'),
     );
   }
 
   Widget _buildQuickStats(StudentStats stats) {
+    final tokens = context.tokens;
     return Row(
       children: [
         Expanded(
@@ -502,7 +523,7 @@ class _StudentDashboardScreenState
             label: 'الحلقات',
             value: '${stats.totalSessions}',
             icon: Icons.school,
-            color: AppColors.primary,
+            color: tokens.green,
           ),
         ),
         const SizedBox(width: 12),
@@ -511,7 +532,10 @@ class _StudentDashboardScreenState
             label: 'الناجحة',
             value: '${stats.passedSessions}',
             icon: Icons.check_circle,
-            color: AppColors.success,
+            // No manuscript token for a distinct "success" hue — the
+            // primary green already carries the positive/affirmative role
+            // elsewhere on this screen, so it is reused here too.
+            color: tokens.green,
           ),
         ),
         const SizedBox(width: 12),
@@ -520,7 +544,7 @@ class _StudentDashboardScreenState
             label: 'المستويات',
             value: '${stats.completedLevels}',
             icon: Icons.emoji_events,
-            color: AppColors.secondary,
+            color: tokens.gold,
           ),
         ),
       ],
@@ -536,10 +560,11 @@ class _ContentRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: tokens.surfaceVariant,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -548,7 +573,7 @@ class _ContentRow extends StatelessWidget {
             title,
             style: Theme.of(
               context,
-            ).textTheme.labelMedium?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.labelMedium?.copyWith(color: tokens.sepia),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -577,9 +602,10 @@ class _PracticeStatItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Column(
       children: [
-        Icon(icon, color: AppColors.primary, size: 20),
+        Icon(icon, color: tokens.green, size: 20),
         const SizedBox(height: 4),
         Text(
           value,
@@ -591,7 +617,7 @@ class _PracticeStatItem extends StatelessWidget {
           label,
           style: Theme.of(
             context,
-          ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+          ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
         ),
       ],
     );
