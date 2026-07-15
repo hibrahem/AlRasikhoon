@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/student_model.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/widgets/states/empty_state.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/student_card.dart';
 import '../providers/supervisor_provider.dart';
 import '../widgets/assign_teacher_dialog.dart';
@@ -34,7 +37,11 @@ class SupervisorStudentsScreen extends ConsumerWidget {
       body: studentsAsync.when(
         data: (students) {
           if (students.isEmpty) {
-            return _buildEmptyState(context);
+            return const EmptyState(
+              icon: Icons.school_outlined,
+              title: 'لا يوجد طلاب',
+              message: 'اضغط على + لإضافة طالب جديد',
+            );
           }
 
           return RefreshIndicator(
@@ -75,8 +82,8 @@ class SupervisorStudentsScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل الطلاب: $e'),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.supervisorAddStudent),
@@ -91,6 +98,7 @@ class SupervisorStudentsScreen extends ConsumerWidget {
     String userName,
     StudentModel student,
   ) {
+    final tokens = context.tokens;
     showModalBottomSheet<void>(
       context: context,
       builder: (sheetContext) => SafeArea(
@@ -101,10 +109,12 @@ class SupervisorStudentsScreen extends ConsumerWidget {
             // the rescue path for the state creation can no longer produce.
             if (student.teacherId == null)
               ListTile(
-                leading: const Icon(
-                  Icons.person_add_alt,
-                  color: AppColors.warning,
-                ),
+                // AppColors.warning has no direct AppTokens equivalent.
+                // tokens.gold is this codebase's "needs attention" accent
+                // (see the exam-queue screen); the tile's own title uses the
+                // theme's default text color, not gold, so there is no
+                // collision.
+                leading: Icon(Icons.person_add_alt, color: tokens.gold),
                 title: const Text('تعيين معلم'),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
@@ -133,35 +143,6 @@ class SupervisorStudentsScreen extends ConsumerWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.school_outlined,
-            size: 80,
-            color: AppColors.textSecondary.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'لا يوجد طلاب',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'اضغط على + لإضافة طالب جديد',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-          ),
-        ],
       ),
     );
   }
