@@ -242,3 +242,5 @@ Task 3: complete (commit 32592bd, review clean) — AppTheme.lightTheme/darkThem
   _build(tokens, brightness) helper; dark is genuinely dark (Brightness.dark, AppTokens.dark), AppTokens
   extension attached to both, scaffoldBackgroundColor=tokens.page. Reviewer confirmed the test would have
   caught the original darkTheme=>lightTheme bug. No AppColors leaks, no non-bundled fonts. No findings.
+Task 4: complete (commit 69245f3, review clean) — persisted ThemeModeNotifier/themeModeProvider (plain
+  Riverpod, key 'theme_mode', values light/dark/system, unrecognized->system). No findings.
