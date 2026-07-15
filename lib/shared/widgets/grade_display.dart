@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/utils/grade_calculator.dart';
 
 class GradeDisplay extends StatelessWidget {
@@ -21,6 +22,7 @@ class GradeDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gradeInfo = this.gradeInfo ?? GradeCalculator.calculate(errorCount);
+    final tokens = context.tokens;
 
     if (isCompact) {
       return _buildCompact(context, gradeInfo);
@@ -57,8 +59,8 @@ class GradeDisplay extends StatelessWidget {
                   child: Icon(
                     index < gradeInfo.stars ? Icons.star : Icons.star_border,
                     color: index < gradeInfo.stars
-                        ? AppColors.secondary
-                        : AppColors.textSecondary.withValues(alpha: 0.3),
+                        ? tokens.gold
+                        : tokens.sepia.withValues(alpha: 0.3),
                     size: 32,
                   ),
                 );
@@ -74,7 +76,7 @@ class GradeDisplay extends StatelessWidget {
               decoration: BoxDecoration(
                 color: gradeInfo.passed
                     ? AppColors.success.withValues(alpha: 0.1)
-                    : AppColors.error.withValues(alpha: 0.1),
+                    : tokens.maroon.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -82,9 +84,7 @@ class GradeDisplay extends StatelessWidget {
                 children: [
                   Icon(
                     gradeInfo.passed ? Icons.check_circle : Icons.cancel,
-                    color: gradeInfo.passed
-                        ? AppColors.success
-                        : AppColors.error,
+                    color: gradeInfo.passed ? AppColors.success : tokens.maroon,
                     size: 24,
                   ),
                   const SizedBox(width: 8),
@@ -95,7 +95,7 @@ class GradeDisplay extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: gradeInfo.passed
                           ? AppColors.success
-                          : AppColors.error,
+                          : tokens.maroon,
                     ),
                   ),
                 ],
@@ -109,7 +109,7 @@ class GradeDisplay extends StatelessWidget {
             '$errorCount أخطاء',
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodyMedium?.copyWith(color: tokens.sepia),
           ),
         ],
       ),
@@ -117,6 +117,7 @@ class GradeDisplay extends StatelessWidget {
   }
 
   Widget _buildCompact(BuildContext context, GradeInfo gradeInfo) {
+    final tokens = context.tokens;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -127,8 +128,8 @@ class GradeDisplay extends StatelessWidget {
               return Icon(
                 index < gradeInfo.stars ? Icons.star : Icons.star_border,
                 color: index < gradeInfo.stars
-                    ? AppColors.secondary
-                    : AppColors.textSecondary.withValues(alpha: 0.3),
+                    ? tokens.gold
+                    : tokens.sepia.withValues(alpha: 0.3),
                 size: 16,
               );
             }),
@@ -173,14 +174,15 @@ class StarsDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (index) {
         return Icon(
           index < stars ? Icons.star : Icons.star_border,
           color: index < stars
-              ? (activeColor ?? AppColors.secondary)
-              : (inactiveColor ?? AppColors.textSecondary.withValues(alpha: 0.3)),
+              ? (activeColor ?? tokens.gold)
+              : (inactiveColor ?? tokens.sepia.withValues(alpha: 0.3)),
           size: size,
         );
       }),

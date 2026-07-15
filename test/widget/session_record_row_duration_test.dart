@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:al_rasikhoon/core/constants/app_colors.dart';
+import 'package:al_rasikhoon/core/theme/app_tokens.dart';
 import 'package:al_rasikhoon/domain/session/session_duration.dart';
 import 'package:al_rasikhoon/shared/widgets/session_record_row.dart';
 
@@ -56,9 +57,9 @@ void main() {
       ),
     );
     expect(find.text('المدة: 40:30'), findsOneWidget);
-    // Beyond target is red — color carries the meaning, so the old verbose
-    // Arabic band labels are gone.
-    expect(durationColor(tester, 'المدة: 40:30'), AppColors.error);
+    // Beyond target is red (the maroon design token) — color carries the
+    // meaning, so the old verbose Arabic band labels are gone.
+    expect(durationColor(tester, 'المدة: 40:30'), AppTokens.light.maroon);
     expect(find.textContaining('أطول من المستهدف'), findsNothing);
   });
 
@@ -104,7 +105,7 @@ void main() {
     // No target → time shown plainly in the neutral secondary color, no color
     // coding and no band label.
     expect(find.text('المدة: 18:00'), findsOneWidget);
-    expect(durationColor(tester, 'المدة: 18:00'), AppColors.textSecondary);
+    expect(durationColor(tester, 'المدة: 18:00'), AppTokens.light.sepia);
     expect(find.textContaining('أطول'), findsNothing);
     expect(find.textContaining('أقصر'), findsNothing);
     expect(find.textContaining('ضمن'), findsNothing);

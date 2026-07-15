@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/utils/grade_calculator.dart';
 
 class ErrorCounter extends StatelessWidget {
@@ -19,11 +20,12 @@ class ErrorCounter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gradeInfo = GradeCalculator.calculate(errorCount);
+    final tokens = context.tokens;
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: tokens.card,
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
@@ -43,7 +45,7 @@ class ErrorCounter extends StatelessWidget {
               _CounterButton(
                 icon: Icons.remove,
                 onPressed: errorCount > 0 ? onUndoError : null,
-                color: AppColors.textSecondary,
+                color: tokens.sepia,
               ),
               const SizedBox(width: 32),
               // Count display
@@ -59,9 +61,9 @@ class ErrorCounter extends StatelessWidget {
                   ),
                   Text(
                     'أخطاء',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleMedium?.copyWith(color: tokens.sepia),
                   ),
                 ],
               ),
@@ -70,7 +72,7 @@ class ErrorCounter extends StatelessWidget {
               _CounterButton(
                 icon: Icons.add,
                 onPressed: onAddError,
-                color: AppColors.error,
+                color: tokens.maroon,
               ),
             ],
           ),
@@ -89,8 +91,8 @@ class ErrorCounter extends StatelessWidget {
                     return Icon(
                       index < gradeInfo.stars ? Icons.star : Icons.star_border,
                       color: index < gradeInfo.stars
-                          ? AppColors.secondary
-                          : AppColors.textSecondary,
+                          ? tokens.gold
+                          : tokens.sepia,
                       size: 28,
                     );
                   }),
@@ -125,7 +127,7 @@ class ErrorCounter extends StatelessWidget {
               children: [
                 Icon(
                   gradeInfo.passed ? Icons.check_circle : Icons.cancel,
-                  color: gradeInfo.passed ? AppColors.success : AppColors.error,
+                  color: gradeInfo.passed ? AppColors.success : tokens.maroon,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -134,7 +136,7 @@ class ErrorCounter extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: gradeInfo.passed ? AppColors.success : AppColors.error,
+                    color: gradeInfo.passed ? AppColors.success : tokens.maroon,
                   ),
                 ),
               ],
@@ -195,13 +197,14 @@ class ErrorCounterCompact extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
           icon: const Icon(Icons.remove_circle_outline),
           onPressed: errorCount > 0 ? onUndoError : null,
-          color: AppColors.textSecondary,
+          color: tokens.sepia,
         ),
         Container(
           width: 48,
@@ -209,15 +212,15 @@ class ErrorCounterCompact extends StatelessWidget {
           child: Text(
             '$errorCount',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: GradeCalculator.getGradeColor(errorCount),
-                  fontWeight: FontWeight.bold,
-                ),
+              color: GradeCalculator.getGradeColor(errorCount),
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         IconButton(
           icon: const Icon(Icons.add_circle),
           onPressed: onAddError,
-          color: AppColors.error,
+          color: tokens.maroon,
         ),
       ],
     );

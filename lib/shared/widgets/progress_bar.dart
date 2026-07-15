@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_motion.dart';
+import '../../core/theme/app_tokens.dart';
 
 class ProgressBar extends StatelessWidget {
   final double progress;
@@ -21,6 +22,7 @@ class ProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final clampedProgress = progress.clamp(0.0, 1.0);
 
     return Column(
@@ -39,7 +41,7 @@ class ProgressBar extends StatelessWidget {
                     '${(clampedProgress * 100).toInt()}%',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: progressColor ?? AppColors.primary,
+                      color: progressColor ?? tokens.green,
                     ),
                   ),
               ],
@@ -48,17 +50,25 @@ class ProgressBar extends StatelessWidget {
         Container(
           height: height,
           decoration: BoxDecoration(
-            color: backgroundColor ?? AppColors.surfaceVariant,
+            color: backgroundColor ?? tokens.surfaceVariant,
             borderRadius: BorderRadius.circular(height / 2),
           ),
           child: Stack(
             children: [
-              FractionallySizedBox(
-                alignment: AlignmentDirectional.centerStart,
-                widthFactor: clampedProgress,
+              TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0, end: clampedProgress),
+                duration: AppMotion.of(context, AppMotion.base),
+                curve: Curves.easeOut,
+                builder: (context, animatedProgress, child) {
+                  return FractionallySizedBox(
+                    alignment: AlignmentDirectional.centerStart,
+                    widthFactor: animatedProgress,
+                    child: child,
+                  );
+                },
                 child: Container(
                   decoration: BoxDecoration(
-                    color: progressColor ?? AppColors.primary,
+                    color: progressColor ?? tokens.green,
                     borderRadius: BorderRadius.circular(height / 2),
                   ),
                 ),
@@ -152,6 +162,7 @@ class CircularProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return SizedBox(
       width: size,
       height: size,
@@ -164,9 +175,9 @@ class CircularProgress extends StatelessWidget {
             child: CircularProgressIndicator(
               value: progress.clamp(0.0, 1.0),
               strokeWidth: strokeWidth,
-              backgroundColor: backgroundColor ?? AppColors.surfaceVariant,
+              backgroundColor: backgroundColor ?? tokens.surfaceVariant,
               valueColor: AlwaysStoppedAnimation<Color>(
-                progressColor ?? AppColors.primary,
+                progressColor ?? tokens.green,
               ),
             ),
           ),

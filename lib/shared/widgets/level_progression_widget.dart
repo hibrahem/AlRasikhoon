@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 
-enum LevelStatus { locked, unlocked, current, completed }
-
+/// A student's standing across the curriculum's levels, rendered as a 5-rung
+/// "mastery ladder" (راسخ · متقن · حافظ · مجتهد · محب).
+///
+/// [totalLevels] is split into 5 equal bands, one per rung; [currentLevel]
+/// drives how far up the ladder is lit — bands fully below it are solid, the
+/// band it falls within is partially lit, bands ahead stay unlit.
+/// [unlockedLevels] is accepted (unchanged public API) but the ladder motif
+/// deliberately doesn't distinguish "unlocked" from "locked" per level — only
+/// completed vs. in-progress vs. not-yet-reached, at the band granularity.
 class LevelProgressionWidget extends StatelessWidget {
   final int currentLevel;
   final List<int> unlockedLevels;
@@ -17,211 +24,100 @@ class LevelProgressionWidget extends StatelessWidget {
     this.totalLevels = 10,
   });
 
-  LevelStatus _getLevelStatus(int level) {
-    if (completedLevels.contains(level)) {
-      return LevelStatus.completed;
-    }
-    if (level == currentLevel) {
-      return LevelStatus.current;
-    }
-    if (unlockedLevels.contains(level)) {
-      return LevelStatus.unlocked;
-    }
-    return LevelStatus.locked;
-  }
-
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    final fraction = totalLevels > 0
+        ? (currentLevel / totalLevels).clamp(0.0, 1.0)
+        : 0.0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'المستويات',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('المستويات', style: Theme.of(context).textTheme.titleMedium),
             Text(
               '${completedLevels.length}/$totalLevels مكتمل',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
             ),
           ],
         ),
         const SizedBox(height: 12),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 5,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            childAspectRatio: 1,
-          ),
-          itemCount: totalLevels,
-          itemBuilder: (context, index) {
-            final level = index + 1;
-            final status = _getLevelStatus(level);
-            return _LevelTile(level: level, status: status);
-          },
-        ),
-        const SizedBox(height: 12),
-        _buildLegend(context),
-      ],
-    );
-  }
-
-  Widget _buildLegend(BuildContext context) {
-    return Wrap(
-      spacing: 16,
-      runSpacing: 8,
-      children: [
-        _LegendItem(
-          color: AppColors.success,
-          label: 'مكتمل',
-          icon: Icons.check_circle,
-        ),
-        _LegendItem(
-          color: AppColors.primary,
-          label: 'الحالي',
-          icon: Icons.play_circle_filled,
-        ),
-        _LegendItem(
-          color: AppColors.secondary,
-          label: 'متاح',
-          icon: Icons.lock_open,
-        ),
-        _LegendItem(
-          color: AppColors.textSecondary.withValues(alpha: 0.5),
-          label: 'مغلق',
-          icon: Icons.lock,
-        ),
+        _MasteryLadder(fraction: fraction),
       ],
     );
   }
 }
 
-class _LevelTile extends StatelessWidget {
-  final int level;
-  final LevelStatus status;
+/// A horizontal 5-rung indicator of the grade scale — راسخ · متقن · حافظ ·
+/// مجتهد · محب — this app's "mastery ladder" motif. [fraction] (0..1) is how
+/// far up the ladder to light: rungs fully below it are solid, the rung it
+/// falls within is partially lit, rungs above stay unlit.
+class _MasteryLadder extends StatelessWidget {
+  final double fraction;
 
-  const _LevelTile({
-    required this.level,
-    required this.status,
-  });
+  const _MasteryLadder({required this.fraction});
 
-  @override
-  Widget build(BuildContext context) {
-    final (backgroundColor, borderColor, textColor, icon) = _getStyleForStatus();
-
-    return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: borderColor,
-          width: status == LevelStatus.current ? 2.5 : 1.5,
-        ),
-        boxShadow: status == LevelStatus.current
-            ? [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-            : null,
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '$level',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-            ],
-          ),
-          if (icon != null)
-            Positioned(
-              top: 4,
-              left: 4,
-              child: Icon(
-                icon,
-                size: 14,
-                color: textColor,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  (Color, Color, Color, IconData?) _getStyleForStatus() {
-    switch (status) {
-      case LevelStatus.completed:
-        return (
-          AppColors.success.withValues(alpha: 0.15),
-          AppColors.success,
-          AppColors.success,
-          Icons.check,
-        );
-      case LevelStatus.current:
-        return (
-          AppColors.primary.withValues(alpha: 0.15),
-          AppColors.primary,
-          AppColors.primary,
-          Icons.play_arrow,
-        );
-      case LevelStatus.unlocked:
-        return (
-          AppColors.secondary.withValues(alpha: 0.1),
-          AppColors.secondary,
-          AppColors.secondaryDark,
-          null,
-        );
-      case LevelStatus.locked:
-        return (
-          AppColors.surfaceVariant,
-          AppColors.border,
-          AppColors.textSecondary.withValues(alpha: 0.5),
-          Icons.lock,
-        );
-    }
-  }
-}
-
-class _LegendItem extends StatelessWidget {
-  final Color color;
-  final String label;
-  final IconData icon;
-
-  const _LegendItem({
-    required this.color,
-    required this.label,
-    required this.icon,
-  });
+  static const _labels = ['راسخ', 'متقن', 'حافظ', 'مجتهد', 'محب'];
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    final tokens = context.tokens;
+    final rungColors = [
+      tokens.gradeRasikh,
+      tokens.gradeMutqin,
+      tokens.gradeHafiz,
+      tokens.gradeMujtahid,
+      tokens.gradeMuhib,
+    ];
+    final clamped = fraction.clamp(0.0, 1.0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Icon(icon, size: 14, color: color),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
+        Row(
+          children: List.generate(_labels.length, (i) {
+            final rungFill = (clamped * _labels.length - i).clamp(0.0, 1.0);
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: SizedBox(
+                    height: 10,
+                    child: Stack(
+                      children: [
+                        Container(color: tokens.hairline),
+                        FractionallySizedBox(
+                          alignment: AlignmentDirectional.centerStart,
+                          widthFactor: rungFill,
+                          child: Container(color: rungColors[i]),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
+            );
+          }),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          children: List.generate(_labels.length, (i) {
+            return Expanded(
+              child: Text(
+                _labels[i],
+                textAlign: TextAlign.center,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall?.copyWith(color: tokens.sepia),
+              ),
+            );
+          }),
         ),
       ],
     );
