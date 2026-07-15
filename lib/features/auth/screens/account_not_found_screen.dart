@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -11,6 +11,7 @@ class AccountNotFoundScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tokens = context.tokens;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -24,31 +25,32 @@ class AccountNotFoundScreen extends ConsumerWidget {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: AppColors.warning.withValues(alpha: 0.1),
+                  // AppColors.warning has no direct AppTokens equivalent.
+                  // tokens.maroon (the palette's rubrication/emphasis hue,
+                  // per the Task 13 follow-up precedent — see
+                  // home_practice_screen.dart) is used for this "account
+                  // needs admin attention" icon.
+                  color: tokens.maroon.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.person_off,
-                  size: 60,
-                  color: AppColors.warning,
-                ),
+                child: Icon(Icons.person_off, size: 60, color: tokens.maroon),
               ),
               const SizedBox(height: 32),
               // Title
               Text(
                 'الحساب غير موجود',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               // Message
               Text(
                 'البريد الإلكتروني غير مسجل في النظام.\nيرجى التواصل مع المشرف لإنشاء حساب.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(color: tokens.sepia),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
@@ -56,16 +58,12 @@ class AccountNotFoundScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
+                  color: tokens.surfaceVariant,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
                   children: [
-                    const Icon(
-                      Icons.support_agent,
-                      color: AppColors.primary,
-                      size: 32,
-                    ),
+                    Icon(Icons.support_agent, color: tokens.green, size: 32),
                     const SizedBox(height: 8),
                     Text(
                       'للتواصل مع الدعم',
@@ -74,9 +72,9 @@ class AccountNotFoundScreen extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Text(
                       'support@alrasikhoon.com',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.primary,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: tokens.green),
                     ),
                   ],
                 ),
