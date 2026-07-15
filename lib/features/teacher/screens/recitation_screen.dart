@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+// Kept only for the memorization-mode accent system (forMemorizationPart,
+// textOnPrimary) — see the comment above `modeColor` below. These are fixed,
+// colorblind-safe, WCAG-AA-verified colors (hibrahem/AlRasikhoon#25), not
+// theme-adaptive tokens, so they intentionally stay raw.
 import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_counter.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/teacher_provider.dart';
 import '../recitation_parts.dart';
 import '../widgets/active_lesson_timer.dart';
@@ -29,6 +36,7 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final meetingAsync = ref.watch(
       studentCurrentMeetingProvider(widget.studentId),
     );
@@ -165,7 +173,7 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: AppColors.surfaceVariant,
+                                color: tokens.surfaceVariant,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
@@ -277,13 +285,14 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل الحلقة: $e'),
       ),
     );
   }
 
   void _showExitConfirmation() {
+    final tokens = context.tokens;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -300,7 +309,7 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
               Navigator.pop(context);
               context.go(AppRoutes.teacherStudents);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            style: ElevatedButton.styleFrom(backgroundColor: tokens.maroon),
             child: const Text('نعم، إلغاء'),
           ),
         ],
