@@ -48,7 +48,11 @@ class _ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final contact = user.email.isNotEmpty ? user.email : (user.phone ?? '');
+    // The person's own login name is the identity worth showing here; fall
+    // back to a phone only when there is genuinely no username to show.
+    final contact = user.displayUsername.isNotEmpty
+        ? user.displayUsername
+        : (user.phone ?? '');
 
     return AppCard(
       child: Row(

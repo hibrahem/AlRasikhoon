@@ -11,7 +11,8 @@ import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 
 UserModel _user(UserRole role) => UserModel(
   id: 'u1',
-  email: 'teacher@example.com',
+  username: 'hassan',
+  email: 'hassan@alrasikhoon.local',
   name: 'أستاذ حسن',
   role: role,
   createdAt: DateTime(2024),
@@ -51,14 +52,22 @@ Future<void> _pump(
 }
 
 void main() {
-  testWidgets('shows the current user name, email and role', (tester) async {
-    await _pump(tester, role: UserRole.teacher);
-    await tester.pumpAndSettle();
+  testWidgets(
+    'shows the name, clean username and role — never the .local email',
+    (tester) async {
+      await _pump(tester, role: UserRole.teacher);
+      await tester.pumpAndSettle();
 
-    expect(find.text('أستاذ حسن'), findsOneWidget);
-    expect(find.text('teacher@example.com'), findsOneWidget);
-    expect(find.text('معلم'), findsOneWidget);
-  });
+      expect(find.text('أستاذ حسن'), findsOneWidget);
+      expect(find.text('hassan'), findsOneWidget);
+      expect(find.text('hassan@alrasikhoon.local'), findsNothing);
+      expect(find.text('معلم'), findsOneWidget);
+      expect(
+        find.text('الملف الشخصي'),
+        findsOneWidget,
+      ); // app-bar title (Task 2)
+    },
+  );
 
   testWidgets('cancelling the confirmation dialog does not sign out', (
     tester,
