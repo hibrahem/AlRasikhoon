@@ -2,9 +2,9 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/countries.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/services/firebase_service.dart';
@@ -58,9 +58,9 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
       if (existing != null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('اسم المستخدم مسجل مسبقاً'),
-              backgroundColor: AppColors.error,
+            SnackBar(
+              content: const Text('اسم المستخدم مسجل مسبقاً'),
+              backgroundColor: context.tokens.maroon,
             ),
           );
         }
@@ -99,7 +99,7 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('تم إضافة المعلم: ${_nameController.text.trim()}'),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.tokens.green,
           ),
         );
         context.pop();
@@ -114,7 +114,7 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
             ? 'كلمة المرور ضعيفة'
             : 'فشل إنشاء الحساب: ${e.message ?? e.code}';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: AppColors.error),
+          SnackBar(content: Text(msg), backgroundColor: context.tokens.maroon),
         );
       }
     } catch (e) {
@@ -122,7 +122,7 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('حدث خطأ: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: context.tokens.maroon,
           ),
         );
       }
@@ -135,6 +135,7 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Scaffold(
       appBar: AppBar(title: const Text('إضافة معلم')),
       body: SingleChildScrollView(
@@ -149,14 +150,10 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
                 height: 80,
                 margin: const EdgeInsets.only(bottom: 32),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: tokens.green.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.person_add,
-                  size: 40,
-                  color: AppColors.primary,
-                ),
+                child: Icon(Icons.person_add, size: 40, color: tokens.green),
               ),
               AppTextField(
                 label: 'اسم المعلم',
@@ -205,20 +202,26 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.info.withValues(alpha: 0.1),
+                  // No manuscript token for the old "info" blue. Neutral
+                  // instructional notice (share credentials), not a
+                  // success/error/warning — gold follows the same
+                  // neutral-notice precedent as the exam card on
+                  // student_dashboard_screen.dart, matching
+                  // add_supervisor_screen.dart's identical tip box.
+                  color: tokens.gold.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+                  border: Border.all(color: tokens.gold.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline, color: AppColors.info),
+                    Icon(Icons.info_outline, color: tokens.gold),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'شارك اسم المستخدم وكلمة المرور مع المعلم. يمكنه تسجيل الدخول مباشرة بهما.',
                         style: Theme.of(
                           context,
-                        ).textTheme.bodySmall?.copyWith(color: AppColors.info),
+                        ).textTheme.bodySmall?.copyWith(color: tokens.gold),
                       ),
                     ),
                   ],

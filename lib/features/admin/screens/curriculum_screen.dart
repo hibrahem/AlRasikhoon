@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 
 class CurriculumScreen extends ConsumerWidget {
   const CurriculumScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tokens = context.tokens;
     final levelsAsync = ref.watch(levelsProvider);
 
     return Scaffold(
@@ -29,18 +32,18 @@ class CurriculumScreen extends ConsumerWidget {
             children: [
               // Overview card
               AppCard(
-                backgroundColor: AppColors.primary.withValues(alpha: 0.05),
+                backgroundColor: tokens.green.withValues(alpha: 0.05),
                 child: Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
+                        color: tokens.green.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.menu_book,
-                        color: AppColors.primary,
+                        color: tokens.green,
                         size: 32,
                       ),
                     ),
@@ -57,7 +60,7 @@ class CurriculumScreen extends ConsumerWidget {
                           Text(
                             '${levels.length} مستويات • $totalSessions حلقة',
                             style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: AppColors.textSecondary),
+                                ?.copyWith(color: tokens.sepia),
                           ),
                         ],
                       ),
@@ -89,6 +92,7 @@ class CurriculumScreen extends ConsumerWidget {
                             height: 48,
                             decoration: BoxDecoration(
                               color: _getLevelColor(
+                                tokens,
                                 level.levelNumber,
                               ).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
@@ -99,7 +103,10 @@ class CurriculumScreen extends ConsumerWidget {
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: _getLevelColor(level.levelNumber),
+                                  color: _getLevelColor(
+                                    tokens,
+                                    level.levelNumber,
+                                  ),
                                 ),
                               ),
                             ),
@@ -116,17 +123,12 @@ class CurriculumScreen extends ConsumerWidget {
                                 Text(
                                   level.juzRangeAr,
                                   style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: AppColors.textSecondary,
-                                      ),
+                                      ?.copyWith(color: tokens.sepia),
                                 ),
                               ],
                             ),
                           ),
-                          const Icon(
-                            Icons.chevron_left,
-                            color: AppColors.textSecondary,
-                          ),
+                          Icon(Icons.chevron_left, color: tokens.sepia),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -158,15 +160,26 @@ class CurriculumScreen extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل المنهج: $e'),
       ),
     );
   }
 
-  Color _getLevelColor(int level) {
+  // Purely a per-level identity badge (1-10), never a grade/pass-fail
+  // indicator — the level number is always shown as the actual label, this
+  // color only adds a quick visual distinction between adjacent cards. The
+  // manuscript palette has just 3 accent hues (+5 grade tones that are
+  // themselves shades of those 3), nowhere near 10 mutually distinct hues,
+  // and reusing the grade tones here would misleadingly imply a level ->
+  // performance-grade relationship that doesn't exist. So level 1 keeps the
+  // token mapping table's direct AppColors.primary -> tokens.green swap
+  // (fixing dark-mode contrast for free), and levels 2-10 intentionally keep
+  // their original raw Material swatches, which were never AppColors/theme
+  // values and fall outside both mapping tables.
+  Color _getLevelColor(AppTokens tokens, int level) {
     final colors = [
-      AppColors.primary,
+      tokens.green,
       Colors.blue,
       Colors.teal,
       Colors.orange,
@@ -194,9 +207,10 @@ class _StatItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Column(
       children: [
-        Icon(icon, size: 20, color: AppColors.textSecondary),
+        Icon(icon, size: 20, color: tokens.sepia),
         const SizedBox(height: 4),
         Text(
           value,
@@ -208,7 +222,7 @@ class _StatItem extends StatelessWidget {
           label,
           style: Theme.of(
             context,
-          ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+          ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
         ),
       ],
     );

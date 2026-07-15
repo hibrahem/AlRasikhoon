@@ -1,22 +1,27 @@
-import '../constants/app_colors.dart';
 import '../constants/app_constants.dart';
-import 'package:flutter/material.dart';
 
 enum Grade {
-  rasikh,   // 0 errors - 5 stars
-  mutqin,   // 1-2 errors - 4 stars
-  hafiz,    // 3-4 errors - 3 stars
+  rasikh, // 0 errors - 5 stars
+  mutqin, // 1-2 errors - 4 stars
+  hafiz, // 3-4 errors - 3 stars
   mujtahid, // 5-6 errors - 2 stars
-  muhib,    // 7+ errors - 1 star (fail)
+  muhib, // 7+ errors - 1 star (fail)
 }
 
+/// Presentation metadata for a [Grade] tier.
+///
+/// Deliberately holds NO color: [GradeCalculator] is a plain Dart utility
+/// with no [BuildContext], so it cannot know whether the app is currently in
+/// light or dark mode. Baking a `const` color in here would freeze it at the
+/// wrong brightness. Callers that need a grade's color must resolve it at
+/// render time via `context.tokens.colorForGrade(gradeInfo.grade)` (see
+/// `lib/core/theme/grade_color_tokens.dart`, al_rasikhoon-3k3).
 class GradeInfo {
   final Grade grade;
   final String nameAr;
   final String nameEn;
   final int stars;
   final bool passed;
-  final Color color;
 
   const GradeInfo({
     required this.grade,
@@ -24,7 +29,6 @@ class GradeInfo {
     required this.nameEn,
     required this.stars,
     required this.passed,
-    required this.color,
   });
 }
 
@@ -34,7 +38,7 @@ class GradeCalculator {
   /// Build the [GradeInfo] for a given [Grade] value.
   ///
   /// Single source of truth for the per-grade presentation metadata
-  /// (Arabic / English names, stars, pass status, colour) so the
+  /// (Arabic / English names, stars, pass status) so the
   /// level-agnostic [calculate] and the level-aware [calculateForLevel]
   /// never drift apart.
   static GradeInfo _infoFor(Grade grade) {
@@ -46,7 +50,6 @@ class GradeCalculator {
           nameEn: 'Rasikh',
           stars: 5,
           passed: true,
-          color: AppColors.gradeRasikh,
         );
       case Grade.mutqin:
         return const GradeInfo(
@@ -55,7 +58,6 @@ class GradeCalculator {
           nameEn: 'Mutqin',
           stars: 4,
           passed: true,
-          color: AppColors.gradeMutqin,
         );
       case Grade.hafiz:
         return const GradeInfo(
@@ -64,7 +66,6 @@ class GradeCalculator {
           nameEn: 'Hafiz',
           stars: 3,
           passed: true,
-          color: AppColors.gradeHafiz,
         );
       case Grade.mujtahid:
         return const GradeInfo(
@@ -73,7 +74,6 @@ class GradeCalculator {
           nameEn: 'Mujtahid',
           stars: 2,
           passed: true,
-          color: AppColors.gradeMujtahid,
         );
       case Grade.muhib:
         return const GradeInfo(
@@ -82,7 +82,6 @@ class GradeCalculator {
           nameEn: 'Muhib',
           stars: 1,
           passed: false,
-          color: AppColors.gradeMuhib,
         );
     }
   }
@@ -143,7 +142,6 @@ class GradeCalculator {
         nameEn: 'Rasikh',
         stars: 5,
         passed: true,
-        color: AppColors.gradeRasikh,
       );
     } else if (errorCount <= AppConstants.maxErrorsForMutqin) {
       // 1-2 errors = متقن
@@ -153,7 +151,6 @@ class GradeCalculator {
         nameEn: 'Mutqin',
         stars: 4,
         passed: true,
-        color: AppColors.gradeMutqin,
       );
     } else if (errorCount <= AppConstants.maxErrorsForHafiz) {
       // 3-4 errors = حافظ
@@ -163,7 +160,6 @@ class GradeCalculator {
         nameEn: 'Hafiz',
         stars: 3,
         passed: true,
-        color: AppColors.gradeHafiz,
       );
     } else if (errorCount <= AppConstants.maxErrorsForMujtahid) {
       // 5-6 errors = مجتهد
@@ -173,7 +169,6 @@ class GradeCalculator {
         nameEn: 'Mujtahid',
         stars: 2,
         passed: true,
-        color: AppColors.gradeMujtahid,
       );
     } else {
       // 7+ errors = محب (fail)
@@ -183,7 +178,6 @@ class GradeCalculator {
         nameEn: 'Muhib',
         stars: 1,
         passed: false,
-        color: AppColors.gradeMuhib,
       );
     }
   }
@@ -202,10 +196,6 @@ class GradeCalculator {
 
   static String getGradeNameEn(int errorCount) {
     return calculate(errorCount).nameEn;
-  }
-
-  static Color getGradeColor(int errorCount) {
-    return calculate(errorCount).color;
   }
 
   /// Whether a whole memorization session passes, given the student's

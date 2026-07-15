@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/widgets/states/empty_state.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/student_card.dart';
 import '../providers/admin_provider.dart';
 
@@ -20,7 +22,10 @@ class AllStudentsScreen extends ConsumerWidget {
       body: studentsAsync.when(
         data: (students) {
           if (students.isEmpty) {
-            return _buildEmptyState(context);
+            return const EmptyState(
+              icon: Icons.school_outlined,
+              title: 'لا يوجد طلاب',
+            );
           }
           return RefreshIndicator(
             onRefresh: () async {
@@ -47,30 +52,8 @@ class AllStudentsScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.school_outlined,
-            size: 80,
-            color: AppColors.textSecondary.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'لا يوجد طلاب',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(color: AppColors.textSecondary),
-          ),
-        ],
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل الطلاب: $e'),
       ),
     );
   }

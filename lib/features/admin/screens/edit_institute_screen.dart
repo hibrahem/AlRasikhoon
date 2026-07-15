@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/repositories/institute_repository.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/admin_provider.dart';
 
 class EditInstituteScreen extends ConsumerStatefulWidget {
   final String instituteId;
 
-  const EditInstituteScreen({
-    super.key,
-    required this.instituteId,
-  });
+  const EditInstituteScreen({super.key, required this.instituteId});
 
   @override
   ConsumerState<EditInstituteScreen> createState() =>
@@ -50,7 +49,9 @@ class _EditInstituteScreenState extends ConsumerState<EditInstituteScreen> {
 
     try {
       final repo = ref.read(instituteRepositoryProvider);
-      final currentInstitute = ref.read(instituteProvider(widget.instituteId)).value;
+      final currentInstitute = ref
+          .read(instituteProvider(widget.instituteId))
+          .value;
 
       if (currentInstitute == null) {
         throw Exception('المعهد غير موجود');
@@ -69,9 +70,9 @@ class _EditInstituteScreenState extends ConsumerState<EditInstituteScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تم تحديث المعهد بنجاح'),
-            backgroundColor: AppColors.success,
+          SnackBar(
+            content: const Text('تم تحديث المعهد بنجاح'),
+            backgroundColor: context.tokens.green,
           ),
         );
         context.pop();
@@ -81,7 +82,7 @@ class _EditInstituteScreenState extends ConsumerState<EditInstituteScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('حدث خطأ: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: context.tokens.maroon,
           ),
         );
       }
@@ -94,15 +95,14 @@ class _EditInstituteScreenState extends ConsumerState<EditInstituteScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final instituteAsync = ref.watch(instituteProvider(widget.instituteId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('تعديل المعهد'),
-      ),
+      appBar: AppBar(title: const Text('تعديل المعهد')),
       body: instituteAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('خطأ: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل المعهد: $e'),
         data: (institute) {
           if (institute == null) {
             return const Center(child: Text('المعهد غير موجود'));
@@ -123,13 +123,13 @@ class _EditInstituteScreenState extends ConsumerState<EditInstituteScreen> {
                     height: 80,
                     margin: const EdgeInsets.only(bottom: 32),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
+                      color: tokens.green.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.account_balance,
                       size: 40,
-                      color: AppColors.primary,
+                      color: tokens.green,
                     ),
                   ),
 

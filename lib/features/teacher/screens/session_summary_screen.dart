@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/theme/grade_color_tokens.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -308,14 +309,14 @@ class _PartResultCard extends StatelessWidget {
                     '$errors أخطاء',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: gradeInfo.color,
+                      color: tokens.colorForGrade(gradeInfo.grade),
                     ),
                   ),
                   Text(
                     gradeInfo.nameAr,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: gradeInfo.color),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: tokens.colorForGrade(gradeInfo.grade),
+                    ),
                   ),
                 ],
               ),

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/states/empty_state.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/admin_provider.dart';
 
 class InstitutesScreen extends ConsumerStatefulWidget {
@@ -16,6 +19,7 @@ class InstitutesScreen extends ConsumerStatefulWidget {
 class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final institutesAsync = ref.watch(institutesProvider);
 
     return Scaffold(
@@ -23,7 +27,11 @@ class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
       body: institutesAsync.when(
         data: (institutes) {
           if (institutes.isEmpty) {
-            return _buildEmptyState();
+            return const EmptyState(
+              icon: Icons.account_balance_outlined,
+              title: 'لا يوجد معاهد',
+              message: 'اضغط على + لإضافة معهد جديد',
+            );
           }
           return RefreshIndicator(
             onRefresh: () async {
@@ -43,12 +51,12 @@ class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
+                          color: tokens.green.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.account_balance,
-                          color: AppColors.primary,
+                          color: tokens.green,
                           size: 28,
                         ),
                       ),
@@ -64,28 +72,23 @@ class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.location_on,
                                   size: 14,
-                                  color: AppColors.textSecondary,
+                                  color: tokens.sepia,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   institute.location,
                                   style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: AppColors.textSecondary,
-                                      ),
+                                      ?.copyWith(color: tokens.sepia),
                                 ),
                               ],
                             ),
                           ],
                         ),
                       ),
-                      const Icon(
-                        Icons.chevron_left,
-                        color: AppColors.textSecondary,
-                      ),
+                      Icon(Icons.chevron_left, color: tokens.sepia),
                     ],
                   ),
                 );
@@ -93,41 +96,12 @@ class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل المعاهد: $e'),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.createInstitute),
         child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.account_balance_outlined,
-            size: 80,
-            color: AppColors.textSecondary.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'لا يوجد معاهد',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'اضغط على + لإضافة معهد جديد',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-          ),
-        ],
       ),
     );
   }

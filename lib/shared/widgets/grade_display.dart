@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/theme/grade_color_tokens.dart';
 import '../../core/utils/grade_calculator.dart';
 
 class GradeDisplay extends StatelessWidget {
@@ -31,9 +32,12 @@ class GradeDisplay extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: gradeInfo.color.withValues(alpha: 0.1),
+        color: tokens.colorForGrade(gradeInfo.grade).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: gradeInfo.color, width: 2),
+        border: Border.all(
+          color: tokens.colorForGrade(gradeInfo.grade),
+          width: 2,
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -44,7 +48,7 @@ class GradeDisplay extends StatelessWidget {
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: gradeInfo.color,
+              color: tokens.colorForGrade(gradeInfo.grade),
             ),
           ),
           const SizedBox(height: 12),
@@ -139,16 +143,16 @@ class GradeDisplay extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: gradeInfo.color.withValues(alpha: 0.1),
+            color: tokens.colorForGrade(gradeInfo.grade).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: gradeInfo.color),
+            border: Border.all(color: tokens.colorForGrade(gradeInfo.grade)),
           ),
           child: Text(
             gradeInfo.nameAr,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: gradeInfo.color,
+              color: tokens.colorForGrade(gradeInfo.grade),
             ),
           ),
         ),
@@ -199,13 +203,14 @@ class GradeBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gradeInfo = GradeCalculator.calculate(errorCount);
+    final tokens = context.tokens;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: gradeInfo.color.withValues(alpha: 0.1),
+        color: tokens.colorForGrade(gradeInfo.grade).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: gradeInfo.color),
+        border: Border.all(color: tokens.colorForGrade(gradeInfo.grade)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -213,7 +218,7 @@ class GradeBadge extends StatelessWidget {
           Icon(
             gradeInfo.passed ? Icons.check : Icons.close,
             size: 14,
-            color: gradeInfo.color,
+            color: tokens.colorForGrade(gradeInfo.grade),
           ),
           const SizedBox(width: 4),
           Text(
@@ -221,7 +226,7 @@ class GradeBadge extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: gradeInfo.color,
+              color: tokens.colorForGrade(gradeInfo.grade),
             ),
           ),
         ],

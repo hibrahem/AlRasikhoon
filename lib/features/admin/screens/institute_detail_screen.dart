@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/institute_repository.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/states/empty_state.dart';
+import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/admin_provider.dart';
 
 class InstituteDetailScreen extends ConsumerWidget {
   final String instituteId;
 
-  const InstituteDetailScreen({
-    super.key,
-    required this.instituteId,
-  });
+  const InstituteDetailScreen({super.key, required this.instituteId});
 
   void _showAddTeacherSheet(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
@@ -27,7 +27,9 @@ class InstituteDetailScreen extends ConsumerWidget {
       builder: (context) => Consumer(
         builder: (context, ref, _) {
           final allTeachersAsync = ref.watch(allTeachersProvider);
-          final assignedTeachersAsync = ref.watch(teachersForInstituteProvider(instituteId));
+          final assignedTeachersAsync = ref.watch(
+            teachersForInstituteProvider(instituteId),
+          );
 
           return DraggableScrollableSheet(
             initialChildSize: 0.6,
@@ -55,13 +57,15 @@ class InstituteDetailScreen extends ConsumerWidget {
                 const Divider(height: 1),
                 Expanded(
                   child: allTeachersAsync.when(
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (e, _) => Center(child: Text('خطأ: $e')),
+                    loading: () => const LoadingState(),
+                    error: (e, _) => ErrorState(message: 'خطأ: $e'),
                     data: (allTeachers) => assignedTeachersAsync.when(
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (e, _) => Center(child: Text('خطأ: $e')),
+                      loading: () => const LoadingState(),
+                      error: (e, _) => ErrorState(message: 'خطأ: $e'),
                       data: (assignedTeachers) {
-                        final assignedIds = assignedTeachers.map((t) => t.id).toSet();
+                        final assignedIds = assignedTeachers
+                            .map((t) => t.id)
+                            .toSet();
                         final availableTeachers = allTeachers
                             .where((t) => !assignedIds.contains(t.id))
                             .toList();
@@ -79,7 +83,8 @@ class InstituteDetailScreen extends ConsumerWidget {
                             final teacher = availableTeachers[index];
                             return _TeacherSelectionTile(
                               teacher: teacher,
-                              onTap: () => _assignTeacher(context, ref, teacher),
+                              onTap: () =>
+                                  _assignTeacher(context, ref, teacher),
                             );
                           },
                         );
@@ -120,7 +125,7 @@ class InstituteDetailScreen extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('فشل في إضافة المعلم: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: context.tokens.maroon,
           ),
         );
       }
@@ -144,7 +149,7 @@ class InstituteDetailScreen extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () => _removeTeacher(context, ref, teacher),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            style: TextButton.styleFrom(foregroundColor: context.tokens.maroon),
             child: const Text('إزالة'),
           ),
         ],
@@ -177,7 +182,7 @@ class InstituteDetailScreen extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('فشل في إزالة المعلم: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: context.tokens.maroon,
           ),
         );
       }
@@ -186,6 +191,7 @@ class InstituteDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tokens = context.tokens;
     final instituteAsync = ref.watch(instituteProvider(instituteId));
     final teachersAsync = ref.watch(teachersForInstituteProvider(instituteId));
 
@@ -221,12 +227,12 @@ class InstituteDetailScreen extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
+                          color: tokens.green.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.account_balance,
-                          color: AppColors.primary,
+                          color: tokens.green,
                           size: 40,
                         ),
                       ),
@@ -242,20 +248,16 @@ class InstituteDetailScreen extends ConsumerWidget {
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.location_on,
                                   size: 16,
-                                  color: AppColors.textSecondary,
+                                  color: tokens.sepia,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   institute.location,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(
-                                        color: AppColors.textSecondary,
-                                      ),
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(color: tokens.sepia),
                                 ),
                               ],
                             ),
@@ -288,24 +290,14 @@ class InstituteDetailScreen extends ConsumerWidget {
                 teachersAsync.when(
                   data: (teachers) {
                     if (teachers.isEmpty) {
-                      return AppCard(
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.people_outline,
-                              size: 48,
-                              color: AppColors.textSecondary.withValues(alpha: 0.5),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text('لا يوجد معلمون'),
-                            const SizedBox(height: 8),
-                            AppButton(
-                              text: 'إضافة معلم',
-                              onPressed: () => _showAddTeacherSheet(context, ref),
-                              type: AppButtonType.outline,
-                              size: AppButtonSize.small,
-                            ),
-                          ],
+                      return EmptyState(
+                        icon: Icons.people_outline,
+                        title: 'لا يوجد معلمون',
+                        action: AppButton(
+                          text: 'إضافة معلم',
+                          onPressed: () => _showAddTeacherSheet(context, ref),
+                          type: AppButtonType.outline,
+                          size: AppButtonSize.small,
                         ),
                       );
                     }
@@ -319,20 +311,23 @@ class InstituteDetailScreen extends ConsumerWidget {
                         return AppCard(
                           margin: const EdgeInsets.only(bottom: 8),
                           onTap: () => context.push(
-                            AppRoutes.teacherDetail
-                                .replaceFirst(':id', teacher.id),
+                            AppRoutes.teacherDetail.replaceFirst(
+                              ':id',
+                              teacher.id,
+                            ),
                           ),
                           child: Row(
                             children: [
                               CircleAvatar(
-                                backgroundColor:
-                                    AppColors.primary.withValues(alpha: 0.1),
+                                backgroundColor: tokens.green.withValues(
+                                  alpha: 0.1,
+                                ),
                                 child: Text(
                                   teacher.name.isNotEmpty
                                       ? teacher.name[0]
                                       : '?',
-                                  style: const TextStyle(
-                                    color: AppColors.primary,
+                                  style: TextStyle(
+                                    color: tokens.green,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -344,26 +339,24 @@ class InstituteDetailScreen extends ConsumerWidget {
                                   children: [
                                     Text(
                                       teacher.name,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleSmall,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleSmall,
                                     ),
                                     Text(
                                       teacher.phone ?? teacher.displayUsername,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
-                                          ?.copyWith(
-                                            color: AppColors.textSecondary,
-                                          ),
+                                          ?.copyWith(color: tokens.sepia),
                                     ),
                                   ],
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.remove_circle_outline,
-                                  color: AppColors.error,
+                                  color: tokens.maroon,
                                 ),
                                 onPressed: () => _showRemoveTeacherDialog(
                                   context,
@@ -377,16 +370,16 @@ class InstituteDetailScreen extends ConsumerWidget {
                       },
                     );
                   },
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Text('Error: $e'),
+                  loading: () => const LoadingState(),
+                  error: (e, _) =>
+                      ErrorState(message: 'تعذر تحميل المعلمين: $e'),
                 ),
               ],
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'تعذر تحميل المعهد: $e'),
       ),
     );
   }
@@ -396,27 +389,22 @@ class _TeacherSelectionTile extends StatelessWidget {
   final UserModel teacher;
   final VoidCallback onTap;
 
-  const _TeacherSelectionTile({
-    required this.teacher,
-    required this.onTap,
-  });
+  const _TeacherSelectionTile({required this.teacher, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+        backgroundColor: tokens.green.withValues(alpha: 0.1),
         child: Text(
           teacher.name.isNotEmpty ? teacher.name[0] : '?',
-          style: const TextStyle(
-            color: AppColors.primary,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: tokens.green, fontWeight: FontWeight.bold),
         ),
       ),
       title: Text(teacher.name),
       subtitle: Text(teacher.phone ?? teacher.displayUsername),
-      trailing: const Icon(Icons.add_circle_outline, color: AppColors.primary),
+      trailing: Icon(Icons.add_circle_outline, color: tokens.green),
       onTap: onTap,
     );
   }
