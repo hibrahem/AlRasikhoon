@@ -572,22 +572,6 @@ class SessionRepository {
       'passed_exams': passedExams,
     };
   }
-
-  /// Stream session records for student
-  Stream<List<SessionRecordModel>> streamSessionRecordsForStudent(
-    String studentId,
-  ) {
-    return _sessionRecordsCollection
-        .where('student_id', isEqualTo: studentId)
-        .orderBy('date', descending: true)
-        .limit(50)
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-              .map((doc) => SessionRecordModel.fromFirestore(doc))
-              .toList(),
-        );
-  }
 }
 
 final sessionRepositoryProvider = Provider<SessionRepository>((ref) {
