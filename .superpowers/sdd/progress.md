@@ -167,3 +167,63 @@ Reconciliations made:
   - StudentProgressScreen (main's new role-agnostic screen with INJECTED providers): rewired to inject the
     MEETING provider. Was showing an admin/supervisor only the FIRST of a 2x student's two lessons.
 Final: 759/759 passing, analyzer clean, 21 commits ahead of main. All invariants verified intact.
+
+=== SESSION DURATION TIMER — plan: docs/superpowers/plans/2026-07-15-session-duration-timer.md ===
+# Issue: al_rasikhoon-tr6
+# Branch: claude/session-duration-timer-23fc26 (base c6ff299)
+# 12 tasks. Baseline: 759 tests at c6ff299 (per prior ledger).
+Task 1: complete (commit 0245c22, review clean) — SessionDuration value object (domain, pure Dart+intl).
+  Deviation (correct): arabicMinutesLabel uses NumberFormat('#','ar_EG') not 'ar' — generic 'ar' renders
+  WESTERN digits in intl 0.20.2; 'ar_EG' carries Arabic-Indic (ZERO_DIGIT ٠). Confirmed in intl source.
+  => Task 11's card label reuses arabicMinutesLabel, so it inherits Arabic-Indic digits automatically.
+  Minor (final review): band-boundary tests never hit EXACTLY 15/25 min (the ±25% edges) or elapsed==cap;
+  mutation < -> <= on the band edge would survive. Inherited from the plan's chosen test values, not impl.
+Task 2: complete (commit 734bb8d, review clean) — duration on SessionRecordModel (duration_seconds int, nullable, copyWith). No findings.
+Task 3: complete (commit 46854ec, review clean) — duration on SardRecordModel + ExamRecordModel (identical shape, duration_seconds int, nullable, copyWith). No findings.
+Task 4: complete (commits e460af8 impl + e3ca3a1 test-fix, review clean) — repo computes lesson/talqeen
+  duration inside _writeSessionRecord builder (same writtenAt instant as date/createdAt), via
+  SessionDuration(...).elapsed so the 3x cap applies; startedAt null -> duration null. 48/48.
+  Fix closed reviewer's Important (talqeen path had identical code, zero tests) + Minor (no 2x test —
+  90min@2x asserts uncapped, fails if pace.multiplier hardcoded to 1). createSard/Exam untouched.
+Task 5: complete (commit daa7171, review clean) — createSardRecord/createExamRecord gain startedAt + now seam;
+  writtenAt computed ONCE for both date+createdAt (fixed latent two-DateTime.now() drift); RAW uncapped elapsed
+  (no SessionDuration on this path); startedAt null -> null. 51/51.
+  Minor (final review): createExamRecord has no DIRECT null-duration test (sard does; code identical). Inherited
+  from brief. Cheap follow-up test.
+Task 6: complete (commit 245a46a, review clean) — ActiveSessionState.startedAt (copyWith preserves via ?? this); startSession stamps DateTime.now(); completeSession/completeTalqeenSession forward startedAt. Test uses REAL SessionRepository (makeRealContainer) so forward path is proven, not mocked. 29/29. No findings.
+Task 7: complete (commit c20525c, review clean) — SessionTimer widget (StatefulWidget, Timer.periodic 1s,
+  cancelled in dispose, display-only). Deviation (correct, justified): seeds _elapsed in initState from real
+  diff then INCREMENTS +1s per tick (instead of re-diffing DateTime.now every build) — required for
+  FakeAsync tester.pump determinism; display-only so timer jitter can't corrupt the RECORDED duration
+  (that comes from repo writtenAt-startedAt). 3/3, full suite 836/836.
+  Minor (mitigated in Task 8): no didUpdateWidget re-seed if startedAt changes while mounted. NOT a current
+  bug (screens remount per session). MITIGATION: Task 8/9/10 pass key: ValueKey(startedAt) to SessionTimer.
+Task 8: complete (commits 5f09afe impl + import-cleanup, review clean) — ActiveLessonTimer ConsumerWidget
+  (reads activeSessionProvider.startedAt + studentProvider pace; SizedBox.shrink when no session), keyed
+  SessionTimer via ValueKey(startedAt) [Task 7 Minor mitigation]. Wired into 4 lesson AppBars
+  (new_memorization, recitation, session_summary MAIN bar, talqeen). Corrected .valueOrNull->.value
+  (Riverpod 3.1.0 nullable getter; matches session_summary_screen). Removed brief's unused test import to
+  keep analyze clean. 9/9. No findings.
+Task 9: complete (commit ce9be90, review clean) — sard flow timed. _startedAt in initState (late final,
+  set once); AppBar SessionTimer elapsed-only (no target), keyed ValueKey(_startedAt); push extra now a RECORD
+  (errorCount, startedAt) — old bare-int read replaced; router casts the record, null-safe deep-link degrade;
+  SardResultScreen forwards startedAt to createSardRecord. Record cast matches push field-for-field. 2/2. No findings.
+Task 10: complete (commit 4580b8d, review clean) — exam flow timed, exact twin of Task 9. examResult
+  route switched from bare-int to record extra; sardResult/recitationResult untouched; push shape matches cast
+  field-for-field; ExamResultScreen forwards startedAt to createExamRecord. 4/4. No findings.
+Task 11: complete (commit 6c9de25, review clean) — SessionRecordRow optional sessionDuration: duration line
+  (المدة: arabicMinutesLabel) + _DurationFlag pill (under=info/onTarget=success/over=warning), NO flag when
+  status none (assessments). Wired into student + teacher history. Deviation (correct): flag labels reworded
+  المدة->المستهدف ("target") to avoid colliding with the duration line's own المدة: in find.textContaining;
+  distinguishing words أطول/أقصر/ضمن kept. 12/12, full suite 842/842.
+  Minor (final review): (1) no pill-COLOR assertion (only label text) — inherited from brief; (2) the 7-line
+  "build SessionDuration from record" block is duplicated in both history screens — a SessionDuration.fromRecord
+  factory would DRY it.
+Task 12: GATE PASSED — flutter analyze clean on all changed files (only 3 pre-existing RawKeyEvent
+  deprecations in app_text_field.dart, untouched by this feature); full suite 842/842 passing. No fixes needed.
+FINAL WHOLE-BRANCH REVIEW (opus): READY TO MERGE — no Critical/Important. Traced both flows end-to-end
+  (startedAt never dropped; assessments never get a target; recorded duration always from repo writtenAt-startedAt,
+  never the display timer). Single source of truth (SessionDuration) confirmed for 20xpace/±25%/3x — no
+  reimplementation. ValueKey(startedAt) mitigation verified at ALL 3 consumer sites (ActiveLessonTimer,
+  Sard/ExamSessionScreen). DDD clean (domain imports only intl). All 5 Minors deferred (test-coverage/DRY only).
+  Filed as follow-up beads issue. Suite 842/842, analyze clean.
