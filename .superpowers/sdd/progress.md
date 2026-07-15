@@ -347,3 +347,21 @@ Task 16: complete (commits f50fc3f impl + 395ad19 fix, review clean) — home_pr
   a real design-system gap (no 4th accent token) noted as backlog, not blocking, across both Task 14 and 16.
   Full test/widget suite: 143 passing, 0 failing throughout.
   === ALL 4 STUDENT SCREENS (Tasks 13-16) COMPLETE. Starting Task 17: final verification + follow-ups. ===
+Task 17: complete (commits 0be09fa impl + e39c5dd fix, review clean) — FINAL TASK. flutter analyze clean
+  (3 pre-existing RawKeyEvent deprecations only). Full flutter test suite: 970 passed/3 failed/973 total
+  (unit 785/0, widget 143/0, e2e 41/3) - the 3 e2e failures in teacher_flow_test.dart PROVEN pre-existing
+  by reproducing identically at merge-base 645a5a8 in a temp worktree (properly cleaned up). Grep sweep for
+  AppColors leaks in student screens/shared widgets: 6 hits, 3 pre-cleared (textOnPrimary/textOnSecondary,
+  warning/info on filled bgs), 3 GENUINE newly-found dark-mode inconsistencies (session_record_row.dart,
+  error_counter.dart, grade_display.dart mix raw AppColors.success/warning with adaptive tokens.maroon in
+  the same branch) - folded into bug al_rasikhoon-3k3's scope via bd notes (all file/line detail preserved).
+  5 follow-up bd issues filed + linked to parent epic al_rasikhoon-5ss: al_rasikhoon-ulz (teacher-11),
+  al_rasikhoon-bd8 (admin-12), al_rasikhoon-alt (supervisor-5), al_rasikhoon-pob (auth-2), al_rasikhoon-3k3
+  (grade-color dark-mode bug, now scoped to grade_calculator.dart + the 3 newly-found files). Epic left
+  IN_PROGRESS, not closed.
+  Fixed (review-found, Important): bd dep links were added backwards (child depends_on epic), making all 5
+  invisible to `bd ready` for as long as the epic stays open - defeating their purpose. Reversed (epic
+  depends_on each child) - verified live via bd ready, all 5 now surface as ready/actionable work.
+  === ALL 17 TASKS COMPLETE, ALL REVIEWED CLEAN. ===
+  REMAINING before the plan's Definition of Done is fully met: manual verification on a phone viewport in
+  light+dark+Arabic RTL (explicitly deferred to the controller during Task 17, not attempted by any subagent).
