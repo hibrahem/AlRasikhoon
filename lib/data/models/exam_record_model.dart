@@ -32,6 +32,11 @@ class ExamRecordModel {
   final String? notes;
   final DateTime createdAt;
 
+  /// How long the assessment took, wall-clock from opening the session screen
+  /// to save. Raw elapsed — assessments have no pace target, so there is no
+  /// cap. Null for records written before assessments were timed.
+  final Duration? duration;
+
   const ExamRecordModel({
     required this.id,
     required this.studentId,
@@ -49,6 +54,7 @@ class ExamRecordModel {
     required this.attemptNumber,
     this.notes,
     required this.createdAt,
+    this.duration,
   });
 
   factory ExamRecordModel.fromFirestore(DocumentSnapshot doc) {
@@ -70,6 +76,9 @@ class ExamRecordModel {
       attemptNumber: data['attempt_number'] ?? 1,
       notes: data['notes'],
       createdAt: (data['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      duration: (data['duration_seconds'] as int?) == null
+          ? null
+          : Duration(seconds: data['duration_seconds'] as int),
     );
   }
 
@@ -90,6 +99,7 @@ class ExamRecordModel {
       'attempt_number': attemptNumber,
       'notes': notes,
       'created_at': Timestamp.fromDate(createdAt),
+      'duration_seconds': duration?.inSeconds,
     };
   }
 
@@ -110,6 +120,7 @@ class ExamRecordModel {
     int? attemptNumber,
     String? notes,
     DateTime? createdAt,
+    Duration? duration,
   }) {
     return ExamRecordModel(
       id: id ?? this.id,
@@ -128,6 +139,7 @@ class ExamRecordModel {
       attemptNumber: attemptNumber ?? this.attemptNumber,
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
+      duration: duration ?? this.duration,
     );
   }
 

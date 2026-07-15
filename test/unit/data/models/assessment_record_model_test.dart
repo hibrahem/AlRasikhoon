@@ -109,4 +109,84 @@ void main() {
       );
     });
   });
+
+  group('assessment record duration', () {
+    test('SardRecordModel round-trips a duration as whole seconds', () async {
+      final record = SardRecordModel(
+        id: 'sard1',
+        studentId: 's1',
+        teacherId: 't1',
+        curriculumSessionId: 'L1_J30_S7',
+        tier: AssessmentTier.unit,
+        levelId: 1,
+        date: DateTime(2026, 1, 1),
+        errorCount: 0,
+        grade: 'راسخ',
+        passed: true,
+        attemptNumber: 1,
+        createdAt: DateTime(2026, 1, 1),
+        duration: const Duration(minutes: 18),
+      );
+      expect(record.toFirestore()['duration_seconds'], 18 * 60);
+
+      final firestore = FakeFirebaseFirestore();
+      await firestore
+          .collection('sard_records')
+          .doc('sard1')
+          .set(record.toFirestore());
+      final doc = await firestore.collection('sard_records').doc('sard1').get();
+      expect(
+        SardRecordModel.fromFirestore(doc).duration,
+        const Duration(minutes: 18),
+      );
+    });
+
+    test('ExamRecordModel round-trips a duration as whole seconds', () async {
+      final record = ExamRecordModel(
+        id: 'exam1',
+        studentId: 's1',
+        supervisorId: 'sup1',
+        curriculumSessionId: 'L1_J30_S9',
+        tier: AssessmentTier.juz,
+        levelId: 1,
+        date: DateTime(2026, 1, 1),
+        errorCount: 0,
+        grade: 'راسخ',
+        passed: true,
+        attemptNumber: 1,
+        createdAt: DateTime(2026, 1, 1),
+        duration: const Duration(minutes: 30),
+      );
+      expect(record.toFirestore()['duration_seconds'], 30 * 60);
+
+      final firestore = FakeFirebaseFirestore();
+      await firestore
+          .collection('exam_records')
+          .doc('exam1')
+          .set(record.toFirestore());
+      final doc = await firestore.collection('exam_records').doc('exam1').get();
+      expect(
+        ExamRecordModel.fromFirestore(doc).duration,
+        const Duration(minutes: 30),
+      );
+    });
+
+    test('an assessment record with no duration stores null', () {
+      final record = SardRecordModel(
+        id: 'sard2',
+        studentId: 's1',
+        teacherId: 't1',
+        curriculumSessionId: 'L1_J30_S7',
+        tier: AssessmentTier.unit,
+        levelId: 1,
+        date: DateTime(2026, 1, 1),
+        errorCount: 0,
+        grade: 'راسخ',
+        passed: true,
+        attemptNumber: 1,
+        createdAt: DateTime(2026, 1, 1),
+      );
+      expect(record.toFirestore()['duration_seconds'], isNull);
+    });
+  });
 }
