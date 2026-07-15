@@ -269,3 +269,10 @@ Task 7: complete (commits 6cfe372 impl + 81fe70c fix + 92d34bd fix, review clean
 Task 8: complete (commit 8a6b2ac, review clean) — Illuminated Juz Ring signature widget (juzRingSweep pure
   fn + JuzRing widget + _JuzRingPainter custom paint). Token-driven colors, no data-fetching (pure presentational).
   No findings.
+Task 9: complete (commit e71931a, review clean) — reskinned stat_card/student_card/app_button/app_text_field
+  to context.tokens per mapping table. NOTE: implementer subagent was cut off mid-run by an API spend-limit
+  error before committing/reporting; controller verified diff line-by-line, ran flutter analyze + full
+  test/widget suite (137 passing, 0 failing) directly, committed on its behalf, wrote the report. Reviewer
+  independently re-verified every substitution against the mapping table. Out-of-table colors (warning/info/
+  textOnPrimary/textOnSecondary) correctly left untouched. Minor (not fixed): a few unrelated dart-format
+  line-collapses with zero color changes (cosmetic only, e.g. StatItem ctor, AppTextField label Text()).
