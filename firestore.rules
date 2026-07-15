@@ -52,6 +52,18 @@ service cloud.firestore {
         studentData.institute_id == callerInstituteId();
     }
 
+    // A teacher scoped to their OWN students. "A teacher's student" is
+    // students.teacher_id == the caller's uid (StudentModel.teacherId, the
+    // server-side counterpart of getStudentsForTeacher's client
+    // .where('teacher_id', ...)). Fail-closed when the field is absent: a
+    // teacher-less student ('teacher_id' in data == false) is out-of-scope and
+    // DENIED, so a missing field never widens access (al_rasikhoon-ob7).
+    function isTeacherOfStudent(studentData) {
+      return isTeacher() &&
+        ('teacher_id' in studentData) &&
+        studentData.teacher_id == request.auth.uid;
+    }
+
     // A supervisor scoped to the institute of the student referenced by a
     // session record. Single get() on the student doc to read its
     // denormalized institute_id, compared against the supervisor's institute.
@@ -59,6 +71,19 @@ service cloud.firestore {
       return isSupervisor() &&
         ('student_id' in recordData) &&
         get(/databases/$(database)/documents/students/$(recordData.student_id)).data.institute_id == callerInstituteId();
+    }
+
+    // A teacher scoped to the student referenced by a session/sard record.
+    // Single get() on the student doc to read its denormalized teacher_id,
+    // compared against the caller's uid. Scopes on the STUDENT's teacher_id —
+    // NOT the record's author teacher_id — so a teacher cannot self-author a
+    // record for another teacher's student (al_rasikhoon-ob7). Mirrors
+    // isSupervisorOfRecordStudent; fail-closed when the student has no
+    // teacher_id (null == uid is false).
+    function isTeacherOfRecordStudent(recordData) {
+      return isTeacher() &&
+        ('student_id' in recordData) &&
+        get(/databases/$(database)/documents/students/$(recordData.student_id)).data.teacher_id == request.auth.uid;
     }
 
     // === Read-scoping helpers (al_rasikhoon-bpk) =============================
@@ -90,16 +115,18 @@ service cloud.firestore {
 
     // Who may READ a given student document.
     //  - admin      → all
-    //  - teacher    → all (MIRRORS the unscoped teacher WRITE on students;
-    //                 tightening teacher read+write to their own students is
-    //                 tracked together in al_rasikhoon-ob7)
+    //  - teacher    → only their OWN students, scoped by students.teacher_id via
+    //                 isTeacherOfStudent (al_rasikhoon-ob7). This closes the
+    //                 cross-institute hole bpk left open: the only teacher read
+    //                 flow is getStudentsForTeacher (already teacher_id-scoped),
+    //                 so no legitimate flow needs another teacher's students.
     //  - supervisor → students of their institute, via the SAME helper the write
     //                 side uses (isSupervisorOfStudentInstitute, AgDR-0003)
     //  - guardian   → only their children
     //  - student    → only their own record
     function canReadStudent(studentData) {
       return isSuperAdmin() ||
-        isTeacher() ||
+        isTeacherOfStudent(studentData) ||
         isSupervisorOfStudentInstitute(studentData) ||
         isGuardianOfStudent(studentData) ||
         isOwnStudentRecord(studentData);
@@ -127,10 +154,12 @@ service cloud.firestore {
     }
 
     // Who may READ a given session/sard/exam record. Same role matrix as
-    // canReadStudent, resolved through the record's student.
+    // canReadStudent, resolved through the record's student. Teacher reads are
+    // scoped to the record's student's teacher_id (isTeacherOfRecordStudent,
+    // al_rasikhoon-ob7) — symmetric with the teacher WRITE scoping below.
     function canReadRecord(recordData) {
       return isSuperAdmin() ||
-        isTeacher() ||
+        isTeacherOfRecordStudent(recordData) ||
         isSupervisorOfRecordStudent(recordData) ||
         isGuardianOfRecordStudent(recordData) ||
         isOwnRecord(recordData);
@@ -205,19 +234,24 @@ service cloud.firestore {
       allow write: if isSuperAdmin();
     }
 
-    // Session records — teachers write any; supervisors write only for a
-    // student in their own institute (teacher-parity evaluation scoped to the
-    // institute, AgDR-0003 / #28).
+    // Session records — a teacher writes only for their OWN students; a
+    // supervisor writes only for a student in their own institute (teacher-parity
+    // evaluation scoped to the institute, AgDR-0003 / #28). Teacher scoping goes
+    // through the record's student's teacher_id (al_rasikhoon-ob7), so a teacher
+    // can no longer fabricate/alter another teacher's student's progress.
     match /session_records/{recordId} {
-      // Read-scoped by role through the record's student (al_rasikhoon-bpk).
+      // Read-scoped by role through the record's student (al_rasikhoon-bpk +
+      // al_rasikhoon-ob7 for the teacher scope).
       allow read: if canReadRecord(resource.data);
-      allow create: if isTeacher() ||
+      allow create: if isTeacherOfRecordStudent(request.resource.data) ||
         isSupervisorOfRecordStudent(request.resource.data);
-      // A supervisor must own BOTH the existing record's student AND the
-      // incoming record's student (institute-scoped), so they can neither edit
-      // a record outside their institute nor repoint student_id to a student in
-      // another institute. Mirrors the dual-check on the students update rule.
-      allow update: if isTeacher() ||
+      // A teacher (like a supervisor) must own BOTH the existing record's
+      // student AND the incoming record's student, so they can neither edit a
+      // record for a student that is not theirs nor repoint student_id onto
+      // another teacher's student. Mirrors the dual old/new check on the
+      // students update rule.
+      allow update: if (isTeacherOfRecordStudent(resource.data) &&
+         isTeacherOfRecordStudent(request.resource.data)) ||
         (isSupervisorOfRecordStudent(resource.data) &&
          isSupervisorOfRecordStudent(request.resource.data));
     }
@@ -228,15 +262,18 @@ service cloud.firestore {
     // is removed and the teacher write restored. SardRecordModel always named
     // its author `teacher_id` — model and rule now agree again.
     //
-    // Teacher writes are unscoped, identical to session_records above: any
-    // teacher may write any student's sard record. That is a real gap, tracked
-    // in al_rasikhoon-ob7 (which tightens session_records and sard_records
-    // together); it is NOT new here. Reads stay open (authenticated).
+    // Teacher writes are scoped to the teacher's OWN students, identical to
+    // session_records above (al_rasikhoon-ob7): a teacher may create/update a
+    // sard record only when the record's student's teacher_id is the caller, and
+    // on update must own BOTH the old and new student so student_id cannot be
+    // repointed onto another teacher's student.
     match /sard_records/{sardId} {
-      // Read-scoped by role through the record's student (al_rasikhoon-bpk).
+      // Read-scoped by role through the record's student (al_rasikhoon-bpk +
+      // al_rasikhoon-ob7 for the teacher scope).
       allow read: if canReadRecord(resource.data);
-      allow create: if isTeacher();
-      allow update: if isTeacher();
+      allow create: if isTeacherOfRecordStudent(request.resource.data);
+      allow update: if isTeacherOfRecordStudent(resource.data) &&
+        isTeacherOfRecordStudent(request.resource.data);
     }
 
     // Exam records
