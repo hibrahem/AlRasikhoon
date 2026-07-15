@@ -58,6 +58,13 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
   /// each can be labelled from its own data.
   List<SessionModel> _sessions = const [];
 
+  /// Whether a session fetch is currently in flight. Starts `true` so the
+  /// session field shows a loading indication from the very first build, before
+  /// the initial fetch has resolved — until then the picker genuinely does not
+  /// know which sessions the chosen juz holds, and must not present an empty
+  /// dropdown as though the juz were empty.
+  bool _isLoadingSessions = true;
+
   /// Guards against a slower response from an earlier (level, juz) selection
   /// overwriting the sessions of a later one: only the response whose
   /// generation matches the most recent request is applied.
@@ -87,6 +94,7 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
     if (!mounted || requestId != _requestGeneration) return;
 
     setState(() {
+      _isLoadingSessions = false;
       _sessions = sessions;
       final numbers = sessions.map((s) => s.sessionNumber);
       if (!numbers.contains(_session)) {
@@ -115,6 +123,7 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
       _level = level;
       _juz = first;
       _session = null;
+      _isLoadingSessions = true;
     });
     // Tell the parent there is nothing valid to submit *before* dispatching the
     // fetch for the new juz — otherwise the parent keeps holding the previous
@@ -129,6 +138,7 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
     setState(() {
       _juz = juz;
       _session = null;
+      _isLoadingSessions = true;
     });
     _report();
     _loadSessions(_level, juz);
@@ -301,27 +311,42 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
         _field(
           context,
           label: 'الحلقة',
-          child: DropdownButton<int>(
-            key: const Key('starting_point_session'),
-            isExpanded: true,
-            value: _selectedSession?.sessionNumber,
-            hint: const Text('اختر الحلقة'),
-            items: _sessions
-                .map(
-                  (session) => DropdownMenuItem(
-                    value: session.sessionNumber,
-                    child: Text(
-                      _sessionLabel(session),
-                      overflow: TextOverflow.ellipsis,
+          // Until the fetch for the chosen juz resolves the picker does not yet
+          // know its sessions — show a loading indication rather than an empty
+          // dropdown, which would read as "this juz has no sessions".
+          child: _isLoadingSessions
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Center(
+                    child: SizedBox(
+                      key: Key('starting_point_session_loading'),
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                   ),
                 )
-                .toList(),
-            onChanged: (session) {
-              if (session == null) return;
-              _changeSession(session);
-            },
-          ),
+              : DropdownButton<int>(
+                  key: const Key('starting_point_session'),
+                  isExpanded: true,
+                  value: _selectedSession?.sessionNumber,
+                  hint: const Text('اختر الحلقة'),
+                  items: _sessions
+                      .map(
+                        (session) => DropdownMenuItem(
+                          value: session.sessionNumber,
+                          child: Text(
+                            _sessionLabel(session),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (session) {
+                    if (session == null) return;
+                    _changeSession(session);
+                  },
+                ),
         ),
       ],
     );

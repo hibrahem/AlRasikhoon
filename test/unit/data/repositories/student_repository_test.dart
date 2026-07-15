@@ -885,6 +885,52 @@ void main() {
       });
     });
 
+    group('advanceStudentSession — completion is proven from data, not '
+        'structure', () {
+      test('a last-level student whose sessions and catalog were never seeded is '
+          'NOT graduated: terminality is decided from the levels catalog, never '
+          'from the structural fact that they sit in the last level', () async {
+        // A hizb-2 student is placed in juz 1 — which the curriculum teaches
+        // in level 10, the LAST structural level. In this environment level
+        // 10 was never seeded: neither its sessions nor its levels-catalog
+        // entry (this group's setUp seeds NO catalog). The walk forward finds
+        // no session ahead AND no catalog to confirm the student stands on the
+        // level's last session. Deciding terminality structurally ("level 10
+        // is the last level, so nothing ahead means the curriculum is done")
+        // would graduate a student who has memorized almost nothing — and,
+        // since al_rasikhoon-s9d, would even stamp the `curriculum_completed`
+        // flag on that wrong branch. Completion must be credited only when the
+        // catalog positively confirms it; a missing catalog proves nothing, so
+        // the only honest outcome is curriculumDataMissing.
+        await seedStudent(
+          level: 10,
+          juz: 1,
+          session: 2,
+          order: 2,
+          kind: 'lesson',
+          hizb: 2,
+        );
+
+        final outcome = await studentRepository.advanceStudentSession('s1');
+
+        expect(outcome, StudentAdvanceOutcome.curriculumDataMissing);
+
+        final student = await readStudent();
+        // Nothing was written: not the position, not the level credit, and —
+        // the regression that matters — not the graduation flag.
+        expect(student['current_order_in_level'], 2);
+        expect(student['current_session_id'], 'L10_J1_S2');
+        expect(student['completed_levels'], isEmpty);
+        expect(
+          student.containsKey('curriculum_completed'),
+          isFalse,
+          reason:
+              'an unseeded student must never be stamped as having finished '
+              'the curriculum',
+        );
+      });
+    });
+
     group('getStudentsReadyForExam', () {
       test(
         'returns the students standing on an اختبار — by KIND, not by session '

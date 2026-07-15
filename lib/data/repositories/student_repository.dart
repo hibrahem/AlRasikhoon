@@ -598,17 +598,26 @@ class StudentRepository {
   ///
   /// 1. `fromOrderInLevel + 1` within the current level — the whole advancement
   ///    rule, juz boundaries included.
-  /// 2. If there is none, the level is finished: take the first session
-  ///    (`order_in_level == 1`) of the next level that has one, so a level with
-  ///    no seeded sessions is stepped over rather than mistaken for the end.
-  /// 3. If the student was already in the last level, the curriculum is
-  ///    finished.
+  /// 2. If no session is seeded there, whether the level is FINISHED or merely
+  ///    HOLED is a data question, answered from the levels catalog — never from
+  ///    the structural fact that the student happens to stand in the last level.
+  ///    Terminality is credited ONLY when the catalog positively accounts for
+  ///    the student's position as the level's last session
+  ///    (`fromOrderInLevel >= sessionCount`). An absent catalog, an empty one,
+  ///    or one that still lists sessions after [fromOrderInLevel] proves
+  ///    nothing: the missing `fromOrderInLevel + 1` is a HOLE in the seeded
+  ///    data, and the student is left exactly as they are.
+  /// 3. Once the level is confirmed finished, the walk steps into the first
+  ///    session (`order_in_level == 1`) of the next level that has one, so a
+  ///    wholly-unseeded level is stepped over rather than mistaken for the end.
+  /// 4. If that confirmed-finished level was the last level and nothing is
+  ///    seeded ahead, the curriculum is complete.
   ///
-  /// Before concluding a level is finished, the levels catalog is consulted: if
-  /// it says the level has more sessions after [fromOrderInLevel], then the
-  /// missing `fromOrderInLevel + 1` is a HOLE in the data, not the end of the
-  /// level, and the student must not be marched into the next level on the
-  /// strength of a missing document.
+  /// This ordering — consult the data, THEN conclude — is what stops an
+  /// unseeded last-level student (e.g. a hizb-2 placement in level 10 whose
+  /// sessions were never seeded) from being silently graduated: with no catalog
+  /// to confirm the last session, the only honest answer is that the data is
+  /// missing, never that the curriculum is done.
   Future<_NextSessionOutcome> _nextSession(
     StudentModel student,
     int fromOrderInLevel,
@@ -626,12 +635,17 @@ class StudentRepository {
     );
     if (next != null) return _Advanced(next);
 
-    // No next session in this level. Is the level really finished, or is the
-    // data holed?
+    // No next session is seeded in this level. Consult the catalog BEFORE
+    // concluding anything: only a catalog that positively confirms the level
+    // ends at or before [fromOrderInLevel] proves the level is finished.
+    // Anything else — a missing catalog, an empty one, or one that still lists
+    // later sessions — means the data is holed, not that the curriculum ended.
     final catalog = await _curriculumRepository.getLevelByNumber(level);
-    if (catalog != null &&
+    final levelIsFinished =
+        catalog != null &&
         catalog.sessionCount > 0 &&
-        fromOrderInLevel < catalog.sessionCount) {
+        fromOrderInLevel >= catalog.sessionCount;
+    if (!levelIsFinished) {
       return const _CurriculumDataMissing();
     }
 
@@ -647,10 +661,9 @@ class StudentRepository {
       if (first != null) return _Advanced(first);
     }
 
-    // Nothing ahead. If the student was in the last level, that is the end of
-    // the curriculum — a structural fact. Otherwise the levels ahead simply
-    // have no seeded data, which is a data problem and must not be credited as
-    // completion.
+    // The level is confirmed finished and nothing is seeded ahead. Only the
+    // last level ending this way is genuine completion; an earlier level with
+    // no seeded successor is a data problem and must not be credited.
     if (level == CurriculumPosition.totalLevels) {
       return const _CurriculumCompleted();
     }
