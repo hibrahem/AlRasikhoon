@@ -315,3 +315,16 @@ Task 13: complete (commits ac1407d impl + cd69931 fix, review clean) — student
   quick-stat tiles the same color (were previously distinguishable primary/success green shades). Low
   severity, follow-up only if a dedicated success token is added later.
   Full test/widget suite: 143 passing, 0 failing throughout.
+Task 14: complete (commit 2c39ce5, review clean) — session_detail_screen adopts full system: token mapping,
+  LoadingState/ErrorState replace bespoke spinners, no new provider calls, data-fetching byte-identical.
+  success->green judgment call (Task 13 precedent), verified no role collision this time.
+  *** REAL BUT OUT-OF-SCOPE GAP FOUND (Minor, deferred to Task 17 follow-ups) ***: lib/core/utils/
+  grade_calculator.dart's GradeInfo.color bakes RAW brightness-unaware AppColors.gradeX as const at
+  construction, bypassing AppTokens entirely -> genuine dark-mode contrast defect on every screen reading
+  gradeInfo.color (this screen + grade_display.dart's GradeBadge). Pre-existing since Task 10 (which only
+  had grade_display.dart in scope, not grade_calculator.dart - a core/utils file no task in this plan
+  charters). Task 17's own verification grep doesn't scan lib/core/utils either, so this would silently
+  survive final verification unless filed explicitly. PROPER FIX requires an architectural change (drop
+  `color` from GradeInfo, have callers map Grade->tokens.gradeX themselves) - not a rushed single-screen fix.
+  MUST file as a bd follow-up issue during Task 17 alongside the teacher/admin/supervisor/auth issues.
+  Full test/widget suite: 143 passing, 0 failing.
