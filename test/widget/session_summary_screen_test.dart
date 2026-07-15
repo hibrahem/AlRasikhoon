@@ -145,6 +145,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      // The screen is titled "ملخص التسميع" (recitation summary), not the old
+      // "ملخص الحلقة" (session summary) — al_rasikhoon-8z6.
+      expect(find.text('ملخص التسميع'), findsOneWidget);
+      expect(find.text('ملخص الحلقة'), findsNothing);
+
       // The summary no longer carries the counts or closes the session (Task 7
       // + the counts move) — it hands off to the talqeen step, which is now
       // where the teacher records the repetitions and ends the الحلقة.
