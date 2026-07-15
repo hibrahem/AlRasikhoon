@@ -117,4 +117,23 @@ void main() {
     expect(find.textContaining('12'), findsNothing);
     expect(find.text('إنهاء الحلقة'), findsOneWidget);
   });
+
+  testWidgets('passed session with no next meeting shows the note', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      part1Errors: 0, // passes
+      current: _meeting(2, _c('النبأ', 1, 11)),
+      next: null, // end of level / no next meeting
+    );
+    // The no-new-content note replaces the passage — no stale next passage.
+    expect(
+      find.text('لا يوجد مقطع جديد للتلقين قبل إغلاق الحلقة.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('12'), findsNothing);
+    // The session can still be closed from the note state.
+    expect(find.text('إنهاء الحلقة'), findsOneWidget);
+  });
 }
