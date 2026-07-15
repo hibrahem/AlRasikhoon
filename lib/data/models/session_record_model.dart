@@ -133,6 +133,12 @@ class SessionRecordModel {
   final String? notes;
   final DateTime createdAt;
 
+  /// How long the session took, wall-clock from start to save. Null for
+  /// records written before sessions were timed, and for any record whose
+  /// start was not captured. Capped to 3× the pace target at write time; see
+  /// [SessionDuration].
+  final Duration? duration;
+
   const SessionRecordModel({
     required this.id,
     required this.studentId,
@@ -155,6 +161,7 @@ class SessionRecordModel {
     this.homeRepetitionsRequired = 0,
     this.notes,
     required this.createdAt,
+    this.duration,
   });
 
   factory SessionRecordModel.fromFirestore(DocumentSnapshot doc) {
@@ -205,6 +212,9 @@ class SessionRecordModel {
       homeRepetitionsRequired: json['home_repetitions_required'] ?? 0,
       notes: json['notes'],
       createdAt: (json['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      duration: (json['duration_seconds'] as int?) == null
+          ? null
+          : Duration(seconds: json['duration_seconds'] as int),
     );
   }
 
@@ -235,6 +245,7 @@ class SessionRecordModel {
       'home_repetitions_required': homeRepetitionsRequired,
       'notes': notes,
       'created_at': Timestamp.fromDate(createdAt),
+      'duration_seconds': duration?.inSeconds,
     };
   }
 
@@ -265,6 +276,7 @@ class SessionRecordModel {
     int? homeRepetitionsRequired,
     String? notes,
     DateTime? createdAt,
+    Duration? duration,
   }) {
     return SessionRecordModel(
       id: id ?? this.id,
@@ -290,6 +302,7 @@ class SessionRecordModel {
           homeRepetitionsRequired ?? this.homeRepetitionsRequired,
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
+      duration: duration ?? this.duration,
     );
   }
 

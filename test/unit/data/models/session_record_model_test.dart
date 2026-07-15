@@ -604,4 +604,41 @@ void main() {
       },
     );
   });
+
+  group('SessionRecordModel duration', () {
+    SessionRecordModel base({Duration? duration}) => SessionRecordModel(
+      id: 'r1',
+      studentId: 's1',
+      teacherId: 't1',
+      curriculumSessionId: 'L1_J30_S1',
+      kind: SessionKind.lesson,
+      juzNumber: 30,
+      fromOrderInLevel: 1,
+      toOrderInLevel: 1,
+      coversSessionIds: const ['L1_J30_S1'],
+      date: DateTime(2026, 1, 1),
+      attemptNumber: 1,
+      grades: const SessionGrades(
+        newMemorizationErrors: 0,
+        recentReviewErrors: 0,
+        distantReviewErrors: 0,
+      ),
+      passed: true,
+      createdAt: DateTime(2026, 1, 1),
+      duration: duration,
+    );
+
+    test('round-trips a duration as whole seconds', () {
+      final json = base(duration: const Duration(minutes: 22)).toFirestore();
+      expect(json['duration_seconds'], 22 * 60);
+      final read = SessionRecordModel.fromJson('r1', json);
+      expect(read.duration, const Duration(minutes: 22));
+    });
+
+    test('a record with no duration stores null and reads back null', () {
+      final json = base().toFirestore();
+      expect(json['duration_seconds'], isNull);
+      expect(SessionRecordModel.fromJson('r1', json).duration, isNull);
+    });
+  });
 }
