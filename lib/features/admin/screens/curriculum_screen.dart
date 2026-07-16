@@ -7,6 +7,7 @@ import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
+import '../../../shared/widgets/icon_medallion.dart';
 
 class CurriculumScreen extends ConsumerWidget {
   const CurriculumScreen({super.key});
@@ -35,17 +36,11 @@ class CurriculumScreen extends ConsumerWidget {
                 backgroundColor: tokens.green.withValues(alpha: 0.05),
                 child: Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: tokens.green.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.menu_book,
-                        color: tokens.green,
-                        size: 32,
-                      ),
+                    IconMedallion(
+                      icon: Icons.menu_book,
+                      accent: tokens.green,
+                      size: 56,
+                      iconSize: 28,
                     ),
                     const SizedBox(width: 16),
                     Expanded(

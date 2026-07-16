@@ -8,6 +8,7 @@ import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/admin_provider.dart';
+import '../../../shared/widgets/icon_medallion.dart';
 
 class InstitutesScreen extends ConsumerStatefulWidget {
   const InstitutesScreen({super.key});
@@ -48,17 +49,11 @@ class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
                   ),
                   child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: tokens.green.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.account_balance,
-                          color: tokens.green,
-                          size: 28,
-                        ),
+                      IconMedallion(
+                        icon: Icons.account_balance,
+                        accent: tokens.green,
+                        size: 52,
+                        iconSize: 26,
                       ),
                       const SizedBox(width: 16),
                       Expanded(

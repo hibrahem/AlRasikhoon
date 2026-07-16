@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../domain/session/session_duration.dart';
 import 'app_card.dart';
+import 'icon_medallion.dart';
 
 /// One row of a session-record listing (student history, teacher history).
 ///
@@ -59,21 +60,13 @@ class SessionRecordRow extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: passColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Icon(
-                isTalqeen
-                    ? Icons.record_voice_over
-                    : (passed ? Icons.check_circle : Icons.cancel),
-                color: passColor,
-              ),
-            ),
+          IconMedallion(
+            icon: isTalqeen
+                ? Icons.record_voice_over
+                : (passed ? Icons.check_circle : Icons.cancel),
+            accent: passColor,
+            size: 48,
+            iconSize: 24,
           ),
           const SizedBox(width: 12),
           Expanded(
