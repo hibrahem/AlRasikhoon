@@ -7,14 +7,13 @@ import '../../../shared/widgets/progress_bar.dart';
 /// juz-memorized caption, and three supporting stats (level · streak · passed).
 ///
 /// Every number is passed in already derived — the ring's [fraction] and
-/// [percent] come from [CurriculumProgress], [juzMemorized]/[currentJuz] name
-/// the milestone and where the student is now. This widget renders; it never
-/// computes progress.
+/// [percent] come from [CurriculumProgress], [juzMemorized] names the
+/// milestone reached so far. This widget renders; it never computes
+/// progress.
 class ProgressHeroCard extends StatelessWidget {
   final int percent;
   final double fraction;
   final int juzMemorized;
-  final int currentJuz;
   final int currentLevel;
   final int streakDays;
   final int passedSessions;
@@ -24,7 +23,6 @@ class ProgressHeroCard extends StatelessWidget {
     required this.percent,
     required this.fraction,
     required this.juzMemorized,
-    required this.currentJuz,
     required this.currentLevel,
     required this.streakDays,
     required this.passedSessions,
@@ -63,7 +61,7 @@ class ProgressHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'حفظت $juzMemorized من 30 جزءاً · تتقدّم في الجزء $currentJuz',
+            'حفظت $juzMemorized من 30 جزءاً',
             textAlign: TextAlign.center,
             style: Theme.of(
               context,

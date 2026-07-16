@@ -12,7 +12,6 @@ Future<void> _pump(WidgetTester tester) async {
             percent: 27,
             fraction: 0.27,
             juzMemorized: 8,
-            currentJuz: 22,
             currentLevel: 4,
             streakDays: 12,
             passedSessions: 36,
@@ -32,12 +31,9 @@ void main() {
       expect(find.textContaining('من المنهج'), findsOneWidget);
     });
 
-    testWidgets('shows juz memorized and the current juz in the caption', (
-      tester,
-    ) async {
+    testWidgets('shows juz memorized in the caption', (tester) async {
       await _pump(tester);
       expect(find.textContaining('حفظت 8 من 30'), findsOneWidget);
-      expect(find.textContaining('الجزء 22'), findsOneWidget);
     });
 
     testWidgets('shows the three supporting stats: level, streak, passed', (

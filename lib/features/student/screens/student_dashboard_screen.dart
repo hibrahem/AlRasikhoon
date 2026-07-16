@@ -90,7 +90,6 @@ class _StudentDashboardScreenState
                       percent: progress.percent,
                       fraction: progress.fraction,
                       juzMemorized: progress.juzMemorized,
-                      currentJuz: stats.currentJuz,
                       currentLevel: stats.currentLevel,
                       streakDays: practice?.streakDays ?? 0,
                       passedSessions: stats.passedSessions,
