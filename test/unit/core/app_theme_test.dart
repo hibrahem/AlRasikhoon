@@ -23,4 +23,22 @@ void main() {
     expect(t.extension<AppTokens>()!.page, AppTokens.dark.page);
     expect(t.scaffoldBackgroundColor, AppTokens.dark.page);
   });
+
+  testWidgets('AppBar theme is page-colored, not green', (tester) async {
+    final t = AppTheme.lightTheme;
+    final tokens = t.extension<AppTokens>()!;
+    expect(t.appBarTheme.backgroundColor, tokens.page);
+    expect(t.appBarTheme.foregroundColor, tokens.ink);
+    expect(t.appBarTheme.elevation, 0);
+    expect(t.appBarTheme.centerTitle, false);
+  });
+
+  testWidgets('NavigationBar theme is present with pill indicator', (
+    tester,
+  ) async {
+    final t = AppTheme.lightTheme;
+    final tokens = t.extension<AppTokens>()!;
+    expect(t.navigationBarTheme.indicatorColor, tokens.primaryContainer);
+    expect(t.navigationBarTheme.backgroundColor, tokens.card);
+  });
 }

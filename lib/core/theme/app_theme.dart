@@ -97,13 +97,16 @@ class AppTheme {
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
         elevation: 0,
-        centerTitle: true,
-        backgroundColor: t.green,
-        foregroundColor: onGreen,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        backgroundColor: t.page,
+        foregroundColor: t.ink,
+        surfaceTintColor: Colors.transparent,
+        iconTheme: IconThemeData(color: t.ink),
         titleTextStyle: GoogleFonts.amiri(
-          fontSize: 22,
+          fontSize: 20,
           fontWeight: FontWeight.bold,
-          color: onGreen,
+          color: t.ink,
         ),
       ),
       cardTheme: CardThemeData(
@@ -182,16 +185,26 @@ class AppTheme {
         labelStyle: GoogleFonts.cairo(fontSize: 14, color: t.sepia),
         hintStyle: GoogleFonts.cairo(fontSize: 14, color: t.sepia),
       ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      navigationBarTheme: NavigationBarThemeData(
         backgroundColor: t.card,
-        selectedItemColor: t.green,
-        unselectedItemColor: t.sepia,
-        type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: GoogleFonts.cairo(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
+        indicatorColor: t.primaryContainer,
+        elevation: 0,
+        height: 72,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        iconTheme: WidgetStateProperty.resolveWith(
+          (states) => IconThemeData(
+            color: states.contains(WidgetState.selected) ? t.green : t.sepia,
+          ),
         ),
-        unselectedLabelStyle: GoogleFonts.cairo(fontSize: 12),
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (states) => GoogleFonts.cairo(
+            fontSize: 12,
+            fontWeight: states.contains(WidgetState.selected)
+                ? FontWeight.w600
+                : FontWeight.w400,
+            color: states.contains(WidgetState.selected) ? t.green : t.sepia,
+          ),
+        ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: t.gold,
