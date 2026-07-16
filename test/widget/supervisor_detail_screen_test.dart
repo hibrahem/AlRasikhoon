@@ -123,4 +123,41 @@ void main() {
       ),
     ).called(1);
   });
+
+  testWidgets('assign calls the repository for the tapped institute', (
+    tester,
+  ) async {
+    final repo = _MockInstituteRepository();
+    when(
+      () => repo.assignSupervisorToInstitute(
+        supervisorId: any(named: 'supervisorId'),
+        instituteId: any(named: 'instituteId'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => repo.getInstitutesForSupervisor(any()),
+    ).thenAnswer((_) async => [_institute('i1', 'معهد النور')]);
+
+    await tester.binding.setSurfaceSize(const Size(800, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await _pump(
+      tester,
+      assigned: const [],
+      allInstitutes: [_institute('i1', 'معهد النور')],
+      repo: repo,
+    );
+
+    await tester.tap(find.text('إسناد'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('معهد النور'));
+    await tester.pumpAndSettle();
+
+    verify(
+      () => repo.assignSupervisorToInstitute(
+        supervisorId: _supervisorId,
+        instituteId: 'i1',
+      ),
+    ).called(1);
+  });
 }
