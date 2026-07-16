@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/grade_color_tokens.dart';
 import '../../../core/utils/grade_calculator.dart';
+import '../../../data/models/session_model.dart';
 import '../../../domain/session/session_duration.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/states/error_state.dart';
@@ -188,6 +189,7 @@ class SessionDetailScreen extends ConsumerWidget {
                       title: _partTitleAr(part),
                       errors: record.grades.errorsForPart(part),
                       level: record.levelId,
+                      range: _rangeForPart(session, part),
                     ),
                     const SizedBox(height: 8),
                   ],
@@ -246,6 +248,20 @@ String? _paceAmountAr(int pace) {
     default:
       return null;
   }
+}
+
+/// The Qur'an range recited for a part, from the curriculum session's content
+/// blocks: 1 = new memorization, 2 = recent review, 3 = distant review. Empty
+/// when the session is unresolved or that part carries no content.
+String _rangeForPart(SessionModel? session, int part) {
+  if (session == null) return '';
+  final content = switch (part) {
+    1 => session.currentLevelContent,
+    2 => session.recentReviewContent,
+    3 => session.distantReviewContent,
+    _ => null,
+  };
+  return content?.rangeAr ?? '';
 }
 
 /// The session-level verdict: a binary ناجح / راسب marker per
@@ -343,11 +359,13 @@ class _PartResultCard extends StatelessWidget {
   final String title;
   final int errors;
   final int level;
+  final String range;
 
   const _PartResultCard({
     required this.title,
     required this.errors,
     required this.level,
+    this.range = '',
   });
 
   @override
@@ -376,7 +394,21 @@ class _PartResultCard extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(title, style: Theme.of(context).textTheme.bodyMedium),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: Theme.of(context).textTheme.bodyMedium),
+                if (range.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    range,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
+                  ),
+                ],
+              ],
+            ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
