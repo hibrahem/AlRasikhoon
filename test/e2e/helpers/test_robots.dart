@@ -253,7 +253,10 @@ class AdminRobot extends TestRobot {
   /// Verify admin dashboard
   Future<void> verifyDashboard() async {
     await pumpAndSettle();
-    expect(find.text('مرحباً، مدير النظام'), findsOneWidget);
+    expect(
+      find.text('إدارة المعاهد والمعلمين والمشرفين والطلاب'),
+      findsOneWidget,
+    );
   }
 
   /// Navigate to institutes from the Management hub's stat-card grid.
