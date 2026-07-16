@@ -153,10 +153,11 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
         context.go(AppRoutes.examQueue);
       }
     } catch (e) {
+      debugPrint('saving exam result failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('حدث خطأ: $e'),
+            content: const Text('تعذر حفظ النتيجة، حاول مرة أخرى'),
             backgroundColor: context.tokens.maroon,
           ),
         );
@@ -237,8 +238,11 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
                   padding: EdgeInsets.all(20),
                   child: CircularProgressIndicator(),
                 ),
-                error: (_, _) =>
-                    const ErrorState(message: 'تعذّر تحميل النتيجة'),
+                error: (_, _) => ErrorState(
+                  message: 'تعذّر تحميل النتيجة',
+                  onRetry: () =>
+                      ref.invalidate(examStudentProvider(widget.studentId)),
+                ),
               ),
 
               const SizedBox(height: 32),

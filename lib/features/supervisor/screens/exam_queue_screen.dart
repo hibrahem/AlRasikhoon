@@ -21,112 +21,131 @@ class ExamQueueScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('قائمة الاختبارات')),
       body: examQueueAsync.when(
         data: (students) {
-          if (students.isEmpty) {
-            return const EmptyState(
-              icon: Icons.check_circle_outline,
-              title: 'لا يوجد طلاب بالانتظار',
-              message: 'جميع الاختبارات مكتملة',
-            );
-          }
-
           return RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(examQueueProvider);
             },
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: students.length,
-              itemBuilder: (context, index) {
-                final studentWithUser = students[index];
-                final student = studentWithUser.student;
-                final user = studentWithUser.user;
-
-                return AppCard(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  onTap: () {
-                    context.push(
-                      AppRoutes.examSession.replaceFirst(
-                        ':studentId',
-                        student.id,
-                      ),
-                    );
-                  },
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundColor: tokens.gold.withValues(alpha: 0.1),
-                        child: Text(
-                          user.name.isNotEmpty ? user.name[0] : '?',
-                          style: TextStyle(
-                            color: tokens.gold,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              user.name,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 4),
-                            // WHAT the supervisor is about to examine — the
-                            // curriculum's own label for the اختبار the student
-                            // stands on (this hizb, this juz, or the level so
-                            // far), not a hizb the assessment may not even have.
-                            Row(
-                              children: [
-                                _InfoBadge(
-                                  icon: Icons.school,
-                                  text: 'المستوى ${student.currentLevel}',
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: _InfoBadge(
-                                    icon: Icons.assignment,
-                                    text:
-                                        student.currentSessionLabelAr ??
-                                        'الجزء ${student.currentJuz}',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: tokens.gold.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: tokens.gold),
-                        ),
-                        child: Text(
-                          'اختبار',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: tokens.gold,
-                          ),
+            // The empty state must live INSIDE the refresh scroll view: a
+            // supervisor waits on this screen for students to become ready,
+            // so pull-to-refresh has to work when the queue is empty too.
+            child: students.isEmpty
+                ? const CustomScrollView(
+                    physics: AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: EmptyState(
+                          icon: Icons.check_circle_outline,
+                          title: 'لا يوجد طلاب بالانتظار',
+                          message: 'جميع الاختبارات مكتملة',
                         ),
                       ),
                     ],
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: students.length,
+                    itemBuilder: (context, index) {
+                      final studentWithUser = students[index];
+                      final student = studentWithUser.student;
+                      final user = studentWithUser.user;
+
+                      return AppCard(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        onTap: () {
+                          context.push(
+                            AppRoutes.examSession.replaceFirst(
+                              ':studentId',
+                              student.id,
+                            ),
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: tokens.gold.withValues(
+                                alpha: 0.1,
+                              ),
+                              child: Text(
+                                user.name.isNotEmpty ? user.name[0] : '?',
+                                style: TextStyle(
+                                  color: tokens.gold,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user.name,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  // WHAT the supervisor is about to examine — the
+                                  // curriculum's own label for the اختبار the student
+                                  // stands on (this hizb, this juz, or the level so
+                                  // far), not a hizb the assessment may not even have.
+                                  Row(
+                                    children: [
+                                      _InfoBadge(
+                                        icon: Icons.school,
+                                        text: 'المستوى ${student.currentLevel}',
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: _InfoBadge(
+                                          icon: Icons.assignment,
+                                          text:
+                                              student.currentSessionLabelAr ??
+                                              'الجزء ${student.currentJuz}',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: tokens.gold.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: tokens.gold),
+                              ),
+                              child: Text(
+                                'اختبار',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: tokens.gold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           );
         },
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل قائمة الاختبارات: $e'),
+        error: (e, _) {
+          debugPrint('examQueueProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل قائمة الاختبارات',
+            onRetry: () => ref.invalidate(examQueueProvider),
+          );
+        },
       ),
     );
   }
@@ -156,7 +175,9 @@ class _InfoBadge extends StatelessWidget {
             child: Text(
               text,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 11, color: tokens.sepia),
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(color: tokens.sepia),
             ),
           ),
         ],

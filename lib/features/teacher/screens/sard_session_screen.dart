@@ -213,7 +213,15 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
           );
         },
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل السرد: $e'),
+        error: (e, _) {
+          // The raw exception goes to the log, never onto the screen.
+          debugPrint('studentCurrentSessionProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل السرد',
+            onRetry: () =>
+                ref.invalidate(studentCurrentSessionProvider(widget.studentId)),
+          );
+        },
       ),
     );
   }

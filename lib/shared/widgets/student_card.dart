@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/constants/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/theme/app_shadows.dart';
 import '../../core/theme/app_tokens.dart';
@@ -29,6 +28,10 @@ class StudentCard extends ConsumerWidget {
   /// already shows a single institute. See hibrahem/AlRasikhoon#53.
   final String? instituteName;
 
+  /// Optional widget at the end of the header row (e.g. a ⋮ actions button on
+  /// the teacher roster). Keeps card actions discoverable without gestures.
+  final Widget? trailing;
+
   const StudentCard({
     super.key,
     required this.studentWithUser,
@@ -36,6 +39,7 @@ class StudentCard extends ConsumerWidget {
     this.showProgress = true,
     this.showSession = true,
     this.instituteName,
+    this.trailing,
   });
 
   @override
@@ -153,6 +157,7 @@ class StudentCard extends ConsumerWidget {
                           ),
                         ),
                       ),
+                    if (trailing != null) trailing!,
                   ],
                 ),
 
@@ -206,7 +211,10 @@ class StudentCard extends ConsumerWidget {
                   ),
                 ],
 
-                // Attempt indicator if not first attempt
+                // Attempt indicator if not first attempt. A repeat attempt
+                // means a failed سرد/lesson behind it — attention/needs-review
+                // is maroon in the manuscript palette, matching the attempt
+                // badge on the student profile.
                 if (student.currentAttempt > 1) ...[
                   const SizedBox(height: 8),
                   Container(
@@ -215,14 +223,13 @@ class StudentCard extends ConsumerWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.warning.withValues(alpha: 0.1),
+                      color: tokens.maroon.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       'المحاولة ${student.currentAttempt}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.warning,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: tokens.maroon,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -307,22 +314,24 @@ class _TeacherlessBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Gold: this is an attention flag for the supervisor, not a failure —
+    // maroon is reserved for needs-review/failed outcomes.
+    final tokens = context.tokens;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.warning.withValues(alpha: 0.12),
+        color: tokens.gold.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.warning_amber_rounded, size: 12, color: AppColors.warning),
-          SizedBox(width: 4),
+          Icon(Icons.warning_amber_rounded, size: 12, color: tokens.gold),
+          const SizedBox(width: 4),
           Text(
             'بلا معلم',
-            style: TextStyle(
-              fontSize: 11,
-              color: AppColors.warning,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: tokens.gold,
               fontWeight: FontWeight.w500,
             ),
           ),

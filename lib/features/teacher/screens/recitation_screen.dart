@@ -112,7 +112,7 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
 
             // Reachable in-app only for present parts, but a hand-edited URL can
             // land on a part that is not in presentParts. Guard the derived
-            // position and last-part flag so that never renders as "الجزء 0 من N"
+            // position and last-part flag so that never renders as "المقطع 0 من N"
             // or "إنهاء التسميع": fall back to the raw part number, and treat a
             // non-present part as not-last (partAfter also returns null for it).
             final presentParts = meeting.presentParts;
@@ -227,7 +227,16 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
             );
           },
           loading: () => const LoadingState(),
-          error: (e, _) => ErrorState(message: 'تعذر تحميل الحلقة: $e'),
+          error: (e, _) {
+            // The raw exception goes to the log, never onto the screen.
+            debugPrint('studentCurrentMeetingProvider failed: $e');
+            return ErrorState(
+              message: 'تعذر تحميل الحلقة',
+              onRetry: () => ref.invalidate(
+                studentCurrentMeetingProvider(widget.studentId),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -292,8 +301,10 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
             ),
           ),
           const SizedBox(height: 10),
+          // "المقطع" — never "الجزء", which names a Qur'an juz and would
+          // read as a juz counter right above a memorization passage.
           Text(
-            'الجزء $position من ${presentParts.length}',
+            'المقطع $position من ${presentParts.length}',
             style: GoogleFonts.cairo(fontSize: 13, color: tokens.onHeroMuted),
           ),
           Text(

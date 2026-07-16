@@ -59,10 +59,11 @@ class _CreateInstituteScreenState extends ConsumerState<CreateInstituteScreen> {
         context.pop();
       }
     } catch (e) {
+      debugPrint('createInstitute failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('حدث خطأ: $e'),
+            content: const Text('تعذر إنشاء المعهد، حاول مرة أخرى'),
             backgroundColor: context.tokens.maroon,
           ),
         );

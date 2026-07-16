@@ -388,7 +388,11 @@ class _SimpleSessionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     return AppCard(
-      backgroundColor: color.withValues(alpha: 0.05),
+      // A 0.05 tint disappears against the dark surface, so dark mode gets
+      // a stronger wash to stay visible.
+      backgroundColor: color.withValues(
+        alpha: Theme.of(context).brightness == Brightness.dark ? 0.10 : 0.05,
+      ),
       child: Row(
         children: [
           IconMedallion(icon: icon, accent: color, size: 48, iconSize: 24),

@@ -21,112 +21,135 @@ class SupervisorsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('المشرفون')),
       body: supervisorsAsync.when(
         data: (supervisors) {
-          if (supervisors.isEmpty) {
-            return const EmptyState(
-              icon: Icons.admin_panel_settings_outlined,
-              title: 'لا يوجد مشرفون',
-              message: 'اضغط على + لإضافة مشرف جديد',
-            );
-          }
           return RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(allSupervisorsProvider);
             },
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: supervisors.length,
-              itemBuilder: (context, index) {
-                final supervisor = supervisors[index];
-                return AppCard(
-                  onTap: () => context.push(
-                    AppRoutes.supervisorDetail.replaceFirst(
-                      ':id',
-                      supervisor.id,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundColor: tokens.gold.withValues(alpha: 0.1),
-                        child: Text(
-                          supervisor.name.isNotEmpty ? supervisor.name[0] : '?',
-                          style: TextStyle(
-                            color: tokens.gold,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
+            // The empty state sits INSIDE the refresh scroll view so
+            // pull-to-refresh keeps working when the list is empty.
+            child: supervisors.isEmpty
+                ? const CustomScrollView(
+                    physics: AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: EmptyState(
+                          icon: Icons.admin_panel_settings_outlined,
+                          title: 'لا يوجد مشرفون',
+                          message: 'اضغط على + لإضافة مشرف جديد',
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    ],
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: supervisors.length,
+                    itemBuilder: (context, index) {
+                      final supervisor = supervisors[index];
+                      return AppCard(
+                        onTap: () => context.push(
+                          AppRoutes.supervisorDetail.replaceFirst(
+                            ':id',
+                            supervisor.id,
+                          ),
+                        ),
+                        child: Row(
                           children: [
-                            Text(
-                              supervisor.name,
-                              style: Theme.of(context).textTheme.titleMedium,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(
-                                  supervisor.phone != null
-                                      ? Icons.phone
-                                      : Icons.email,
-                                  size: 14,
-                                  color: tokens.sepia,
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: tokens.gold.withValues(
+                                alpha: 0.1,
+                              ),
+                              child: Text(
+                                supervisor.name.isNotEmpty
+                                    ? supervisor.name[0]
+                                    : '?',
+                                style: TextStyle(
+                                  color: tokens.gold,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
                                 ),
-                                const SizedBox(width: 4),
-                                Expanded(
-                                  child: Text(
-                                    supervisor.phone ??
-                                        supervisor.displayUsername,
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(color: tokens.sepia),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    supervisor.name,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        supervisor.phone != null
+                                            ? Icons.phone
+                                            : Icons.email,
+                                        size: 14,
+                                        color: tokens.sepia,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          supervisor.phone ??
+                                              supervisor.displayUsername,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(color: tokens.sepia),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: supervisor.isActive
+                                    ? tokens.green.withValues(alpha: 0.1)
+                                    : tokens.maroon.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                supervisor.isActive ? 'نشط' : 'غير نشط',
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
+                                      color: supervisor.isActive
+                                          ? tokens.green
+                                          : tokens.maroon,
+                                    ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(Icons.chevron_left, color: tokens.sepia),
                           ],
                         ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: supervisor.isActive
-                              ? tokens.green.withValues(alpha: 0.1)
-                              : tokens.maroon.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          supervisor.isActive ? 'نشط' : 'غير نشط',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: supervisor.isActive
-                                ? tokens.green
-                                : tokens.maroon,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(Icons.chevron_left, color: tokens.sepia),
-                    ],
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           );
         },
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل المشرفين: $e'),
+        error: (e, _) {
+          debugPrint('allSupervisorsProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل المشرفين',
+            onRetry: () => ref.invalidate(allSupervisorsProvider),
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.addSupervisor),

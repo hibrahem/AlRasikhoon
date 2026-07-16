@@ -88,6 +88,35 @@ class _NextContentTalqeenScreenState
     }
   }
 
+  /// The same exit contract as the recitation flow: this screen is the only
+  /// place the session gets completed, so abandoning it discards the whole
+  /// graded session — never without confirmation.
+  void _showExitConfirmation() {
+    final tokens = context.tokens;
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('إلغاء الحلقة؟'),
+        content: const Text('هل تريد إلغاء الحلقة الحالية؟ سيتم فقدان التقدم.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('لا'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              ref.read(activeSessionProvider.notifier).endSession();
+              Navigator.pop(dialogContext);
+              context.go(AppRoutes.teacherStudents);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: tokens.maroon),
+            child: const Text('نعم، إلغاء'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final active = ref.watch(activeSessionProvider);
@@ -110,6 +139,12 @@ class _NextContentTalqeenScreenState
       appBar: AppBar(
         title: const Text('تلقين المقطع القادم'),
         automaticallyImplyLeading: false,
+        // A visible way out — the confirmed close the recitation flow has.
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          tooltip: 'إلغاء الحلقة',
+          onPressed: _showExitConfirmation,
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

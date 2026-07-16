@@ -234,8 +234,19 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
                   showPassStatus: true,
                 ),
                 loading: () => const LoadingState(lines: 1),
-                error: (_, _) =>
-                    const ErrorState(message: 'تعذّر تحميل النتيجة'),
+                error: (e, _) {
+                  // The raw exception goes to the log, never onto the screen.
+                  debugPrint('studentProvider failed: $e');
+                  return ErrorState(
+                    message: 'تعذّر تحميل النتيجة',
+                    // studentProvider is derived from the teacher's cached
+                    // roster, so the source list must be invalidated too.
+                    onRetry: () {
+                      ref.invalidate(teacherStudentsProvider);
+                      ref.invalidate(studentProvider(widget.studentId));
+                    },
+                  );
+                },
               ),
 
               const SizedBox(height: 32),

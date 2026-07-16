@@ -70,10 +70,26 @@ class SupervisorDetailScreen extends ConsumerWidget {
                 Expanded(
                   child: allInstitutesAsync.when(
                     loading: () => const LoadingState(),
-                    error: (e, _) => ErrorState(message: 'خطأ: $e'),
+                    error: (e, _) {
+                      debugPrint('institutesProvider failed: $e');
+                      return ErrorState(
+                        message: 'تعذر تحميل المعاهد',
+                        onRetry: () => ref.invalidate(institutesProvider),
+                      );
+                    },
                     data: (allInstitutes) => assignedAsync.when(
                       loading: () => const LoadingState(),
-                      error: (e, _) => ErrorState(message: 'خطأ: $e'),
+                      error: (e, _) {
+                        debugPrint(
+                          'institutesForSupervisorProvider failed: $e',
+                        );
+                        return ErrorState(
+                          message: 'تعذر تحميل المعاهد المسندة',
+                          onRetry: () => ref.invalidate(
+                            institutesForSupervisorProvider(supervisorId),
+                          ),
+                        );
+                      },
                       data: (assigned) {
                         final assignedIds = assigned.map((i) => i.id).toSet();
                         final available = allInstitutes
@@ -129,9 +145,10 @@ class SupervisorDetailScreen extends ConsumerWidget {
         SnackBar(content: Text('تم إسناد ${institute.name} بنجاح')),
       );
     } catch (e) {
+      debugPrint('assignSupervisorToInstitute failed: $e');
       messenger.showSnackBar(
         SnackBar(
-          content: Text('فشل في إسناد المعهد: $e'),
+          content: const Text('فشل في إسناد المعهد، حاول مرة أخرى'),
           backgroundColor: maroon,
         ),
       );
@@ -182,9 +199,10 @@ class SupervisorDetailScreen extends ConsumerWidget {
         SnackBar(content: Text('تم إزالة إسناد ${institute.name}')),
       );
     } catch (e) {
+      debugPrint('removeSupervisorFromInstitute failed: $e');
       messenger.showSnackBar(
         SnackBar(
-          content: Text('فشل في إزالة الإسناد: $e'),
+          content: const Text('فشل في إزالة الإسناد، حاول مرة أخرى'),
           backgroundColor: maroon,
         ),
       );
@@ -338,15 +356,28 @@ class SupervisorDetailScreen extends ConsumerWidget {
                     );
                   },
                   loading: () => const LoadingState(),
-                  error: (e, _) =>
-                      ErrorState(message: 'تعذر تحميل المعاهد: $e'),
+                  error: (e, _) {
+                    debugPrint('institutesForSupervisorProvider failed: $e');
+                    return ErrorState(
+                      message: 'تعذر تحميل المعاهد',
+                      onRetry: () => ref.invalidate(
+                        institutesForSupervisorProvider(supervisorId),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
           );
         },
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل المشرف: $e'),
+        error: (e, _) {
+          debugPrint('supervisorProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل المشرف',
+            onRetry: () => ref.invalidate(supervisorProvider(supervisorId)),
+          );
+        },
       ),
     );
   }

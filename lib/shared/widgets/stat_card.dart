@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -124,11 +123,17 @@ class StatCardCompact extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: (color ?? tokens.green).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
+        // Dark mode: same rewardDim hairline as the sibling cards, since
+        // shadows carry no weight on a dark surface.
+        border: brightness == Brightness.dark
+            ? Border.all(color: tokens.rewardDim)
+            : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

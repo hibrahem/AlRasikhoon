@@ -53,7 +53,28 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
     final studentsAsync = ref.watch(studentsForTeacherAdminProvider(teacherId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('تفاصيل المعلم')),
+      appBar: AppBar(
+        title: const Text('تفاصيل المعلم'),
+        actions: [
+          // Account-level action on the teacher, so it belongs with the
+          // screen chrome — not buried inside the institutes section.
+          if (teacherAsync.asData?.value != null)
+            IconButton(
+              icon: const Icon(Icons.lock_reset),
+              tooltip: 'إعادة تعيين كلمة المرور',
+              onPressed: () {
+                final teacher = teacherAsync.asData!.value!;
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => ResetPasswordDialog(
+                    userId: teacher.id,
+                    userDisplayName: teacher.name,
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
       body: teacherAsync.when(
         data: (teacher) {
           if (teacher == null) {
@@ -133,12 +154,12 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                               ),
                               child: Text(
                                 teacher.isActive ? 'نشط' : 'غير نشط',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: teacher.isActive
-                                      ? tokens.green
-                                      : tokens.maroon,
-                                ),
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
+                                      color: teacher.isActive
+                                          ? tokens.green
+                                          : tokens.maroon,
+                                    ),
                               ),
                             ),
                           ],
@@ -154,24 +175,6 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                 Text(
                   'المعاهد المعين بها',
                   style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 12),
-
-                Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: TextButton.icon(
-                    icon: const Icon(Icons.lock_reset),
-                    label: const Text('إعادة تعيين كلمة المرور'),
-                    onPressed: () {
-                      showDialog<void>(
-                        context: context,
-                        builder: (_) => ResetPasswordDialog(
-                          userId: teacher.id,
-                          userDisplayName: teacher.name,
-                        ),
-                      );
-                    },
-                  ),
                 ),
                 const SizedBox(height: 12),
 
@@ -226,8 +229,15 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                     );
                   },
                   loading: () => const LoadingState(),
-                  error: (e, _) =>
-                      ErrorState(message: 'تعذر تحميل المعاهد: $e'),
+                  error: (e, _) {
+                    debugPrint('institutesForTeacherProvider failed: $e');
+                    return ErrorState(
+                      message: 'تعذر تحميل المعاهد',
+                      onRetry: () => ref.invalidate(
+                        institutesForTeacherProvider(teacherId),
+                      ),
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 24),
@@ -318,14 +328,28 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                     );
                   },
                   loading: () => const LoadingState(),
-                  error: (e, _) => ErrorState(message: 'تعذر تحميل الطلاب: $e'),
+                  error: (e, _) {
+                    debugPrint('studentsForTeacherAdminProvider failed: $e');
+                    return ErrorState(
+                      message: 'تعذر تحميل الطلاب',
+                      onRetry: () => ref.invalidate(
+                        studentsForTeacherAdminProvider(teacherId),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
           );
         },
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل المعلم: $e'),
+        error: (e, _) {
+          debugPrint('teacherProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل المعلم',
+            onRetry: () => ref.invalidate(teacherProvider(teacherId)),
+          );
+        },
       ),
     );
   }

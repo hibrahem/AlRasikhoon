@@ -21,114 +21,139 @@ class TeachersScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('المعلمون')),
       body: teachersAsync.when(
         data: (teachers) {
-          if (teachers.isEmpty) {
-            return const EmptyState(
-              icon: Icons.people_outline,
-              title: 'لا يوجد معلمون',
-              message: 'اضغط على + لإضافة معلم جديد',
-            );
-          }
           return RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(allTeachersProvider);
             },
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: teachers.length,
-              itemBuilder: (context, index) {
-                final teacher = teachers[index];
-                return AppCard(
-                  onTap: () => context.push(
-                    AppRoutes.teacherDetail.replaceFirst(':id', teacher.id),
-                  ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundColor: tokens.green.withValues(alpha: 0.1),
-                        child: Text(
-                          teacher.name.isNotEmpty ? teacher.name[0] : '?',
-                          style: TextStyle(
-                            color: tokens.green,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
+            // The empty state sits INSIDE the refresh scroll view so
+            // pull-to-refresh keeps working when the list is empty.
+            child: teachers.isEmpty
+                ? const CustomScrollView(
+                    physics: AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: EmptyState(
+                          icon: Icons.people_outline,
+                          title: 'لا يوجد معلمون',
+                          message: 'اضغط على + لإضافة معلم جديد',
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    ],
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: teachers.length,
+                    itemBuilder: (context, index) {
+                      final teacher = teachers[index];
+                      return AppCard(
+                        onTap: () => context.push(
+                          AppRoutes.teacherDetail.replaceFirst(
+                            ':id',
+                            teacher.id,
+                          ),
+                        ),
+                        child: Row(
                           children: [
-                            Text(
-                              teacher.name,
-                              style: Theme.of(context).textTheme.titleMedium,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(
-                                  teacher.phone != null
-                                      ? Icons.phone
-                                      : Icons.email,
-                                  size: 14,
-                                  color: tokens.sepia,
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: tokens.green.withValues(
+                                alpha: 0.1,
+                              ),
+                              child: Text(
+                                teacher.name.isNotEmpty ? teacher.name[0] : '?',
+                                style: TextStyle(
+                                  color: tokens.green,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
                                 ),
-                                const SizedBox(width: 4),
-                                // A teacher with no phone falls back to their
-                                // login username, which can be just as long —
-                                // it must shrink, not overflow.
-                                Expanded(
-                                  child: Text(
-                                    teacher.phone ?? teacher.displayUsername,
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(color: tokens.sepia),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    teacher.name,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        teacher.phone != null
+                                            ? Icons.phone
+                                            : Icons.email,
+                                        size: 14,
+                                        color: tokens.sepia,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      // A teacher with no phone falls back to their
+                                      // login username, which can be just as long —
+                                      // it must shrink, not overflow.
+                                      Expanded(
+                                        child: Text(
+                                          teacher.phone ??
+                                              teacher.displayUsername,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(color: tokens.sepia),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                // "success"/"error" reused as green/maroon — the
+                                // same positive-affirmative/danger roles they
+                                // already carry elsewhere (see admin dashboard).
+                                color: teacher.isActive
+                                    ? tokens.green.withValues(alpha: 0.1)
+                                    : tokens.maroon.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                teacher.isActive ? 'نشط' : 'غير نشط',
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
+                                      color: teacher.isActive
+                                          ? tokens.green
+                                          : tokens.maroon,
+                                    ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(Icons.chevron_left, color: tokens.sepia),
                           ],
                         ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          // "success"/"error" reused as green/maroon — the
-                          // same positive-affirmative/danger roles they
-                          // already carry elsewhere (see admin dashboard).
-                          color: teacher.isActive
-                              ? tokens.green.withValues(alpha: 0.1)
-                              : tokens.maroon.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          teacher.isActive ? 'نشط' : 'غير نشط',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: teacher.isActive
-                                ? tokens.green
-                                : tokens.maroon,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(Icons.chevron_left, color: tokens.sepia),
-                    ],
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           );
         },
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل المعلمين: $e'),
+        error: (e, _) {
+          debugPrint('allTeachersProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل المعلمين',
+            onRetry: () => ref.invalidate(allTeachersProvider),
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.addTeacher),

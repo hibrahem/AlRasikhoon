@@ -55,7 +55,7 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
                       ),
                       studentsAsync.maybeWhen(
                         data: (students) => Text(
-                          '${students.length} طالباً',
+                          _studentCountAr(students.length),
                           style: GoogleFonts.cairo(
                             fontSize: 13,
                             color: context.tokens.onHeroMuted,
@@ -108,6 +108,17 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
                           ),
                           child: StudentCard(
                             studentWithUser: studentWithUser,
+                            // Visible entry point to the same actions sheet:
+                            // long-press alone is undiscoverable.
+                            trailing: IconButton(
+                              icon: const Icon(Icons.more_vert),
+                              tooltip: 'خيارات الطالب',
+                              onPressed: () => _showStudentActions(
+                                context,
+                                studentWithUser.user.id,
+                                studentWithUser.user.name,
+                              ),
+                            ),
                             onTap: () {
                               context.push(
                                 AppRoutes.studentProfile.replaceFirst(
@@ -124,7 +135,14 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
                 );
               },
               loading: () => const LoadingState(),
-              error: (e, _) => ErrorState(message: 'تعذر تحميل الطلاب: $e'),
+              error: (e, _) {
+                // The raw exception goes to the log, never onto the screen.
+                debugPrint('filteredTeacherStudentsProvider failed: $e');
+                return ErrorState(
+                  message: 'تعذر تحميل الطلاب',
+                  onRetry: () => ref.invalidate(teacherStudentsProvider),
+                );
+              },
             ),
           ),
         ],
@@ -134,6 +152,16 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
         child: const Icon(Icons.person_add),
       ),
     );
+  }
+
+  /// Roster count with correct Arabic number agreement: dual, the 3–10
+  /// plural, and the 11+ singular accusative are all different forms.
+  String _studentCountAr(int count) {
+    if (count == 0) return 'لا طلاب';
+    if (count == 1) return 'طالب واحد';
+    if (count == 2) return 'طالبان';
+    if (count <= 10) return '$count طلاب';
+    return '$count طالباً';
   }
 
   void _showStudentActions(

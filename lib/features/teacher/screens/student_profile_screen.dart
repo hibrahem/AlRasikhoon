@@ -135,8 +135,16 @@ class StudentProfileScreen extends ConsumerWidget {
                       );
                     },
                     loading: () => const LoadingState(),
-                    error: (e, _) =>
-                        ErrorState(message: 'تعذر تحميل الحلقة: $e'),
+                    error: (e, _) {
+                      // The raw exception goes to the log, never on screen.
+                      debugPrint('studentCurrentMeetingProvider failed: $e');
+                      return ErrorState(
+                        message: 'تعذر تحميل الحلقة',
+                        onRetry: () => ref.invalidate(
+                          studentCurrentMeetingProvider(studentId),
+                        ),
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 24),
@@ -174,7 +182,19 @@ class StudentProfileScreen extends ConsumerWidget {
           );
         },
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل الطالب: $e'),
+        error: (e, _) {
+          // The raw exception goes to the log, never onto the screen.
+          debugPrint('studentProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل الطالب',
+            // studentProvider is derived from the teacher's cached roster, so
+            // the source list must be invalidated too (see _onPaceChanged).
+            onRetry: () {
+              ref.invalidate(teacherStudentsProvider);
+              ref.invalidate(studentProvider(studentId));
+            },
+          );
+        },
       ),
     );
   }
@@ -768,7 +788,15 @@ class _SessionHistorySection extends ConsumerWidget {
         );
       },
       loading: () => const LoadingState(),
-      error: (e, _) => ErrorState(message: 'تعذر تحميل سجل الحلقات: $e'),
+      error: (e, _) {
+        // The raw exception goes to the log, never onto the screen.
+        debugPrint('teacherStudentSessionHistoryProvider failed: $e');
+        return ErrorState(
+          message: 'تعذر تحميل سجل الحلقات',
+          onRetry: () =>
+              ref.invalidate(teacherStudentSessionHistoryProvider(studentId)),
+        );
+      },
     );
   }
 }

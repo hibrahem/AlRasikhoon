@@ -119,10 +119,11 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
         );
       }
     } catch (e) {
+      debugPrint('provisionUserAccount (teacher) failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('حدث خطأ: $e'),
+            content: const Text('حدث خطأ، يرجى المحاولة مرة أخرى'),
             backgroundColor: context.tokens.maroon,
           ),
         );
@@ -211,7 +212,9 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
                   // success/error/warning — gold follows the same
                   // neutral-notice precedent as the exam card on
                   // student_dashboard_screen.dart, matching
-                  // add_supervisor_screen.dart's identical tip box.
+                  // add_supervisor_screen.dart's identical tip box. Gold
+                  // marks the box (icon + tint + border) only; the body text
+                  // stays sepia for legibility.
                   color: tokens.gold.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: tokens.gold.withValues(alpha: 0.3)),
@@ -225,7 +228,7 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
                         'شارك اسم المستخدم وكلمة المرور مع المعلم. يمكنه تسجيل الدخول مباشرة بهما.',
                         style: Theme.of(
                           context,
-                        ).textTheme.bodySmall?.copyWith(color: tokens.gold),
+                        ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                       ),
                     ),
                   ],

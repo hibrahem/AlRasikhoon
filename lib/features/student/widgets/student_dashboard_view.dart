@@ -224,7 +224,9 @@ class StudentDashboardView extends StatelessWidget {
           child: StatTile(
             icon: Icons.timeline,
             value: '${data.streakDays}',
-            label: 'يوماً متتالية',
+            // Same wording as the practice screen's streak tile — the two
+            // bento tiles describe the same number.
+            label: 'أيام متتالية',
             accent: tokens.gold,
             accentCorner: true,
           ),
@@ -274,11 +276,20 @@ class StudentDashboardView extends StatelessWidget {
             'رحلة المستويات',
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          trailing: Text(
-            '${data.completedLevels.length}/10 مكتمل',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
+          // The count must not REPLACE the expand affordance: the chevron
+          // stays beside it so the tile still reads as expandable.
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${data.completedLevels.length}/10 مكتمل',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.expand_more, color: tokens.sepia),
+            ],
           ),
           children: [
             LevelProgressionWidget(

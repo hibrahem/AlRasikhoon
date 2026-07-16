@@ -59,9 +59,16 @@ class _StudentDashboardScreenState
         },
         child: statsAsync.when(
           loading: () => const _ScrollableState(child: LoadingState()),
-          error: (e, _) => _ScrollableState(
-            child: ErrorState(message: 'تعذر تحميل التقدم: $e'),
-          ),
+          error: (e, _) {
+            // The raw exception goes to the log, never onto the screen.
+            debugPrint('studentStatsProvider failed: $e');
+            return _ScrollableState(
+              child: ErrorState(
+                message: 'تعذر تحميل التقدم',
+                onRetry: () => ref.invalidate(studentStatsProvider),
+              ),
+            );
+          },
           data: (stats) {
             if (progressAsync.isLoading) {
               return const _ScrollableState(child: LoadingState());

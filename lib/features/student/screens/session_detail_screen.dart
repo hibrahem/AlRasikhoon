@@ -144,7 +144,13 @@ class SessionDetailScreen extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: tokens.green.withValues(alpha: 0.05),
+                      // A 0.05 tint disappears against the dark surface, so
+                      // dark mode gets a stronger wash to stay visible.
+                      color: tokens.green.withValues(
+                        alpha: Theme.of(context).brightness == Brightness.dark
+                            ? 0.10
+                            : 0.05,
+                      ),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: tokens.green.withValues(alpha: 0.2),
@@ -222,7 +228,14 @@ class SessionDetailScreen extends ConsumerWidget {
           );
         },
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل تفاصيل الحلقة: $e'),
+        error: (e, _) {
+          // The raw exception goes to the log, never onto the screen.
+          debugPrint('sessionRecordByIdProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل تفاصيل الحلقة',
+            onRetry: () => ref.invalidate(sessionRecordByIdProvider(recordId)),
+          );
+        },
       ),
     );
   }

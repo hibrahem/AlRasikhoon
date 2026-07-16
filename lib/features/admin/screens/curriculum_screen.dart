@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../routing/app_router.dart';
@@ -82,6 +83,10 @@ class CurriculumScreen extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
+                          // Level-number badge in the medallion shape
+                          // (circular tinted disc), matching the header badge
+                          // on level_detail_screen.dart — numeral in Cairo
+                          // bold tabular like every data numeral.
                           Container(
                             width: 48,
                             height: 48,
@@ -90,18 +95,21 @@ class CurriculumScreen extends ConsumerWidget {
                                 tokens,
                                 level.levelNumber,
                               ).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
+                              shape: BoxShape.circle,
                             ),
                             child: Center(
                               child: Text(
                                 '${level.levelNumber}',
-                                style: TextStyle(
+                                style: GoogleFonts.cairo(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                   color: _getLevelColor(
                                     tokens,
                                     level.levelNumber,
                                   ),
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures(),
+                                  ],
                                 ),
                               ),
                             ),
@@ -156,7 +164,13 @@ class CurriculumScreen extends ConsumerWidget {
           );
         },
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل المنهج: $e'),
+        error: (e, _) {
+          debugPrint('levelsProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل المنهج',
+            onRetry: () => ref.invalidate(levelsProvider),
+          );
+        },
       ),
     );
   }
@@ -164,27 +178,16 @@ class CurriculumScreen extends ConsumerWidget {
   // Purely a per-level identity badge (1-10), never a grade/pass-fail
   // indicator — the level number is always shown as the actual label, this
   // color only adds a quick visual distinction between adjacent cards. The
-  // manuscript palette has just 3 accent hues (+5 grade tones that are
-  // themselves shades of those 3), nowhere near 10 mutually distinct hues,
-  // and reusing the grade tones here would misleadingly imply a level ->
-  // performance-grade relationship that doesn't exist. So level 1 keeps the
-  // token mapping table's direct AppColors.primary -> tokens.green swap
-  // (fixing dark-mode contrast for free), and levels 2-10 intentionally keep
-  // their original raw Material swatches, which were never AppColors/theme
-  // values and fall outside both mapping tables.
+  // manuscript palette has just 3 accent hues, nowhere near 10 mutually
+  // distinct ones, so adjacent-card distinction comes from CYCLING the three
+  // accents (green, gold, maroon by level % 3): neighbours never share a
+  // tint, every tint is a palette token that holds up in dark mode, and no
+  // raw Material swatch leaks into the manuscript language. The semantic
+  // color rules (gold=achievement, maroon=attention) don't apply here —
+  // these are identity tints on separate cards, not status fills competing
+  // inside one component.
   Color _getLevelColor(AppTokens tokens, int level) {
-    final colors = [
-      tokens.green,
-      Colors.blue,
-      Colors.teal,
-      Colors.orange,
-      Colors.purple,
-      Colors.pink,
-      Colors.indigo,
-      Colors.cyan,
-      Colors.amber,
-      Colors.red,
-    ];
+    final colors = [tokens.green, tokens.gold, tokens.maroon];
     return colors[(level - 1) % colors.length];
   }
 }

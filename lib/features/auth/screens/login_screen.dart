@@ -112,7 +112,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                 AppTextField(
                   label: 'اسم المستخدم',
-                  hint: 'username',
+                  hint: 'أدخل اسم المستخدم',
                   controller: _usernameController,
                   validator: Validators.validateUsername,
                   keyboardType: TextInputType.text,

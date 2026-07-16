@@ -63,6 +63,12 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
         onRefresh: () async {
           ref.invalidate(homePracticeStatsProvider);
           ref.invalidate(studentHomePracticesProvider);
+          // Hold the indicator until the reloads actually finish (same
+          // contract as the dashboard) so it reflects reality.
+          await Future.wait([
+            ref.read(homePracticeStatsProvider.future),
+            ref.read(studentHomePracticesProvider.future),
+          ]);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),

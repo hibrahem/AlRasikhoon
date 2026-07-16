@@ -27,72 +27,94 @@ class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
       appBar: AppBar(title: const Text('المعاهد')),
       body: institutesAsync.when(
         data: (institutes) {
-          if (institutes.isEmpty) {
-            return const EmptyState(
-              icon: Icons.account_balance_outlined,
-              title: 'لا يوجد معاهد',
-              message: 'اضغط على + لإضافة معهد جديد',
-            );
-          }
           return RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(institutesProvider);
             },
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: institutes.length,
-              itemBuilder: (context, index) {
-                final institute = institutes[index];
-                return AppCard(
-                  onTap: () => context.push(
-                    AppRoutes.instituteDetail.replaceFirst(':id', institute.id),
-                  ),
-                  child: Row(
-                    children: [
-                      IconMedallion(
-                        icon: Icons.account_balance,
-                        accent: tokens.green,
-                        size: 52,
-                        iconSize: 26,
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              institute.name,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.location_on,
-                                  size: 14,
-                                  color: tokens.sepia,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  institute.location,
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(color: tokens.sepia),
-                                ),
-                              ],
-                            ),
-                          ],
+            // The empty state sits INSIDE the refresh scroll view so
+            // pull-to-refresh keeps working when the list is empty.
+            child: institutes.isEmpty
+                ? const CustomScrollView(
+                    physics: AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: EmptyState(
+                          icon: Icons.account_balance_outlined,
+                          title: 'لا يوجد معاهد',
+                          message: 'اضغط على + لإضافة معهد جديد',
                         ),
                       ),
-                      Icon(Icons.chevron_left, color: tokens.sepia),
                     ],
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: institutes.length,
+                    itemBuilder: (context, index) {
+                      final institute = institutes[index];
+                      return AppCard(
+                        onTap: () => context.push(
+                          AppRoutes.instituteDetail.replaceFirst(
+                            ':id',
+                            institute.id,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            IconMedallion(
+                              icon: Icons.account_balance,
+                              accent: tokens.green,
+                              size: 52,
+                              iconSize: 26,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    institute.name,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.location_on,
+                                        size: 14,
+                                        color: tokens.sepia,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        institute.location,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(color: tokens.sepia),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(Icons.chevron_left, color: tokens.sepia),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           );
         },
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل المعاهد: $e'),
+        error: (e, _) {
+          debugPrint('institutesProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل المعاهد',
+            onRetry: () => ref.invalidate(institutesProvider),
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.createInstitute),

@@ -79,10 +79,11 @@ class _EditInstituteScreenState extends ConsumerState<EditInstituteScreen> {
         context.pop();
       }
     } catch (e) {
+      debugPrint('updateInstitute failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('حدث خطأ: $e'),
+            content: const Text('تعذر حفظ التغييرات، حاول مرة أخرى'),
             backgroundColor: context.tokens.maroon,
           ),
         );
@@ -103,7 +104,14 @@ class _EditInstituteScreenState extends ConsumerState<EditInstituteScreen> {
       appBar: AppBar(title: const Text('تعديل المعهد')),
       body: instituteAsync.when(
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل المعهد: $e'),
+        error: (e, _) {
+          debugPrint('instituteProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل المعهد',
+            onRetry: () =>
+                ref.invalidate(instituteProvider(widget.instituteId)),
+          );
+        },
         data: (institute) {
           if (institute == null) {
             return const Center(child: Text('المعهد غير موجود'));

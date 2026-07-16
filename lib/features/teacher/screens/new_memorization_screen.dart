@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-// Kept only for the memorization-mode accent system (kNewColor,
-// textOnPrimary) — see the comment above `modeColor` below. These are fixed,
-// colorblind-safe, WCAG-AA-verified colors (hibrahem/AlRasikhoon#25), not
-// theme-adaptive tokens, so they intentionally stay raw.
 import '../../../core/theme/app_tokens.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/icon_medallion.dart';
@@ -140,7 +136,15 @@ class NewMemorizationScreen extends ConsumerWidget {
           );
         },
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل الحلقة: $e'),
+        error: (e, _) {
+          // The raw exception goes to the log, never onto the screen.
+          debugPrint('studentCurrentMeetingProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل الحلقة',
+            onRetry: () =>
+                ref.invalidate(studentCurrentMeetingProvider(studentId)),
+          );
+        },
       ),
     );
   }
@@ -172,15 +176,20 @@ class _InfoRow extends StatelessWidget {
               context,
             ).textTheme.bodyMedium?.copyWith(color: tokens.sepia),
           ),
-          const Spacer(),
-          Text(
-            value,
-            // A Qur'an range — set in Amiri, the manuscript face passages
-            // carry across the design system.
-            style: GoogleFonts.amiri(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: tokens.ink,
+          const SizedBox(width: 12),
+          // Flexible so a long merged range (two non-contiguous blocks)
+          // wraps onto further lines instead of overflowing the row.
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              // A Qur'an range — set in Amiri, the manuscript face passages
+              // carry across the design system.
+              style: GoogleFonts.amiri(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: tokens.ink,
+              ),
             ),
           ),
         ],

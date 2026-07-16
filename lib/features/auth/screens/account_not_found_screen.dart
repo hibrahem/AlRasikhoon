@@ -14,86 +14,96 @@ class AccountNotFoundScreen extends ConsumerWidget {
     final tokens = context.tokens;
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Icon
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  // AppColors.warning has no direct AppTokens equivalent.
-                  // tokens.maroon (the palette's rubrication/emphasis hue,
-                  // per the Task 13 follow-up precedent — see
-                  // home_practice_screen.dart) is used for this "account
-                  // needs admin attention" icon.
-                  color: tokens.maroon.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
+        // Scrollable so the fixed-height column can never overflow a small
+        // screen (or a large-text setting); Center keeps it vertically
+        // composed when there IS room.
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Icon
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    // AppColors.warning has no direct AppTokens equivalent.
+                    // tokens.maroon (the palette's rubrication/emphasis hue,
+                    // per the Task 13 follow-up precedent — see
+                    // home_practice_screen.dart) is used for this "account
+                    // needs admin attention" icon.
+                    color: tokens.maroon.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.person_off, size: 60, color: tokens.maroon),
                 ),
-                child: Icon(Icons.person_off, size: 60, color: tokens.maroon),
-              ),
-              const SizedBox(height: 32),
-              // Title
-              Text(
-                'الحساب غير موجود',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 32),
+                // Title
+                Text(
+                  'الحساب غير موجود',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              // Message
-              Text(
-                'البريد الإلكتروني غير مسجل في النظام.\nيرجى التواصل مع المشرف لإنشاء حساب.',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyLarge?.copyWith(color: tokens.sepia),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 48),
-              // Contact info
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: tokens.surfaceVariant,
-                  borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 16),
+                // Message — sign-in is by USERNAME, so the copy must name it;
+                // "البريد الإلكتروني" would send the user hunting for an
+                // email field that does not exist.
+                Text(
+                  'اسم المستخدم غير مسجل في النظام.\nيرجى التواصل مع المشرف لإنشاء حساب.',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(color: tokens.sepia),
+                  textAlign: TextAlign.center,
                 ),
-                child: Column(
-                  children: [
-                    Icon(Icons.support_agent, color: tokens.green, size: 32),
-                    const SizedBox(height: 8),
-                    Text(
-                      'للتواصل مع الدعم',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'support@alrasikhoon.com',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.copyWith(color: tokens.green),
-                    ),
-                  ],
+                const SizedBox(height: 48),
+                // Contact info
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: tokens.surfaceVariant,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.support_agent, color: tokens.green, size: 32),
+                      const SizedBox(height: 8),
+                      Text(
+                        'للتواصل مع الدعم',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: 4),
+                      // Selectable so the user can copy the address into
+                      // their mail app — this screen is a dead end otherwise.
+                      SelectableText(
+                        'support@alrasikhoon.com',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.copyWith(color: tokens.green),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 32),
-              // Back to login button
-              AppButton(
-                text: 'العودة لتسجيل الدخول',
-                onPressed: () async {
-                  // Sign out to clear any partial auth state
-                  await ref.read(authRepositoryProvider.notifier).signOut();
-                  if (context.mounted) {
-                    context.go(AppRoutes.login);
-                  }
-                },
-                type: AppButtonType.outline,
-                isFullWidth: true,
-              ),
-            ],
+                const SizedBox(height: 32),
+                // Back to login button
+                AppButton(
+                  text: 'العودة لتسجيل الدخول',
+                  onPressed: () async {
+                    // Sign out to clear any partial auth state
+                    await ref.read(authRepositoryProvider.notifier).signOut();
+                    if (context.mounted) {
+                      context.go(AppRoutes.login);
+                    }
+                  },
+                  type: AppButtonType.outline,
+                  isFullWidth: true,
+                ),
+              ],
+            ),
           ),
         ),
       ),

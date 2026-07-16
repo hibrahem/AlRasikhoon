@@ -37,54 +37,83 @@ class SupervisorStudentsScreen extends ConsumerWidget {
       ),
       body: studentsAsync.when(
         data: (students) {
-          if (students.isEmpty) {
-            return const EmptyState(
-              icon: Icons.school_outlined,
-              title: 'لا يوجد طلاب',
-              message: 'اضغط على + لإضافة طالب جديد',
-            );
-          }
-
           return RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(supervisorStudentsProvider);
             },
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: students.length,
-              itemBuilder: (context, index) {
-                final studentWithUser = students[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: GestureDetector(
-                    onLongPress: () => _showStudentActions(
-                      context,
-                      studentWithUser.user.id,
-                      studentWithUser.user.name,
-                      studentWithUser.student,
-                    ),
-                    child: StudentCard(
-                      studentWithUser: studentWithUser,
-                      onTap: () {
-                        // Read-only progress (al_rasikhoon-801). The supervisor
-                        // conducts الاختبار, never سرد, so a student tap leads
-                        // to progress — not to a screen with session actions.
-                        context.push(
-                          AppRoutes.supervisorStudentProgress.replaceFirst(
-                            ':studentId',
-                            studentWithUser.student.id,
+            // The empty state sits INSIDE the refresh scroll view so
+            // pull-to-refresh keeps working when the list is empty.
+            child: students.isEmpty
+                ? const CustomScrollView(
+                    physics: AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: EmptyState(
+                          icon: Icons.school_outlined,
+                          title: 'لا يوجد طلاب',
+                          message: 'اضغط على + لإضافة طالب جديد',
+                        ),
+                      ),
+                    ],
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: students.length,
+                    itemBuilder: (context, index) {
+                      final studentWithUser = students[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: GestureDetector(
+                          onLongPress: () => _showStudentActions(
+                            context,
+                            studentWithUser.user.id,
+                            studentWithUser.user.name,
+                            studentWithUser.student,
                           ),
-                        );
-                      },
-                    ),
+                          child: StudentCard(
+                            studentWithUser: studentWithUser,
+                            // Visible entry point to the same actions sheet
+                            // the long-press opens — a bare long-press is
+                            // undiscoverable, so the affordance is explicit.
+                            trailing: IconButton(
+                              icon: const Icon(Icons.more_vert),
+                              tooltip: 'إجراءات الطالب',
+                              onPressed: () => _showStudentActions(
+                                context,
+                                studentWithUser.user.id,
+                                studentWithUser.user.name,
+                                studentWithUser.student,
+                              ),
+                            ),
+                            onTap: () {
+                              // Read-only progress (al_rasikhoon-801). The
+                              // supervisor conducts الاختبار, never سرد, so a
+                              // student tap leads to progress — not to a
+                              // screen with session actions.
+                              context.push(
+                                AppRoutes.supervisorStudentProgress
+                                    .replaceFirst(
+                                      ':studentId',
+                                      studentWithUser.student.id,
+                                    ),
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           );
         },
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل الطلاب: $e'),
+        error: (e, _) {
+          debugPrint('supervisorStudentsProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل الطلاب',
+            onRetry: () => ref.invalidate(supervisorStudentsProvider),
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.supervisorAddStudent),

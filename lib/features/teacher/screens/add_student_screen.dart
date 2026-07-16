@@ -50,6 +50,9 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
   UserModel? _selectedTeacher;
   CurriculumPosition? _startingPosition = CurriculumPosition.start;
   bool _isLoading = false;
+  // Distinguishes "institutes still loading" from "the teacher truly has
+  // none" — the dropdown must not read as empty while the fetch is in flight.
+  bool _isLoadingInstitutes = true;
   List<InstituteModel> _institutes = [];
   Country _studentCountry = Countries.defaultCountry;
   Country _guardianCountry = Countries.defaultCountry;
@@ -62,7 +65,10 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
 
   Future<void> _loadInstitutes() async {
     final currentUser = ref.read(currentUserProvider);
-    if (currentUser == null) return;
+    if (currentUser == null) {
+      setState(() => _isLoadingInstitutes = false);
+      return;
+    }
 
     final repo = ref.read(instituteRepositoryProvider);
 
@@ -79,6 +85,7 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
 
     setState(() {
       _institutes = institutes;
+      _isLoadingInstitutes = false;
       if (institutes.isNotEmpty) {
         _selectedInstitute = institutes.first;
       }
@@ -296,7 +303,8 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
               const SizedBox(height: 20),
               AppTextField(
                 label: 'اسم المستخدم',
-                hint: 'username',
+                // LTR example — the username itself is Latin-script.
+                hint: 'مثال: ahmad123',
                 controller: _usernameController,
                 validator: Validators.validateUsername,
                 textInputAction: TextInputAction.next,
@@ -339,7 +347,8 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
               const SizedBox(height: 16),
               AppTextField(
                 label: 'اسم المستخدم لولي الأمر (اختياري)',
-                hint: 'guardian_username',
+                // LTR example — the username itself is Latin-script.
+                hint: 'مثال: abu_ahmad',
                 controller: _guardianUsernameController,
                 validator: _validateGuardianUsername,
                 textInputAction: TextInputAction.next,
@@ -380,25 +389,47 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                       child: DropdownButton<InstituteModel>(
                         isExpanded: true,
                         value: _selectedInstitute,
-                        hint: const Text('اختر المعهد'),
+                        hint: Text(
+                          _isLoadingInstitutes
+                              ? 'جارٍ تحميل المعاهد...'
+                              : 'اختر المعهد',
+                        ),
                         items: _institutes.map((institute) {
                           return DropdownMenuItem(
                             value: institute,
                             child: Text(institute.name),
                           );
                         }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedInstitute = value;
-                            // The teacher pool is scoped to the chosen institute
-                            // (al_rasikhoon-3n6); a teacher from the previously
-                            // selected institute must not carry over.
-                            _selectedTeacher = null;
-                          });
-                        },
+                        // Disabled (null) while loading so an in-flight fetch
+                        // never reads as "no institutes to pick".
+                        onChanged: _isLoadingInstitutes
+                            ? null
+                            : (value) {
+                                setState(() {
+                                  _selectedInstitute = value;
+                                  // The teacher pool is scoped to the chosen
+                                  // institute (al_rasikhoon-3n6); a teacher
+                                  // from the previously selected institute
+                                  // must not carry over.
+                                  _selectedTeacher = null;
+                                });
+                              },
                       ),
                     ),
                   ),
+                  // The form is unsubmittable without an institute
+                  // (_handleCreate refuses) — say so instead of leaving an
+                  // inexplicably empty dropdown.
+                  if (!_isLoadingInstitutes && _institutes.isEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'لا توجد معاهد مرتبطة بحسابك، ولا يمكن إضافة طالب '
+                      'بدون معهد. يرجى التواصل مع المشرف.',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: tokens.maroon),
+                    ),
+                  ],
                 ],
               ),
               if (widget.asSupervisor && _selectedInstitute != null) ...[
@@ -444,9 +475,12 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                     Expanded(
                       child: Text(
                         'شارك اسم المستخدم وكلمة المرور مع الطالب.',
+                        // Body copy reads in ink; gold stays on the icon and
+                        // border only — gold body text is low-contrast on the
+                        // light surface.
                         style: Theme.of(
                           context,
-                        ).textTheme.bodySmall?.copyWith(color: tokens.gold),
+                        ).textTheme.bodySmall?.copyWith(color: tokens.ink),
                       ),
                     ),
                   ],

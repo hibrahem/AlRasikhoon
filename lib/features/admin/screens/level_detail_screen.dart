@@ -34,7 +34,13 @@ class LevelDetailScreen extends ConsumerWidget {
       ),
       body: sessionsAsync.when(
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل الحلقات: $e'),
+        error: (e, _) {
+          debugPrint('levelSessionsProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل الحلقات',
+            onRetry: () => ref.invalidate(levelSessionsProvider(levelNumber)),
+          );
+        },
         data: (sessions) {
           if (sessions.isEmpty) {
             return _EmptyState(levelNumber: levelNumber);

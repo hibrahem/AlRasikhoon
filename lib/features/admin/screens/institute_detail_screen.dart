@@ -59,10 +59,24 @@ class InstituteDetailScreen extends ConsumerWidget {
                 Expanded(
                   child: allTeachersAsync.when(
                     loading: () => const LoadingState(),
-                    error: (e, _) => ErrorState(message: 'خطأ: $e'),
+                    error: (e, _) {
+                      debugPrint('allTeachersProvider failed: $e');
+                      return ErrorState(
+                        message: 'تعذر تحميل المعلمين',
+                        onRetry: () => ref.invalidate(allTeachersProvider),
+                      );
+                    },
                     data: (allTeachers) => assignedTeachersAsync.when(
                       loading: () => const LoadingState(),
-                      error: (e, _) => ErrorState(message: 'خطأ: $e'),
+                      error: (e, _) {
+                        debugPrint('teachersForInstituteProvider failed: $e');
+                        return ErrorState(
+                          message: 'تعذر تحميل معلمي المعهد',
+                          onRetry: () => ref.invalidate(
+                            teachersForInstituteProvider(instituteId),
+                          ),
+                        );
+                      },
                       data: (assignedTeachers) {
                         final assignedIds = assignedTeachers
                             .map((t) => t.id)
@@ -122,9 +136,10 @@ class InstituteDetailScreen extends ConsumerWidget {
         SnackBar(content: Text('تم إضافة ${teacher.name} بنجاح')),
       );
     } catch (e) {
+      debugPrint('assignTeacherToInstitute failed: $e');
       messenger.showSnackBar(
         SnackBar(
-          content: Text('فشل في إضافة المعلم: $e'),
+          content: const Text('فشل في إضافة المعلم، حاول مرة أخرى'),
           backgroundColor: maroon,
         ),
       );
@@ -177,9 +192,10 @@ class InstituteDetailScreen extends ConsumerWidget {
         SnackBar(content: Text('تم إزالة ${teacher.name} بنجاح')),
       );
     } catch (e) {
+      debugPrint('removeTeacherFromInstitute failed: $e');
       messenger.showSnackBar(
         SnackBar(
-          content: Text('فشل في إزالة المعلم: $e'),
+          content: const Text('فشل في إزالة المعلم، حاول مرة أخرى'),
           backgroundColor: maroon,
         ),
       );
@@ -227,10 +243,26 @@ class InstituteDetailScreen extends ConsumerWidget {
                 Expanded(
                   child: allSupervisorsAsync.when(
                     loading: () => const LoadingState(),
-                    error: (e, _) => ErrorState(message: 'خطأ: $e'),
+                    error: (e, _) {
+                      debugPrint('allSupervisorsProvider failed: $e');
+                      return ErrorState(
+                        message: 'تعذر تحميل المشرفين',
+                        onRetry: () => ref.invalidate(allSupervisorsProvider),
+                      );
+                    },
                     data: (allSupervisors) => assignedSupervisorsAsync.when(
                       loading: () => const LoadingState(),
-                      error: (e, _) => ErrorState(message: 'خطأ: $e'),
+                      error: (e, _) {
+                        debugPrint(
+                          'supervisorsForInstituteProvider failed: $e',
+                        );
+                        return ErrorState(
+                          message: 'تعذر تحميل مشرفي المعهد',
+                          onRetry: () => ref.invalidate(
+                            supervisorsForInstituteProvider(instituteId),
+                          ),
+                        );
+                      },
                       data: (assignedSupervisors) {
                         final assignedIds = assignedSupervisors
                             .map((s) => s.id)
@@ -290,9 +322,10 @@ class InstituteDetailScreen extends ConsumerWidget {
         SnackBar(content: Text('تم إضافة ${supervisor.name} بنجاح')),
       );
     } catch (e) {
+      debugPrint('assignSupervisorToInstitute failed: $e');
       messenger.showSnackBar(
         SnackBar(
-          content: Text('فشل في إضافة المشرف: $e'),
+          content: const Text('فشل في إضافة المشرف، حاول مرة أخرى'),
           backgroundColor: maroon,
         ),
       );
@@ -347,9 +380,10 @@ class InstituteDetailScreen extends ConsumerWidget {
         SnackBar(content: Text('تم إزالة ${supervisor.name} بنجاح')),
       );
     } catch (e) {
+      debugPrint('removeSupervisorFromInstitute failed: $e');
       messenger.showSnackBar(
         SnackBar(
-          content: Text('فشل في إزالة المشرف: $e'),
+          content: const Text('فشل في إزالة المشرف، حاول مرة أخرى'),
           backgroundColor: maroon,
         ),
       );
@@ -535,8 +569,15 @@ class InstituteDetailScreen extends ConsumerWidget {
                     );
                   },
                   loading: () => const LoadingState(),
-                  error: (e, _) =>
-                      ErrorState(message: 'تعذر تحميل المعلمين: $e'),
+                  error: (e, _) {
+                    debugPrint('teachersForInstituteProvider failed: $e');
+                    return ErrorState(
+                      message: 'تعذر تحميل المعلمين',
+                      onRetry: () => ref.invalidate(
+                        teachersForInstituteProvider(instituteId),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 24),
                 // Supervisors section — mirrors the teachers section above.
@@ -640,15 +681,28 @@ class InstituteDetailScreen extends ConsumerWidget {
                     );
                   },
                   loading: () => const LoadingState(),
-                  error: (e, _) =>
-                      ErrorState(message: 'تعذر تحميل المشرفين: $e'),
+                  error: (e, _) {
+                    debugPrint('supervisorsForInstituteProvider failed: $e');
+                    return ErrorState(
+                      message: 'تعذر تحميل المشرفين',
+                      onRetry: () => ref.invalidate(
+                        supervisorsForInstituteProvider(instituteId),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
           );
         },
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل المعهد: $e'),
+        error: (e, _) {
+          debugPrint('instituteProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل المعهد',
+            onRetry: () => ref.invalidate(instituteProvider(instituteId)),
+          );
+        },
       ),
     );
   }

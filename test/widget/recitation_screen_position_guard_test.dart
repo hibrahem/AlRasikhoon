@@ -6,13 +6,13 @@ import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/features/teacher/screens/recitation_screen.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 
-/// RecitationScreen derives the "الجزء X من N" badge and the final-part
+/// RecitationScreen derives the "المقطع X من N" badge and the final-part
 /// button label from the meeting's presentParts. In-app navigation only ever
 /// targets present parts, but a hand-edited URL (Flutter web) can land on a
 /// part that is absent — e.g. part 2/3 on a review-only lesson that carries no
 /// recent/distant review. This mirrors the guard once held by the (now
 /// removed) recitation_result_screen.dart: fall back to the raw part number
-/// instead of rendering "الجزء 0 من N", and never label such a part as the
+/// instead of rendering "المقطع 0 من N", and never label such a part as the
 /// last one ("إنهاء التسميع").
 void main() {
   // A review-only lesson: new content only, so presentParts == [1].
@@ -72,14 +72,14 @@ void main() {
   }
 
   testWidgets(
-    'a part not in presentParts never renders "الجزء 0 من N" nor "إنهاء التسميع"',
+    'a part not in presentParts never renders "المقطع 0 من N" nor "إنهاء التسميع"',
     (tester) async {
       // presentParts == [1]; part 2 is absent (URL-only landing).
       await pump(tester, 2);
 
       // Falls back to the raw part number, not the 0 from indexOf(-1)+1.
-      expect(find.text('الجزء 0 من 1'), findsNothing);
-      expect(find.text('الجزء 2 من 1'), findsOneWidget);
+      expect(find.text('المقطع 0 من 1'), findsNothing);
+      expect(find.text('المقطع 2 من 1'), findsOneWidget);
 
       // Not the last present part, so the action is "next", not "finish".
       expect(find.text('إنهاء التسميع'), findsNothing);
@@ -92,7 +92,7 @@ void main() {
   ) async {
     await pump(tester, 1);
 
-    expect(find.text('الجزء 1 من 1'), findsOneWidget);
+    expect(find.text('المقطع 1 من 1'), findsOneWidget);
     expect(find.text('إنهاء التسميع'), findsOneWidget);
   });
 }

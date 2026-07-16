@@ -53,17 +53,12 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
 
   Future<void> _handleCreate() async {
     if (_isLoading) return;
+    // The institute dropdown is a form field with its own validator, so a
+    // missing selection surfaces inline here like every other field. The
+    // null check below only guards the degenerate case where the selector
+    // never rendered (institutes still loading / failed / empty).
     if (!_formKey.currentState!.validate()) return;
-
-    if (_selectedInstitute == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('يرجى اختيار المعهد'),
-          backgroundColor: context.tokens.maroon,
-        ),
-      );
-      return;
-    }
+    if (_selectedInstitute == null) return;
 
     setState(() => _isLoading = true);
 
@@ -135,10 +130,11 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
         );
       }
     } catch (e) {
+      debugPrint('provisionUserAccount (supervisor) failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('حدث خطأ: $e'),
+            content: const Text('حدث خطأ، يرجى المحاولة مرة أخرى'),
             backgroundColor: context.tokens.maroon,
           ),
         );
@@ -255,28 +251,41 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
                           !institutes.contains(_selectedInstitute)) {
                         _selectedInstitute = null;
                       }
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: tokens.hairline),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<InstituteModel>(
-                            isExpanded: true,
-                            value: _selectedInstitute,
-                            hint: const Text('اختر المعهد'),
-                            items: institutes.map((institute) {
-                              return DropdownMenuItem(
-                                value: institute,
-                                child: Text(institute.name),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() => _selectedInstitute = value);
-                            },
+                      // A real form field: its validator runs with the rest
+                      // of the Form on submit, so a missing institute is
+                      // flagged inline — not by a post-submit snackbar. The
+                      // key re-seeds the field's internal state whenever the
+                      // institute list itself changes.
+                      return DropdownButtonFormField<InstituteModel>(
+                        key: ValueKey(institutes.map((i) => i.id).join(',')),
+                        isExpanded: true,
+                        initialValue: _selectedInstitute,
+                        hint: const Text('اختر المعهد'),
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: tokens.hairline),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: tokens.hairline),
                           ),
                         ),
+                        items: institutes.map((institute) {
+                          return DropdownMenuItem(
+                            value: institute,
+                            child: Text(institute.name),
+                          );
+                        }).toList(),
+                        validator: (value) =>
+                            value == null ? 'يرجى اختيار المعهد' : null,
+                        onChanged: (value) {
+                          setState(() => _selectedInstitute = value);
+                        },
                       );
                     },
                     // Compact loading placeholder scoped to this one dropdown
@@ -286,10 +295,13 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
                     // Inline, compact error text tied to this one form field
                     // — the shared ErrorState's icon+retry chrome is built for
                     // full-section failures and would not fit naturally here.
-                    error: (e, _) => Text(
-                      'تعذر تحميل المعاهد: $e',
-                      style: TextStyle(color: tokens.maroon),
-                    ),
+                    error: (e, _) {
+                      debugPrint('institutesProvider failed: $e');
+                      return Text(
+                        'تعذر تحميل المعاهد',
+                        style: TextStyle(color: tokens.maroon),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -302,6 +314,8 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
                   // not a success/error/warning — gold follows the same
                   // neutral-notice precedent as the exam card on the
                   // student dashboard (student_dashboard_screen.dart).
+                  // Gold marks the box (icon + tint + border) only; the body
+                  // text stays sepia for legibility.
                   color: tokens.gold.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: tokens.gold.withValues(alpha: 0.3)),
@@ -315,7 +329,7 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
                         'شارك اسم المستخدم وكلمة المرور مع المشرف. يمكنه تسجيل الدخول مباشرة بهما ضمن المعهد المحدد.',
                         style: Theme.of(
                           context,
-                        ).textTheme.bodySmall?.copyWith(color: tokens.gold),
+                        ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                       ),
                     ),
                   ],

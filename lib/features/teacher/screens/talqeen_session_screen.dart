@@ -78,6 +78,34 @@ class _TalqeenSessionScreenState extends ConsumerState<TalqeenSessionScreen> {
     }
   }
 
+  /// The same exit contract as the recitation flow: leaving mid-session is
+  /// confirmed, because the tallied repetitions would be lost with it.
+  void _showExitConfirmation() {
+    final tokens = context.tokens;
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('إلغاء الحلقة؟'),
+        content: const Text('هل تريد إلغاء الحلقة الحالية؟ سيتم فقدان التقدم.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('لا'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              ref.read(activeSessionProvider.notifier).endSession();
+              Navigator.pop(dialogContext);
+              context.go(AppRoutes.teacherStudents);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: tokens.maroon),
+            child: const Text('نعم، إلغاء'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
@@ -90,6 +118,12 @@ class _TalqeenSessionScreenState extends ConsumerState<TalqeenSessionScreen> {
       appBar: AppBar(
         title: const Text('تلقين'),
         automaticallyImplyLeading: false,
+        // A visible way out — the confirmed close the recitation flow has.
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          tooltip: 'إلغاء الحلقة',
+          onPressed: _showExitConfirmation,
+        ),
         actions: [ActiveLessonTimer(studentId: widget.studentId)],
       ),
       body: meetingAsync.when(
@@ -169,7 +203,15 @@ class _TalqeenSessionScreenState extends ConsumerState<TalqeenSessionScreen> {
           );
         },
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل التلقين: $e'),
+        error: (e, _) {
+          // The raw exception goes to the log, never onto the screen.
+          debugPrint('studentCurrentMeetingProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل التلقين',
+            onRetry: () =>
+                ref.invalidate(studentCurrentMeetingProvider(widget.studentId)),
+          );
+        },
       ),
     );
   }

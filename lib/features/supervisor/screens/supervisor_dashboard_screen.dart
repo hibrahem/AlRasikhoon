@@ -54,8 +54,14 @@ class _SupervisorDashboardScreenState
                       statsAsync.when(
                         data: (stats) => _buildStats(stats),
                         loading: () => const LoadingState(lines: 2),
-                        error: (e, _) =>
-                            ErrorState(message: 'تعذر تحميل الإحصائيات: $e'),
+                        error: (e, _) {
+                          debugPrint('supervisorStatsProvider failed: $e');
+                          return ErrorState(
+                            message: 'تعذر تحميل الإحصائيات',
+                            onRetry: () =>
+                                ref.invalidate(supervisorStatsProvider),
+                          );
+                        },
                       ),
 
                       const SizedBox(height: 24),

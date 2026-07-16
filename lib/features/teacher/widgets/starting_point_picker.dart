@@ -245,9 +245,11 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
           Expanded(
             child: Text(
               message,
+              // Body copy reads in ink; the green stays on the icon and
+              // border only — green body text is low-contrast on the tint.
               style: Theme.of(
                 context,
-              ).textTheme.bodySmall?.copyWith(color: tokens.green),
+              ).textTheme.bodySmall?.copyWith(color: tokens.ink),
             ),
           ),
         ],

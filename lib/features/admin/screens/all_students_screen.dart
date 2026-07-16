@@ -21,39 +21,54 @@ class AllStudentsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('الطلاب')),
       body: studentsAsync.when(
         data: (students) {
-          if (students.isEmpty) {
-            return const EmptyState(
-              icon: Icons.school_outlined,
-              title: 'لا يوجد طلاب',
-            );
-          }
           return RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(allStudentsProvider);
             },
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: students.length,
-              itemBuilder: (context, index) {
-                final studentWithUser = students[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: StudentCard(
-                    studentWithUser: studentWithUser,
-                    onTap: () => context.push(
-                      AppRoutes.adminStudentProgress.replaceFirst(
-                        ':id',
-                        studentWithUser.student.id,
+            // The empty state sits INSIDE the refresh scroll view so
+            // pull-to-refresh keeps working when the list is empty.
+            child: students.isEmpty
+                ? const CustomScrollView(
+                    physics: AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: EmptyState(
+                          icon: Icons.school_outlined,
+                          title: 'لا يوجد طلاب',
+                        ),
                       ),
-                    ),
+                    ],
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: students.length,
+                    itemBuilder: (context, index) {
+                      final studentWithUser = students[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: StudentCard(
+                          studentWithUser: studentWithUser,
+                          onTap: () => context.push(
+                            AppRoutes.adminStudentProgress.replaceFirst(
+                              ':id',
+                              studentWithUser.student.id,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           );
         },
         loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل الطلاب: $e'),
+        error: (e, _) {
+          debugPrint('allStudentsProvider failed: $e');
+          return ErrorState(
+            message: 'تعذر تحميل الطلاب',
+            onRetry: () => ref.invalidate(allStudentsProvider),
+          );
+        },
       ),
     );
   }

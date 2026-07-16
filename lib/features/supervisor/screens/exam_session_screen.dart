@@ -175,13 +175,16 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(
+                                    // Gold stays on the icon only — the
+                                    // instruction text itself reads in sepia
+                                    // for legibility.
                                     child: Text(
                                       session?.assessmentInstructionAr ??
                                           'يختبر المشرف الطالب في المقرر',
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
-                                          ?.copyWith(color: tokens.gold),
+                                          ?.copyWith(color: tokens.sepia),
                                     ),
                                   ),
                                 ],
@@ -252,8 +255,12 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
         // exactly what exam_session_timer_test.dart and
         // exam_session_overflow_test.dart hit, since neither test mocks
         // Firebase. A bare Text in Center has no such column to overflow, so
-        // the original bespoke widget is kept.
-        error: (e, _) => Center(child: Text('Error: $e')),
+        // the original bespoke widget is kept — with a short Arabic message;
+        // the raw exception goes to the debug log only.
+        error: (e, _) {
+          debugPrint('examStudentProvider failed: $e');
+          return const Center(child: Text('تعذر تحميل بيانات الطالب'));
+        },
       ),
     );
   }

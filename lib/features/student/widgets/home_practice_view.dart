@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_dimens.dart';
@@ -134,10 +135,20 @@ class _HomePracticeViewState extends State<HomePracticeView> {
         const SizedBox(height: AppDimens.space24),
         Text('سجل التكرارات', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: AppDimens.space12),
-        for (final entry in data.history) ...[
-          _HistoryTicket(entry: entry),
-          const SizedBox(height: AppDimens.space8),
-        ],
+        // An empty history still says so — a heading over nothing reads as
+        // a rendering bug, not as "no entries yet".
+        if (data.history.isEmpty)
+          Text(
+            'سيظهر سجلك هنا بعد أول تكرار',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: context.tokens.sepia),
+          )
+        else
+          for (final entry in data.history) ...[
+            _HistoryTicket(entry: entry),
+            const SizedBox(height: AppDimens.space8),
+          ],
       ],
     );
   }
@@ -245,6 +256,9 @@ class _HomePracticeViewState extends State<HomePracticeView> {
                 child: TextField(
                   controller: _repetitionsController,
                   keyboardType: TextInputType.number,
+                  // A count — never letters or signs, even from a hardware
+                  // keyboard (the number keyboard alone doesn't enforce it).
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   textAlign: TextAlign.center,
                   style: GoogleFonts.cairo(
                     fontSize: 40,
