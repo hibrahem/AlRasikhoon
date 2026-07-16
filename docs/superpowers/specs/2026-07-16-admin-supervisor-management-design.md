@@ -57,7 +57,7 @@ destinations, in order:
 
 | # | Label | Icon | rootPath |
 |---|-------|------|----------|
-| 0 | الإدارة | `Icons.grid_view` / `grid_view_rounded` | `AppRoutes.adminDashboard` (`/admin`) |
+| 0 | الإدارة | `Icons.dashboard_outlined` / `dashboard` | `AppRoutes.adminDashboard` (`/admin`) |
 | 1 | المنهج | `Icons.menu_book_outlined` / `menu_book` | `AppRoutes.curriculum` |
 | 2 | الملف الشخصي | `Icons.person_outline` / `person` | `AppRoutes.adminSettings` (`/admin/settings`) |
 
