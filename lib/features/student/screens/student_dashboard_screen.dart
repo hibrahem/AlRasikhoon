@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/user_model.dart';
-import '../../../data/repositories/curriculum_repository.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
@@ -11,7 +10,6 @@ import '../../../shared/providers/current_student_provider.dart';
 import '../../../shared/providers/stats_provider.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/juz_ring.dart';
 import '../../../shared/widgets/stat_card.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
@@ -87,43 +85,10 @@ class _StudentDashboardScreenState
               ),
               const SizedBox(height: 24),
 
-              // Hero: the Illuminated Juz Ring, showing progress through the
-              // CURRENT LEVEL against the level's real session count from the
-              // catalog (210 in level 1, 49 in level 10) — the same fraction
-              // the progress card below shows via StudentLevelProgress. Never
-              // `currentOrderInLevel / totalSessions`: totalSessions is the
-              // all-time session count, which sits at ~100% from the very first
-              // level. Guarded against an unknown/zero session count (catalog
-              // still loading, or no entry for the level) so the ring reports
-              // no progress rather than dividing by zero.
+              // The student's level and where they stand within it, against
+              // the level's real session count from the catalog.
               statsAsync.when(
-                data: (stats) {
-                  final levelSessionCount =
-                      ref
-                          .watch(levelProvider(stats.currentLevel))
-                          .value
-                          ?.sessionCount ??
-                      0;
-                  final ringProgress = levelSessionCount > 0
-                      ? (stats.currentOrderInLevel - 1).clamp(
-                              0,
-                              levelSessionCount,
-                            ) /
-                            levelSessionCount
-                      : 0.0;
-                  return Column(
-                    children: [
-                      Center(
-                        child: JuzRing(
-                          juz: stats.currentJuz,
-                          progress: ringProgress,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      _buildProgressCard(stats),
-                    ],
-                  );
-                },
+                data: (stats) => _buildProgressCard(stats),
                 loading: () => const LoadingState(),
                 error: (e, _) => ErrorState(message: 'تعذر تحميل التقدم: $e'),
               ),
