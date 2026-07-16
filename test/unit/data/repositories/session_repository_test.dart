@@ -768,8 +768,8 @@ void main() {
         expect(history[2].kind, StudentHistoryKind.lesson);
       });
 
-      test('titles the اختبار from its scope and leaves it non-navigable '
-          '(no detail screen yet)', () async {
+      test('titles the اختبار from its scope and makes it navigable to its '
+          'assessment detail record (al_rasikhoon-nyp)', () async {
         final history = await sessionRepository.getStudentHistory('student1');
         final exam = history.firstWhere(
           (e) => e.kind == StudentHistoryKind.exam,
@@ -777,7 +777,8 @@ void main() {
 
         expect(exam.titleAr, 'اختبار الجزء رقم 30');
         expect(exam.passed, isFalse);
-        expect(exam.isNavigable, isFalse);
+        expect(exam.isNavigable, isTrue);
+        expect(exam.detailRecordId, exam.id);
       });
 
       test('leaves the lesson navigable to its detail record', () async {

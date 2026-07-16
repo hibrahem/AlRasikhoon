@@ -159,6 +159,7 @@ void main() {
             currentMeetingProvider: currentMeetingProvider,
             sessionHistoryProvider: sessionHistoryProvider,
             sessionDetailRoute: injectedDetailRoute,
+            assessmentDetailRoute: '/shell/assessment/:kind/:recordId',
           ),
         ),
         GoRoute(

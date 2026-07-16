@@ -34,9 +34,10 @@ class StudentHistoryEntry {
   final DateTime date;
   final SessionDuration? duration;
 
-  /// Non-null ⇒ the row opens the session-detail view (via the shell's
-  /// injected route). Only lessons and تلقين have a detail screen; a سرد and an
-  /// اختبار have none yet, so their rows render but do not navigate.
+  /// Non-null ⇒ the row opens a detail view (via the shell's injected route).
+  /// The [kind] decides WHICH view: lessons and تلقين open the session-detail
+  /// screen, a سرد and an اختبار open the assessment-detail screen
+  /// (al_rasikhoon-nyp).
   final String? detailRecordId;
 
   const StudentHistoryEntry({

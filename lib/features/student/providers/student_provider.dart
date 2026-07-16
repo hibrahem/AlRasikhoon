@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/home_practice_repository.dart';
+import '../../../data/models/exam_record_model.dart';
+import '../../../data/models/sard_record_model.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
 import '../../../domain/session/student_history_entry.dart';
@@ -54,6 +56,26 @@ final sessionRecordByIdProvider =
       final repo = ref.watch(sessionRepositoryProvider);
       return repo.getSessionRecordById(recordId);
     });
+
+/// Fetches a single سرد record by its id — the assessment detail view's
+/// source (al_rasikhoon-nyp). Works for any caller, like
+/// [sessionRecordByIdProvider].
+final sardRecordByIdProvider = FutureProvider.family<SardRecordModel?, String>((
+  ref,
+  recordId,
+) async {
+  final repo = ref.watch(sessionRepositoryProvider);
+  return repo.getSardRecordById(recordId);
+});
+
+/// Fetches a single اختبار record by its id — see [sardRecordByIdProvider].
+final examRecordByIdProvider = FutureProvider.family<ExamRecordModel?, String>((
+  ref,
+  recordId,
+) async {
+  final repo = ref.watch(sessionRepositoryProvider);
+  return repo.getExamRecordById(recordId);
+});
 
 /// Fetches a curriculum session by its id (`L{level}_J{juz}_S{n}`).
 ///

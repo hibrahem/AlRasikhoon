@@ -43,6 +43,7 @@ import '../features/teacher/screens/next_content_talqeen_screen.dart';
 import '../features/teacher/screens/add_student_screen.dart';
 import '../features/student/screens/student_dashboard_screen.dart';
 import '../features/student/screens/session_history_screen.dart';
+import '../features/student/screens/assessment_detail_screen.dart';
 import '../features/student/screens/session_detail_screen.dart';
 import '../features/student/screens/home_practice_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
@@ -76,6 +77,10 @@ class AppRoutes {
   // collides with the 3-segment `:id` progress route.
   static const String adminStudentSessionDetail =
       '/admin/students/history/:recordId';
+  // A past سرد/اختبار record (al_rasikhoon-nyp) — the assessment twin of
+  // adminStudentSessionDetail; `:kind` is `sard` or `exam`.
+  static const String adminStudentAssessmentDetail =
+      '/admin/students/assessment/:kind/:recordId';
   static const String adminSettings = '/admin/settings';
 
   // Supervisor
@@ -98,6 +103,10 @@ class AppRoutes {
   // `:studentId` progress route or the literal `add` route.
   static const String supervisorStudentSessionDetail =
       '/supervisor/students/history/:recordId';
+  // A past سرد/اختبار record (al_rasikhoon-nyp) — shell-local like the
+  // session-detail twin above; `:kind` is `sard` or `exam`.
+  static const String supervisorStudentAssessmentDetail =
+      '/supervisor/students/assessment/:kind/:recordId';
   static const String supervisorSettings = '/supervisor/settings';
 
   // Teacher
@@ -130,12 +139,20 @@ class AppRoutes {
   // profile that opens it — so the push never crosses a shell boundary (#45
   // duplicate-page-key crash).
   static const String teacherSessionDetail = '/teacher/history/:recordId';
+  // A past سرد/اختبار record the teacher opens from the same embedded history
+  // (al_rasikhoon-nyp); `:kind` is `sard` or `exam`. NOT under
+  // `/teacher/session/`, whose `/sard` segment the redirect guard watches.
+  static const String teacherAssessmentDetail =
+      '/teacher/assessment/:kind/:recordId';
   static const String teacherSettings = '/teacher/settings';
 
   // Student
   static const String studentDashboard = '/student';
   static const String sessionHistory = '/student/history';
   static const String sessionDetail = '/student/history/:recordId';
+  // A past سرد/اختبار record from the student's own log (al_rasikhoon-nyp);
+  // `:kind` is `sard` or `exam`.
+  static const String assessmentDetail = '/student/assessment/:kind/:recordId';
   static const String homePractice = '/student/practice';
   static const String studentSettings = '/student/settings';
 }
@@ -282,6 +299,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                     currentMeetingProvider: adminStudentCurrentMeetingProvider,
                     sessionHistoryProvider: adminStudentSessionHistoryProvider,
                     sessionDetailRoute: AppRoutes.adminStudentSessionDetail,
+                    assessmentDetailRoute:
+                        AppRoutes.adminStudentAssessmentDetail,
                   );
                 },
               ),
@@ -290,6 +309,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) {
                   final recordId = state.pathParameters['recordId']!;
                   return SessionDetailScreen(recordId: recordId);
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.adminStudentAssessmentDetail,
+                builder: (context, state) {
+                  return AssessmentDetailScreen(
+                    kind: assessmentKindFromPath(state.pathParameters['kind']!),
+                    recordId: state.pathParameters['recordId']!,
+                  );
                 },
               ),
             ],
@@ -408,6 +436,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                         supervisorStudentSessionHistoryProvider,
                     sessionDetailRoute:
                         AppRoutes.supervisorStudentSessionDetail,
+                    assessmentDetailRoute:
+                        AppRoutes.supervisorStudentAssessmentDetail,
                     // Supervisor-only affordance to move a not-yet-started
                     // student's starting point (al_rasikhoon-sne). It hides
                     // itself once the student has started; the admin shell
@@ -438,6 +468,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) {
                   final recordId = state.pathParameters['recordId']!;
                   return SessionDetailScreen(recordId: recordId);
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.supervisorStudentAssessmentDetail,
+                builder: (context, state) {
+                  return AssessmentDetailScreen(
+                    kind: assessmentKindFromPath(state.pathParameters['kind']!),
+                    recordId: state.pathParameters['recordId']!,
+                  );
                 },
               ),
             ],
@@ -554,6 +593,18 @@ final routerProvider = Provider<GoRouter>((ref) {
                   return SessionDetailScreen(recordId: recordId);
                 },
               ),
+              // A past سرد/اختبار from the same embedded history
+              // (al_rasikhoon-nyp) — registered in the same Students branch
+              // for the same shell-locality reason.
+              GoRoute(
+                path: AppRoutes.teacherAssessmentDetail,
+                builder: (context, state) {
+                  return AssessmentDetailScreen(
+                    kind: assessmentKindFromPath(state.pathParameters['kind']!),
+                    recordId: state.pathParameters['recordId']!,
+                  );
+                },
+              ),
             ],
           ),
           // Branch 1: Settings
@@ -603,6 +654,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) {
                   final recordId = state.pathParameters['recordId']!;
                   return SessionDetailScreen(recordId: recordId);
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.assessmentDetail,
+                builder: (context, state) {
+                  return AssessmentDetailScreen(
+                    kind: assessmentKindFromPath(state.pathParameters['kind']!),
+                    recordId: state.pathParameters['recordId']!,
+                  );
                 },
               ),
             ],

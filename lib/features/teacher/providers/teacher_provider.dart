@@ -442,9 +442,11 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     // Clear state
     state = state!.copyWith(isComplete: true, advanceOutcome: advanceOutcome);
 
-    // Invalidate providers
+    // Invalidate providers — including the profile's cached سجل الحلقات, or
+    // the new record won't appear until a manual refresh (al_rasikhoon-5ri).
     ref.invalidate(teacherStudentsProvider);
     ref.invalidate(studentProvider(studentId));
+    ref.invalidate(teacherStudentSessionHistoryProvider(studentId));
 
     return record;
   }
@@ -503,8 +505,10 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
 
     state = state!.copyWith(isComplete: true, advanceOutcome: advanceOutcome);
 
+    // Including the profile's cached سجل الحلقات (al_rasikhoon-5ri).
     ref.invalidate(teacherStudentsProvider);
     ref.invalidate(studentProvider(studentId));
+    ref.invalidate(teacherStudentSessionHistoryProvider(studentId));
 
     return record;
   }

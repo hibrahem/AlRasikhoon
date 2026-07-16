@@ -374,6 +374,15 @@ class SessionRepository {
     return record;
   }
 
+  /// Get a single سرد record by id — the source of its detail view.
+  Future<SardRecordModel?> getSardRecordById(String recordId) async {
+    final doc = await _sardRecordsCollection.doc(recordId).get();
+    if (doc.exists) {
+      return SardRecordModel.fromFirestore(doc);
+    }
+    return null;
+  }
+
   /// Get sard records for student
   Future<List<SardRecordModel>> getSardRecordsForStudent(
     String studentId,
@@ -456,6 +465,15 @@ class SessionRepository {
 
     await docRef.set(record.toFirestore());
     return record;
+  }
+
+  /// Get a single اختبار record by id — the source of its detail view.
+  Future<ExamRecordModel?> getExamRecordById(String recordId) async {
+    final doc = await _examRecordsCollection.doc(recordId).get();
+    if (doc.exists) {
+      return ExamRecordModel.fromFirestore(doc);
+    }
+    return null;
   }
 
   /// Get exam records for student
@@ -577,9 +595,10 @@ class SessionRepository {
   /// The three collections cannot be joined in Firestore, so — exactly like
   /// [getStudentStatistics] — this fetches each and merges in memory. The
   /// [limit] is applied AFTER the merge: bounding each collection first could
-  /// drop a recent اختبار in favour of 50 old lessons. Assessment rows carry no
-  /// [StudentHistoryEntry.detailRecordId] (no detail screen exists for them
-  /// yet), so they render but do not navigate.
+  /// drop a recent اختبار in favour of 50 old lessons. Every row carries a
+  /// [StudentHistoryEntry.detailRecordId]: lessons and تلقين open the session
+  /// detail view, a سرد and an اختبار open the assessment detail view
+  /// (al_rasikhoon-nyp) — the entry's kind tells the render site which.
   Future<List<StudentHistoryEntry>> getStudentHistory(
     String studentId, {
     int? limit,
@@ -614,6 +633,7 @@ class SessionRepository {
           duration: r.duration == null
               ? null
               : SessionDuration(elapsed: r.duration!),
+          detailRecordId: r.id,
         ),
       for (final r in examRecords)
         StudentHistoryEntry(
@@ -626,6 +646,7 @@ class SessionRepository {
           duration: r.duration == null
               ? null
               : SessionDuration(elapsed: r.duration!),
+          detailRecordId: r.id,
         ),
     ]..sort((a, b) => b.date.compareTo(a.date));
 

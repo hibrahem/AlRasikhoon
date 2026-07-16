@@ -8,6 +8,7 @@ import '../../../data/models/session_model.dart';
 import '../../../data/models/student_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../domain/curriculum/paced_session.dart';
+import '../../../domain/session/student_history_entry.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -771,12 +772,22 @@ class _SessionHistorySection extends ConsumerWidget {
               passed: entry.passed,
               date: entry.date,
               sessionDuration: entry.duration,
-              // A سرد / اختبار has no detail screen yet — render but don't
-              // navigate. Lessons and تلقين still open the detail view.
+              // The entry's kind decides the destination: lessons and تلقين
+              // open the session detail view, a سرد / اختبار the assessment
+              // detail view (al_rasikhoon-nyp). The enum's own name is the
+              // `:kind` path segment (`sard` / `exam`).
               onTap: entry.isNavigable
                   ? () {
+                      final template = switch (entry.kind) {
+                        StudentHistoryKind.sard || StudentHistoryKind.exam =>
+                          AppRoutes.teacherAssessmentDetail.replaceFirst(
+                            ':kind',
+                            entry.kind.name,
+                          ),
+                        _ => AppRoutes.teacherSessionDetail,
+                      };
                       context.push(
-                        AppRoutes.teacherSessionDetail.replaceFirst(
+                        template.replaceFirst(
                           ':recordId',
                           entry.detailRecordId!,
                         ),

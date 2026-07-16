@@ -128,9 +128,12 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
       final curriculumCompleted =
           advanceOutcome == StudentAdvanceOutcome.curriculumCompleted;
 
-      // Invalidate providers
+      // Invalidate providers — including the supervisor's cached view of this
+      // student's سجل الحلقات, which would otherwise keep showing the
+      // pre-save history without this اختبار (al_rasikhoon-5ri).
       ref.invalidate(examQueueProvider);
       ref.invalidate(supervisorStatsProvider);
+      ref.invalidate(supervisorStudentSessionHistoryProvider(widget.studentId));
 
       if (mounted) {
         final tokens = context.tokens;

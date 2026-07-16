@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../domain/session/student_history_entry.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/session_record_row.dart';
 import '../../../shared/widgets/states/empty_state.dart';
@@ -49,12 +50,23 @@ class SessionHistoryScreen extends ConsumerWidget {
                   passed: entry.passed,
                   date: entry.date,
                   sessionDuration: entry.duration,
-                  // A سرد / اختبار has no detail screen yet — render but don't
-                  // navigate. Lessons and تلقين still open the detail view.
+                  // The entry's kind decides the destination: lessons and
+                  // تلقين open the session detail view, a سرد / اختبار the
+                  // assessment detail view (al_rasikhoon-nyp). The enum's own
+                  // name is the `:kind` path segment (`sard` / `exam`).
                   onTap: entry.isNavigable
                       ? () {
+                          final template = switch (entry.kind) {
+                            StudentHistoryKind.sard ||
+                            StudentHistoryKind.exam =>
+                              AppRoutes.assessmentDetail.replaceFirst(
+                                ':kind',
+                                entry.kind.name,
+                              ),
+                            _ => AppRoutes.sessionDetail,
+                          };
                           context.push(
-                            AppRoutes.sessionDetail.replaceFirst(
+                            template.replaceFirst(
                               ':recordId',
                               entry.detailRecordId!,
                             ),

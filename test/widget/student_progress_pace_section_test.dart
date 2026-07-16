@@ -95,6 +95,8 @@ void main() {
               currentMeetingProvider: adminStudentCurrentMeetingProvider,
               sessionHistoryProvider: adminStudentSessionHistoryProvider,
               sessionDetailRoute: '/admin/students/history/:recordId',
+              assessmentDetailRoute:
+                  '/admin/students/assessment/:kind/:recordId',
               paceSection: paceSection,
             ),
           ),

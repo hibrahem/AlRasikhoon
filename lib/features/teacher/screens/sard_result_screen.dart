@@ -124,9 +124,13 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
           advanceOutcome == StudentAdvanceOutcome.curriculumCompleted;
 
       // Invalidate the teacher's providers so the students list and the
-      // resolved student reflect the advanced/incremented state.
+      // resolved student reflect the advanced/incremented state — and the
+      // profile's سجل الحلقات, whose cached FutureProvider would otherwise
+      // keep showing the pre-save history without this سرد
+      // (al_rasikhoon-5ri).
       ref.invalidate(teacherStudentsProvider);
       ref.invalidate(studentProvider(widget.studentId));
+      ref.invalidate(teacherStudentSessionHistoryProvider(widget.studentId));
 
       if (mounted) {
         final String message;

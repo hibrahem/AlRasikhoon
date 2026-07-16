@@ -38,6 +38,11 @@ class StudentProgressScreen extends ConsumerWidget {
   /// the active shell, never cross into the student shell (al_rasikhoon-3hn).
   final String sessionDetailRoute;
 
+  /// The assessment-detail route template (containing `:kind` and
+  /// `:recordId`) for this shell — where a سرد/اختبار history row opens
+  /// (al_rasikhoon-nyp). INJECTED like [sessionDetailRoute].
+  final String assessmentDetailRoute;
+
   /// An optional role-specific section rendered under the header, INJECTED by
   /// the router like everything else so this screen stays role-agnostic. The
   /// supervisor shell passes the "edit starting point" affordance
@@ -65,6 +70,7 @@ class StudentProgressScreen extends ConsumerWidget {
     required this.currentMeetingProvider,
     required this.sessionHistoryProvider,
     required this.sessionDetailRoute,
+    required this.assessmentDetailRoute,
     this.repositionSection,
     this.paceSection,
   });
@@ -94,6 +100,7 @@ class StudentProgressScreen extends ConsumerWidget {
                 currentMeetingProvider: currentMeetingProvider,
                 sessionHistoryProvider: sessionHistoryProvider,
                 sessionDetailRoute: sessionDetailRoute,
+                assessmentDetailRoute: assessmentDetailRoute,
                 repositionSection: repositionSection,
                 paceSection: paceSection,
               ),
@@ -116,6 +123,7 @@ class _ProgressBody extends ConsumerWidget {
   final FutureProviderFamily<List<StudentHistoryEntry>, String>
   sessionHistoryProvider;
   final String sessionDetailRoute;
+  final String assessmentDetailRoute;
   final Widget? repositionSection;
   final Widget Function(StudentModel student)? paceSection;
 
@@ -124,6 +132,7 @@ class _ProgressBody extends ConsumerWidget {
     required this.currentMeetingProvider,
     required this.sessionHistoryProvider,
     required this.sessionDetailRoute,
+    required this.assessmentDetailRoute,
     this.repositionSection,
     this.paceSection,
   });
@@ -184,6 +193,7 @@ class _ProgressBody extends ConsumerWidget {
           data: (entries) => _SessionHistoryList(
             entries: entries,
             sessionDetailRoute: sessionDetailRoute,
+            assessmentDetailRoute: assessmentDetailRoute,
           ),
           loading: () => const LoadingState(lines: 2),
           error: (e, _) => ErrorState(
@@ -478,10 +488,12 @@ class _PartTile extends StatelessWidget {
 class _SessionHistoryList extends StatelessWidget {
   final List<StudentHistoryEntry> entries;
   final String sessionDetailRoute;
+  final String assessmentDetailRoute;
 
   const _SessionHistoryList({
     required this.entries,
     required this.sessionDetailRoute,
+    required this.assessmentDetailRoute,
   });
 
   @override
@@ -523,15 +535,24 @@ class _SessionHistoryList extends StatelessWidget {
             : (entry.passed ? tokens.green : tokens.maroon);
         return AppCard(
           margin: const EdgeInsets.only(bottom: 8),
-          // A سرد / اختبار has no detail screen yet, so its row renders but
-          // does not navigate (entry.isNavigable is false).
+          // The entry's kind decides the destination: lessons and تلقين open
+          // the session detail view, a سرد / اختبار the assessment detail
+          // view (al_rasikhoon-nyp). The enum's own name is the `:kind` path
+          // segment (`sard` / `exam`).
           onTap: entry.isNavigable
-              ? () => context.push(
-                  sessionDetailRoute.replaceFirst(
-                    ':recordId',
-                    entry.detailRecordId!,
-                  ),
-                )
+              ? () {
+                  final template = switch (entry.kind) {
+                    StudentHistoryKind.sard || StudentHistoryKind.exam =>
+                      assessmentDetailRoute.replaceFirst(
+                        ':kind',
+                        entry.kind.name,
+                      ),
+                    _ => sessionDetailRoute,
+                  };
+                  context.push(
+                    template.replaceFirst(':recordId', entry.detailRecordId!),
+                  );
+                }
               : null,
           child: Row(
             children: [
