@@ -5,6 +5,7 @@ import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/session_repository.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
+import '../../../domain/session/student_history_entry.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/user_provider.dart';
@@ -528,10 +529,10 @@ final activeSessionProvider =
 /// student who has recorded a year of sessions re-downloads every one of them
 /// on every profile open and pull-to-refresh.
 final teacherStudentSessionHistoryProvider =
-    FutureProvider.family<List<SessionRecordModel>, String>((
+    FutureProvider.family<List<StudentHistoryEntry>, String>((
       ref,
       studentId,
     ) async {
       final repo = ref.watch(sessionRepositoryProvider);
-      return repo.getSessionRecordsForStudent(studentId, limit: 50);
+      return repo.getStudentHistory(studentId, limit: 50);
     });

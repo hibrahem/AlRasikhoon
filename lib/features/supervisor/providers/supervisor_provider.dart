@@ -6,7 +6,7 @@ import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/models/exam_record_model.dart';
 import '../../../data/models/session_model.dart';
-import '../../../data/models/session_record_model.dart';
+import '../../../domain/session/student_history_entry.dart';
 import '../../../data/models/user_model.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/user_provider.dart';
@@ -108,12 +108,12 @@ final supervisorStudentProvider =
 /// the SCREEN only ever asks for a student the institute-scoped
 /// [supervisorStudentProvider] already resolved.
 final supervisorStudentSessionHistoryProvider =
-    FutureProvider.family<List<SessionRecordModel>, String>((
+    FutureProvider.family<List<StudentHistoryEntry>, String>((
       ref,
       studentId,
     ) async {
       final repo = ref.watch(sessionRepositoryProvider);
-      return repo.getSessionRecordsForStudent(studentId, limit: 50);
+      return repo.getStudentHistory(studentId, limit: 50);
     });
 
 /// Whether a student in the supervisor's institute has STARTED — has any

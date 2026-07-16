@@ -5,6 +5,7 @@ import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/domain/curriculum/curriculum_pace.dart';
 import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
+import 'package:al_rasikhoon/domain/session/student_history_entry.dart';
 
 /// A one-session meeting standing in for whatever `PacedSessionComposer`
 /// would have produced — these tests exercise `SessionRepository`, not
@@ -647,6 +648,143 @@ void main() {
         );
 
         expect(records, isEmpty);
+      });
+    });
+
+    // The bug this closes (al_rasikhoon-8v1): the log used to read only
+    // `session_records`, so a سرد and — as the user reported — an اختبار never
+    // appeared. `getStudentHistory` merges all three collections into one
+    // date-sorted timeline.
+    group('getStudentHistory', () {
+      setUp(() async {
+        // A lesson (oldest), a سرد, then an اختبار (newest) — for student1.
+        await fakeFirestore.collection('session_records').doc('lesson1').set({
+          'student_id': 'student1',
+          'teacher_id': 'teacher1',
+          'curriculum_session_id': 'cs5',
+          'level_id': 1,
+          'session_number': 5,
+          'date': Timestamp.fromDate(DateTime(2024, 1, 10)),
+          'attempt_number': 1,
+          'grades': {
+            'new_memorization_errors': 0,
+            'recent_review_errors': 0,
+            'distant_review_errors': 0,
+          },
+          'passed': true,
+          'created_at': Timestamp.now(),
+        });
+        await fakeFirestore.collection('sard_records').doc('sard1').set({
+          'student_id': 'student1',
+          'teacher_id': 'teacher1',
+          'curriculum_session_id': 'L1_J30_S30',
+          'tier': 'juz',
+          'juz_numbers': [30],
+          'scope_label_ar': 'سرد الجزء رقم 30 كاملًا',
+          'level_id': 1,
+          'date': Timestamp.fromDate(DateTime(2024, 1, 20)),
+          'error_count': 0,
+          'grade': 'راسخ',
+          'passed': true,
+          'attempt_number': 1,
+          'created_at': Timestamp.now(),
+        });
+        await fakeFirestore.collection('exam_records').doc('exam1').set({
+          'student_id': 'student1',
+          'supervisor_id': 'sup1',
+          'curriculum_session_id': 'L1_J30_S68',
+          'tier': 'juz',
+          'juz_numbers': [30],
+          'scope_label_ar': 'اختبار الجزء رقم 30',
+          'level_id': 1,
+          'date': Timestamp.fromDate(DateTime(2024, 1, 30)),
+          'error_count': 6,
+          'grade': 'راسب',
+          'passed': false,
+          'attempt_number': 1,
+          'created_at': Timestamp.now(),
+        });
+        // Another student's exam — must never leak into student1's timeline.
+        await fakeFirestore.collection('exam_records').doc('exam-other').set({
+          'student_id': 'student2',
+          'supervisor_id': 'sup1',
+          'curriculum_session_id': 'L1_J30_S68',
+          'tier': 'juz',
+          'scope_label_ar': 'اختبار آخر',
+          'level_id': 1,
+          'date': Timestamp.fromDate(DateTime(2024, 2, 1)),
+          'error_count': 0,
+          'grade': 'راسخ',
+          'passed': true,
+          'attempt_number': 1,
+          'created_at': Timestamp.now(),
+        });
+      });
+
+      test('merges lessons, سرد and اختبار into one timeline for the '
+          'student', () async {
+        final history = await sessionRepository.getStudentHistory('student1');
+
+        expect(history.length, 3);
+        expect(
+          history.map((e) => e.kind),
+          containsAll([
+            StudentHistoryKind.lesson,
+            StudentHistoryKind.sard,
+            StudentHistoryKind.exam,
+          ]),
+        );
+      });
+
+      test('orders the merged timeline newest-first', () async {
+        final history = await sessionRepository.getStudentHistory('student1');
+
+        // اختبار (Jan 30) → سرد (Jan 20) → lesson (Jan 10).
+        expect(history[0].kind, StudentHistoryKind.exam);
+        expect(history[1].kind, StudentHistoryKind.sard);
+        expect(history[2].kind, StudentHistoryKind.lesson);
+      });
+
+      test('titles the اختبار from its scope and leaves it non-navigable '
+          '(no detail screen yet)', () async {
+        final history = await sessionRepository.getStudentHistory('student1');
+        final exam = history.firstWhere(
+          (e) => e.kind == StudentHistoryKind.exam,
+        );
+
+        expect(exam.titleAr, 'اختبار الجزء رقم 30');
+        expect(exam.passed, isFalse);
+        expect(exam.isNavigable, isFalse);
+      });
+
+      test('leaves the lesson navigable to its detail record', () async {
+        final history = await sessionRepository.getStudentHistory('student1');
+        final lesson = history.firstWhere(
+          (e) => e.kind == StudentHistoryKind.lesson,
+        );
+
+        expect(lesson.isNavigable, isTrue);
+        expect(lesson.detailRecordId, 'lesson1');
+        expect(lesson.titleAr, 'الحلقة 5');
+      });
+
+      test('scopes strictly to the student', () async {
+        final history = await sessionRepository.getStudentHistory('student1');
+
+        expect(history.every((e) => e.id != 'exam-other'), isTrue);
+      });
+
+      test('applies the limit AFTER merging, so a recent اختبار is not '
+          'displaced by older lessons', () async {
+        final history = await sessionRepository.getStudentHistory(
+          'student1',
+          limit: 1,
+        );
+
+        expect(history.length, 1);
+        // The single kept row is the newest event overall — the اختبار —
+        // proving the bound is applied to the merged list, not per collection.
+        expect(history.single.kind, StudentHistoryKind.exam);
       });
     });
 

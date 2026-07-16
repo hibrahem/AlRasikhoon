@@ -5,6 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/session_record_model.dart';
+import 'package:al_rasikhoon/domain/session/student_history_entry.dart';
 import 'package:al_rasikhoon/features/student/providers/student_provider.dart';
 import 'package:al_rasikhoon/features/student/screens/session_history_screen.dart';
 
@@ -13,37 +14,34 @@ import 'package:al_rasikhoon/features/student/screens/session_history_screen.dar
 /// The session-list row must show ONLY a binary outcome (نجح / رسب) — never
 /// an averaged grade and never the per-component (new/near/far) grade
 /// breakdown. The breakdown belongs in the session detail view only.
-SessionRecordModel _record({
+///
+/// [grades] is retained on the fixture only to keep the #24 intent explicit at
+/// each call site — the history ENTRY carries no per-component grades, so a
+/// leak is impossible by construction, which is exactly the guarantee under
+/// test.
+StudentHistoryEntry _record({
   required String id,
   required bool passed,
   required SessionGrades grades,
   SessionKind kind = SessionKind.lesson,
 }) {
   final now = DateTime(2024, 3, 15);
-  return SessionRecordModel(
+  return StudentHistoryEntry(
     id: id,
-    studentId: 'student1',
-    teacherId: 'teacher1',
-    curriculumSessionId: 'cs1',
+    kind: kind == SessionKind.talqeen
+        ? StudentHistoryKind.talqeen
+        : StudentHistoryKind.lesson,
     levelId: 1,
-    kind: kind,
-    juzNumber: 30,
-    hizbNumber: 59,
     sessionNumber: 1,
-    fromOrderInLevel: 1,
-    toOrderInLevel: 1,
-    coversSessionIds: const ['cs1'],
-    date: now,
-    attemptNumber: 1,
-    grades: grades,
     passed: passed,
-    createdAt: now,
+    date: now,
+    detailRecordId: id,
   );
 }
 
 Future<void> _pumpHistory(
   WidgetTester tester,
-  List<SessionRecordModel> records,
+  List<StudentHistoryEntry> records,
 ) async {
   await tester.pumpWidget(
     ProviderScope(

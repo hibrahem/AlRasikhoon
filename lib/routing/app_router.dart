@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../data/models/user_model.dart';
 import '../shared/providers/user_provider.dart';
 import '../shared/widgets/role_shell.dart';
+import '../shared/widgets/student_pace_control.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/account_not_found_screen.dart';
 import '../features/admin/screens/admin_dashboard_screen.dart';
@@ -401,6 +402,21 @@ final routerProvider = Provider<GoRouter>((ref) {
                     // passes nothing here.
                     repositionSection: RepositionStartingPointSection(
                       studentId: studentId,
+                    ),
+                    // A supervisor scoped to the student's institute may set
+                    // pace (firestore.rules authorises it); the admin shell
+                    // passes nothing here and stays read-only. Built with the
+                    // loaded student so the control shows the current pace, and
+                    // refreshing the supervisor's own caches on a change.
+                    paceSection: (student) => StudentPaceControl(
+                      studentId: student.id,
+                      currentPace: student.pace,
+                      onPaceChanged: (ref) {
+                        ref.invalidate(supervisorStudentProvider(student.id));
+                        ref.invalidate(
+                          supervisorStudentCurrentMeetingProvider(student.id),
+                        );
+                      },
                     ),
                   );
                 },

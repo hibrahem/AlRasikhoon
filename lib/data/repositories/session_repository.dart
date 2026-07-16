@@ -10,6 +10,7 @@ import '../../core/utils/grade_calculator.dart';
 import '../../domain/curriculum/curriculum_pace.dart';
 import '../../domain/curriculum/paced_session.dart';
 import '../../domain/session/session_duration.dart';
+import '../../domain/session/student_history_entry.dart';
 
 class SessionRepository {
   final FirebaseFirestore _firestore;
@@ -564,6 +565,71 @@ class SessionRepository {
       if (hit.docs.isNotEmpty) return true;
     }
     return false;
+  }
+
+  /// One student's whole recitation history as a single, date-sorted timeline —
+  /// lessons and تلقين (`sessionRecords`), a سرد (`sardRecords`), and an اختبار
+  /// (`examRecords`) merged into one list newest-first.
+  ///
+  /// The three collections cannot be joined in Firestore, so — exactly like
+  /// [getStudentStatistics] — this fetches each and merges in memory. The
+  /// [limit] is applied AFTER the merge: bounding each collection first could
+  /// drop a recent اختبار in favour of 50 old lessons. Assessment rows carry no
+  /// [StudentHistoryEntry.detailRecordId] (no detail screen exists for them
+  /// yet), so they render but do not navigate.
+  Future<List<StudentHistoryEntry>> getStudentHistory(
+    String studentId, {
+    int? limit,
+  }) async {
+    final sessionRecords = await getSessionRecordsForStudent(studentId);
+    final sardRecords = await getSardRecordsForStudent(studentId);
+    final examRecords = await getExamRecordsForStudent(studentId);
+
+    final entries = <StudentHistoryEntry>[
+      for (final r in sessionRecords)
+        StudentHistoryEntry(
+          id: r.id,
+          kind: r.isTalqeen
+              ? StudentHistoryKind.talqeen
+              : StudentHistoryKind.lesson,
+          levelId: r.levelId,
+          sessionNumber: r.sessionNumber,
+          passed: r.passed,
+          date: r.date,
+          duration: SessionDuration.fromRecord(r),
+          // Lessons and تلقين both resolve in SessionDetailScreen.
+          detailRecordId: r.id,
+        ),
+      for (final r in sardRecords)
+        StudentHistoryEntry(
+          id: r.id,
+          kind: StudentHistoryKind.sard,
+          levelId: r.levelId,
+          scopeLabelAr: r.scopeLabelAr,
+          passed: r.passed,
+          date: r.date,
+          duration: r.duration == null
+              ? null
+              : SessionDuration(elapsed: r.duration!),
+        ),
+      for (final r in examRecords)
+        StudentHistoryEntry(
+          id: r.id,
+          kind: StudentHistoryKind.exam,
+          levelId: r.levelId,
+          scopeLabelAr: r.scopeLabelAr,
+          passed: r.passed,
+          date: r.date,
+          duration: r.duration == null
+              ? null
+              : SessionDuration(elapsed: r.duration!),
+        ),
+    ]..sort((a, b) => b.date.compareTo(a.date));
+
+    if (limit != null && entries.length > limit) {
+      return entries.sublist(0, limit);
+    }
+    return entries;
   }
 
   /// Get student statistics

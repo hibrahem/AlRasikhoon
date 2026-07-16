@@ -5,12 +5,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:al_rasikhoon/data/models/session_model.dart';
-import 'package:al_rasikhoon/data/models/session_record_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
+import 'package:al_rasikhoon/domain/session/student_history_entry.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/features/teacher/screens/student_profile_screen.dart';
 
@@ -66,39 +66,26 @@ void main() {
     createdAt: DateTime(2026),
   );
 
-  SessionRecordModel record({
+  StudentHistoryEntry record({
     required String id,
     required int sessionNumber,
     required bool passed,
     required DateTime date,
   }) {
-    return SessionRecordModel(
+    return StudentHistoryEntry(
       id: id,
-      studentId: 's1',
-      teacherId: 'teacher1',
-      curriculumSessionId: 'cs$id',
+      kind: StudentHistoryKind.lesson,
       levelId: 2,
-      juzNumber: 29,
       sessionNumber: sessionNumber,
-      fromOrderInLevel: sessionNumber,
-      toOrderInLevel: sessionNumber,
-      coversSessionIds: ['cs$id'],
-      kind: SessionKind.lesson,
-      date: date,
-      attemptNumber: 1,
-      grades: const SessionGrades(
-        newMemorizationErrors: 0,
-        recentReviewErrors: 0,
-        distantReviewErrors: 0,
-      ),
       passed: passed,
-      createdAt: date,
+      date: date,
+      detailRecordId: id,
     );
   }
 
   Future<void> pump(
     WidgetTester tester, {
-    required List<SessionRecordModel> history,
+    required List<StudentHistoryEntry> history,
   }) async {
     await tester.pumpWidget(
       ProviderScope(

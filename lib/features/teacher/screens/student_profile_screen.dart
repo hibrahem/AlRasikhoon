@@ -11,15 +11,13 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/student_model.dart';
 import '../../../data/models/user_model.dart';
-import '../../../data/repositories/student_repository.dart';
-import '../../../domain/curriculum/curriculum_pace.dart';
 import '../../../domain/curriculum/paced_session.dart';
-import '../../../domain/session/session_duration.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/session_record_row.dart';
+import '../../../shared/widgets/student_pace_control.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/student_level_progress.dart';
@@ -74,7 +72,13 @@ class StudentProfileScreen extends ConsumerWidget {
 
                   // Pace control — either a teacher or a supervisor may set it,
                   // and it may change mid-level; there is no approval workflow.
-                  _buildPaceControl(context, ref, student),
+                  // The same control the supervisor sees, invalidating the
+                  // teacher's own caches on a change (see _onPaceChanged).
+                  StudentPaceControl(
+                    studentId: student.id,
+                    currentPace: student.pace,
+                    onPaceChanged: (ref) => _onPaceChanged(ref, student.id),
+                  ),
 
                   const SizedBox(height: 24),
 
@@ -177,79 +181,19 @@ class StudentProfileScreen extends ConsumerWidget {
     );
   }
 
-  /// How many curriculum lessons the student covers per meeting (a تلقين, a
-  /// سرد, and an اختبار each always stand alone, whatever the pace) — a small
-  /// control, not a workflow: either a teacher or a supervisor may set it
-  /// directly, and it takes effect on the student's very next meeting.
-  Widget _buildPaceControl(
-    BuildContext context,
-    WidgetRef ref,
-    StudentModel student,
-  ) {
-    final tokens = context.tokens;
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('وتيرة الحفظ', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 12),
-          SegmentedButton<int>(
-            segments: const [
-              ButtonSegment(value: 1, label: Text('1x')),
-              ButtonSegment(value: 2, label: Text('2x')),
-              ButtonSegment(value: 3, label: Text('3x')),
-            ],
-            // A student who has never had a pace set is a standard-pace
-            // (1x) student — `CurriculumPace.fromJson` already treats
-            // absence that way, so the control shows the same default.
-            selected: {student.pace.multiplier},
-            onSelectionChanged: (selected) =>
-                _setPace(context, ref, student.id, selected.first),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'عدد الحلقات في اللقاء الواحد',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _setPace(
-    BuildContext context,
-    WidgetRef ref,
-    String studentId,
-    int multiplier,
-  ) async {
-    try {
-      await ref
-          .read(studentRepositoryProvider)
-          .setStudentPace(studentId, CurriculumPace(multiplier));
-    } catch (_) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('تعذر تحديث وتيرة الحفظ'),
-            backgroundColor: context.tokens.maroon,
-          ),
-        );
-      }
-      return;
-    }
-
-    // The student stores where a meeting STARTS, never how far it extends —
-    // the new pace only widens the pending meeting once the student is
-    // RE-READ FROM FIRESTORE.
-    //
-    // `studentProvider` is derived: it picks the student out of the list
-    // `teacherStudentsProvider` already fetched. Invalidating it alone re-runs
-    // its body against that CACHED list — the same student, still carrying the
-    // old pace — so the meeting recomposes from stale data and the teacher sees
-    // no change at all. The source has to be invalidated too, which is exactly
-    // what `completeSession` does after it writes.
+  /// Refresh the teacher's caches after a pace change.
+  ///
+  /// The student stores where a meeting STARTS, never how far it extends — the
+  /// new pace only widens the pending meeting once the student is RE-READ FROM
+  /// FIRESTORE.
+  ///
+  /// `studentProvider` is derived: it picks the student out of the list
+  /// `teacherStudentsProvider` already fetched. Invalidating it alone re-runs
+  /// its body against that CACHED list — the same student, still carrying the
+  /// old pace — so the meeting recomposes from stale data and the teacher sees
+  /// no change at all. The source has to be invalidated too, which is exactly
+  /// what `completeSession` does after it writes.
+  void _onPaceChanged(WidgetRef ref, String studentId) {
     ref.invalidate(teacherStudentsProvider);
     ref.invalidate(studentProvider(studentId));
   }
@@ -777,29 +721,31 @@ class _SessionHistorySection extends ConsumerWidget {
           physics: const NeverScrollableScrollPhysics(),
           itemCount: records.length,
           itemBuilder: (context, index) {
-            final record = records[index];
+            final entry = records[index];
             // Listing shows only binary pass/fail (نجح / رسب), never an
             // average of the three component grades (#24); the per-component
             // breakdown lives in the session detail. Enforced by
             // SessionRecordRow, shared with the student's own history — which
             // also owns the rule that a تلقين shows no outcome at all.
             return SessionRecordRow(
-              isTalqeen: record.isTalqeen,
-              title: record.isTalqeen
-                  ? 'تلقين'
-                  : 'الحلقة ${record.sessionNumber}',
-              subtitleLines: ['المستوى ${record.levelId}'],
-              passed: record.passed,
-              date: record.date,
-              sessionDuration: SessionDuration.fromRecord(record),
-              onTap: () {
-                context.push(
-                  AppRoutes.teacherSessionDetail.replaceFirst(
-                    ':recordId',
-                    record.id,
-                  ),
-                );
-              },
+              isTalqeen: entry.isTalqeen,
+              title: entry.titleAr,
+              subtitleLines: entry.subtitleLines,
+              passed: entry.passed,
+              date: entry.date,
+              sessionDuration: entry.duration,
+              // A سرد / اختبار has no detail screen yet — render but don't
+              // navigate. Lessons and تلقين still open the detail view.
+              onTap: entry.isNavigable
+                  ? () {
+                      context.push(
+                        AppRoutes.teacherSessionDetail.replaceFirst(
+                          ':recordId',
+                          entry.detailRecordId!,
+                        ),
+                      );
+                    }
+                  : null,
             );
           },
         );
