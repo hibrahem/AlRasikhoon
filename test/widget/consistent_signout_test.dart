@@ -41,61 +41,29 @@ UserModel _student() => UserModel(
 );
 
 void main() {
-  group('admin AppBar sign-out is confirmed, never one-tap', () {
-    Future<FakeAuthRepository> pumpAdmin(WidgetTester tester) async {
-      final fakeAuth = FakeAuthRepository();
+  group('dashboards no longer expose an unconfirmed AppBar logout', () {
+    testWidgets('admin dashboard has no AppBar logout', (tester) async {
+      // The admin Management hub (branch 0 of the 3-tab admin shell) no
+      // longer carries a sign-out affordance of its own: sign-out now lives
+      // exclusively in the Profile tab (SettingsScreen), whose own
+      // confirmed-only gate is covered by settings_screen_test.dart. This
+      // replaces the old "admin AppBar sign-out is confirmed, never one-tap"
+      // group, which asserted an AppBar logout icon that this feature
+      // removed from AdminDashboardScreen.
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             adminStatsProvider.overrideWith((ref) async => const AdminStats()),
-            authRepositoryProvider.overrideWith(() => fakeAuth),
+            authRepositoryProvider.overrideWith(FakeAuthRepository.new),
           ],
           child: const MaterialApp(home: AdminDashboardScreen()),
         ),
       );
       await tester.pumpAndSettle();
-      return fakeAuth;
-    }
 
-    testWidgets('tapping the AppBar logout only opens the confirmation dialog', (
-      tester,
-    ) async {
-      final fakeAuth = await pumpAdmin(tester);
-
-      await tester.tap(find.byIcon(Icons.logout));
-      await tester.pumpAndSettle();
-
-      expect(find.text('هل تريد تسجيل الخروج؟'), findsOneWidget);
-      // The tap alone must not sign out — that is the whole point of the gate.
-      expect(fakeAuth.signOutCallCount, 0);
+      expect(find.byIcon(Icons.logout), findsNothing);
     });
 
-    testWidgets('cancelling the dialog does not sign out', (tester) async {
-      final fakeAuth = await pumpAdmin(tester);
-
-      await tester.tap(find.byIcon(Icons.logout));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('إلغاء'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('هل تريد تسجيل الخروج؟'), findsNothing);
-      expect(fakeAuth.signOutCallCount, 0);
-    });
-
-    testWidgets('confirming the dialog signs out exactly once', (tester) async {
-      final fakeAuth = await pumpAdmin(tester);
-
-      await tester.tap(find.byIcon(Icons.logout));
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(TextButton, 'تسجيل الخروج'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('هل تريد تسجيل الخروج؟'), findsNothing);
-      expect(fakeAuth.signOutCallCount, 1);
-    });
-  });
-
-  group('dashboards no longer expose an unconfirmed AppBar logout', () {
     testWidgets('supervisor dashboard has no AppBar logout', (tester) async {
       await tester.pumpWidget(
         ProviderScope(

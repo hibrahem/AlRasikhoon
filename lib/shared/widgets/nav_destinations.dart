@@ -34,26 +34,20 @@ List<NavDestination> destinationsFor(UserRole role) {
         NavDestination(
           icon: Icons.dashboard_outlined,
           activeIcon: Icons.dashboard,
-          label: 'الرئيسية',
+          label: 'الإدارة',
           rootPath: AppRoutes.adminDashboard,
-        ),
-        NavDestination(
-          icon: Icons.account_balance_outlined,
-          activeIcon: Icons.account_balance,
-          label: 'المعاهد',
-          rootPath: AppRoutes.institutes,
-        ),
-        NavDestination(
-          icon: Icons.people_outline,
-          activeIcon: Icons.people,
-          label: 'المعلمون',
-          rootPath: AppRoutes.teachers,
         ),
         NavDestination(
           icon: Icons.menu_book_outlined,
           activeIcon: Icons.menu_book,
           label: 'المنهج',
           rootPath: AppRoutes.curriculum,
+        ),
+        NavDestination(
+          icon: Icons.person_outline,
+          activeIcon: Icons.person,
+          label: 'الملف الشخصي',
+          rootPath: AppRoutes.adminSettings,
         ),
       ];
 

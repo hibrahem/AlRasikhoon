@@ -105,6 +105,8 @@ class InstituteDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     UserModel teacher,
   ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final maroon = context.tokens.maroon;
     Navigator.pop(context);
 
     try {
@@ -115,20 +117,16 @@ class InstituteDetailScreen extends ConsumerWidget {
       );
       ref.invalidate(teachersForInstituteProvider(instituteId));
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('تم إضافة ${teacher.name} بنجاح')),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(content: Text('تم إضافة ${teacher.name} بنجاح')),
+      );
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('فشل في إضافة المعلم: $e'),
-            backgroundColor: context.tokens.maroon,
-          ),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('فشل في إضافة المعلم: $e'),
+          backgroundColor: maroon,
+        ),
+      );
     }
   }
 
@@ -162,6 +160,8 @@ class InstituteDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     UserModel teacher,
   ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final maroon = context.tokens.maroon;
     Navigator.pop(context);
 
     try {
@@ -172,20 +172,186 @@ class InstituteDetailScreen extends ConsumerWidget {
       );
       ref.invalidate(teachersForInstituteProvider(instituteId));
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('تم إزالة ${teacher.name} بنجاح')),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(content: Text('تم إزالة ${teacher.name} بنجاح')),
+      );
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('فشل في إزالة المعلم: $e'),
-            backgroundColor: context.tokens.maroon,
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('فشل في إزالة المعلم: $e'),
+          backgroundColor: maroon,
+        ),
+      );
+    }
+  }
+
+  void _showAddSupervisorSheet(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => Consumer(
+        builder: (context, ref, _) {
+          final allSupervisorsAsync = ref.watch(allSupervisorsProvider);
+          final assignedSupervisorsAsync = ref.watch(
+            supervisorsForInstituteProvider(instituteId),
+          );
+
+          return DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.3,
+            maxChildSize: 0.9,
+            expand: false,
+            builder: (context, scrollController) => Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'إضافة مشرف',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: allSupervisorsAsync.when(
+                    loading: () => const LoadingState(),
+                    error: (e, _) => ErrorState(message: 'خطأ: $e'),
+                    data: (allSupervisors) => assignedSupervisorsAsync.when(
+                      loading: () => const LoadingState(),
+                      error: (e, _) => ErrorState(message: 'خطأ: $e'),
+                      data: (assignedSupervisors) {
+                        final assignedIds = assignedSupervisors
+                            .map((s) => s.id)
+                            .toSet();
+                        final available = allSupervisors
+                            .where((s) => !assignedIds.contains(s.id))
+                            .toList();
+
+                        if (available.isEmpty) {
+                          return const Center(
+                            child: Text('لا يوجد مشرفون متاحون للإضافة'),
+                          );
+                        }
+
+                        return ListView.builder(
+                          controller: scrollController,
+                          itemCount: available.length,
+                          itemBuilder: (context, index) {
+                            final supervisor = available[index];
+                            return _SupervisorSelectionTile(
+                              supervisor: supervisor,
+                              onTap: () =>
+                                  _assignSupervisor(context, ref, supervisor),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _assignSupervisor(
+    BuildContext context,
+    WidgetRef ref,
+    UserModel supervisor,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final maroon = context.tokens.maroon;
+    Navigator.pop(context);
+    try {
+      final repo = ref.read(instituteRepositoryProvider);
+      await repo.assignSupervisorToInstitute(
+        supervisorId: supervisor.id,
+        instituteId: instituteId,
+      );
+      ref.invalidate(supervisorsForInstituteProvider(instituteId));
+      ref.invalidate(institutesForSupervisorProvider(supervisor.id));
+      ref.invalidate(allSupervisorsProvider);
+      messenger.showSnackBar(
+        SnackBar(content: Text('تم إضافة ${supervisor.name} بنجاح')),
+      );
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('فشل في إضافة المشرف: $e'),
+          backgroundColor: maroon,
+        ),
+      );
+    }
+  }
+
+  void _showRemoveSupervisorDialog(
+    BuildContext context,
+    WidgetRef ref,
+    UserModel supervisor,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('إزالة المشرف'),
+        content: Text(
+          'هل أنت متأكد من إزالة ${supervisor.name} من هذا المعهد؟',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('إلغاء'),
           ),
-        );
-      }
+          TextButton(
+            onPressed: () => _removeSupervisor(context, ref, supervisor),
+            style: TextButton.styleFrom(foregroundColor: context.tokens.maroon),
+            child: const Text('إزالة'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _removeSupervisor(
+    BuildContext context,
+    WidgetRef ref,
+    UserModel supervisor,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final maroon = context.tokens.maroon;
+    Navigator.pop(context);
+    try {
+      final repo = ref.read(instituteRepositoryProvider);
+      await repo.removeSupervisorFromInstitute(
+        supervisorId: supervisor.id,
+        instituteId: instituteId,
+      );
+      ref.invalidate(supervisorsForInstituteProvider(instituteId));
+      ref.invalidate(institutesForSupervisorProvider(supervisor.id));
+      ref.invalidate(allSupervisorsProvider);
+      messenger.showSnackBar(
+        SnackBar(content: Text('تم إزالة ${supervisor.name} بنجاح')),
+      );
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('فشل في إزالة المشرف: $e'),
+          backgroundColor: maroon,
+        ),
+      );
     }
   }
 
@@ -194,6 +360,9 @@ class InstituteDetailScreen extends ConsumerWidget {
     final tokens = context.tokens;
     final instituteAsync = ref.watch(instituteProvider(instituteId));
     final teachersAsync = ref.watch(teachersForInstituteProvider(instituteId));
+    final supervisorsAsync = ref.watch(
+      supervisorsForInstituteProvider(instituteId),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -374,6 +543,111 @@ class InstituteDetailScreen extends ConsumerWidget {
                   error: (e, _) =>
                       ErrorState(message: 'تعذر تحميل المعلمين: $e'),
                 ),
+                const SizedBox(height: 24),
+                // Supervisors section — mirrors the teachers section above.
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'المشرفون',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    TextButton.icon(
+                      onPressed: () => _showAddSupervisorSheet(context, ref),
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('إضافة'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                supervisorsAsync.when(
+                  data: (supervisors) {
+                    if (supervisors.isEmpty) {
+                      return EmptyState(
+                        icon: Icons.admin_panel_settings_outlined,
+                        title: 'لا يوجد مشرفون',
+                        action: AppButton(
+                          text: 'إضافة مشرف',
+                          onPressed: () =>
+                              _showAddSupervisorSheet(context, ref),
+                          type: AppButtonType.outline,
+                          size: AppButtonSize.small,
+                        ),
+                      );
+                    }
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: supervisors.length,
+                      itemBuilder: (context, index) {
+                        final supervisor = supervisors[index];
+                        return AppCard(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          onTap: () => context.push(
+                            AppRoutes.supervisorDetail.replaceFirst(
+                              ':id',
+                              supervisor.id,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: tokens.gold.withValues(
+                                  alpha: 0.1,
+                                ),
+                                child: Text(
+                                  supervisor.name.isNotEmpty
+                                      ? supervisor.name[0]
+                                      : '?',
+                                  style: TextStyle(
+                                    color: tokens.gold,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      supervisor.name,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleSmall,
+                                    ),
+                                    Text(
+                                      supervisor.phone ??
+                                          supervisor.displayUsername,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(color: tokens.sepia),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.remove_circle_outline,
+                                  color: tokens.maroon,
+                                ),
+                                onPressed: () => _showRemoveSupervisorDialog(
+                                  context,
+                                  ref,
+                                  supervisor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  loading: () => const LoadingState(),
+                  error: (e, _) =>
+                      ErrorState(message: 'تعذر تحميل المشرفين: $e'),
+                ),
               ],
             ),
           );
@@ -405,6 +679,34 @@ class _TeacherSelectionTile extends StatelessWidget {
       title: Text(teacher.name),
       subtitle: Text(teacher.phone ?? teacher.displayUsername),
       trailing: Icon(Icons.add_circle_outline, color: tokens.green),
+      onTap: onTap,
+    );
+  }
+}
+
+class _SupervisorSelectionTile extends StatelessWidget {
+  final UserModel supervisor;
+  final VoidCallback onTap;
+
+  const _SupervisorSelectionTile({
+    required this.supervisor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: tokens.gold.withValues(alpha: 0.1),
+        child: Text(
+          supervisor.name.isNotEmpty ? supervisor.name[0] : '?',
+          style: TextStyle(color: tokens.gold, fontWeight: FontWeight.bold),
+        ),
+      ),
+      title: Text(supervisor.name),
+      subtitle: Text(supervisor.phone ?? supervisor.displayUsername),
+      trailing: Icon(Icons.add_circle_outline, color: tokens.gold),
       onTap: onTap,
     );
   }

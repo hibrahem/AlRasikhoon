@@ -256,26 +256,22 @@ class AdminRobot extends TestRobot {
     expect(find.text('مرحباً، مدير النظام'), findsOneWidget);
   }
 
-  /// Navigate to institutes via bottom nav
+  /// Navigate to institutes from the Management hub's stat-card grid.
+  ///
+  /// There is no longer a dedicated "المعاهد" bottom-nav tab: the admin shell
+  /// was restructured to 3 tabs (Management/Curriculum/Profile), and
+  /// institutes/teachers/supervisors/students are now reached by tapping the
+  /// corresponding stat card on the Management hub (branch 0), which
+  /// `context.push`es the destination screen (al_rasikhoon feature: admin nav
+  /// restructure). Callers still land on that hub first via
+  /// `verifyDashboard()`.
   Future<void> goToInstitutes() async {
-    final navBar = find.byType(BottomNavigationBar);
-    final instituteIcon = find.descendant(
-      of: navBar,
-      matching: find.text('المعاهد'),
-    );
-    await tester.tap(instituteIcon);
-    await pumpAndSettle();
+    await tapByText('المعاهد');
   }
 
-  /// Navigate to teachers via bottom nav
+  /// Navigate to teachers from the Management hub's stat-card grid.
   Future<void> goToTeachers() async {
-    final navBar = find.byType(BottomNavigationBar);
-    final teacherIcon = find.descendant(
-      of: navBar,
-      matching: find.text('المعلمون'),
-    );
-    await tester.tap(teacherIcon);
-    await pumpAndSettle();
+    await tapByText('المعلمون');
   }
 
   /// Navigate to curriculum via bottom nav

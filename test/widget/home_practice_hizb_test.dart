@@ -47,6 +47,7 @@ void main() {
               (ref) async => const HomePracticeStats(),
             ),
             studentHomePracticesProvider.overrideWith((ref) async => []),
+            homeAssignmentProvider.overrideWith((ref) async => null),
           ],
           child: const MaterialApp(home: HomePracticeScreen()),
         ),

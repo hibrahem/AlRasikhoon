@@ -43,6 +43,17 @@ Future<FakeFirebaseFirestore> _seedInstitute({
     'is_active': true,
   });
 
+  // The supervisor is scoped to their institute through supervisor_institutes
+  // membership (al_rasikhoon-3n6), which is how AddStudentScreen resolves the
+  // institute the new student is created in. Without it the institute picker is
+  // empty and the submit trips the institute guard before ever reaching the
+  // teacher guard this test exercises.
+  await firestore.collection('supervisor_institutes').add({
+    'supervisor_id': _supervisorId,
+    'institute_id': _instituteId,
+    'is_active': true,
+  });
+
   if (withTeacher) {
     await firestore.collection('users').doc(_teacherId).set({
       'username': 'teacher1',
