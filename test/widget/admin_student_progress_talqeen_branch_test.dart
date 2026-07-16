@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/session_record_model.dart';
+import 'package:al_rasikhoon/domain/session/student_history_entry.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
@@ -147,9 +148,25 @@ void main() {
             ),
           ),
           adminStudentSessionHistoryProvider('s1').overrideWith(
-            (ref) async => <SessionRecordModel>[
-              talqeenRecord,
-              failedLessonRecord,
+            (ref) async => <StudentHistoryEntry>[
+              StudentHistoryEntry(
+                id: talqeenRecord.id,
+                kind: StudentHistoryKind.talqeen,
+                levelId: talqeenRecord.levelId,
+                sessionNumber: talqeenRecord.sessionNumber,
+                passed: talqeenRecord.passed,
+                date: talqeenRecord.date,
+                detailRecordId: talqeenRecord.id,
+              ),
+              StudentHistoryEntry(
+                id: failedLessonRecord.id,
+                kind: StudentHistoryKind.lesson,
+                levelId: failedLessonRecord.levelId,
+                sessionNumber: failedLessonRecord.sessionNumber,
+                passed: failedLessonRecord.passed,
+                date: failedLessonRecord.date,
+                detailRecordId: failedLessonRecord.id,
+              ),
             ],
           ),
         ],

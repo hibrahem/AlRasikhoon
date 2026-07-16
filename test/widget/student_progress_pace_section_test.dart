@@ -5,13 +5,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:al_rasikhoon/data/models/session_model.dart';
-import 'package:al_rasikhoon/data/models/session_record_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/domain/curriculum/curriculum_pace.dart';
 import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
+import 'package:al_rasikhoon/domain/session/student_history_entry.dart';
 import 'package:al_rasikhoon/features/admin/providers/admin_provider.dart';
 import 'package:al_rasikhoon/shared/screens/student_progress_screen.dart';
 import 'package:al_rasikhoon/shared/widgets/student_pace_control.dart';
@@ -84,7 +84,7 @@ void main() {
           ).overrideWith((ref) async => meeting),
           adminStudentSessionHistoryProvider(
             's1',
-          ).overrideWith((ref) async => <SessionRecordModel>[]),
+          ).overrideWith((ref) async => <StudentHistoryEntry>[]),
         ],
         child: MaterialApp(
           home: Directionality(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../domain/session/session_duration.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/session_record_row.dart';
 import '../../../shared/widgets/states/empty_state.dart';
@@ -36,7 +35,7 @@ class SessionHistoryScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               itemCount: records.length,
               itemBuilder: (context, index) {
-                final record = records[index];
+                final entry = records[index];
                 // Listing shows only binary pass/fail (نجح / رسب), never an
                 // average of the three component grades (#24). The
                 // per-component breakdown lives in the session detail view.
@@ -44,25 +43,24 @@ class SessionHistoryScreen extends ConsumerWidget {
                 // history listing — which also owns the rule that a تلقين
                 // shows no outcome at all.
                 return SessionRecordRow(
-                  isTalqeen: record.isTalqeen,
-                  title: record.isTalqeen
-                      ? 'تلقين'
-                      : 'الحلقة ${record.sessionNumber}',
-                  // Never an app-derived hizb — `record.hizbNumber` is the
-                  // denormalized structural value, which can disagree with a
-                  // session's own verbatim label.
-                  subtitleLines: ['المستوى ${record.levelId}'],
-                  passed: record.passed,
-                  date: record.date,
-                  sessionDuration: SessionDuration.fromRecord(record),
-                  onTap: () {
-                    context.push(
-                      AppRoutes.sessionDetail.replaceFirst(
-                        ':recordId',
-                        record.id,
-                      ),
-                    );
-                  },
+                  isTalqeen: entry.isTalqeen,
+                  title: entry.titleAr,
+                  subtitleLines: entry.subtitleLines,
+                  passed: entry.passed,
+                  date: entry.date,
+                  sessionDuration: entry.duration,
+                  // A سرد / اختبار has no detail screen yet — render but don't
+                  // navigate. Lessons and تلقين still open the detail view.
+                  onTap: entry.isNavigable
+                      ? () {
+                          context.push(
+                            AppRoutes.sessionDetail.replaceFirst(
+                              ':recordId',
+                              entry.detailRecordId!,
+                            ),
+                          );
+                        }
+                      : null,
                 );
               },
             ),

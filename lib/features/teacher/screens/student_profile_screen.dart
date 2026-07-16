@@ -12,7 +12,6 @@ import '../../../data/models/session_model.dart';
 import '../../../data/models/student_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../domain/curriculum/paced_session.dart';
-import '../../../domain/session/session_duration.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -722,29 +721,31 @@ class _SessionHistorySection extends ConsumerWidget {
           physics: const NeverScrollableScrollPhysics(),
           itemCount: records.length,
           itemBuilder: (context, index) {
-            final record = records[index];
+            final entry = records[index];
             // Listing shows only binary pass/fail (نجح / رسب), never an
             // average of the three component grades (#24); the per-component
             // breakdown lives in the session detail. Enforced by
             // SessionRecordRow, shared with the student's own history — which
             // also owns the rule that a تلقين shows no outcome at all.
             return SessionRecordRow(
-              isTalqeen: record.isTalqeen,
-              title: record.isTalqeen
-                  ? 'تلقين'
-                  : 'الحلقة ${record.sessionNumber}',
-              subtitleLines: ['المستوى ${record.levelId}'],
-              passed: record.passed,
-              date: record.date,
-              sessionDuration: SessionDuration.fromRecord(record),
-              onTap: () {
-                context.push(
-                  AppRoutes.teacherSessionDetail.replaceFirst(
-                    ':recordId',
-                    record.id,
-                  ),
-                );
-              },
+              isTalqeen: entry.isTalqeen,
+              title: entry.titleAr,
+              subtitleLines: entry.subtitleLines,
+              passed: entry.passed,
+              date: entry.date,
+              sessionDuration: entry.duration,
+              // A سرد / اختبار has no detail screen yet — render but don't
+              // navigate. Lessons and تلقين still open the detail view.
+              onTap: entry.isNavigable
+                  ? () {
+                      context.push(
+                        AppRoutes.teacherSessionDetail.replaceFirst(
+                          ':recordId',
+                          entry.detailRecordId!,
+                        ),
+                      );
+                    }
+                  : null,
             );
           },
         );
