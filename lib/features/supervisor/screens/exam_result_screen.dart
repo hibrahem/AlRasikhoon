@@ -245,7 +245,8 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
 
               // Notes
               Align(
-                alignment: Alignment.centerRight,
+                // Directional: centerStart is the reading-start edge in RTL.
+                alignment: AlignmentDirectional.centerStart,
                 child: Text(
                   'ملاحظات (اختياري)',
                   style: Theme.of(context).textTheme.titleMedium,

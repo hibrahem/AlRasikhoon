@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 // Kept only for the memorization-mode accent system
 // (forMemorizationPart) used by _SessionPartTile below. Fixed,
 // colorblind-safe, WCAG-AA-verified colors (hibrahem/AlRasikhoon#25), not
@@ -16,6 +17,7 @@ import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/session_record_row.dart';
 import '../../../shared/widgets/student_pace_control.dart';
 import '../../../shared/widgets/states/error_state.dart';
@@ -213,13 +215,11 @@ class StudentProfileScreen extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: tokens.green.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(Icons.menu_book, color: tokens.green),
+              IconMedallion(
+                icon: Icons.menu_book,
+                accent: tokens.green,
+                size: 48,
+                iconSize: 24,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -320,13 +320,11 @@ class StudentProfileScreen extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: tokens.green.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(Icons.record_voice_over, color: tokens.green),
+              IconMedallion(
+                icon: Icons.record_voice_over,
+                accent: tokens.green,
+                size: 48,
+                iconSize: 24,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -360,7 +358,13 @@ class StudentProfileScreen extends ConsumerWidget {
           const SizedBox(height: 4),
           Text(
             meeting.newContentAr,
-            style: Theme.of(context).textTheme.titleMedium,
+            // A Qur'an passage — set in Amiri, the manuscript face passages
+            // carry across the design system.
+            style: GoogleFonts.amiri(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: tokens.ink,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
@@ -440,13 +444,11 @@ class StudentProfileScreen extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: tokens.maroon.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(Icons.record_voice_over, color: tokens.maroon),
+              IconMedallion(
+                icon: Icons.record_voice_over,
+                accent: tokens.maroon,
+                size: 48,
+                iconSize: 24,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -498,13 +500,13 @@ class StudentProfileScreen extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: tokens.gold.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(Icons.quiz, color: tokens.gold),
+              // Gold stays: the اختبار card is the one exam/attention-positive
+              // surface on this screen.
+              IconMedallion(
+                icon: Icons.quiz,
+                accent: tokens.gold,
+                size: 48,
+                iconSize: 24,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -579,8 +581,11 @@ class _SessionPartTile extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: tokens.surfaceVariant,
-        borderRadius: BorderRadius.circular(8),
-        border: Border(right: BorderSide(color: accent, width: 4)),
+        // 12 is the inner inset-panel radius (the card carries radiusCard).
+        borderRadius: BorderRadius.circular(12),
+        // Start-side accent stripe — directional so it hugs the reading edge
+        // in RTL.
+        border: BorderDirectional(start: BorderSide(color: accent, width: 4)),
       ),
       child: Row(
         children: [

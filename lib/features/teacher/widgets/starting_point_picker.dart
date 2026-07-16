@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/level_model.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/repositories/curriculum_repository.dart';
@@ -209,7 +209,7 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
             'تعذر تحميل المنهج',
             style: Theme.of(
               context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.error),
+            ).textTheme.bodySmall?.copyWith(color: context.tokens.maroon),
           ),
           data: (levels) => _buildDropdowns(context, levels),
         ),
@@ -220,6 +220,7 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
   }
 
   Widget _buildBanner(BuildContext context) {
+    final tokens = context.tokens;
     final session = _selectedSession;
     final message = session == null
         ? 'لا توجد حلقات لهذا الجزء في المنهج. اختر جزءًا آخر.'
@@ -227,23 +228,26 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
               'الجزء $_juz، المستوى $_level — '
               'ويُعتبر ما قبلها من المنهج محفوظًا ومعتمدًا.';
 
+    // No manuscript token for the old "info" blue; this is not a سرد
+    // context, so the banner takes tokens.green — the positive/affirmative
+    // hue — for a note confirming where the student will begin.
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.info.withValues(alpha: 0.1),
+        color: tokens.green.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+        border: Border.all(color: tokens.green.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline, color: AppColors.info),
+          Icon(Icons.info_outline, color: tokens.green),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               message,
               style: Theme.of(
                 context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.info),
+              ).textTheme.bodySmall?.copyWith(color: tokens.green),
             ),
           ),
         ],
@@ -365,7 +369,9 @@ class _StartingPointPickerState extends ConsumerState<StartingPointPicker> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            border: Border.all(color: AppColors.border),
+            // tokens.hairline — the same field outline the institute
+            // dropdown on add_student_screen.dart uses.
+            border: Border.all(color: context.tokens.hairline),
             borderRadius: BorderRadius.circular(8),
           ),
           child: DropdownButtonHideUnderline(child: child),

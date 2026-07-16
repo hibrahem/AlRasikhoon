@@ -7,6 +7,7 @@ import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_counter.dart';
+import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/session_timer.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/supervisor_provider.dart';
@@ -123,13 +124,14 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                             const SizedBox(height: 12),
                             Row(
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: tokens.gold.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(Icons.quiz, color: tokens.gold),
+                                // Gold medallion: the exam's achievement
+                                // identity, matching the leading-icon shape
+                                // used across the design system.
+                                IconMedallion(
+                                  icon: Icons.quiz,
+                                  accent: tokens.gold,
+                                  size: 48,
+                                  iconSize: 24,
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -162,7 +164,7 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: tokens.card,
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
                                 children: [

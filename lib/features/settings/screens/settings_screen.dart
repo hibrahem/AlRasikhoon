@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/user_model.dart';
 import '../../../shared/providers/institute_provider.dart';
 import '../../../shared/providers/stats_provider.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/confirm_sign_out.dart';
+import '../../../shared/widgets/icon_medallion.dart';
 import '../widgets/theme_mode_selector.dart';
 
 /// Account screen for the teacher, supervisor and student shells.
@@ -57,6 +59,7 @@ class _ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     // The person's own login name is the identity worth showing here; fall
     // back to a phone only when there is genuinely no username to show.
     final contact = user.displayUsername.isNotEmpty
@@ -66,10 +69,11 @@ class _ProfileCard extends StatelessWidget {
     return AppCard(
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-            child: const Icon(Icons.person, color: AppColors.primary),
+          IconMedallion(
+            icon: Icons.person,
+            accent: tokens.green,
+            size: 56,
+            iconSize: 26,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -81,16 +85,16 @@ class _ProfileCard extends StatelessWidget {
                 if (contact.isNotEmpty)
                   Text(
                     contact,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                   ),
                 const SizedBox(height: 4),
                 Text(
                   user.role.nameAr,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                 ),
               ],
             ),
@@ -108,6 +112,7 @@ class _InstitutesCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tokens = context.tokens;
     final institutesAsync = ref.watch(teacherInstitutesProvider);
 
     return institutesAsync.maybeWhen(
@@ -125,11 +130,7 @@ class _InstitutesCard extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.business,
-                        size: 18,
-                        color: AppColors.textSecondary,
-                      ),
+                      Icon(Icons.business, size: 18, color: tokens.sepia),
                       const SizedBox(width: 8),
                       Expanded(child: Text(institute.name)),
                     ],
@@ -147,14 +148,13 @@ class _InstitutesCard extends ConsumerWidget {
 class _SignOutButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tokens = context.tokens;
+    // Sign-out is a destructive action → maroon, the attention accent.
     return OutlinedButton.icon(
-      icon: const Icon(Icons.logout, color: AppColors.error),
-      label: const Text(
-        'تسجيل الخروج',
-        style: TextStyle(color: AppColors.error),
-      ),
+      icon: Icon(Icons.logout, color: tokens.maroon),
+      label: Text('تسجيل الخروج', style: TextStyle(color: tokens.maroon)),
       style: OutlinedButton.styleFrom(
-        side: const BorderSide(color: AppColors.error),
+        side: BorderSide(color: tokens.maroon),
         padding: const EdgeInsets.symmetric(vertical: 14),
       ),
       onPressed: () => confirmSignOut(context, ref),
@@ -178,26 +178,38 @@ class _StatTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return SizedBox(
       width: 140,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.primary, size: 20),
+          Icon(icon, color: tokens.green, size: 20),
           const SizedBox(height: 6),
-          Text(value, style: Theme.of(context).textTheme.titleLarge),
+          // Data numerals in Cairo tabular figures, matching the shared
+          // StatTile's display style.
+          Text(
+            value,
+            style: GoogleFonts.cairo(
+              fontSize: 28,
+              height: 1.15,
+              fontWeight: FontWeight.bold,
+              color: tokens.ink,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
           Text(
             label,
             style: Theme.of(
               context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
           ),
           if (sublabel != null && sublabel!.isNotEmpty)
             Text(
               sublabel!,
               style: Theme.of(
                 context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+              ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
             ),
         ],
       ),

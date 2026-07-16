@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 // Kept only for the memorization-mode accent system (kNewColor,
 // textOnPrimary) — see the comment above `modeColor` below. These are fixed,
 // colorblind-safe, WCAG-AA-verified colors (hibrahem/AlRasikhoon#25), not
@@ -7,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/teacher_provider.dart';
@@ -61,16 +63,11 @@ class NewMemorizationScreen extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: modeColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.auto_stories,
-                              color: modeColor,
-                            ),
+                          const IconMedallion(
+                            icon: Icons.auto_stories,
+                            accent: modeColor,
+                            size: 48,
+                            iconSize: 24,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -179,9 +176,13 @@ class _InfoRow extends StatelessWidget {
           const Spacer(),
           Text(
             value,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+            // A Qur'an range — set in Amiri, the manuscript face passages
+            // carry across the design system.
+            style: GoogleFonts.amiri(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: tokens.ink,
+            ),
           ),
         ],
       ),

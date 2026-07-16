@@ -10,6 +10,7 @@ import '../../../data/repositories/user_repository.dart';
 import '../../../data/services/firebase_service.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../../shared/widgets/icon_medallion.dart';
 import '../providers/admin_provider.dart';
 
 class AddTeacherScreen extends ConsumerStatefulWidget {
@@ -145,15 +146,18 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                width: 80,
-                height: 80,
-                margin: const EdgeInsets.only(bottom: 32),
-                decoration: BoxDecoration(
-                  color: tokens.green.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
+              // Screen emblem: the design system's medallion disc, centered
+              // so the stretched form column can't distort it into an ellipse.
+              Padding(
+                padding: const EdgeInsetsDirectional.only(bottom: 32),
+                child: Center(
+                  child: IconMedallion(
+                    icon: Icons.person_add,
+                    accent: tokens.green,
+                    size: 80,
+                    iconSize: 40,
+                  ),
                 ),
-                child: Icon(Icons.person_add, size: 40, color: tokens.green),
               ),
               AppTextField(
                 label: 'اسم المعلم',

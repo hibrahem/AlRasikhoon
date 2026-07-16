@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../routing/app_router.dart';
@@ -113,8 +114,14 @@ class _TalqeenSessionScreenState extends ConsumerState<TalqeenSessionScreen> {
                       const SizedBox(height: 8),
                       Text(
                         meeting.newContentAr,
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(color: tokens.green),
+                        // A Qur'an passage — set in Amiri, the manuscript
+                        // face passages carry across the design system, in
+                        // ink (not an accent fill).
+                        style: GoogleFonts.amiri(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: tokens.ink,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(

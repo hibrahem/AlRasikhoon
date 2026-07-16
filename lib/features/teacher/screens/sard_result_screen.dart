@@ -242,7 +242,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
 
               // Notes
               Align(
-                alignment: Alignment.centerRight,
+                alignment: AlignmentDirectional.centerStart,
                 child: Text(
                   'ملاحظات (اختياري)',
                   style: Theme.of(context).textTheme.titleMedium,

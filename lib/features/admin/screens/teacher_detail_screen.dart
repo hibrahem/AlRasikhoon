@@ -6,6 +6,7 @@ import '../../../data/models/institute_model.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
@@ -193,16 +194,9 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                           margin: const EdgeInsets.only(bottom: 8),
                           child: Row(
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: tokens.green.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  Icons.account_balance,
-                                  color: tokens.green,
-                                ),
+                              IconMedallion(
+                                icon: Icons.account_balance,
+                                accent: tokens.green,
                               ),
                               const SizedBox(width: 12),
                               Expanded(

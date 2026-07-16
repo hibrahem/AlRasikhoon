@@ -7,6 +7,7 @@ import '../../../data/repositories/institute_repository.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
@@ -393,17 +394,11 @@ class InstituteDetailScreen extends ConsumerWidget {
                 AppCard(
                   child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: tokens.green.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.account_balance,
-                          color: tokens.green,
-                          size: 40,
-                        ),
+                      IconMedallion(
+                        icon: Icons.account_balance,
+                        accent: tokens.green,
+                        size: 56,
+                        iconSize: 26,
                       ),
                       const SizedBox(width: 16),
                       Expanded(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/grade_color_tokens.dart';
@@ -7,6 +8,7 @@ import '../../../core/utils/grade_calculator.dart';
 import '../../../data/models/session_model.dart';
 import '../../../domain/session/session_duration.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/student_provider.dart';
@@ -49,22 +51,26 @@ class SessionDetailScreen extends ConsumerWidget {
                 AppCard(
                   child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: tokens.green.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(Icons.menu_book, color: tokens.green),
+                      IconMedallion(
+                        icon: Icons.menu_book,
+                        accent: tokens.green,
+                        size: 48,
+                        iconSize: 24,
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // The session's Quranic title reads in the
+                            // manuscript face, like passage names elsewhere.
                             Text(
                               title,
-                              style: Theme.of(context).textTheme.titleMedium,
+                              style: GoogleFonts.amiri(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: tokens.ink,
+                              ),
                             ),
                             Text(
                               dateFormat.format(record.date),
@@ -343,11 +349,16 @@ class _StatChip extends StatelessWidget {
             ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
           ),
           const SizedBox(height: 2),
+          // Data numerals align in Cairo tabular figures, matching the stat
+          // tiles across the app.
           Text(
             value,
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: GoogleFonts.cairo(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              fontFeatures: const [FontFeature.tabularFigures()],
+              color: tokens.ink,
+            ),
           ),
         ],
       ),
@@ -400,11 +411,14 @@ class _PartResultCard extends StatelessWidget {
                 Text(title, style: Theme.of(context).textTheme.bodyMedium),
                 if (range.isNotEmpty) ...[
                   const SizedBox(height: 4),
+                  // The Qur'an range is a passage name — manuscript face.
                   Text(
                     range,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
+                    style: GoogleFonts.amiri(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: tokens.sepia,
+                    ),
                   ),
                 ],
               ],
@@ -413,10 +427,13 @@ class _PartResultCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
+              // Grade numerals in Cairo tabular so error counts line up
+              // across the stacked part cards.
               Text(
                 '$errors أخطاء',
-                style: TextStyle(
+                style: GoogleFonts.cairo(
                   fontWeight: FontWeight.bold,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                   color: tokens.colorForGrade(gradeInfo.grade),
                 ),
               ),

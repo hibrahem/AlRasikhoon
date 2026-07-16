@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/teacher_provider.dart';
 import '../widgets/active_lesson_timer.dart';
@@ -190,13 +192,11 @@ class _PassageCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: tokens.green.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(Icons.record_voice_over, color: tokens.green),
+              IconMedallion(
+                icon: Icons.record_voice_over,
+                accent: tokens.green,
+                size: 48,
+                iconSize: 24,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -226,9 +226,13 @@ class _PassageCard extends StatelessWidget {
           if (hasPassage) ...[
             Text(
               passage,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(color: tokens.green),
+              // A Qur'an passage — set in Amiri, the manuscript face passages
+              // carry across the design system, in ink (not an accent fill).
+              style: GoogleFonts.amiri(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: tokens.ink,
+              ),
             ),
             const SizedBox(height: 12),
             Text(

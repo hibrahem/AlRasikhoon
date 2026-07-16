@@ -7,6 +7,7 @@ import '../../../data/repositories/institute_repository.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../../shared/widgets/icon_medallion.dart';
 import '../providers/admin_provider.dart';
 
 class CreateInstituteScreen extends ConsumerStatefulWidget {
@@ -85,19 +86,17 @@ class _CreateInstituteScreenState extends ConsumerState<CreateInstituteScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Icon
-              Container(
-                width: 80,
-                height: 80,
-                margin: const EdgeInsets.only(bottom: 32),
-                decoration: BoxDecoration(
-                  color: tokens.green.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.account_balance,
-                  size: 40,
-                  color: tokens.green,
+              // Screen emblem: the design system's medallion disc, centered
+              // so the stretched form column can't distort it into an ellipse.
+              Padding(
+                padding: const EdgeInsetsDirectional.only(bottom: 32),
+                child: Center(
+                  child: IconMedallion(
+                    icon: Icons.account_balance,
+                    accent: tokens.green,
+                    size: 80,
+                    iconSize: 40,
+                  ),
                 ),
               ),
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../shared/widgets/app_card.dart';
 
 /// The two counts a teacher records on every session that teaches new content —
@@ -63,6 +64,7 @@ class _CountStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Row(
       children: [
         Expanded(
@@ -71,7 +73,7 @@ class _CountStepper extends StatelessWidget {
         IconButton(
           key: Key('decrement_$keyPrefix'),
           icon: const Icon(Icons.remove_circle_outline),
-          color: AppColors.textSecondary,
+          color: tokens.sepia,
           // A count cannot go below zero: a session recited a negative number
           // of times is not a thing a teacher can report.
           onPressed: value > 0 ? () => onChanged(value - 1) : null,
@@ -81,16 +83,20 @@ class _CountStepper extends StatelessWidget {
           child: Text(
             '$value',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            // Data numeral: Cairo bold with tabular figures so the count
+            // doesn't jitter as it steps.
+            style: GoogleFonts.cairo(
+              fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppColors.primary,
+              fontFeatures: [const FontFeature.tabularFigures()],
+              color: tokens.green,
             ),
           ),
         ),
         IconButton(
           key: Key('increment_$keyPrefix'),
           icon: const Icon(Icons.add_circle_outline),
-          color: AppColors.primary,
+          color: tokens.green,
           onPressed: () => onChanged(value + 1),
         ),
       ],

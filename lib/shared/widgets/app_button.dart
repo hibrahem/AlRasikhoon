@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
 import '../../core/theme/app_tokens.dart';
 
 enum AppButtonType { primary, secondary, outline, text }
@@ -74,6 +73,7 @@ class AppButton extends StatelessWidget {
 
   Widget _buildButton(BuildContext context) {
     final tokens = context.tokens;
+    final scheme = Theme.of(context).colorScheme;
     final child = isLoading
         ? SizedBox(
             width: 20,
@@ -81,9 +81,7 @@ class AppButton extends StatelessWidget {
             child: CircularProgressIndicator(
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(
-                type == AppButtonType.primary
-                    ? AppColors.textOnPrimary
-                    : tokens.green,
+                type == AppButtonType.primary ? scheme.onPrimary : tokens.green,
               ),
             ),
           )
@@ -105,17 +103,17 @@ class AppButton extends StatelessWidget {
             ],
           );
 
+    // No shape overrides here: the theme's StadiumBorder (pill) applies to
+    // every filled/outlined button, so callers get the design-system shape
+    // for free.
     switch (type) {
       case AppButtonType.primary:
         return ElevatedButton(
           onPressed: isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: backgroundColor ?? tokens.green,
-            foregroundColor: textColor ?? AppColors.textOnPrimary,
+            foregroundColor: textColor ?? scheme.onPrimary,
             padding: _getPadding(),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
           ),
           child: child,
         );
@@ -125,11 +123,8 @@ class AppButton extends StatelessWidget {
           onPressed: isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: backgroundColor ?? tokens.gold,
-            foregroundColor: textColor ?? AppColors.textOnSecondary,
+            foregroundColor: textColor ?? scheme.onSecondary,
             padding: _getPadding(),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
           ),
           child: child,
         );
@@ -141,9 +136,6 @@ class AppButton extends StatelessWidget {
             foregroundColor: textColor ?? tokens.green,
             padding: _getPadding(),
             side: BorderSide(color: backgroundColor ?? tokens.green),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
           ),
           child: child,
         );

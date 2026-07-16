@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/countries.dart';
+import '../../../core/theme/app_dimens.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/repositories/student_repository.dart';
@@ -14,6 +15,7 @@ import '../../../domain/curriculum/curriculum_position.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../../shared/widgets/icon_medallion.dart';
 import '../providers/teacher_provider.dart';
 import '../widgets/starting_point_picker.dart';
 import '../../supervisor/providers/supervisor_provider.dart';
@@ -271,15 +273,18 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                width: 80,
-                height: 80,
-                margin: const EdgeInsets.only(bottom: 32),
-                decoration: BoxDecoration(
-                  color: tokens.green.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
+              // Centered so the stretched form column can't distort the
+              // medallion's circle.
+              Padding(
+                padding: const EdgeInsetsDirectional.only(bottom: 32),
+                child: Center(
+                  child: IconMedallion(
+                    icon: Icons.person_add,
+                    accent: tokens.green,
+                    size: 80,
+                    iconSize: 40,
+                  ),
                 ),
-                child: Icon(Icons.person_add, size: 40, color: tokens.green),
               ),
               AppTextField(
                 label: 'اسم الطالب',
@@ -427,7 +432,9 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
                   // palette's illumination/note hue — distinct from the
                   // green already used for the avatar icon above.
                   color: tokens.gold.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  // Card-level surface sitting directly on the page, so it
+                  // carries the card radius rather than the inset 12.
+                  borderRadius: BorderRadius.circular(AppDimens.radiusCard),
                   border: Border.all(color: tokens.gold.withValues(alpha: 0.3)),
                 ),
                 child: Row(

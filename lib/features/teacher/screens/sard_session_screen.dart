@@ -7,6 +7,7 @@ import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/error_counter.dart';
+import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/session_timer.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
@@ -91,16 +92,11 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
                           children: [
                             Row(
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: tokens.maroon.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(
-                                    Icons.record_voice_over,
-                                    color: tokens.maroon,
-                                  ),
+                                IconMedallion(
+                                  icon: Icons.record_voice_over,
+                                  accent: tokens.maroon,
+                                  size: 48,
+                                  iconSize: 24,
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -134,7 +130,9 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: tokens.card,
-                                borderRadius: BorderRadius.circular(8),
+                                // 12 is the inner inset-panel radius (the
+                                // card itself carries radiusCard).
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               // Same tokens.maroon as the card's own icon
                               // above — this instruction is still part of

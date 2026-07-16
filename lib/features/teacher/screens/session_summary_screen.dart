@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../core/theme/app_dimens.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/grade_color_tokens.dart';
 import '../../../core/utils/grade_calculator.dart';
@@ -232,7 +234,7 @@ class _OverallResultCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppDimens.radiusCard),
         border: Border.all(color: color, width: 2),
       ),
       child: Column(
@@ -246,7 +248,7 @@ class _OverallResultCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             passed ? 'ناجح' : 'راسب',
-            style: TextStyle(
+            style: GoogleFonts.cairo(
               fontSize: 28,
               fontWeight: FontWeight.bold,
               color: color,
@@ -307,8 +309,11 @@ class _PartResultCard extends StatelessWidget {
                 children: [
                   Text(
                     '$errors أخطاء',
-                    style: TextStyle(
+                    // Data numeral: Cairo bold with tabular figures so error
+                    // counts align across the part cards.
+                    style: GoogleFonts.cairo(
                       fontWeight: FontWeight.bold,
+                      fontFeatures: [const FontFeature.tabularFigures()],
                       color: tokens.colorForGrade(gradeInfo.grade),
                     ),
                   ),

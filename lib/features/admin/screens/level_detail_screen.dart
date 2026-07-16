@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/repositories/curriculum_repository.dart';
@@ -85,20 +86,25 @@ class _LevelHeader extends StatelessWidget {
       backgroundColor: tokens.green.withValues(alpha: 0.05),
       child: Row(
         children: [
+          // Level-number badge in the medallion shape (circular tinted
+          // disc). IconMedallion itself only takes an IconData, so the
+          // numeral gets the same treatment inline: Cairo bold tabular,
+          // like every data numeral in the design system.
           Container(
             width: 48,
             height: 48,
             decoration: BoxDecoration(
               color: tokens.green.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 '$levelNumber',
-                style: TextStyle(
+                style: GoogleFonts.cairo(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: tokens.green,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
             ),

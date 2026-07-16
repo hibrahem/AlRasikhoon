@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show FutureProviderFamily;
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../data/models/student_model.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/student_repository.dart';
@@ -11,6 +11,7 @@ import '../../domain/curriculum/paced_session.dart';
 import '../../domain/session/student_history_entry.dart';
 import '../curriculum/assessment_copy.dart';
 import '../widgets/app_card.dart';
+import '../widgets/icon_medallion.dart';
 import '../widgets/student_level_progress.dart';
 
 /// Read-only student progress view. Mirrors what a teacher sees for their own
@@ -189,16 +190,17 @@ class _StudentHeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return AppCard(
       child: Row(
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+            backgroundColor: tokens.green.withValues(alpha: 0.1),
             child: Text(
               user.name.isNotEmpty ? user.name[0] : '?',
-              style: const TextStyle(
-                color: AppColors.primary,
+              style: TextStyle(
+                color: tokens.green,
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
               ),
@@ -213,9 +215,9 @@ class _StudentHeaderCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   'المستوى ${student.currentLevel} - الجزء ${student.currentJuz}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                 ),
               ],
             ),
@@ -224,12 +226,14 @@ class _StudentHeaderCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: 0.1),
+                // A repeated attempt is a "needs attention" signal, not a
+                // failure — tokens.gold, per the AppColors.warning mapping.
+                color: tokens.gold.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 'المحاولة ${student.currentAttempt}',
-                style: const TextStyle(fontSize: 11, color: AppColors.warning),
+                style: TextStyle(fontSize: 11, color: tokens.gold),
               ),
             ),
         ],
@@ -251,6 +255,7 @@ class _CurrentSessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final meeting = this.meeting;
     if (meeting == null) {
       return const AppCard(child: Center(child: Text('لا توجد بيانات للحلقة')));
@@ -270,7 +275,7 @@ class _CurrentSessionCard extends StatelessWidget {
     if (session.isTalqeen) {
       return _SimpleSessionCard(
         icon: Icons.record_voice_over,
-        color: AppColors.primary,
+        color: tokens.green,
         title: session.titleAr,
         subtitle:
             'يقرأ المعلّم المقطع على الطالب ويردده معه. لا تسميع ولا تقييم '
@@ -280,7 +285,8 @@ class _CurrentSessionCard extends StatelessWidget {
     if (session.isExam) {
       return _SimpleSessionCard(
         icon: Icons.quiz,
-        color: AppColors.secondary,
+        // Gold is the exam's achievement identity across the app.
+        color: tokens.gold,
         title: session.titleAr,
         subtitle: 'في انتظار المشرف لإجراء الاختبار',
       );
@@ -288,7 +294,9 @@ class _CurrentSessionCard extends StatelessWidget {
     if (session.isSard) {
       return _SimpleSessionCard(
         icon: Icons.record_voice_over,
-        color: AppColors.info,
+        // AppColors.info → tokens.maroon, the mapping reserved for سرد
+        // contexts specifically.
+        color: tokens.maroon,
         title: session.titleAr,
         subtitle: session.assessmentInstructionAr,
       );
@@ -299,13 +307,11 @@ class _CurrentSessionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.menu_book, color: AppColors.primary),
+              IconMedallion(
+                icon: Icons.menu_book,
+                accent: tokens.green,
+                size: 48,
+                iconSize: 24,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -321,9 +327,9 @@ class _CurrentSessionCard extends StatelessWidget {
                       // is known to disagree with the source text for the
                       // same session. The juz is always consistent.
                       'الجزء ${session.juzNumber}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                     ),
                   ],
                 ),
@@ -376,18 +382,12 @@ class _SimpleSessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return AppCard(
       backgroundColor: color.withValues(alpha: 0.05),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color),
-          ),
+          IconMedallion(icon: icon, accent: color, size: 48, iconSize: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -396,9 +396,9 @@ class _SimpleSessionCard extends StatelessWidget {
                 Text(title, style: Theme.of(context).textTheme.titleMedium),
                 Text(
                   subtitle,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                 ),
               ],
             ),
@@ -422,11 +422,13 @@ class _PartTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(8),
+        color: tokens.surfaceVariant,
+        // Inner inset panel: 12, one step tighter than the card's 16.
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
@@ -434,14 +436,14 @@ class _PartTile extends StatelessWidget {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              color: tokens.green.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 '$number',
-                style: const TextStyle(
-                  color: AppColors.primary,
+                style: TextStyle(
+                  color: tokens.green,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -455,9 +457,9 @@ class _PartTile extends StatelessWidget {
                 Text(title, style: Theme.of(context).textTheme.labelMedium),
                 Text(
                   content.isNotEmpty ? content : '-',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                 ),
               ],
             ),
@@ -479,6 +481,7 @@ class _SessionHistoryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     if (entries.isEmpty) {
       return AppCard(
         child: Column(
@@ -486,7 +489,7 @@ class _SessionHistoryList extends StatelessWidget {
             Icon(
               Icons.history,
               size: 48,
-              color: AppColors.textSecondary.withValues(alpha: 0.5),
+              color: tokens.sepia.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 8),
             const Text('لا يوجد سجل للحلقات'),
@@ -511,8 +514,8 @@ class _SessionHistoryList extends StatelessWidget {
         // `session_history_screen.dart`'s student-facing list.
         final isTalqeen = entry.isTalqeen;
         final badgeColor = isTalqeen
-            ? AppColors.primary
-            : (entry.passed ? AppColors.success : AppColors.error);
+            ? tokens.green
+            : (entry.passed ? tokens.green : tokens.maroon);
         return AppCard(
           margin: const EdgeInsets.only(bottom: 8),
           // A سرد / اختبار has no detail screen yet, so its row renders but
@@ -527,19 +530,13 @@ class _SessionHistoryList extends StatelessWidget {
               : null,
           child: Row(
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: badgeColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  isTalqeen
-                      ? Icons.record_voice_over
-                      : (entry.passed ? Icons.check_circle : Icons.cancel),
-                  color: badgeColor,
-                ),
+              IconMedallion(
+                icon: isTalqeen
+                    ? Icons.record_voice_over
+                    : (entry.passed ? Icons.check_circle : Icons.cancel),
+                accent: badgeColor,
+                size: 48,
+                iconSize: 24,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -553,15 +550,15 @@ class _SessionHistoryList extends StatelessWidget {
                     for (final line in entry.subtitleLines)
                       Text(
                         line,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                       ),
                     Text(
                       dateFormat.format(entry.date),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                     ),
                   ],
                 ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 // Kept only for the memorization-mode accent system (forMemorizationPart,
 // textOnPrimary) — see the comment above `modeColor` below. These are fixed,
 // colorblind-safe, WCAG-AA-verified colors (hibrahem/AlRasikhoon#25), not
@@ -174,7 +175,9 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: tokens.surfaceVariant,
-                                borderRadius: BorderRadius.circular(8),
+                                // 12 is the inner inset-panel radius (the
+                                // card itself carries radiusCard).
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
                                 children: [
@@ -185,9 +188,14 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
                                       content.isNotEmpty
                                           ? content
                                           : 'لا يوجد محتوى',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodyLarge,
+                                      // A Qur'an range — set in Amiri, the
+                                      // manuscript face passages carry across
+                                      // the design system.
+                                      style: GoogleFonts.amiri(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: tokens.ink,
+                                      ),
                                     ),
                                   ),
                                 ],
