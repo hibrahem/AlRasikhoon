@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/grade_color_tokens.dart';
 import '../../../core/utils/grade_calculator.dart';
+import '../../../data/models/session_model.dart';
+import '../../../domain/session/session_duration.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
@@ -45,52 +47,84 @@ class SessionDetailScreen extends ConsumerWidget {
               children: [
                 // Session info
                 AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: tokens.green.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(Icons.menu_book, color: tokens.green),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  title,
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.titleMedium,
-                                ),
-                                Text(
-                                  dateFormat.format(record.date),
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(color: tokens.sepia),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      _InfoRow(
-                        label: 'المحاولة',
-                        value: '${record.attemptNumber}',
-                      ),
-                      if (record.repetitionsWithTeacher > 0)
-                        _InfoRow(
-                          label: 'التكرارات',
-                          value: '${record.repetitionsWithTeacher}',
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: tokens.green.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        child: Icon(Icons.menu_book, color: tokens.green),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            Text(
+                              dateFormat.format(record.date),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: tokens.sepia),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // At-a-glance session facts. Each chip appears only when it
+                // carries a value: pace is meaningful only above the normal 1×
+                // portion, duration only when the session was timed, and each
+                // repetition count only when it happened. The attempt number is
+                // a graded-lesson concept, so it is omitted for a تلقين.
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    const spacing = 8.0;
+                    final half = (constraints.maxWidth - spacing) / 2;
+                    final pace = _paceAmountAr(record.paceAtTime);
+                    return Wrap(
+                      spacing: spacing,
+                      runSpacing: spacing,
+                      children: [
+                        if (!record.isTalqeen)
+                          _StatChip(
+                            width: half,
+                            label: 'رقم المحاولة',
+                            value: '${record.attemptNumber}',
+                          ),
+                        if (pace != null)
+                          _StatChip(width: half, label: 'المقدار', value: pace),
+                        if (record.duration != null)
+                          _StatChip(
+                            width: half,
+                            label: 'المدة',
+                            value: SessionDuration.formatWordsAr(
+                              record.duration!,
+                            ),
+                          ),
+                        if (record.repetitionsWithTeacher > 0)
+                          _StatChip(
+                            width: half,
+                            label: 'التكرار مع المعلم',
+                            value: '${record.repetitionsWithTeacher}',
+                          ),
+                        if (record.homeRepetitionsRequired > 0)
+                          _StatChip(
+                            width: constraints.maxWidth,
+                            label: 'التكرار المطلوب في البيت',
+                            value: '${record.homeRepetitionsRequired} مرات',
+                          ),
+                      ],
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 24),
@@ -155,6 +189,7 @@ class SessionDetailScreen extends ConsumerWidget {
                       title: _partTitleAr(part),
                       errors: record.grades.errorsForPart(part),
                       level: record.levelId,
+                      range: _rangeForPart(session, part),
                     ),
                     const SizedBox(height: 8),
                   ],
@@ -199,6 +234,34 @@ String _partTitleAr(int part) {
     default:
       return 'التسميع';
   }
+}
+
+/// The pace of a meeting stated as an amount of memorization. Null at normal
+/// pace (1×) — a normal portion is the default and is not worth a chip; 2× is
+/// double the usual amount, 3× is triple.
+String? _paceAmountAr(int pace) {
+  switch (pace) {
+    case 2:
+      return 'ضعف الكمّ';
+    case 3:
+      return 'ثلاثة أضعاف';
+    default:
+      return null;
+  }
+}
+
+/// The Qur'an range recited for a part, from the curriculum session's content
+/// blocks: 1 = new memorization, 2 = recent review, 3 = distant review. Empty
+/// when the session is unresolved or that part carries no content.
+String _rangeForPart(SessionModel? session, int part) {
+  if (session == null) return '';
+  final content = switch (part) {
+    1 => session.currentLevelContent,
+    2 => session.recentReviewContent,
+    3 => session.distantReviewContent,
+    _ => null,
+  };
+  return content?.rangeAr ?? '';
 }
 
 /// The session-level verdict: a binary ناجح / راسب marker per
@@ -248,31 +311,43 @@ class _OverallResultBanner extends StatelessWidget {
   }
 }
 
-class _InfoRow extends StatelessWidget {
+class _StatChip extends StatelessWidget {
+  final double width;
   final String label;
   final String value;
 
-  const _InfoRow({required this.label, required this.value});
+  const _StatChip({
+    required this.width,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Container(
+      width: width,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: tokens.surfaceVariant,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: tokens.sepia),
+            ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
           ),
+          const SizedBox(height: 2),
           Text(
             value,
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -284,11 +359,13 @@ class _PartResultCard extends StatelessWidget {
   final String title;
   final int errors;
   final int level;
+  final String range;
 
   const _PartResultCard({
     required this.title,
     required this.errors,
     required this.level,
+    this.range = '',
   });
 
   @override
@@ -317,7 +394,21 @@ class _PartResultCard extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(title, style: Theme.of(context).textTheme.bodyMedium),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: Theme.of(context).textTheme.bodyMedium),
+                if (range.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    range,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
+                  ),
+                ],
+              ],
+            ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,

@@ -10,6 +10,7 @@ import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/student_card.dart';
+import '../../../shared/widgets/student_pace_control.dart';
 import '../providers/supervisor_provider.dart';
 import '../widgets/assign_teacher_dialog.dart';
 
@@ -128,6 +129,33 @@ class SupervisorStudentsScreen extends ConsumerWidget {
                   );
                 },
               ),
+            // Change pace without leaving the list — the same control the
+            // student view shows, backed by the same setStudentPace write. A
+            // supervisor scoped to this student's institute is authorised
+            // (firestore.rules). Refreshes the list so the change is reflected.
+            ListTile(
+              leading: Icon(Icons.speed, color: tokens.gold),
+              title: const Text('تغيير وتيرة الحفظ'),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                showDialog<void>(
+                  context: context,
+                  builder: (dialogContext) => AlertDialog(
+                    content: SizedBox(
+                      width: double.maxFinite,
+                      child: StudentPaceControl(
+                        studentId: student.id,
+                        currentPace: student.pace,
+                        onPaceChanged: (ref) {
+                          ref.invalidate(supervisorStudentsProvider);
+                          Navigator.of(dialogContext).pop();
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.lock_reset),
               title: const Text('إعادة تعيين كلمة المرور'),

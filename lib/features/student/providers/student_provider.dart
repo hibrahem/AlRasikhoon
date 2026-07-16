@@ -4,6 +4,7 @@ import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/home_practice_repository.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
+import '../../../domain/session/student_history_entry.dart';
 import '../../../data/models/home_practice_model.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/current_student_provider.dart';
@@ -36,14 +37,14 @@ final studentDashboardMeetingProvider = FutureProvider<PacedSession?>((
 });
 
 /// Provider for student's session history
-final studentHistoryProvider = FutureProvider<List<SessionRecordModel>>((
+final studentHistoryProvider = FutureProvider<List<StudentHistoryEntry>>((
   ref,
 ) async {
   final student = await ref.watch(currentStudentProvider.future);
   if (student == null) return [];
 
   final repo = ref.watch(sessionRepositoryProvider);
-  return repo.getSessionRecordsForStudent(student.id, limit: 50);
+  return repo.getStudentHistory(student.id, limit: 50);
 });
 
 /// Fetches a single session record by its id. Works for any caller —

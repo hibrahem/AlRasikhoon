@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
-import 'package:al_rasikhoon/data/models/session_record_model.dart';
+import 'package:al_rasikhoon/domain/session/student_history_entry.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
@@ -65,7 +65,7 @@ void main() {
           ).overrideWith((ref) async => meeting),
           adminStudentSessionHistoryProvider(
             's1',
-          ).overrideWith((ref) async => <SessionRecordModel>[]),
+          ).overrideWith((ref) async => <StudentHistoryEntry>[]),
         ],
         child: MaterialApp(
           home: Directionality(

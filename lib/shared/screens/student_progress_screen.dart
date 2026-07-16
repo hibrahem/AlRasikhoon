@@ -4,11 +4,11 @@ import 'package:flutter_riverpod/misc.dart' show FutureProviderFamily;
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
-import '../../data/models/session_record_model.dart';
 import '../../data/models/student_model.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/student_repository.dart';
 import '../../domain/curriculum/paced_session.dart';
+import '../../domain/session/student_history_entry.dart';
 import '../curriculum/assessment_copy.dart';
 import '../widgets/app_card.dart';
 import '../widgets/student_level_progress.dart';
@@ -25,7 +25,7 @@ class StudentProgressScreen extends ConsumerWidget {
   final String studentId;
   final FutureProviderFamily<StudentWithUser?, String> studentProvider;
   final FutureProviderFamily<PacedSession?, String> currentMeetingProvider;
-  final FutureProviderFamily<List<SessionRecordModel>, String>
+  final FutureProviderFamily<List<StudentHistoryEntry>, String>
   sessionHistoryProvider;
 
   /// The session-detail route template (containing `:recordId`) for the shell
@@ -42,6 +42,18 @@ class StudentProgressScreen extends ConsumerWidget {
   /// screen neither knows the rule nor imports the supervisor feature.
   final Widget? repositionSection;
 
+  /// An optional role-specific pace control rendered under the header, INJECTED
+  /// by the router like [repositionSection]. The supervisor shell passes a
+  /// [StudentPaceControl] here (a supervisor scoped to the student's institute
+  /// may set pace — firestore.rules already authorises it); the admin shell
+  /// passes nothing and stays read-only. This screen never knows the rule nor
+  /// imports the supervisor feature.
+  ///
+  /// A BUILDER, not a plain widget: the pace control needs the student's
+  /// current pace, known only once the student has loaded — so the screen
+  /// calls this with the loaded [StudentModel].
+  final Widget Function(StudentModel student)? paceSection;
+
   const StudentProgressScreen({
     super.key,
     required this.studentId,
@@ -50,6 +62,7 @@ class StudentProgressScreen extends ConsumerWidget {
     required this.sessionHistoryProvider,
     required this.sessionDetailRoute,
     this.repositionSection,
+    this.paceSection,
   });
 
   @override
@@ -78,6 +91,7 @@ class StudentProgressScreen extends ConsumerWidget {
                 sessionHistoryProvider: sessionHistoryProvider,
                 sessionDetailRoute: sessionDetailRoute,
                 repositionSection: repositionSection,
+                paceSection: paceSection,
               ),
             ),
           );
@@ -92,10 +106,11 @@ class StudentProgressScreen extends ConsumerWidget {
 class _ProgressBody extends ConsumerWidget {
   final StudentWithUser studentWithUser;
   final FutureProviderFamily<PacedSession?, String> currentMeetingProvider;
-  final FutureProviderFamily<List<SessionRecordModel>, String>
+  final FutureProviderFamily<List<StudentHistoryEntry>, String>
   sessionHistoryProvider;
   final String sessionDetailRoute;
   final Widget? repositionSection;
+  final Widget Function(StudentModel student)? paceSection;
 
   const _ProgressBody({
     required this.studentWithUser,
@@ -103,6 +118,7 @@ class _ProgressBody extends ConsumerWidget {
     required this.sessionHistoryProvider,
     required this.sessionDetailRoute,
     this.repositionSection,
+    this.paceSection,
   });
 
   @override
@@ -119,6 +135,10 @@ class _ProgressBody extends ConsumerWidget {
         if (repositionSection != null) ...[
           const SizedBox(height: 16),
           repositionSection!,
+        ],
+        if (paceSection != null) ...[
+          const SizedBox(height: 16),
+          paceSection!(student),
         ],
         const SizedBox(height: 24),
 
@@ -149,8 +169,8 @@ class _ProgressBody extends ConsumerWidget {
         Text('سجل الحلقات', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
         historyAsync.when(
-          data: (records) => _SessionHistoryList(
-            records: records,
+          data: (entries) => _SessionHistoryList(
+            entries: entries,
             sessionDetailRoute: sessionDetailRoute,
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -449,17 +469,17 @@ class _PartTile extends StatelessWidget {
 }
 
 class _SessionHistoryList extends StatelessWidget {
-  final List<SessionRecordModel> records;
+  final List<StudentHistoryEntry> entries;
   final String sessionDetailRoute;
 
   const _SessionHistoryList({
-    required this.records,
+    required this.entries,
     required this.sessionDetailRoute,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (records.isEmpty) {
+    if (entries.isEmpty) {
       return AppCard(
         child: Column(
           children: [
@@ -478,9 +498,9 @@ class _SessionHistoryList extends StatelessWidget {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: records.length,
+      itemCount: entries.length,
       itemBuilder: (context, index) {
-        final record = records[index];
+        final entry = entries[index];
         // A تلقين is never graded — no pass/fail, no errors — so it must
         // never render with a pass/fail badge, even though
         // `createTalqeenRecord` writes `passed: true` unconditionally (that
@@ -489,15 +509,22 @@ class _SessionHistoryList extends StatelessWidget {
         // average of the three component grades (#24). The per-component
         // breakdown lives in the session detail view. Mirrors
         // `session_history_screen.dart`'s student-facing list.
-        final isTalqeen = record.isTalqeen;
+        final isTalqeen = entry.isTalqeen;
         final badgeColor = isTalqeen
             ? AppColors.primary
-            : (record.passed ? AppColors.success : AppColors.error);
+            : (entry.passed ? AppColors.success : AppColors.error);
         return AppCard(
           margin: const EdgeInsets.only(bottom: 8),
-          onTap: () => context.push(
-            sessionDetailRoute.replaceFirst(':recordId', record.id),
-          ),
+          // A سرد / اختبار has no detail screen yet, so its row renders but
+          // does not navigate (entry.isNavigable is false).
+          onTap: entry.isNavigable
+              ? () => context.push(
+                  sessionDetailRoute.replaceFirst(
+                    ':recordId',
+                    entry.detailRecordId!,
+                  ),
+                )
+              : null,
           child: Row(
             children: [
               Container(
@@ -510,7 +537,7 @@ class _SessionHistoryList extends StatelessWidget {
                 child: Icon(
                   isTalqeen
                       ? Icons.record_voice_over
-                      : (record.passed ? Icons.check_circle : Icons.cancel),
+                      : (entry.passed ? Icons.check_circle : Icons.cancel),
                   color: badgeColor,
                 ),
               ),
@@ -520,20 +547,18 @@ class _SessionHistoryList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isTalqeen ? 'تلقين' : 'الحلقة ${record.sessionNumber}',
+                      entry.titleAr,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
-                    Text(
-                      // Never an app-derived hizb — `record.hizbNumber` is the
-                      // denormalized structural value, which can disagree
-                      // with a session's own verbatim label.
-                      'المستوى ${record.levelId}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
+                    for (final line in entry.subtitleLines)
+                      Text(
+                        line,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
-                    ),
                     Text(
-                      dateFormat.format(record.date),
+                      dateFormat.format(entry.date),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -552,7 +577,7 @@ class _SessionHistoryList extends StatelessWidget {
                   border: Border.all(color: badgeColor),
                 ),
                 child: Text(
-                  isTalqeen ? 'تلقين' : (record.passed ? 'نجح' : 'رسب'),
+                  isTalqeen ? 'تلقين' : (entry.passed ? 'نجح' : 'رسب'),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,

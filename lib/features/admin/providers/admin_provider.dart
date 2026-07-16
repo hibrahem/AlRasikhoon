@@ -3,7 +3,7 @@ import '../../../data/repositories/institute_repository.dart';
 import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/repositories/student_repository.dart';
-import '../../../data/models/session_record_model.dart';
+import '../../../domain/session/student_history_entry.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/institute_model.dart';
 import '../../../domain/curriculum/paced_session.dart';
@@ -153,12 +153,12 @@ final adminStudentCurrentMeetingProvider =
 
 /// Recent session records for a student (admin-only view).
 final adminStudentSessionHistoryProvider =
-    FutureProvider.family<List<SessionRecordModel>, String>((
+    FutureProvider.family<List<StudentHistoryEntry>, String>((
       ref,
       studentId,
     ) async {
       final repo = ref.watch(sessionRepositoryProvider);
-      return repo.getSessionRecordsForStudent(studentId, limit: 50);
+      return repo.getStudentHistory(studentId, limit: 50);
     });
 
 /// A single supervisor account (admin read-only view). Mirrors

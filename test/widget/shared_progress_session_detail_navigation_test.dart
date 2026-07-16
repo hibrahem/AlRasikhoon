@@ -11,6 +11,7 @@ import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
+import 'package:al_rasikhoon/domain/session/student_history_entry.dart';
 import 'package:al_rasikhoon/features/admin/providers/admin_provider.dart';
 import 'package:al_rasikhoon/features/student/providers/student_provider.dart';
 import 'package:al_rasikhoon/features/student/screens/session_detail_screen.dart';
@@ -122,13 +123,25 @@ void main() {
     createdAt: DateTime(2026, 7, 14),
   );
 
+  // The history timeline entry for that record — a navigable lesson row whose
+  // detail id points back at `record`, so tapping it opens the detail screen.
+  final historyEntry = StudentHistoryEntry(
+    id: record.id,
+    kind: StudentHistoryKind.lesson,
+    levelId: record.levelId,
+    sessionNumber: record.sessionNumber,
+    passed: record.passed,
+    date: record.date,
+    detailRecordId: record.id,
+  );
+
   /// Drives the shared progress screen for one role and asserts the tap-through
   /// lands on the injected shell-local detail — never the student shell.
   Future<void> runFor(
     WidgetTester tester, {
     required FutureProviderFamily<StudentWithUser?, String> studentProvider,
     required FutureProviderFamily<PacedSession?, String> currentMeetingProvider,
-    required FutureProviderFamily<List<SessionRecordModel>, String>
+    required FutureProviderFamily<List<StudentHistoryEntry>, String>
     sessionHistoryProvider,
     required String progressPath,
     required String progressLocation,
@@ -183,7 +196,9 @@ void main() {
             (ref) async => StudentWithUser(student: student, user: user),
           ),
           currentMeetingProvider('s1').overrideWith((ref) async => meeting),
-          sessionHistoryProvider('s1').overrideWith((ref) async => [record]),
+          sessionHistoryProvider(
+            's1',
+          ).overrideWith((ref) async => [historyEntry]),
           // Feeds the destination detail screen.
           sessionRecordByIdProvider(
             record.id,

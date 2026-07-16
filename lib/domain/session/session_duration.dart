@@ -77,6 +77,20 @@ class SessionDuration {
     return '$mm:$ss';
   }
 
+  /// The measured length in Arabic unit words with Western digits, e.g.
+  /// `7 د 12 ث`. Under a minute shows seconds only (`45 ث`); a whole number of
+  /// minutes omits the seconds segment (`7 د`). This is the reader-facing
+  /// length format on the student's session-detail screen, distinct from the
+  /// stopwatch-style [formatClock] the teacher sees.
+  static String formatWordsAr(Duration d) {
+    final totalSeconds = d.inSeconds;
+    if (totalSeconds < 60) return '$totalSeconds ث';
+    final minutes = d.inMinutes;
+    final seconds = totalSeconds % 60;
+    if (seconds == 0) return '$minutes د';
+    return '$minutes د $seconds ث';
+  }
+
   static LiveTimerLevel liveTimerLevel(Duration rawElapsed, Duration? target) {
     if (target == null) return LiveTimerLevel.neutral;
     if (rawElapsed >= target * 2) return LiveTimerLevel.danger;
