@@ -160,3 +160,51 @@ final adminStudentSessionHistoryProvider =
       final repo = ref.watch(sessionRepositoryProvider);
       return repo.getSessionRecordsForStudent(studentId, limit: 50);
     });
+
+/// A single supervisor account (admin read-only view). Mirrors
+/// [teacherProvider] — both are just `getUserById` — but named in supervisor
+/// terms so supervisor screens never read as teacher screens.
+final supervisorProvider = FutureProvider.family<UserModel?, String>((
+  ref,
+  id,
+) async {
+  final repo = ref.watch(userRepositoryProvider);
+  return repo.getUserById(id);
+});
+
+/// Institutes a supervisor is assigned to, resolved from the
+/// `supervisor_institutes` membership (al_rasikhoon-3n6). The admin twin of the
+/// supervisor-side `supervisorInstituteIdsProvider`, but returns full
+/// [InstituteModel]s for display and is keyed by an explicit supervisor id (the
+/// admin inspects any supervisor, not "the current user").
+final institutesForSupervisorProvider =
+    FutureProvider.family<List<InstituteModel>, String>((
+      ref,
+      supervisorId,
+    ) async {
+      final repo = ref.watch(instituteRepositoryProvider);
+      return repo.getInstitutesForSupervisor(supervisorId);
+    });
+
+/// Supervisors assigned to a given institute — the exact mirror of
+/// [teachersForInstituteProvider], composing
+/// `getSupervisorIdsForInstitute` with `getUserById`. An id that no longer
+/// resolves to a user (deleted account) is dropped rather than surfaced as a
+/// blank row.
+final supervisorsForInstituteProvider =
+    FutureProvider.family<List<UserModel>, String>((ref, instituteId) async {
+      final instituteRepo = ref.watch(instituteRepositoryProvider);
+      final userRepo = ref.watch(userRepositoryProvider);
+
+      final supervisorIds = await instituteRepo.getSupervisorIdsForInstitute(
+        instituteId,
+      );
+      final supervisors = <UserModel>[];
+      for (final id in supervisorIds) {
+        final supervisor = await userRepo.getUserById(id);
+        if (supervisor != null) {
+          supervisors.add(supervisor);
+        }
+      }
+      return supervisors;
+    });
