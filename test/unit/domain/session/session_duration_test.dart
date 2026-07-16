@@ -230,6 +230,34 @@ void main() {
       });
     });
   });
+
+  group('formatWordsAr', () {
+    test('minutes and seconds', () {
+      expect(
+        SessionDuration.formatWordsAr(const Duration(minutes: 7, seconds: 12)),
+        '7 د 12 ث',
+      );
+    });
+
+    test('whole minutes omit the seconds segment', () {
+      expect(SessionDuration.formatWordsAr(const Duration(minutes: 7)), '7 د');
+    });
+
+    test('under a minute shows seconds only', () {
+      expect(
+        SessionDuration.formatWordsAr(const Duration(seconds: 45)),
+        '45 ث',
+      );
+    });
+
+    test('exactly one minute omits seconds', () {
+      expect(SessionDuration.formatWordsAr(const Duration(minutes: 1)), '1 د');
+    });
+
+    test('zero renders as 0 ث', () {
+      expect(SessionDuration.formatWordsAr(Duration.zero), '0 ث');
+    });
+  });
 }
 
 /// A stand-in [SessionTiming] so the domain test never reaches for the
