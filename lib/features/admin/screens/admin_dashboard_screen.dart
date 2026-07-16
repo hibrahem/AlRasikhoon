@@ -2,47 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
-import '../../../data/repositories/auth_repository.dart';
 import '../../../routing/app_router.dart';
-import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/confirm_sign_out.dart';
 import '../../../shared/widgets/stat_card.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/admin_provider.dart';
 
-class AdminDashboardScreen extends ConsumerStatefulWidget {
+/// The admin Management hub (branch 0 of the admin shell). Welcome header + a
+/// 2×2 grid of stat cards that double as the navigation into each management
+/// area: institutes, teachers, supervisors, students. Sign-out now lives in the
+/// Profile tab, so there is no AppBar action here.
+class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
 
   @override
-  ConsumerState<AdminDashboardScreen> createState() =>
-      _AdminDashboardScreenState();
-}
-
-class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
-  @override
-  Widget build(BuildContext context) {
-    // Watch auth state for reactivity (user data available via authState.appUser if needed)
-    ref.watch(authRepositoryProvider);
-
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('الراسخون'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            // Admin has no الإعدادات destination, so its sign-out lives here in
-            // the AppBar — but behind the same confirmation gate as every other
-            // role, never a one-tap destructive action.
-            onPressed: () => confirmSignOut(context, ref),
-          ),
-        ],
-      ),
-      body: _buildBody(),
+      appBar: AppBar(title: const Text('الراسخون')),
+      body: _buildBody(context, ref),
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(BuildContext context, WidgetRef ref) {
     final tokens = context.tokens;
     final statsAsync = ref.watch(adminStatsProvider);
 
@@ -56,43 +37,30 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome message
             Text(
               'مرحباً، مدير النظام',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
             Text(
-              'إدارة المعاهد والمعلمين',
+              'إدارة المعاهد والمعلمين والمشرفين والطلاب',
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: tokens.sepia),
             ),
             const SizedBox(height: 24),
-
-            // Stats
             statsAsync.when(
-              data: (stats) => _buildStats(stats),
+              data: (stats) => _buildStats(context, stats),
               loading: () => const LoadingState(),
               error: (e, _) => ErrorState(message: 'تعذر تحميل الإحصائيات: $e'),
             ),
-
-            const SizedBox(height: 24),
-
-            // Quick actions
-            Text(
-              'الإجراءات السريعة',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 16),
-            _buildQuickActions(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStats(AdminStats stats) {
+  Widget _buildStats(BuildContext context, AdminStats stats) {
     final tokens = context.tokens;
     return GridView.count(
       crossAxisCount: 2,
@@ -107,105 +75,28 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           value: '${stats.institutesCount}',
           icon: Icons.account_balance,
           iconColor: tokens.green,
-          onTap: () => context.go(AppRoutes.institutes),
+          onTap: () => context.push(AppRoutes.institutes),
         ),
         StatCard(
           title: 'المعلمون',
           value: '${stats.teachersCount}',
           icon: Icons.people,
-          // No manuscript token for the old "info" blue; maroon (the
-          // palette's rubrication/emphasis hue) keeps this card visually
-          // distinct from the green institutes card and gold
-          // supervisors/students cards below, with no collision against
-          // this card's own sepia caption text.
           iconColor: tokens.maroon,
-          onTap: () => context.go(AppRoutes.teachers),
+          onTap: () => context.push(AppRoutes.teachers),
         ),
         StatCard(
           title: 'المشرفون',
           value: '${stats.supervisorsCount}',
           icon: Icons.admin_panel_settings,
           iconColor: tokens.gold,
-          onTap: () => context.push(AppRoutes.addSupervisor),
+          onTap: () => context.push(AppRoutes.supervisors),
         ),
         StatCard(
           title: 'الطلاب',
           value: '${stats.studentsCount}',
           icon: Icons.school,
-          // "success" reused as green — the positive/affirmative role
-          // green already carries elsewhere (see student dashboard
-          // precedent).
           iconColor: tokens.green,
           onTap: () => context.push(AppRoutes.adminStudents),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickActions() {
-    final tokens = context.tokens;
-    return Column(
-      children: [
-        AppListTile(
-          title: 'إضافة معهد جديد',
-          subtitle: 'إنشاء معهد لتحفيظ القرآن',
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: tokens.green.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(Icons.add_business, color: tokens.green),
-          ),
-          trailing: const Icon(Icons.chevron_left),
-          onTap: () => context.push(AppRoutes.createInstitute),
-        ),
-        const SizedBox(height: 8),
-        AppListTile(
-          title: 'إضافة معلم جديد',
-          subtitle: 'تسجيل معلم في النظام',
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              // Same "info" -> maroon judgment call as the teachers stat
-              // card above, kept consistent across this screen.
-              color: tokens.maroon.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(Icons.person_add, color: tokens.maroon),
-          ),
-          trailing: const Icon(Icons.chevron_left),
-          onTap: () => context.push(AppRoutes.addTeacher),
-        ),
-        const SizedBox(height: 8),
-        AppListTile(
-          title: 'إضافة مشرف جديد',
-          subtitle: 'تسجيل مشرف وربطه بمعهد',
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: tokens.gold.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(Icons.admin_panel_settings, color: tokens.gold),
-          ),
-          trailing: const Icon(Icons.chevron_left),
-          onTap: () => context.push(AppRoutes.addSupervisor),
-        ),
-        const SizedBox(height: 8),
-        AppListTile(
-          title: 'عرض المنهج',
-          subtitle: '10 مستويات - 1453 حلقة',
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: tokens.gold.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(Icons.menu_book, color: tokens.gold),
-          ),
-          trailing: const Icon(Icons.chevron_left),
-          onTap: () => context.go(AppRoutes.curriculum),
         ),
       ],
     );
