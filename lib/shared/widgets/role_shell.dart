@@ -63,7 +63,7 @@ class RoleShell extends StatelessWidget {
     return Scaffold(
       backgroundColor: tokens.page,
       body: navigationShell,
-      bottomNavigationBar: AppBottomNavBar(
+      bottomNavigationBar: AppNavBar(
         currentIndex: navigationShell.currentIndex,
         onTap: (index) {
           // Release-mode safety net for the invariant asserted above.

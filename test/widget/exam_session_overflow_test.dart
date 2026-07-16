@@ -86,7 +86,7 @@ Future<void> _pumpInSupervisorShell(
           textDirection: TextDirection.rtl,
           child: Scaffold(
             body: const ExamSessionScreen(studentId: _studentId),
-            bottomNavigationBar: AppBottomNavBar(
+            bottomNavigationBar: AppNavBar(
               currentIndex: 1,
               onTap: (_) {},
               role: UserRole.supervisor,
