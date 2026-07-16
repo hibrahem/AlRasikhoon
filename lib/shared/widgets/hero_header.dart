@@ -14,10 +14,18 @@ class HeroHeader extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
 
+  /// Gradient overrides for mode-colored heroes (e.g. the recitation
+  /// screens, whose hero wears the part ink). Defaults to the brand green
+  /// hero. Pass a color dark enough for [AppTokens.onHero] text.
+  final Color? topColor;
+  final Color? bottomColor;
+
   const HeroHeader({
     super.key,
     required this.child,
     this.padding = const EdgeInsetsDirectional.fromSTEB(20, 16, 20, 44),
+    this.topColor,
+    this.bottomColor,
   });
 
   @override
@@ -34,7 +42,10 @@ class HeroHeader extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [tokens.heroTop, tokens.heroBottom],
+              colors: [
+                topColor ?? tokens.heroTop,
+                bottomColor ?? tokens.heroBottom,
+              ],
             ),
           ),
           child: RepaintBoundary(

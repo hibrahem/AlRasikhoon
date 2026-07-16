@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-// Kept only for the memorization-mode accent system
-// (forMemorizationPart) used by _SessionPartTile below. Fixed,
-// colorblind-safe, WCAG-AA-verified colors (hibrahem/AlRasikhoon#25), not
-// theme-adaptive tokens, so they intentionally stay raw.
-import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/session_model.dart';
@@ -24,6 +19,7 @@ import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/student_level_progress.dart';
 import '../providers/teacher_provider.dart';
+import '../recitation_parts.dart';
 
 /// A teacher's single view of one student: identity (name + username), level,
 /// pace, the current session (which can be started from here), level progress,
@@ -248,32 +244,17 @@ class StudentProfileScreen extends ConsumerWidget {
           const Divider(),
           const SizedBox(height: 12),
 
-          // Three parts — each carries its memorization-mode accent so the
-          // new/near/far color association is learnable from the entry point
-          // (hibrahem/AlRasikhoon#25). The Arabic title always accompanies the
-          // accent, so the mode is never signalled by color alone.
+          // Three parts — each carries its part ink (tokens.forPart — the
+          // green/ochre/lapis illumination triad) and its per-part icon, so
+          // the new/near/far association is learnable from the entry point
+          // (hibrahem/AlRasikhoon#25) and never signalled by color alone.
           // A content block may legitimately be absent (five review-only
           // lessons carry no new memorization) — absence reads as '-'.
-          _SessionPartTile(
-            number: 1,
-            title: 'الحفظ الجديد',
-            content: meeting.newContentAr,
-            accent: AppColors.forMemorizationPart(1),
-          ),
+          _SessionPartTile(part: 1, content: meeting.newContentAr),
           const SizedBox(height: 8),
-          _SessionPartTile(
-            number: 2,
-            title: 'المراجعة القريبة',
-            content: meeting.recentReviewAr,
-            accent: AppColors.forMemorizationPart(2),
-          ),
+          _SessionPartTile(part: 2, content: meeting.recentReviewAr),
           const SizedBox(height: 8),
-          _SessionPartTile(
-            number: 3,
-            title: 'المراجعة البعيدة',
-            content: meeting.distantReviewAr,
-            accent: AppColors.forMemorizationPart(3),
-          ),
+          _SessionPartTile(part: 3, content: meeting.distantReviewAr),
 
           const SizedBox(height: 20),
 
@@ -562,21 +543,15 @@ class StudentProfileScreen extends ConsumerWidget {
 }
 
 class _SessionPartTile extends StatelessWidget {
-  final int number;
-  final String title;
+  final int part;
   final String content;
-  final Color accent;
 
-  const _SessionPartTile({
-    required this.number,
-    required this.title,
-    required this.content,
-    required this.accent,
-  });
+  const _SessionPartTile({required this.part, required this.content});
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final accent = tokens.forPart(part);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -590,30 +565,37 @@ class _SessionPartTile extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 28,
-            height: 28,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               color: accent.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Center(
-              child: Text(
-                '$number',
-                style: TextStyle(color: accent, fontWeight: FontWeight.bold),
-              ),
-            ),
+            child: Icon(recitationPartIcon(part), size: 16, color: accent),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: Theme.of(context).textTheme.labelMedium),
                 Text(
-                  content.isNotEmpty ? content : '-',
+                  recitationPartTitleAr(part),
                   style: Theme.of(
                     context,
-                  ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
+                  ).textTheme.labelMedium?.copyWith(color: accent),
+                ),
+                Text(
+                  content.isNotEmpty ? content : '-',
+                  // A Qur'an range — the manuscript face, as everywhere.
+                  style: content.isNotEmpty
+                      ? GoogleFonts.amiri(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: tokens.ink,
+                        )
+                      : Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                 ),
               ],
             ),
@@ -668,12 +650,13 @@ class _StudentHeaderCard extends StatelessWidget {
                     ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                   ),
                 ],
-                const SizedBox(height: 4),
-                Text(
-                  'المستوى ${student.currentLevel} - الجزء ${student.currentJuz}',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    _InfoChip(label: 'المستوى ${student.currentLevel}'),
+                    const SizedBox(width: 6),
+                    _InfoChip(label: 'الجزء ${student.currentJuz}'),
+                  ],
                 ),
               ],
             ),
@@ -691,6 +674,35 @@ class _StudentHeaderCard extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// A small neutral identity chip (level / juz) on the profile header.
+class _InfoChip extends StatelessWidget {
+  final String label;
+
+  const _InfoChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    return Container(
+      padding: const EdgeInsetsDirectional.symmetric(
+        horizontal: 10,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: tokens.primaryContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: tokens.green,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

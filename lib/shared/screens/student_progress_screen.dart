@@ -10,6 +10,7 @@ import '../../data/repositories/student_repository.dart';
 import '../../domain/curriculum/paced_session.dart';
 import '../../domain/session/student_history_entry.dart';
 import '../curriculum/assessment_copy.dart';
+import '../curriculum/recitation_part_copy.dart';
 import '../widgets/app_card.dart';
 import '../widgets/icon_medallion.dart';
 import '../widgets/student_level_progress.dart';
@@ -344,23 +345,11 @@ class _CurrentSessionCard extends StatelessWidget {
           // meeting's lines already merge contiguous ranges and de-duplicate
           // (see `PacedSession._line`), so a 2x/3x student's whole meeting
           // renders here, not just its first session.
-          _PartTile(
-            number: 1,
-            title: 'الحفظ الجديد',
-            content: meeting.newContentAr,
-          ),
+          _PartTile(part: 1, content: meeting.newContentAr),
           const SizedBox(height: 8),
-          _PartTile(
-            number: 2,
-            title: 'المراجعة القريبة',
-            content: meeting.recentReviewAr,
-          ),
+          _PartTile(part: 2, content: meeting.recentReviewAr),
           const SizedBox(height: 8),
-          _PartTile(
-            number: 3,
-            title: 'المراجعة البعيدة',
-            content: meeting.distantReviewAr,
-          ),
+          _PartTile(part: 3, content: meeting.distantReviewAr),
         ],
       ),
     );
@@ -410,51 +399,48 @@ class _SimpleSessionCard extends StatelessWidget {
 }
 
 class _PartTile extends StatelessWidget {
-  final int number;
-  final String title;
+  final int part;
   final String content;
 
-  const _PartTile({
-    required this.number,
-    required this.title,
-    required this.content,
-  });
+  const _PartTile({required this.part, required this.content});
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    // The part ink (green/ochre/lapis illumination triad) + per-part icon —
+    // the same identity the teacher's profile tiles and both part-result
+    // cards carry, so the association holds across every surface.
+    final accent = tokens.forPart(part);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: tokens.surfaceVariant,
         // Inner inset panel: 12, one step tighter than the card's 16.
         borderRadius: BorderRadius.circular(12),
+        border: BorderDirectional(start: BorderSide(color: accent, width: 4)),
       ),
       child: Row(
         children: [
           Container(
-            width: 28,
-            height: 28,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
-              color: tokens.green.withValues(alpha: 0.1),
+              color: accent.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Center(
-              child: Text(
-                '$number',
-                style: TextStyle(
-                  color: tokens.green,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            child: Icon(recitationPartIcon(part), size: 16, color: accent),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: Theme.of(context).textTheme.labelMedium),
+                Text(
+                  recitationPartTitleAr(part),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelMedium?.copyWith(color: accent),
+                ),
                 Text(
                   content.isNotEmpty ? content : '-',
                   style: Theme.of(

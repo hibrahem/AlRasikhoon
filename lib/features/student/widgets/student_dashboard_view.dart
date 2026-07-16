@@ -196,9 +196,14 @@ class StudentDashboardView extends StatelessWidget {
             style: GoogleFonts.cairo(fontSize: 14, color: tokens.onHeroMuted),
           ),
           const SizedBox(height: 14),
-          DayBeads(
-            days: data.weekBeads,
-            dimColor: tokens.onHero.withValues(alpha: 0.25),
+          // FittedBox: the beads row scales down rather than overflowing on
+          // very narrow viewports (split-screen, resize transitions).
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: DayBeads(
+              days: data.weekBeads,
+              dimColor: tokens.onHero.withValues(alpha: 0.25),
+            ),
           ),
         ],
       ),

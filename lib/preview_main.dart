@@ -17,6 +17,7 @@ import 'data/models/user_model.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/curriculum_repository.dart';
 import 'data/repositories/student_repository.dart';
+import 'domain/curriculum/paced_session.dart';
 import 'features/admin/providers/admin_provider.dart';
 import 'features/admin/screens/admin_dashboard_screen.dart';
 import 'features/student/widgets/home_practice_card.dart';
@@ -25,6 +26,8 @@ import 'features/student/widgets/student_dashboard_view.dart';
 import 'features/supervisor/providers/supervisor_provider.dart';
 import 'features/supervisor/screens/supervisor_dashboard_screen.dart';
 import 'features/teacher/providers/teacher_provider.dart';
+import 'features/teacher/screens/recitation_screen.dart';
+import 'features/teacher/screens/student_profile_screen.dart';
 import 'features/teacher/screens/teacher_students_screen.dart';
 import 'shared/providers/institute_provider.dart';
 import 'shared/providers/user_provider.dart';
@@ -64,7 +67,21 @@ class _PreviewShell extends StatefulWidget {
 }
 
 class _PreviewShellState extends State<_PreviewShell> {
-  int _index = 0;
+  // Deep-linkable for screenshots: /?tab=3 opens tab 3. (A #fragment would
+  // fight Flutter's hash URL strategy and stall the engine boot.)
+  int _index = int.tryParse(Uri.base.queryParameters['tab'] ?? '') ?? 0;
+
+  static const _tabs = <String>[
+    'طالب',
+    'تكرار',
+    'معلم',
+    'ملف طالب',
+    'تسميع ١',
+    'تسميع ٢',
+    'تسميع ٣',
+    'مشرف',
+    'مدير',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -73,32 +90,31 @@ class _PreviewShellState extends State<_PreviewShell> {
         0 => const _DashboardPreview(),
         1 => const _HomePracticePreview(),
         2 => const _TeacherPreview(),
-        3 => const _SupervisorPreview(),
+        3 => const _StudentProfilePreview(),
+        4 => const _RecitationPreview(part: 1),
+        5 => const _RecitationPreview(part: 2),
+        6 => const _RecitationPreview(part: 3),
+        7 => const _SupervisorPreview(),
         _ => const _AdminPreview(),
       },
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'طالب',
+      bottomNavigationBar: SafeArea(
+        child: SizedBox(
+          height: 56,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsetsDirectional.symmetric(
+              horizontal: 12,
+              vertical: 6,
+            ),
+            itemCount: _tabs.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 6),
+            itemBuilder: (context, i) => ChoiceChip(
+              label: Text(_tabs[i]),
+              selected: _index == i,
+              onSelected: (_) => setState(() => _index = i),
+            ),
           ),
-          NavigationDestination(icon: Icon(Icons.repeat), label: 'تكرار'),
-          NavigationDestination(
-            icon: Icon(Icons.school_outlined),
-            label: 'معلم',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.admin_panel_settings_outlined),
-            label: 'مشرف',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            label: 'مدير',
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -287,6 +303,86 @@ class _TeacherPreview extends StatelessWidget {
         ),
       ],
       child: const TeacherStudentsScreen(),
+    );
+  }
+}
+
+PacedSession _mockMeeting() {
+  const session = SessionModel(
+    id: 'L2_J29_S12',
+    levelId: 2,
+    juzNumber: 29,
+    sessionNumber: 12,
+    orderInLevel: 12,
+    kind: SessionKind.lesson,
+    unitIndex: 1,
+    hizbNumber: 57,
+    currentLevelContent: QuranContent(
+      fromSurah: 'الملك',
+      fromVerse: 1,
+      toSurah: 'الملك',
+      toVerse: 15,
+    ),
+    recentReviewContent: QuranContent(
+      fromSurah: 'القلم',
+      fromVerse: 1,
+      toSurah: 'القلم',
+      toVerse: 30,
+    ),
+    distantReviewContent: QuranContent(
+      fromSurah: 'النبأ',
+      fromVerse: 1,
+      toSurah: 'المرسلات',
+      toVerse: 50,
+    ),
+  );
+  return PacedSession(
+    sessions: [session],
+    newContent: [session.currentLevelContent!],
+    recentReview: [session.recentReviewContent!],
+    distantReview: [session.distantReviewContent!],
+  );
+}
+
+class _StudentProfilePreview extends StatelessWidget {
+  const _StudentProfilePreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return ProviderScope(
+      overrides: [
+        studentProvider('s1').overrideWith(
+          (ref) async => StudentWithUser(
+            student: _student('s1', kind: SessionKind.lesson),
+            user: _user('s1', 'أحمد عبد الرحمن', UserRole.student),
+          ),
+        ),
+        studentCurrentMeetingProvider(
+          's1',
+        ).overrideWith((ref) async => _mockMeeting()),
+        teacherStudentSessionHistoryProvider(
+          's1',
+        ).overrideWith((ref) async => []),
+      ],
+      child: const StudentProfileScreen(studentId: 's1'),
+    );
+  }
+}
+
+class _RecitationPreview extends StatelessWidget {
+  final int part;
+
+  const _RecitationPreview({required this.part});
+
+  @override
+  Widget build(BuildContext context) {
+    return ProviderScope(
+      overrides: [
+        studentCurrentMeetingProvider(
+          's1',
+        ).overrideWith((ref) async => _mockMeeting()),
+      ],
+      child: RecitationScreen(studentId: 's1', part: part),
     );
   }
 }

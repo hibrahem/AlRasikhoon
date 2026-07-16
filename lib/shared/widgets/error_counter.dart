@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_dimens.dart';
+import '../../core/theme/app_shadows.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/theme/grade_color_tokens.dart';
 import '../../core/utils/grade_calculator.dart';
@@ -22,19 +24,17 @@ class ErrorCounter extends StatelessWidget {
   Widget build(BuildContext context) {
     final gradeInfo = GradeCalculator.calculate(errorCount);
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: tokens.card,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(AppDimens.radiusCardLg),
+        boxShadow: AppShadows.card(brightness),
+        border: brightness == Brightness.dark
+            ? Border.all(color: tokens.rewardDim)
+            : null,
       ),
       child: Column(
         children: [
@@ -54,10 +54,12 @@ class ErrorCounter extends StatelessWidget {
                 children: [
                   Text(
                     '$errorCount',
-                    style: TextStyle(
+                    style: GoogleFonts.cairo(
                       fontSize: 64,
+                      height: 1.1,
                       fontWeight: FontWeight.bold,
                       color: tokens.colorForGrade(gradeInfo.grade),
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
                   Text(
@@ -166,12 +168,14 @@ class _CounterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Circular, like the home-practice stepper — the design system's one
+    // tactile-counter shape.
     return Material(
       color: color.withValues(alpha: onPressed != null ? 0.1 : 0.05),
-      borderRadius: BorderRadius.circular(16),
+      shape: const CircleBorder(),
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(16),
+        customBorder: const CircleBorder(),
         child: Container(
           width: 64,
           height: 64,

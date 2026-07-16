@@ -2,21 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:al_rasikhoon/core/constants/app_colors.dart';
+import 'package:al_rasikhoon/core/theme/app_tokens.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
+import 'package:al_rasikhoon/features/teacher/recitation_parts.dart';
 import 'package:al_rasikhoon/features/teacher/screens/recitation_screen.dart';
+import 'package:al_rasikhoon/shared/widgets/hero_header.dart';
 
-/// Distinct-color-per-memorization-mode tests for hibrahem/AlRasikhoon#25.
+/// Distinct-ink-per-memorization-part tests for hibrahem/AlRasikhoon#25
+/// (revisited: the part inks are now theme tokens — the green/ochre/lapis
+/// illumination triad — instead of raw AppColors constants).
 ///
-/// Each of the three modes — الجديد (new, part 1), القريب (near, part 2),
-/// البعيد (far, part 3) — must use its own distinct, named theme token, applied
-/// consistently. These tests assert:
-///   1. the token map (AppColors.forMemorizationPart) returns the right token,
-///   2. the three tokens are actually distinct,
-///   3. the RecitationScreen app bar adopts the mode's token color per part,
-///   4. the Arabic mode label is still shown (color is never the only signal).
+/// Each of the three parts — الجديد (1), القريب (2), البعيد (3) — must carry
+/// its own distinct, named ink, applied consistently. These tests assert:
+///   1. the token map (AppTokens.forPart) returns the right ink,
+///   2. the three inks are distinct — in BOTH brightnesses,
+///   3. the RecitationScreen hero wears a distinct color per part,
+///   4. the Arabic part label AND the per-part icon are still shown
+///      (color is never the only signal).
 
 QuranContent _content() => const QuranContent(
   fromSurah: 'البقرة',
@@ -79,52 +83,65 @@ Future<void> _pumpRecitation(WidgetTester tester, int part) async {
 }
 
 void main() {
-  group('memorization mode tokens (#25)', () {
-    test('forMemorizationPart maps each part to its named token', () {
-      expect(AppColors.forMemorizationPart(1), AppColors.kNewColor);
-      expect(AppColors.forMemorizationPart(2), AppColors.kNearColor);
-      expect(AppColors.forMemorizationPart(3), AppColors.kFarColor);
+  group('memorization part inks (#25)', () {
+    test('forPart maps each part to its named ink', () {
+      for (final tokens in [AppTokens.light, AppTokens.dark]) {
+        expect(tokens.forPart(1), tokens.partNew);
+        expect(tokens.forPart(2), tokens.partNear);
+        expect(tokens.forPart(3), tokens.partFar);
+      }
     });
 
-    test('unknown parts fall back to primary', () {
-      expect(AppColors.forMemorizationPart(0), AppColors.primary);
-      expect(AppColors.forMemorizationPart(99), AppColors.primary);
+    test('unknown parts fall back to green', () {
+      expect(AppTokens.light.forPart(0), AppTokens.light.green);
+      expect(AppTokens.light.forPart(99), AppTokens.light.green);
     });
 
-    test('the three mode tokens are distinct', () {
-      final tokens = <Color>{
-        AppColors.kNewColor,
-        AppColors.kNearColor,
-        AppColors.kFarColor,
-      };
-      expect(tokens.length, 3);
+    test('the three inks are distinct in both brightnesses', () {
+      for (final tokens in [AppTokens.light, AppTokens.dark]) {
+        final inks = <Color>{tokens.partNew, tokens.partNear, tokens.partFar};
+        expect(inks.length, 3);
+      }
     });
   });
 
-  group('RecitationScreen applies the mode accent (#25)', () {
-    final cases = <int, (Color, String)>{
-      1: (AppColors.kNewColor, 'الحفظ الجديد'),
-      2: (AppColors.kNearColor, 'المراجعة القريبة'),
-      3: (AppColors.kFarColor, 'المراجعة البعيدة'),
+  group('RecitationScreen wears the part ink (#25)', () {
+    final labels = <int, String>{
+      1: 'الحفظ الجديد',
+      2: 'المراجعة القريبة',
+      3: 'المراجعة البعيدة',
     };
 
-    for (final entry in cases.entries) {
-      final part = entry.key;
-      final expectedColor = entry.value.$1;
-      final expectedLabel = entry.value.$2;
-
-      testWidgets(
-        'part $part app bar uses its token + keeps the Arabic label',
-        (tester) async {
-          await _pumpRecitation(tester, part);
-
-          final appBar = tester.widget<AppBar>(find.byType(AppBar));
-          expect(appBar.backgroundColor, expectedColor);
-
-          // Color is never the only signal — the Arabic mode label is present.
-          expect(find.text(expectedLabel), findsWidgets);
-        },
+    testWidgets('each part hero has its own distinct color', (tester) async {
+      final heroColors = <int, Color>{};
+      for (final part in labels.keys) {
+        await _pumpRecitation(tester, part);
+        final hero = tester.widget<HeroHeader>(find.byType(HeroHeader));
+        expect(
+          hero.topColor,
+          isNotNull,
+          reason: 'part $part hero must override the brand gradient',
+        );
+        heroColors[part] = hero.topColor!;
+      }
+      expect(
+        heroColors.values.toSet().length,
+        3,
+        reason: 'the three part heroes must be visually distinct',
       );
+    });
+
+    for (final entry in labels.entries) {
+      final part = entry.key;
+      final expectedLabel = entry.value;
+
+      testWidgets('part $part keeps the Arabic label and the per-part icon '
+          '(color is never the only signal)', (tester) async {
+        await _pumpRecitation(tester, part);
+
+        expect(find.text(expectedLabel), findsWidgets);
+        expect(find.byIcon(recitationPartIcon(part)), findsWidgets);
+      });
     }
   });
 }

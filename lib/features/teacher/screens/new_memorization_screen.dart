@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 // textOnPrimary) — see the comment above `modeColor` below. These are fixed,
 // colorblind-safe, WCAG-AA-verified colors (hibrahem/AlRasikhoon#25), not
 // theme-adaptive tokens, so they intentionally stay raw.
-import '../../../core/constants/app_colors.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/icon_medallion.dart';
@@ -25,14 +24,14 @@ class NewMemorizationScreen extends ConsumerWidget {
     final meetingAsync = ref.watch(studentCurrentMeetingProvider(studentId));
 
     // This is the standalone "new memorization" (الجديد) mode screen, so it
-    // carries the same accent as part 1 elsewhere (hibrahem/AlRasikhoon#25).
-    const modeColor = AppColors.kNewColor;
+    // carries the same part-1 ink as everywhere else (tokens.partNew,
+    // hibrahem/AlRasikhoon#25). The colored app-bar slab is gone with the
+    // redesign — the ink lives on the card identity below.
+    final modeColor = tokens.partNew;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('الحفظ الجديد'),
-        backgroundColor: modeColor,
-        foregroundColor: AppColors.textOnPrimary,
         actions: [ActiveLessonTimer(studentId: studentId)],
       ),
       body: meetingAsync.when(
@@ -63,7 +62,7 @@ class NewMemorizationScreen extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          const IconMedallion(
+                          IconMedallion(
                             icon: Icons.auto_stories,
                             accent: modeColor,
                             size: 48,

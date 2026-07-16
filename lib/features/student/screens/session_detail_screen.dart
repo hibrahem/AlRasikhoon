@@ -7,6 +7,7 @@ import '../../../core/theme/grade_color_tokens.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../data/models/session_model.dart';
 import '../../../domain/session/session_duration.dart';
+import '../../../shared/curriculum/recitation_part_copy.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/states/error_state.dart';
@@ -192,7 +193,7 @@ class SessionDetailScreen extends ConsumerWidget {
                   // SessionRecordModel.presentParts).
                   for (final part in record.presentParts) ...[
                     _PartResultCard(
-                      title: _partTitleAr(part),
+                      part: part,
                       errors: record.grades.errorsForPart(part),
                       level: record.levelId,
                       range: _rangeForPart(session, part),
@@ -224,21 +225,6 @@ class SessionDetailScreen extends ConsumerWidget {
         error: (e, _) => ErrorState(message: 'تعذر تحميل تفاصيل الحلقة: $e'),
       ),
     );
-  }
-}
-
-/// The Arabic label for a recitation part: 1 = new memorization, 2 = recent
-/// review, 3 = distant review.
-String _partTitleAr(int part) {
-  switch (part) {
-    case 1:
-      return 'الحفظ الجديد';
-    case 2:
-      return 'المراجعة القريبة';
-    case 3:
-      return 'المراجعة البعيدة';
-    default:
-      return 'التسميع';
   }
 }
 
@@ -367,13 +353,13 @@ class _StatChip extends StatelessWidget {
 }
 
 class _PartResultCard extends StatelessWidget {
-  final String title;
+  final int part;
   final int errors;
   final int level;
   final String range;
 
   const _PartResultCard({
-    required this.title,
+    required this.part,
     required this.errors,
     required this.level,
     this.range = '',
@@ -383,32 +369,37 @@ class _PartResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final gradeInfo = GradeCalculator.calculateForLevel(level, errors);
+    // Leading identity is the PART (its ink + icon, tokens.forPart);
+    // the OUTCOME lives on the trailing side — pass/fail icon beside the
+    // grade name, both in the grade palette. Two signals, two sides,
+    // no collision.
+    final accent = tokens.forPart(part);
 
     return AppCard(
       margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(12),
       child: Row(
         children: [
-          Icon(
-            gradeInfo.passed ? Icons.check_circle : Icons.cancel,
-            // AppColors.success has no direct AppTokens equivalent (not in
-            // the Task 9 mapping table). Following the Task 13 precedent,
-            // it maps to tokens.green — tokens.green and AppColors.gradeRasikh
-            // are byte-identical, and green already carries the
-            // "positive/passed" role elsewhere in this screen (تلقين icon,
-            // header icon). AppColors.error maps to tokens.maroon per the
-            // table. No collision: the errors-count/grade-name text to the
-            // right uses tokens.colorForGrade (the brightness-aware
-            // grade-tier palette), a separate signal from this pass/fail
-            // icon.
-            color: gradeInfo.passed ? tokens.green : tokens.maroon,
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: accent.withValues(alpha: 0.12),
+            ),
+            child: Icon(recitationPartIcon(part), size: 16, color: accent),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: Theme.of(context).textTheme.bodyMedium),
+                Text(
+                  recitationPartTitleAr(part),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: accent),
+                ),
                 if (range.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   // The Qur'an range is a passage name — manuscript face.
@@ -437,11 +428,22 @@ class _PartResultCard extends StatelessWidget {
                   color: tokens.colorForGrade(gradeInfo.grade),
                 ),
               ),
-              Text(
-                gradeInfo.nameAr,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: tokens.colorForGrade(gradeInfo.grade),
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    gradeInfo.passed ? Icons.check_circle : Icons.cancel,
+                    size: 14,
+                    color: gradeInfo.passed ? tokens.green : tokens.maroon,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    gradeInfo.nameAr,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: tokens.colorForGrade(gradeInfo.grade),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

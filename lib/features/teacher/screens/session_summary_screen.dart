@@ -141,7 +141,7 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
 
                     for (final p in presentParts) ...[
                       _PartResultCard(
-                        title: recitationPartTitleAr(p),
+                        part: p,
                         errors: recitationPartErrors(activeSession, p),
                         content: recitationPartContentAr(
                           activeSession.meeting,
@@ -263,13 +263,13 @@ class _OverallResultCard extends StatelessWidget {
 /// One part's detailed result: its own level-based grade AND the passage the
 /// student recited for it (al_rasikhoon-nzg).
 class _PartResultCard extends StatelessWidget {
-  final String title;
+  final int part;
   final int errors;
   final String content;
   final int level;
 
   const _PartResultCard({
-    required this.title,
+    required this.part,
     required this.errors,
     required this.content,
     required this.level,
@@ -279,6 +279,11 @@ class _PartResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final gradeInfo = GradeCalculator.calculateForLevel(level, errors);
+    // Leading identity is the PART (its ink + icon, tokens.forPart); the
+    // OUTCOME lives on the trailing side in the grade palette — two
+    // signals, two sides, no collision. Mirrors the student's own
+    // session-detail part card.
+    final accent = tokens.forPart(part);
 
     return AppCard(
       margin: EdgeInsets.zero,
@@ -288,20 +293,26 @@ class _PartResultCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                gradeInfo.passed ? Icons.check_circle : Icons.cancel,
-                // Same success/error reasoning as _OverallResultCard above.
-                // NOTE: gradeInfo.color (used just below for the error-count
-                // and grade-name text) is intentionally left untouched — it
-                // is being made brightness-aware in a parallel task
-                // (grade_calculator.dart), out of scope here.
-                color: gradeInfo.passed ? tokens.green : tokens.maroon,
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: accent.withValues(alpha: 0.12),
+                ),
+                child: Icon(
+                  recitationPartIcon(part),
+                  size: 16,
+                  color: accent,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  title,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  recitationPartTitleAr(part),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: accent),
                 ),
               ),
               Column(
@@ -317,11 +328,22 @@ class _PartResultCard extends StatelessWidget {
                       color: tokens.colorForGrade(gradeInfo.grade),
                     ),
                   ),
-                  Text(
-                    gradeInfo.nameAr,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: tokens.colorForGrade(gradeInfo.grade),
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        gradeInfo.passed ? Icons.check_circle : Icons.cancel,
+                        size: 14,
+                        color: gradeInfo.passed ? tokens.green : tokens.maroon,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        gradeInfo.nameAr,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: tokens.colorForGrade(gradeInfo.grade),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

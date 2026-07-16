@@ -34,6 +34,18 @@ class AppTokens extends ThemeExtension<AppTokens> {
   /// Khatam lattice line color, painted only inside the hero.
   final Color latticeOnHero;
 
+  // Recitation-part inks (hibrahem/AlRasikhoon#25, revisited): the classic
+  // manuscript illumination triad, ordered as a time-distance metaphor —
+  // fresh green (new memorization), warm ochre (recent review), distant
+  // lapis (distant review). All three pass WCAG AA both as text on the
+  // light card (4.6–7.4:1) and for white text on a solid fill (4.9–7.9:1);
+  // the dark variants pass on the dark card (7.2–8.8:1). Color is never the
+  // only signal: the Arabic part label and a distinct per-part icon always
+  // accompany the ink (see recitation_parts.dart).
+  final Color partNew;
+  final Color partNear;
+  final Color partFar;
+
   const AppTokens({
     required this.page,
     required this.card,
@@ -57,6 +69,9 @@ class AppTokens extends ThemeExtension<AppTokens> {
     required this.onHeroMuted,
     required this.rewardDim,
     required this.latticeOnHero,
+    required this.partNew,
+    required this.partNear,
+    required this.partFar,
   });
 
   static const AppTokens light = AppTokens(
@@ -82,6 +97,9 @@ class AppTokens extends ThemeExtension<AppTokens> {
     onHeroMuted: Color(0xB3F6F0DF), // onHero @ 70%
     rewardDim: Color(0x33C9A227), // gold @ 20%
     latticeOnHero: Color(0x0DF6F0DF), // onHero @ 5%
+    partNew: Color(0xFF1B5E20), // green — the brand action hue
+    partNear: Color(0xFF8A6D0C), // deep ochre — gold family, AA-safe
+    partFar: Color(0xFF31569B), // lapis — the manuscript blue
   );
 
   static const AppTokens dark = AppTokens(
@@ -107,6 +125,9 @@ class AppTokens extends ThemeExtension<AppTokens> {
     onHeroMuted: Color(0xB3EDE6D4), // onHero @ 70%
     rewardDim: Color(0x33E0B84A), // gold @ 20%
     latticeOnHero: Color(0x14E0B84A), // gold @ 8%
+    partNew: Color(0xFF8FBF7F),
+    partNear: Color(0xFFD9B453),
+    partFar: Color(0xFF8FA8D9),
   );
 
   @override
@@ -133,6 +154,9 @@ class AppTokens extends ThemeExtension<AppTokens> {
     Color? onHeroMuted,
     Color? rewardDim,
     Color? latticeOnHero,
+    Color? partNew,
+    Color? partNear,
+    Color? partFar,
   }) {
     return AppTokens(
       page: page ?? this.page,
@@ -157,6 +181,9 @@ class AppTokens extends ThemeExtension<AppTokens> {
       onHeroMuted: onHeroMuted ?? this.onHeroMuted,
       rewardDim: rewardDim ?? this.rewardDim,
       latticeOnHero: latticeOnHero ?? this.latticeOnHero,
+      partNew: partNew ?? this.partNew,
+      partNear: partNear ?? this.partNear,
+      partFar: partFar ?? this.partFar,
     );
   }
 
@@ -190,7 +217,28 @@ class AppTokens extends ThemeExtension<AppTokens> {
       onHeroMuted: Color.lerp(onHeroMuted, other.onHeroMuted, t)!,
       rewardDim: Color.lerp(rewardDim, other.rewardDim, t)!,
       latticeOnHero: Color.lerp(latticeOnHero, other.latticeOnHero, t)!,
+      partNew: Color.lerp(partNew, other.partNew, t)!,
+      partNear: Color.lerp(partNear, other.partNear, t)!,
+      partFar: Color.lerp(partFar, other.partFar, t)!,
     );
+  }
+}
+
+extension AppTokensParts on AppTokens {
+  /// The ink for a recitation part: 1 = الحفظ الجديد, 2 = المراجعة القريبة,
+  /// 3 = المراجعة البعيدة. Any other value falls back to [green]
+  /// (سرد / اختبار / unknown), matching the old forMemorizationPart contract.
+  Color forPart(int part) {
+    switch (part) {
+      case 1:
+        return partNew;
+      case 2:
+        return partNear;
+      case 3:
+        return partFar;
+      default:
+        return green;
+    }
   }
 }
 

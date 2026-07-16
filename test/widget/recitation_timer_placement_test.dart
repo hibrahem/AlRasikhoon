@@ -5,7 +5,7 @@ import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/features/teacher/screens/recitation_screen.dart';
-import 'package:al_rasikhoon/shared/widgets/app_card.dart';
+import 'package:al_rasikhoon/shared/widgets/hero_header.dart';
 import 'package:al_rasikhoon/shared/widgets/session_timer.dart';
 
 /// The live recitation timer was moved OUT of the app bar into the content-card
@@ -97,19 +97,14 @@ void main() {
     // The timer is present…
     expect(find.byType(SessionTimer), findsOneWidget);
 
-    // …but no longer inside the AppBar.
-    expect(
-      find.descendant(
-        of: find.byType(AppBar),
-        matching: find.byType(SessionTimer),
-      ),
-      findsNothing,
-    );
+    // …and the screen no longer has an AppBar slab at all — the redesign
+    // replaced it with the part-colored hero.
+    expect(find.byType(AppBar), findsNothing);
 
-    // …and it lives in the content card's header, next to the part badge.
+    // The timer lives in the hero, beside the close action.
     expect(
       find.descendant(
-        of: find.byType(AppCard),
+        of: find.byType(HeroHeader),
         matching: find.byType(SessionTimer),
       ),
       findsOneWidget,

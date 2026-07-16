@@ -49,43 +49,4 @@ class AppColors {
   static const Color supervisorCard = Color(0xFFFFF8E1);
   static const Color teacherCard = Color(0xFFE3F2FD);
   static const Color studentCard = Color(0xFFF3E5F5);
-
-  // ---------------------------------------------------------------------------
-  // Memorization-mode accent colors (hibrahem/AlRasikhoon#25)
-  //
-  // Each of the three session modes gets its own distinct, consistent accent so
-  // the user can instantly tell which mode they're in. Used wherever a mode is
-  // shown: the recitation session screen header/accents, the per-part result
-  // screen, and the part tiles in the session overview.
-  //
-  // Palette is chosen from the color-blind-safe Okabe–Ito family (teal /
-  // vermilion / purple — distinguishable under protan/deutan/tritan vision).
-  // All three meet WCAG AA (>= 4.5:1) for WHITE text/icons on the accent, so
-  // they are safe to use as a filled background behind `textOnPrimary`:
-  //   kNewColor  teal   #00695C  -> 6.61:1
-  //   kNearColor orange #C8460E  -> 4.84:1
-  //   kFarColor  purple #5E35B1  -> 8.02:1
-  // NOTE: color is never the only signal — the Arabic mode label always
-  // accompanies the accent (see RecitationScreen / StudentProfileScreen).
-  // Specific hexes are a design call and may be adjusted by the designer.
-  static const Color kNewColor = Color(0xFF00695C); // الجديد — new memorization
-  static const Color kNearColor = Color(0xFFC8460E); // القريب — near review
-  static const Color kFarColor = Color(0xFF5E35B1); // البعيد — far review
-
-  /// Returns the accent color for a memorization-session part.
-  ///
-  /// Parts map to modes: 1 = الجديد (new), 2 = القريب (near), 3 = البعيد (far).
-  /// Any other value falls back to [primary] (e.g. sard / exam / unknown).
-  static Color forMemorizationPart(int part) {
-    switch (part) {
-      case 1:
-        return kNewColor;
-      case 2:
-        return kNearColor;
-      case 3:
-        return kFarColor;
-      default:
-        return primary;
-    }
-  }
 }
