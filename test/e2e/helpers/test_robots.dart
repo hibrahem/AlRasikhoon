@@ -253,7 +253,10 @@ class AdminRobot extends TestRobot {
   /// Verify admin dashboard
   Future<void> verifyDashboard() async {
     await pumpAndSettle();
-    expect(find.text('مرحباً، مدير النظام'), findsOneWidget);
+    expect(
+      find.text('إدارة المعاهد والمعلمين والمشرفين والطلاب'),
+      findsOneWidget,
+    );
   }
 
   /// Navigate to institutes from the Management hub's stat-card grid.
@@ -276,7 +279,7 @@ class AdminRobot extends TestRobot {
 
   /// Navigate to curriculum via bottom nav
   Future<void> goToCurriculum() async {
-    final navBar = find.byType(BottomNavigationBar);
+    final navBar = find.byType(NavigationBar);
     final curriculumIcon = find.descendant(
       of: navBar,
       matching: find.text('المنهج'),
@@ -627,7 +630,7 @@ class TeacherRobot extends TestRobot {
 
   /// Navigate to the students tab via bottom nav.
   Future<void> goToStudents() async {
-    final navBar = find.byType(BottomNavigationBar);
+    final navBar = find.byType(NavigationBar);
     final studentsTab = find.descendant(
       of: navBar,
       matching: find.text('الطلاب'),
@@ -638,7 +641,7 @@ class TeacherRobot extends TestRobot {
 
   /// Navigate to the settings tab via bottom nav.
   Future<void> goToSettings() async {
-    final navBar = find.byType(BottomNavigationBar);
+    final navBar = find.byType(NavigationBar);
     final settingsTab = find.descendant(
       of: navBar,
       matching: find.text('الملف الشخصي'),
@@ -660,7 +663,7 @@ class TeacherRobot extends TestRobot {
   /// Verify there is no الحلقة tab in the bottom nav — it was removed by
   /// design (see nav_destinations.dart).
   Future<void> verifyNoHalaqahTab() async {
-    final navBar = find.byType(BottomNavigationBar);
+    final navBar = find.byType(NavigationBar);
     expect(
       find.descendant(of: navBar, matching: find.text('الحلقة')),
       findsNothing,
@@ -670,7 +673,7 @@ class TeacherRobot extends TestRobot {
   /// Verify there is no السجل tab in the bottom nav — the teacher-wide history
   /// tab was folded into the per-student profile (al_rasikhoon-pb7).
   Future<void> verifyNoHistoryTab() async {
-    final navBar = find.byType(BottomNavigationBar);
+    final navBar = find.byType(NavigationBar);
     expect(
       find.descendant(of: navBar, matching: find.text('السجل')),
       findsNothing,
@@ -685,7 +688,7 @@ class StudentRobot extends TestRobot {
   /// Verify student dashboard
   Future<void> verifyDashboard() async {
     await pumpAndSettle();
-    expect(find.textContaining('مرحباً'), findsOneWidget);
+    expect(find.textContaining('السلام عليكم'), findsOneWidget);
   }
 
   /// Verify current level displayed. The redesigned dashboard no longer
@@ -804,12 +807,12 @@ class SupervisorRobot extends TestRobot {
       await pumpAndSettle();
     }
     await pumpAndSettle();
-    expect(find.text('الراسخون - المشرف'), findsOneWidget);
+    expect(find.text('إدارة اختبارات الطلاب'), findsOneWidget);
   }
 
   /// Navigate to exam queue via bottom nav
   Future<void> goToExamQueue() async {
-    final navBar = find.byType(BottomNavigationBar);
+    final navBar = find.byType(NavigationBar);
     final examIcon = find.descendant(
       of: navBar,
       matching: find.text('الاختبارات'),
@@ -920,7 +923,7 @@ class SupervisorRobot extends TestRobot {
 
   /// Navigate to the supervisor's institute-scoped Students tab via bottom nav.
   Future<void> goToStudents() async {
-    final navBar = find.byType(BottomNavigationBar);
+    final navBar = find.byType(NavigationBar);
     final studentsIcon = find.descendant(
       of: navBar,
       matching: find.text('الطلاب'),

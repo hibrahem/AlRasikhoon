@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_tokens.dart';
 import '../../data/models/user_model.dart';
 import 'nav_destinations.dart';
 
-class AppBottomNavBar extends StatelessWidget {
+/// Material 3 bottom navigation for a role. Styling (pill indicator, selected
+/// colors) comes from `NavigationBarThemeData` in app_theme.dart — this widget
+/// carries no per-instance colors, which is what keeps selected styling
+/// consistent (previously gold here vs green in the theme).
+class AppNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
   final UserRole role;
 
-  const AppBottomNavBar({
+  const AppNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
@@ -17,21 +20,16 @@ class AppBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = context.tokens;
     final destinations = destinationsFor(role);
 
-    return BottomNavigationBar(
-      currentIndex: currentIndex,
-      onTap: onTap,
-      type: BottomNavigationBarType.fixed,
-      backgroundColor: tokens.card,
-      selectedItemColor: tokens.gold,
-      unselectedItemColor: tokens.sepia,
-      items: [
+    return NavigationBar(
+      selectedIndex: currentIndex,
+      onDestinationSelected: onTap,
+      destinations: [
         for (final destination in destinations)
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(destination.icon),
-            activeIcon: Icon(destination.activeIcon),
+            selectedIcon: Icon(destination.activeIcon),
             label: destination.label,
           ),
       ],

@@ -19,8 +19,9 @@ void main() {
       env = TestEnvironment();
     });
 
-    testWidgets('Login screen renders with username + password fields',
-        (tester) async {
+    testWidgets('Login screen renders with username + password fields', (
+      tester,
+    ) async {
       // Arrange - no authenticated user
       await env.setUp();
 
@@ -38,8 +39,9 @@ void main() {
       expect(find.text('يجب أن يكون لديك حساب مسجل مسبقاً'), findsOneWidget);
     });
 
-    testWidgets('Authenticated admin redirects to admin dashboard',
-        (tester) async {
+    testWidgets('Authenticated admin redirects to admin dashboard', (
+      tester,
+    ) async {
       // Arrange
       final admin = env.createSuperAdmin();
       await env.setUp(authenticatedUser: admin);
@@ -49,11 +51,15 @@ void main() {
 
       // Assert - should redirect to admin dashboard, not login
       await tester.pumpAndSettle();
-      expect(find.text('مرحباً، مدير النظام'), findsOneWidget);
+      expect(
+        find.text('إدارة المعاهد والمعلمين والمشرفين والطلاب'),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('Authenticated teacher redirects to students screen',
-        (tester) async {
+    testWidgets('Authenticated teacher redirects to students screen', (
+      tester,
+    ) async {
       // Arrange
       final teacher = env.createTeacher();
       await env.setUp(authenticatedUser: teacher);
@@ -66,8 +72,9 @@ void main() {
       expect(find.text('طلابي'), findsOneWidget);
     });
 
-    testWidgets('Authenticated student redirects to student dashboard',
-        (tester) async {
+    testWidgets('Authenticated student redirects to student dashboard', (
+      tester,
+    ) async {
       // Arrange
       final student = env.createStudent(name: 'أحمد');
       await env.setUp(authenticatedUser: student);
@@ -79,11 +86,12 @@ void main() {
 
       // Assert
       await tester.pumpAndSettle();
-      expect(find.textContaining('مرحباً'), findsOneWidget);
+      expect(find.textContaining('السلام عليكم'), findsOneWidget);
     });
 
-    testWidgets('Authenticated supervisor redirects to supervisor dashboard',
-        (tester) async {
+    testWidgets('Authenticated supervisor redirects to supervisor dashboard', (
+      tester,
+    ) async {
       // Arrange
       final supervisor = env.createSupervisor();
       await env.setUp(authenticatedUser: supervisor);
@@ -93,7 +101,7 @@ void main() {
 
       // Assert
       await tester.pumpAndSettle();
-      expect(find.text('الراسخون - المشرف'), findsOneWidget);
+      expect(find.text('إدارة اختبارات الطلاب'), findsOneWidget);
     });
   });
 }

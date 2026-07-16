@@ -9,6 +9,7 @@ import '../../../shared/providers/institute_provider.dart';
 import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
+import '../../../shared/widgets/app_top_bar.dart';
 import '../../../shared/widgets/student_card.dart';
 import '../providers/teacher_provider.dart';
 
@@ -29,7 +30,7 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
     ref.watch(authRepositoryProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('طلابي')),
+      appBar: const AppTopBar(title: 'طلابي'),
       body: Column(
         children: [
           // Institute filter — only shown when teacher has multiple institutes

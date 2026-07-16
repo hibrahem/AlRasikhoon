@@ -67,6 +67,5 @@ functions/node_modules/
 tools/curriculum/.venv/
 __pycache__/
 *.pyc
-
-# Superpowers visual-brainstorm scratch files
-.superpowers/brainstorm/
+# Superpowers scratch files (specs/plans are committed; scratch is not)
+.superpowers/

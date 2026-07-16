@@ -9,6 +9,7 @@ import '../../../shared/providers/current_student_provider.dart';
 import '../../../shared/providers/stats_provider.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_greeting_header.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/level_progression_widget.dart';
@@ -33,113 +34,121 @@ class _StudentDashboardScreenState
     final meetingAsync = ref.watch(studentDashboardMeetingProvider);
     final progressAsync = ref.watch(curriculumProgressProvider);
 
+    // No AppBar: the dashboard leads with a scrolling AppGreetingHeader
+    // (greeting + name) instead of a green title bar. Sign-out still lives,
+    // confirmed, in الإعدادات — never next to routine navigation.
     return Scaffold(
-      appBar: AppBar(
-        // Sign-out is not offered here: it lives, confirmed, in الإعدادات
-        // (the shared SettingsScreen) so a destructive action never fires on a
-        // single unconfirmed tap next to routine navigation.
-        //
-        // The wordmark inherits the shared AppBar title style
-        // (GoogleFonts.amiri) so it matches the admin, teacher, and supervisor
-        // dashboards — never a one-off font just for this screen.
-        title: const Text('الراسخون'),
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          // Invalidate all providers
-          ref.invalidate(currentStudentProvider);
-          ref.invalidate(studentStatsProvider);
-          ref.invalidate(studentDashboardMeetingProvider);
-          ref.invalidate(homePracticeStatsProvider);
-          ref.invalidate(curriculumProgressProvider);
+      body: SafeArea(
+        bottom: false,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            // Invalidate all providers
+            ref.invalidate(currentStudentProvider);
+            ref.invalidate(studentStatsProvider);
+            ref.invalidate(studentDashboardMeetingProvider);
+            ref.invalidate(homePracticeStatsProvider);
+            ref.invalidate(curriculumProgressProvider);
 
-          // Wait for providers to reload
-          await Future.wait([
-            ref.read(studentStatsProvider.future),
-            ref.read(studentDashboardMeetingProvider.future),
-            ref.read(homePracticeStatsProvider.future),
-            ref.read(curriculumProgressProvider.future),
-          ]);
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (currentUser?.role == UserRole.guardian)
-                const _GuardianChildSwitcher(),
+            // Wait for providers to reload
+            await Future.wait([
+              ref.read(studentStatsProvider.future),
+              ref.read(studentDashboardMeetingProvider.future),
+              ref.read(homePracticeStatsProvider.future),
+              ref.read(curriculumProgressProvider.future),
+            ]);
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (currentUser?.role == UserRole.guardian)
+                  const _GuardianChildSwitcher(),
 
-              Text(
-                'مرحباً، ${currentUser?.name ?? 'الطالب'}',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 24),
+                AppGreetingHeader(
+                  greeting: 'السلام عليكم',
+                  title: currentUser?.name ?? 'الطالب',
+                  trailing: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: context.tokens.primaryContainer,
+                    child: Text(
+                      (currentUser?.name ?? '؟').characters.first,
+                      style: TextStyle(
+                        color: context.tokens.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
 
-              // Progress hero — the screen's headline. Needs curriculum progress, the
-              // student's position (level/juz/passed), and the streak; renders only
-              // when all three have resolved, else a single loading block.
-              statsAsync.when(
-                data: (stats) => progressAsync.when(
-                  data: (progress) {
-                    final practice = ref
-                        .watch(homePracticeStatsProvider)
-                        .asData
-                        ?.value;
-                    return ProgressHeroCard(
-                      percent: progress.percent,
-                      fraction: progress.fraction,
-                      juzMemorized: progress.juzMemorized,
-                      currentLevel: stats.currentLevel,
-                      streakDays: practice?.streakDays ?? 0,
-                      passedSessions: stats.passedSessions,
-                    );
-                  },
+                // Progress hero — the screen's headline. Needs curriculum progress, the
+                // student's position (level/juz/passed), and the streak; renders only
+                // when all three have resolved, else a single loading block.
+                statsAsync.when(
+                  data: (stats) => progressAsync.when(
+                    data: (progress) {
+                      final practice = ref
+                          .watch(homePracticeStatsProvider)
+                          .asData
+                          ?.value;
+                      return ProgressHeroCard(
+                        percent: progress.percent,
+                        fraction: progress.fraction,
+                        juzMemorized: progress.juzMemorized,
+                        currentLevel: stats.currentLevel,
+                        streakDays: practice?.streakDays ?? 0,
+                        passedSessions: stats.passedSessions,
+                      );
+                    },
+                    loading: () => const LoadingState(),
+                    error: (e, _) =>
+                        ErrorState(message: 'تعذر تحميل التقدم: $e'),
+                  ),
                   loading: () => const LoadingState(),
                   error: (e, _) => ErrorState(message: 'تعذر تحميل التقدم: $e'),
                 ),
-                loading: () => const LoadingState(),
-                error: (e, _) => ErrorState(message: 'تعذر تحميل التقدم: $e'),
-              ),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // Current session — juz lives here, and only here.
-              Text(
-                'الحلقة الحالية',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 12),
-              meetingAsync.when(
-                data: (meeting) => _buildCurrentSessionCard(meeting),
-                loading: () => const LoadingState(),
-                error: (e, _) => ErrorState(message: 'تعذر تحميل الحلقة: $e'),
-              ),
+                // Current session — juz lives here, and only here.
+                Text(
+                  'الحلقة الحالية',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 12),
+                meetingAsync.when(
+                  data: (meeting) => _buildCurrentSessionCard(meeting),
+                  loading: () => const LoadingState(),
+                  error: (e, _) => ErrorState(message: 'تعذر تحميل الحلقة: $e'),
+                ),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // Home practice — one merged card.
-              const HomePracticeCard(),
+                // Home practice — one merged card.
+                const HomePracticeCard(),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // Level journey — collapsed by default; the only home of completed-levels.
-              statsAsync.when(
-                data: (stats) => _buildJourneyExpander(stats),
-                loading: () => const SizedBox(),
-                error: (_, _) => const SizedBox(),
-              ),
+                // Level journey — collapsed by default; the only home of completed-levels.
+                statsAsync.when(
+                  data: (stats) => _buildJourneyExpander(stats),
+                  loading: () => const SizedBox(),
+                  error: (_, _) => const SizedBox(),
+                ),
 
-              const SizedBox(height: 12),
+                const SizedBox(height: 12),
 
-              // Full stats — collapsed by default; no 'المستويات' tile (it lives in the
-              // hero chip and the journey row above).
-              statsAsync.when(
-                data: (stats) => _buildStatsExpander(stats),
-                loading: () => const SizedBox(),
-                error: (_, _) => const SizedBox(),
-              ),
-            ],
+                // Full stats — collapsed by default; no 'المستويات' tile (it lives in the
+                // hero chip and the journey row above).
+                statsAsync.when(
+                  data: (stats) => _buildStatsExpander(stats),
+                  loading: () => const SizedBox(),
+                  error: (_, _) => const SizedBox(),
+                ),
+              ],
+            ),
           ),
         ),
       ),

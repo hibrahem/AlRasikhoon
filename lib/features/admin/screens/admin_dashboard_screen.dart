@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/widgets/app_greeting_header.dart';
 import '../../../shared/widgets/stat_card.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
@@ -17,9 +18,10 @@ class AdminDashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // No AppBar: the hub leads with a scrolling AppGreetingHeader (wordmark +
+    // role) instead of a green title bar. Sign-out lives in the Profile tab.
     return Scaffold(
-      appBar: AppBar(title: const Text('الراسخون')),
-      body: _buildBody(context, ref),
+      body: SafeArea(bottom: false, child: _buildBody(context, ref)),
     );
   }
 
@@ -37,11 +39,8 @@ class AdminDashboardScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'مرحباً، مدير النظام',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
+            const AppGreetingHeader(greeting: 'مدير النظام', title: 'الراسخون'),
+            const SizedBox(height: 4),
             Text(
               'إدارة المعاهد والمعلمين والمشرفين والطلاب',
               style: Theme.of(

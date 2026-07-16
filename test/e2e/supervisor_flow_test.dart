@@ -405,7 +405,7 @@ void main() {
         // Assert — bounced back to the supervisor dashboard, never the Sard
         // session screen (whose app bar title is exactly 'السرد').
         expect(find.text('السرد'), findsNothing);
-        expect(find.text('الراسخون - المشرف'), findsOneWidget);
+        expect(find.text('إدارة اختبارات الطلاب'), findsOneWidget);
       },
     );
 
