@@ -124,9 +124,7 @@ class AppTheme {
             horizontal: AppDimens.space24,
             vertical: AppDimens.space12,
           ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimens.radiusControl),
-          ),
+          shape: const StadiumBorder(),
           textStyle: GoogleFonts.cairo(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -140,9 +138,7 @@ class AppTheme {
             horizontal: AppDimens.space24,
             vertical: AppDimens.space12,
           ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimens.radiusControl),
-          ),
+          shape: const StadiumBorder(),
           side: BorderSide(color: t.green),
           textStyle: GoogleFonts.cairo(
             fontSize: 16,

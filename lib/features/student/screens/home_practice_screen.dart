@@ -3,13 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../shared/providers/current_student_provider.dart';
-import '../../../shared/widgets/app_button.dart';
-import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/states/empty_state.dart';
-import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/student_provider.dart';
-import '../widgets/home_assignment_card.dart';
+import '../widgets/home_practice_view.dart';
 
 class HomePracticeScreen extends ConsumerStatefulWidget {
   const HomePracticeScreen({super.key});
@@ -19,20 +15,9 @@ class HomePracticeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
-  final _repetitionsController = TextEditingController(text: '1');
-  final _notesController = TextEditingController();
-  bool _isSubmitting = false;
-
-  @override
-  void dispose() {
-    _repetitionsController.dispose();
-    _notesController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submitPractice() async {
+  /// Validates and submits; the view resets its own form on true.
+  Future<bool> _submitPractice(int repetitions, String? notes) async {
     final tokens = context.tokens;
-    final repetitions = int.tryParse(_repetitionsController.text) ?? 0;
     if (repetitions <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -40,21 +25,12 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
           backgroundColor: tokens.maroon,
         ),
       );
-      return;
+      return false;
     }
-
-    setState(() => _isSubmitting = true);
 
     final success = await ref
         .read(homePracticeNotifierProvider.notifier)
-        .addPractice(
-          repetitions: repetitions,
-          notes: _notesController.text.isNotEmpty
-              ? _notesController.text
-              : null,
-        );
-
-    setState(() => _isSubmitting = false);
+        .addPractice(repetitions: repetitions, notes: notes);
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -69,9 +45,8 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
           backgroundColor: tokens.green,
         ),
       );
-      _repetitionsController.text = '1';
-      _notesController.clear();
     }
+    return success;
   }
 
   @override
@@ -79,6 +54,7 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
     final statsAsync = ref.watch(homePracticeStatsProvider);
     final practicesAsync = ref.watch(studentHomePracticesProvider);
     final studentAsync = ref.watch(currentStudentProvider);
+    final assignment = ref.watch(homeAssignmentProvider).asData?.value;
 
     return Scaffold(
       appBar: AppBar(title: const Text('التكرار في المنزل')),
@@ -89,350 +65,56 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const HomeAssignmentCard(),
-              const SizedBox(height: 16),
+          padding: const EdgeInsetsDirectional.all(16),
+          child: statsAsync.when(
+            loading: () => const LoadingState(),
+            error: (_, _) => const SizedBox.shrink(),
+            data: (stats) {
+              final student = studentAsync.asData?.value;
+              final practices = practicesAsync.asData?.value ?? const [];
+              // Constructed only when there is history to format: DateFormat
+              // throws before locale data is initialized, and an empty
+              // history must not require it.
+              final dateFormat = practices.isEmpty
+                  ? null
+                  : DateFormat('EEEE، d MMMM yyyy', 'ar');
 
-              // Stats cards
-              statsAsync.when(
-                data: (stats) => _buildStatsSection(stats),
-                loading: () => const LoadingState(lines: 1),
-                error: (_, _) => const SizedBox.shrink(),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Add practice section
-              Text(
-                'تسجيل تكرار جديد',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 12),
-
-              studentAsync.when(
-                data: (student) {
-                  if (student == null) {
-                    return const EmptyState(
-                      icon: Icons.person_off_outlined,
-                      title: 'لم يتم العثور على بيانات الطالب',
-                    );
-                  }
-                  return _buildAddPracticeCard(student);
-                },
-                loading: () => const LoadingState(lines: 1),
-                error: (_, _) => const SizedBox.shrink(),
-              ),
-
-              const SizedBox(height: 24),
-
-              // History section
-              Text(
-                'سجل التكرارات',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 12),
-
-              practicesAsync.when(
-                data: (practices) {
-                  if (practices.isEmpty) {
-                    return const EmptyState(
-                      icon: Icons.history,
-                      title: 'لا يوجد سجل تكرارات',
-                    );
-                  }
-                  return _buildPracticeHistory(practices);
-                },
-                loading: () => const LoadingState(),
-                error: (e, _) =>
-                    ErrorState(message: 'تعذر تحميل سجل التكرارات: $e'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatsSection(HomePracticeStats stats) {
-    final tokens = context.tokens;
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                icon: Icons.today,
-                label: 'اليوم',
-                value: '${stats.todayRepetitions}',
-                color: tokens.green,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                icon: Icons.calendar_view_week,
-                label: 'هذا الأسبوع',
-                value: '${stats.weekRepetitions}',
-                // AppColors.info has no direct AppTokens equivalent, and the
-                // manuscript palette only has three saturated accent hues
-                // (green/gold/maroon), all three of which are already
-                // claimed by sibling stat cards in this same grid
-                // (today->green, total->gold, streak->maroon). tokens.ink
-                // was tried first, but it is the theme's default text color
-                // (applied to headlineSmall and most other text app-wide),
-                // so it is a no-op here: the value renders identically to
-                // unstyled text and the "accent" is invisible next to the
-                // other three cards. Since "today" and "this week" are
-                // naturally related time-window metrics (today's count is a
-                // subset of the week's count), this card intentionally
-                // reuses tokens.green, distinguished from the today card by
-                // icon and label rather than by color.
-                color: tokens.green,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                icon: Icons.repeat,
-                label: 'إجمالي التكرارات',
-                value: '${stats.totalRepetitions}',
-                color: tokens.gold,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                icon: Icons.local_fire_department,
-                label: 'أيام متتالية',
-                value: '${stats.streakDays}',
-                // AppColors.warning has no direct AppTokens equivalent.
-                // tokens.maroon (the palette's rubrication/emphasis hue,
-                // per the Task 13 follow-up precedent) is used for the
-                // streak stat's "don't break the fire" urgency; it is
-                // distinct from tokens.sepia, so it does not collide with
-                // this card's own label beneath it.
-                color: tokens.maroon,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAddPracticeCard(dynamic student) {
-    final tokens = context.tokens;
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Current session info
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: tokens.green.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.menu_book, color: tokens.green),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'الحلقة ${student.currentSession}',
-                        style: Theme.of(context).textTheme.titleSmall,
+              return HomePracticeView(
+                data: HomePracticeData(
+                  assignmentDone: assignment?.repetitionsDone,
+                  assignmentRequired: assignment?.repetitionsRequired,
+                  assignmentComplete: assignment?.isComplete ?? false,
+                  todayRepetitions: stats.todayRepetitions,
+                  streakDays: stats.streakDays,
+                  totalRepetitions: stats.totalRepetitions,
+                  // No per-day practice history is available client-side, so
+                  // the beads render the streak itself: the last N days,
+                  // today first, are lit.
+                  weekBeads: List.generate(7, (i) => i < stats.streakDays),
+                  sessionTitle: student != null
+                      ? 'الحلقة ${student.currentSession}'
+                      : null,
+                  // Never an app-derived hizb: level 2's structural hizb can
+                  // disagree with the assessment's own verbatim label
+                  // (`scope.labelAr`) for the same session. The level and juz
+                  // are always consistent with the data.
+                  sessionSubtitle: student != null
+                      ? 'المستوى ${student.currentLevel} - الجزء ${student.currentJuz}'
+                      : null,
+                  history: [
+                    for (final practice in practices.take(10))
+                      PracticeHistoryEntry(
+                        repetitions: practice.repetitions,
+                        title: 'الحلقة ${practice.sessionNumber}',
+                        dateLabel: dateFormat!.format(practice.practiceDate),
                       ),
-                      Text(
-                        // Never an app-derived hizb: level 2's structural hizb
-                        // can disagree with the assessment's own verbatim
-                        // label (`scope.labelAr`) for the same session. The
-                        // level and juz are always consistent with the data.
-                        'المستوى ${student.currentLevel} - الجزء ${student.currentJuz}',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Repetitions input
-          Text('عدد التكرارات', style: Theme.of(context).textTheme.labelMedium),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  final current =
-                      int.tryParse(_repetitionsController.text) ?? 1;
-                  if (current > 1) {
-                    _repetitionsController.text = '${current - 1}';
-                  }
-                },
-                icon: const Icon(Icons.remove_circle_outline),
-                color: tokens.green,
-              ),
-              Expanded(
-                child: TextField(
-                  controller: _repetitionsController,
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineMedium,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(vertical: 8),
-                  ),
-                ),
-              ),
-              IconButton(
-                onPressed: () {
-                  final current =
-                      int.tryParse(_repetitionsController.text) ?? 1;
-                  _repetitionsController.text = '${current + 1}';
-                },
-                icon: const Icon(Icons.add_circle_outline),
-                color: tokens.green,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Notes input
-          Text(
-            'ملاحظات (اختياري)',
-            style: Theme.of(context).textTheme.labelMedium,
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _notesController,
-            maxLines: 2,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'أضف ملاحظات...',
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // Submit button
-          AppButton(
-            text: 'تسجيل التكرار',
-            onPressed: _isSubmitting ? null : _submitPractice,
-            isLoading: _isSubmitting,
-            isFullWidth: true,
-            icon: Icons.check,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPracticeHistory(List<dynamic> practices) {
-    final tokens = context.tokens;
-    final dateFormat = DateFormat('EEEE، d MMMM yyyy', 'ar');
-
-    return Column(
-      children: practices.take(10).map((practice) {
-        return AppCard(
-          margin: const EdgeInsets.only(bottom: 8),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: tokens.green.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text(
-                    '${practice.repetitions}',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: tokens.green,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'الحلقة ${practice.sessionNumber}',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    Text(
-                      dateFormat.format(practice.practiceDate),
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-                    ),
                   ],
                 ),
-              ),
-              Icon(Icons.repeat, color: tokens.sepia),
-            ],
+                onSubmit: _submitPractice,
+              );
+            },
           ),
-        );
-      }).toList(),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color color;
-
-  const _StatCard({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.tokens;
-    return AppCard(
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 28),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -54,7 +54,8 @@ void main() {
 
       // The card's content is actually on screen.
       expect(find.text('واجب التكرار في المنزل'), findsOneWidget);
-      expect(find.text('4 / 10'), findsOneWidget);
+      // The numeral is a two-span rich text ('4' large, ' / 10' muted).
+      expect(find.text('4 / 10', findRichText: true), findsOneWidget);
 
       // And it appears ABOVE the repetition entry, not merely somewhere on
       // the screen — that ordering is the entire point of placing it there.

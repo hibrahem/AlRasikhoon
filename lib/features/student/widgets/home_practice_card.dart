@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_dimens.dart';
+import '../../../core/theme/app_shadows.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../routing/app_router.dart';
-import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/progress_bar.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/student_provider.dart';
@@ -17,7 +18,6 @@ class HomePracticeCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tokens = context.tokens;
     final assignmentAsync = ref.watch(homeAssignmentProvider);
     final statsAsync = ref.watch(homePracticeStatsProvider);
 
@@ -27,9 +27,63 @@ class HomePracticeCard extends ConsumerWidget {
       data: (stats) {
         final assignment = assignmentAsync.asData?.value;
 
-        return AppCard(
-          margin: EdgeInsets.zero,
-          onTap: () => context.push(AppRoutes.homePractice),
+        return HomePracticeCardBody(
+          assignmentDone: assignment?.repetitionsDone,
+          assignmentRequired: assignment?.repetitionsRequired,
+          assignmentComplete: assignment?.isComplete ?? false,
+          todayRepetitions: stats.todayRepetitions,
+          streakDays: stats.streakDays,
+          totalRepetitions: stats.totalRepetitions,
+          onLog: () => context.push(AppRoutes.homePractice),
+        );
+      },
+    );
+  }
+}
+
+/// Presentational body of [HomePracticeCard]: gold carries the assignment's
+/// achievement (counter and bar); the log action stays green.
+class HomePracticeCardBody extends StatelessWidget {
+  final int? assignmentDone;
+  final int? assignmentRequired;
+  final bool assignmentComplete;
+  final int todayRepetitions;
+  final int streakDays;
+  final int totalRepetitions;
+  final VoidCallback? onLog;
+
+  const HomePracticeCardBody({
+    super.key,
+    this.assignmentDone,
+    this.assignmentRequired,
+    this.assignmentComplete = false,
+    required this.todayRepetitions,
+    required this.streakDays,
+    required this.totalRepetitions,
+    this.onLog,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
+    final hasAssignment = assignmentDone != null && assignmentRequired != null;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: tokens.card,
+        borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+        boxShadow: AppShadows.card(brightness),
+        border: brightness == Brightness.dark
+            ? Border.all(color: tokens.rewardDim)
+            : null,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onLog,
+        borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -43,34 +97,31 @@ class HomePracticeCard extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (assignment != null)
+                  if (hasAssignment)
                     Text(
                       // Capped at the target so an over-practising student sees
                       // '10 / 10', matching the bar, not an off '12 / 10'.
-                      '${assignment.repetitionsDone.clamp(0, assignment.repetitionsRequired)}'
-                      ' / ${assignment.repetitionsRequired}',
+                      '${assignmentDone!.clamp(0, assignmentRequired!)}'
+                      ' / $assignmentRequired',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: assignment.isComplete
-                            ? tokens.green
-                            : tokens.gold,
+                        color: assignmentComplete ? tokens.green : tokens.gold,
                       ),
                     ),
                 ],
               ),
-              if (assignment != null) ...[
+              if (hasAssignment) ...[
                 const SizedBox(height: 12),
                 ProgressBar(
-                  progress:
-                      assignment.repetitionsDone /
-                      assignment.repetitionsRequired,
+                  progress: assignmentDone! / assignmentRequired!,
                   height: 8,
+                  progressColor: tokens.gold,
                 ),
               ],
               const SizedBox(height: 12),
               Text(
-                'اليوم ${stats.todayRepetitions} · متتالية ${stats.streakDays} يوماً'
-                ' · الإجمالي ${stats.totalRepetitions}',
+                'اليوم $todayRepetitions · متتالية $streakDays يوماً'
+                ' · الإجمالي $totalRepetitions',
                 style: Theme.of(
                   context,
                 ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
@@ -79,15 +130,15 @@ class HomePracticeCard extends ConsumerWidget {
               Align(
                 alignment: AlignmentDirectional.centerEnd,
                 child: TextButton.icon(
-                  onPressed: () => context.push(AppRoutes.homePractice),
+                  onPressed: onLog,
                   icon: const Icon(Icons.add, size: 18),
                   label: const Text('سجّل تكراراً'),
                 ),
               ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

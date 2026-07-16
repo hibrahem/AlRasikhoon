@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:al_rasikhoon/data/models/user_model.dart';
-import 'package:al_rasikhoon/features/student/widgets/progress_hero_card.dart';
+import 'package:al_rasikhoon/shared/widgets/stat_tile.dart';
 import 'package:al_rasikhoon/shared/widgets/app_card.dart';
 import 'package:al_rasikhoon/shared/widgets/level_progression_widget.dart';
 import 'package:al_rasikhoon/features/teacher/screens/teacher_students_screen.dart';
@@ -691,20 +691,15 @@ class StudentRobot extends TestRobot {
     expect(find.textContaining('السلام عليكم'), findsOneWidget);
   }
 
-  /// Verify current level displayed. The redesigned dashboard no longer
-  /// renders a single concatenated 'المستوى N' string — the level lives in
-  /// the progress hero's own value/label pair (al_rasikhoon-4gw) — so this
-  /// checks the hero card carries both the label and the level's numeral.
+  /// Verify current level displayed. The redesigned dashboard renders the
+  /// level as its own bento [StatTile] — label 'المستوى' with the level's
+  /// numeral as the tile's value — so this checks that tile carries both.
   Future<void> verifyCurrentLevel(int level) async {
     await pumpAndSettle();
-    final heroCard = find.byType(ProgressHeroCard);
-    expect(heroCard, findsOneWidget);
+    final levelTile = find.widgetWithText(StatTile, 'المستوى');
+    expect(levelTile, findsOneWidget);
     expect(
-      find.descendant(of: heroCard, matching: find.text('المستوى')),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(of: heroCard, matching: find.text('$level')),
+      find.descendant(of: levelTile, matching: find.text('$level')),
       findsWidgets,
     );
   }

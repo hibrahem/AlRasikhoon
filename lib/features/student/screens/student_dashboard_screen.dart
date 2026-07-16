@@ -2,20 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/user_model.dart';
+import '../../../domain/curriculum/curriculum_progress.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/providers/curriculum_progress_provider.dart';
 import '../../../shared/providers/current_student_provider.dart';
 import '../../../shared/providers/stats_provider.dart';
 import '../../../shared/providers/user_provider.dart';
-import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/app_greeting_header.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
-import '../../../shared/widgets/level_progression_widget.dart';
 import '../providers/student_provider.dart';
 import '../widgets/home_practice_card.dart';
-import '../widgets/progress_hero_card.dart';
+import '../widgets/student_dashboard_view.dart';
 
 class StudentDashboardScreen extends ConsumerStatefulWidget {
   const StudentDashboardScreen({super.key});
@@ -29,204 +27,84 @@ class _StudentDashboardScreenState
     extends ConsumerState<StudentDashboardScreen> {
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final currentUser = ref.watch(currentUserProvider);
     final statsAsync = ref.watch(studentStatsProvider);
     final meetingAsync = ref.watch(studentDashboardMeetingProvider);
     final progressAsync = ref.watch(curriculumProgressProvider);
 
-    // No AppBar: the dashboard leads with a scrolling AppGreetingHeader
-    // (greeting + name) instead of a green title bar. Sign-out still lives,
-    // confirmed, in الإعدادات — never next to routine navigation.
+    // No AppBar and no top SafeArea: the HeroHeader owns the top edge and
+    // bleeds behind the status bar. Sign-out still lives, confirmed, in
+    // الإعدادات — never next to routine navigation.
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-          onRefresh: () async {
-            // Invalidate all providers
-            ref.invalidate(currentStudentProvider);
-            ref.invalidate(studentStatsProvider);
-            ref.invalidate(studentDashboardMeetingProvider);
-            ref.invalidate(homePracticeStatsProvider);
-            ref.invalidate(curriculumProgressProvider);
+      body: RefreshIndicator(
+        // The spinner draws over the green hero, so it wears hero colors.
+        color: tokens.onHero,
+        backgroundColor: tokens.heroTop,
+        onRefresh: () async {
+          // Invalidate all providers
+          ref.invalidate(currentStudentProvider);
+          ref.invalidate(studentStatsProvider);
+          ref.invalidate(studentDashboardMeetingProvider);
+          ref.invalidate(homePracticeStatsProvider);
+          ref.invalidate(curriculumProgressProvider);
 
-            // Wait for providers to reload
-            await Future.wait([
-              ref.read(studentStatsProvider.future),
-              ref.read(studentDashboardMeetingProvider.future),
-              ref.read(homePracticeStatsProvider.future),
-              ref.read(curriculumProgressProvider.future),
-            ]);
+          // Wait for providers to reload
+          await Future.wait([
+            ref.read(studentStatsProvider.future),
+            ref.read(studentDashboardMeetingProvider.future),
+            ref.read(homePracticeStatsProvider.future),
+            ref.read(curriculumProgressProvider.future),
+          ]);
+        },
+        child: statsAsync.when(
+          loading: () => const _ScrollableState(child: LoadingState()),
+          error: (e, _) => _ScrollableState(
+            child: ErrorState(message: 'تعذر تحميل التقدم: $e'),
+          ),
+          data: (stats) {
+            if (progressAsync.isLoading) {
+              return const _ScrollableState(child: LoadingState());
+            }
+            // A progress failure must not take the whole dashboard down with
+            // it — the session card and stats are independent of it. Follow
+            // the provider's own philosophy and fall back to all-zero
+            // progress rather than a fabricated figure.
+            final progress =
+                progressAsync.asData?.value ??
+                const CurriculumProgress(
+                  sessionsCompleted: 0,
+                  totalSessions: 0,
+                  juzMemorized: 0,
+                );
+            final practice = ref.watch(homePracticeStatsProvider).asData?.value;
+            final meeting = meetingAsync.asData?.value;
+            final streakDays = practice?.streakDays ?? 0;
+
+            return StudentDashboardView(
+              data: StudentDashboardData(
+                name: currentUser?.name ?? 'الطالب',
+                percent: progress.percent,
+                fraction: progress.fraction,
+                juzMemorized: progress.juzMemorized,
+                currentLevel: stats.currentLevel,
+                streakDays: streakDays,
+                // No per-day practice history is available client-side, so
+                // the beads render the streak itself: the last N days,
+                // today first, are lit.
+                weekBeads: List.generate(7, (i) => i < streakDays),
+                passedSessions: stats.passedSessions,
+                totalSessions: stats.totalSessions,
+                unlockedLevels: stats.unlockedLevelsList,
+                completedLevels: stats.completedLevelsList,
+                session: _sessionInfoOf(meeting),
+              ),
+              practiceCard: const HomePracticeCard(),
+              leading: currentUser?.role == UserRole.guardian
+                  ? const _GuardianChildSwitcher()
+                  : null,
+            );
           },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (currentUser?.role == UserRole.guardian)
-                  const _GuardianChildSwitcher(),
-
-                AppGreetingHeader(
-                  greeting: 'السلام عليكم',
-                  title: currentUser?.name ?? 'الطالب',
-                  trailing: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: context.tokens.primaryContainer,
-                    child: Text(
-                      (currentUser?.name ?? '؟').characters.first,
-                      style: TextStyle(
-                        color: context.tokens.green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Progress hero — the screen's headline. Needs curriculum progress, the
-                // student's position (level/juz/passed), and the streak; renders only
-                // when all three have resolved, else a single loading block.
-                statsAsync.when(
-                  data: (stats) => progressAsync.when(
-                    data: (progress) {
-                      final practice = ref
-                          .watch(homePracticeStatsProvider)
-                          .asData
-                          ?.value;
-                      return ProgressHeroCard(
-                        percent: progress.percent,
-                        fraction: progress.fraction,
-                        juzMemorized: progress.juzMemorized,
-                        currentLevel: stats.currentLevel,
-                        streakDays: practice?.streakDays ?? 0,
-                        passedSessions: stats.passedSessions,
-                      );
-                    },
-                    loading: () => const LoadingState(),
-                    error: (e, _) =>
-                        ErrorState(message: 'تعذر تحميل التقدم: $e'),
-                  ),
-                  loading: () => const LoadingState(),
-                  error: (e, _) => ErrorState(message: 'تعذر تحميل التقدم: $e'),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Current session — juz lives here, and only here.
-                Text(
-                  'الحلقة الحالية',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 12),
-                meetingAsync.when(
-                  data: (meeting) => _buildCurrentSessionCard(meeting),
-                  loading: () => const LoadingState(),
-                  error: (e, _) => ErrorState(message: 'تعذر تحميل الحلقة: $e'),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Home practice — one merged card.
-                const HomePracticeCard(),
-
-                const SizedBox(height: 24),
-
-                // Level journey — collapsed by default; the only home of completed-levels.
-                statsAsync.when(
-                  data: (stats) => _buildJourneyExpander(stats),
-                  loading: () => const SizedBox(),
-                  error: (_, _) => const SizedBox(),
-                ),
-
-                const SizedBox(height: 12),
-
-                // Full stats — collapsed by default; no 'المستويات' tile (it lives in the
-                // hero chip and the journey row above).
-                statsAsync.when(
-                  data: (stats) => _buildStatsExpander(stats),
-                  loading: () => const SizedBox(),
-                  error: (_, _) => const SizedBox(),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// The level journey, collapsed. Its header carries the completed count; the
-  /// body is the full ten-tile grid. This is the single place completed-levels
-  /// is shown on the dashboard.
-  Widget _buildJourneyExpander(StudentStats stats) {
-    final tokens = context.tokens;
-    return AppCard(
-      margin: EdgeInsets.zero,
-      padding: EdgeInsets.zero,
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          title: Text(
-            'رحلة المستويات',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          trailing: Text(
-            '${stats.completedLevels}/10 مكتمل',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-          ),
-          children: [
-            LevelProgressionWidget(
-              currentLevel: stats.currentLevel,
-              unlockedLevels: stats.unlockedLevelsList,
-              completedLevels: stats.completedLevelsList,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// The full stat set, collapsed. No 'المستويات' tile — that figure lives in
-  /// the hero chip and the journey header.
-  Widget _buildStatsExpander(StudentStats stats) {
-    final tokens = context.tokens;
-    return AppCard(
-      margin: EdgeInsets.zero,
-      padding: EdgeInsets.zero,
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          title: Text(
-            'إحصائياتي',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: _StatTile(
-                    label: 'الحلقات',
-                    value: '${stats.totalSessions}',
-                    color: tokens.green,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _StatTile(
-                    label: 'الناجحة',
-                    value: '${stats.passedSessions}',
-                    color: tokens.green,
-                  ),
-                ),
-              ],
-            ),
-          ],
         ),
       ),
     );
@@ -237,284 +115,67 @@ class _StudentDashboardScreenState
   /// all lessons, so they agree — and an assessment is named by the
   /// curriculum's own label — never `'سرد الحزب $hizb'`, which cannot name a
   /// juz- or level-tier سرد at all.
-  Widget _buildCurrentSessionCard(PacedSession? meeting) {
-    final tokens = context.tokens;
-    final studentAsync = ref.watch(currentStudentProvider);
+  ///
+  /// The تلقين branch MUST come before isExam/isSard and the regular lesson
+  /// fallthrough (see student_profile_screen.dart's identical ordering): a
+  /// تلقين is neither graded nor new memorization for the student to recite
+  /// alone, and falling through to the lesson card would tell him to memorize
+  /// a passage the teacher has not yet read to him.
+  DashboardSessionInfo? _sessionInfoOf(PacedSession? meeting) {
+    if (meeting == null) return null;
+    final session = meeting.first;
 
-    return studentAsync.when(
-      data: (student) {
-        if (student == null) return const SizedBox();
-        if (meeting == null) {
-          return const AppCard(
-            child: Center(child: Text('لا توجد بيانات للحلقة')),
-          );
-        }
+    if (session.isTalqeen) {
+      return DashboardSessionInfo(
+        kind: DashboardSessionKind.talqeen,
+        title: 'تلقين',
+        subtitle: 'الجزء ${session.juzNumber}',
+        passage: meeting.newContentAr,
+        note:
+            'سيقرأ المعلّم هذا المقطع معك ويكرره معك. لا حفظ عليك ولا '
+            'تسميع ولا تقييم في هذه الحلقة.',
+      );
+    }
 
-        final session = meeting.first;
+    if (session.isExam) {
+      return DashboardSessionInfo(
+        kind: DashboardSessionKind.exam,
+        title: session.titleAr,
+        subtitle: 'توجه للمشرف لإجراء الاختبار',
+      );
+    }
 
-        // The تلقين branch MUST come before isExam/isSard and the regular
-        // lesson fallthrough (see student_profile_screen.dart's identical
-        // ordering): a تلقين is neither graded nor new memorization for the
-        // student to recite alone, and falling through to the lesson card
-        // would tell him to memorize a passage the teacher has not yet read
-        // to him.
-        if (session.isTalqeen) {
-          return AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: tokens.green.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(Icons.record_voice_over, color: tokens.green),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'تلقين',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          Text(
-                            'الجزء ${session.juzNumber}',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: tokens.sepia),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'المقطع الجديد',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  meeting.newContentAr,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'سيقرأ المعلّم هذا المقطع معك ويكرره معك. لا حفظ عليك ولا '
-                  'تسميع ولا تقييم في هذه الحلقة.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
-            ),
-          );
-        }
+    if (session.isSard) {
+      return DashboardSessionInfo(
+        kind: DashboardSessionKind.sard,
+        title: session.titleAr,
+        subtitle: session.assessmentInstructionAr,
+      );
+    }
 
-        if (session.isExam) {
-          return AppCard(
-            backgroundColor: tokens.gold.withValues(alpha: 0.05),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: tokens.gold.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(Icons.quiz, color: tokens.gold),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        session.titleAr,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      Text(
-                        'توجه للمشرف لإجراء الاختبار',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-
-        if (session.isSard) {
-          // No manuscript token maps directly to the old "info" blue, so
-          // سرد is given tokens.maroon — the palette's rubrication/emphasis
-          // hue — as its own distinct accent: distinct from the lesson's
-          // green, the exam's gold, and (unlike sepia) distinct from this
-          // same card's own sepia-toned caption text below.
-          return AppCard(
-            backgroundColor: tokens.maroon.withValues(alpha: 0.05),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: tokens.maroon.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(Icons.record_voice_over, color: tokens.maroon),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        session.titleAr,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      Text(
-                        session.assessmentInstructionAr,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: tokens.green.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(Icons.menu_book, color: tokens.green),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'الحلقة ${session.sessionNumber}',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        Text(
-                          // Never an app-derived hizb — see the comment on
-                          // the progress-card header above.
-                          'الجزء ${session.juzNumber}',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _ContentRow(title: 'الحفظ الجديد', content: meeting.newContentAr),
-            ],
-          ),
-        );
-      },
-      loading: () => const LoadingState(),
-      error: (e, _) => ErrorState(message: 'تعذر تحميل الطالب: $e'),
+    return DashboardSessionInfo(
+      kind: DashboardSessionKind.lesson,
+      title: 'الحلقة ${session.sessionNumber}',
+      // Never an app-derived hizb — the level and juz are always consistent
+      // with the data.
+      subtitle: 'الجزء ${session.juzNumber}',
+      passage: meeting.newContentAr,
     );
   }
 }
 
-class _ContentRow extends StatelessWidget {
-  final String title;
-  final String content;
+/// Keeps loading/error bodies scrollable so RefreshIndicator still works.
+class _ScrollableState extends StatelessWidget {
+  final Widget child;
 
-  const _ContentRow({required this.title, required this.content});
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.tokens;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: tokens.surfaceVariant,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Text(
-            title,
-            style: Theme.of(
-              context,
-            ).textTheme.labelMedium?.copyWith(color: tokens.sepia),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              content.isNotEmpty ? content : '-',
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.end,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatTile extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color color;
-
-  const _StatTile({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
+  const _ScrollableState({required this.child});
 
   @override
   Widget build(BuildContext context) {
-    final tokens = context.tokens;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-          ),
-        ],
-      ),
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsetsDirectional.all(16),
+      child: SafeArea(child: child),
     );
   }
 }
@@ -536,7 +197,7 @@ class _GuardianChildSwitcher extends ConsumerWidget {
             ref.watch(selectedChildIdProvider) ?? children.first.student.id;
 
         return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsetsDirectional.only(bottom: 16),
           child: DropdownButtonFormField<String>(
             initialValue: selected,
             decoration: InputDecoration(
