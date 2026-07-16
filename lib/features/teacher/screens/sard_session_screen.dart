@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../domain/assessment/assessment_evaluation.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/error_counter.dart';
+import '../../../shared/widgets/assessment_error_counters.dart';
 import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/session_timer.dart';
 import '../../../shared/widgets/states/error_state.dart';
@@ -23,7 +24,12 @@ class SardSessionScreen extends ConsumerStatefulWidget {
 }
 
 class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
-  int _errorCount = 0;
+  // A سرد is judged face by face (وجه): the curriculum sheet allows each face
+  // 5 تنبيهات / 2 تلقينات / 1 تشكيل / 8 تجويد, and ONE face past its allowance
+  // fails the whole سرد. The teacher steps through the faces as the student
+  // recites; each face keeps its own tally.
+  final List<RecitationErrorTally> _faces = [RecitationErrorTally.empty];
+  int _currentFace = 0;
   late final DateTime _startedAt;
 
   @override
@@ -31,6 +37,8 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
     super.initState();
     _startedAt = DateTime.now();
   }
+
+  bool get _passesSoFar => SardEvaluation(_faces).passed;
 
   @override
   Widget build(BuildContext context) {
@@ -163,22 +171,38 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
 
                       const Spacer(),
 
-                      // Error counter
+                      // Which face is being recited, and the running verdict.
+                      // The teacher advances face by face; a new face starts
+                      // with a clean tally.
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: ErrorCounter(
-                          errorCount: _errorCount,
-                          // Level-aware so the live grade agrees with the
-                          // saved result (see ErrorCounter.level).
-                          level: session.levelId,
-                          onAddError: () {
-                            setState(() => _errorCount++);
-                          },
-                          onUndoError: () {
-                            if (_errorCount > 0) {
-                              setState(() => _errorCount--);
+                        child: _FaceNavigator(
+                          currentFace: _currentFace,
+                          faceCount: _faces.length,
+                          passesSoFar: _passesSoFar,
+                          onPrevious: _currentFace > 0
+                              ? () => setState(() => _currentFace--)
+                              : null,
+                          onNext: () => setState(() {
+                            if (_currentFace == _faces.length - 1) {
+                              _faces.add(RecitationErrorTally.empty);
                             }
-                          },
+                            _currentFace++;
+                          }),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // The current face's error board: the four curriculum
+                      // error types, each against its per-face allowance.
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: AssessmentErrorCounters(
+                          tally: _faces[_currentFace],
+                          limits: SardEvaluation.limits,
+                          onChanged: (tally) =>
+                              setState(() => _faces[_currentFace] = tally),
                         ),
                       ),
 
@@ -196,7 +220,9 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
                                 widget.studentId,
                               ),
                               extra: (
-                                errorCount: _errorCount,
+                                faces: List<RecitationErrorTally>.unmodifiable(
+                                  _faces,
+                                ),
                                 startedAt: _startedAt,
                               ),
                             );
@@ -248,6 +274,66 @@ class _SardSessionScreenState extends ConsumerState<SardSessionScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Steps through the faces of the سرد and shows the running verdict: which
+/// face the student is on, and whether any face so far has already broken its
+/// allowance (which decides the whole سرد).
+class _FaceNavigator extends StatelessWidget {
+  final int currentFace;
+  final int faceCount;
+  final bool passesSoFar;
+  final VoidCallback? onPrevious;
+  final VoidCallback onNext;
+
+  const _FaceNavigator({
+    required this.currentFace,
+    required this.faceCount,
+    required this.passesSoFar,
+    required this.onPrevious,
+    required this.onNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    final verdictColor = passesSoFar ? tokens.green : tokens.maroon;
+
+    return Row(
+      children: [
+        IconButton(
+          // Directional: in RTL "previous" points to the reading start.
+          icon: const Icon(Icons.arrow_forward_ios, size: 18),
+          onPressed: onPrevious,
+          color: tokens.sepia,
+          tooltip: 'الوجه السابق',
+        ),
+        Expanded(
+          child: Column(
+            children: [
+              Text(
+                'الوجه ${currentFace + 1} من $faceCount',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              Text(
+                passesSoFar ? 'موفق حتى الآن' : 'غير موفق',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: verdictColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.arrow_back_ios, size: 18),
+          onPressed: onNext,
+          color: tokens.maroon,
+          tooltip: currentFace == faceCount - 1 ? 'وجه جديد' : 'الوجه التالي',
+        ),
+      ],
     );
   }
 }

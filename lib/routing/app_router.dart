@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../data/models/user_model.dart';
+import '../domain/assessment/assessment_evaluation.dart';
 import '../shared/providers/user_provider.dart';
 import '../shared/widgets/role_shell.dart';
 import '../shared/widgets/student_pace_control.dart';
@@ -358,10 +359,21 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) {
                   final studentId = state.pathParameters['studentId']!;
                   final args =
-                      state.extra as ({int errorCount, DateTime startedAt})?;
+                      state.extra
+                          as ({
+                            List<RecitationErrorTally> questions,
+                            DateTime startedAt,
+                          })?;
                   return ExamResultScreen(
                     studentId: studentId,
-                    errorCount: args?.errorCount ?? 0,
+                    // No extra (deep link) ⇒ a clean sheet: five empty
+                    // questions, the same blank state the session starts on.
+                    questions:
+                        args?.questions ??
+                        List.filled(
+                          ExamEvaluation.questionCount,
+                          RecitationErrorTally.empty,
+                        ),
                     startedAt: args?.startedAt,
                   );
                 },
@@ -516,10 +528,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) {
                   final studentId = state.pathParameters['studentId']!;
                   final args =
-                      state.extra as ({int errorCount, DateTime startedAt})?;
+                      state.extra
+                          as ({
+                            List<RecitationErrorTally> faces,
+                            DateTime startedAt,
+                          })?;
                   return SardResultScreen(
                     studentId: studentId,
-                    errorCount: args?.errorCount ?? 0,
+                    // No extra (deep link) ⇒ a clean sheet: one empty face,
+                    // the same blank state the session starts on.
+                    faces: args?.faces ?? const [RecitationErrorTally.empty],
                     startedAt: args?.startedAt,
                   );
                 },

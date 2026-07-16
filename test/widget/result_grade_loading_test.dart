@@ -5,89 +5,101 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
+import 'package:al_rasikhoon/domain/assessment/assessment_evaluation.dart';
 import 'package:al_rasikhoon/features/supervisor/providers/supervisor_provider.dart';
 import 'package:al_rasikhoon/features/supervisor/screens/exam_result_screen.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/features/teacher/screens/sard_result_screen.dart';
-import 'package:al_rasikhoon/shared/widgets/states/loading_state.dart';
 
-/// Loading-state test for hibrahem/AlRasikhoon#36.
+/// Successor to the hibrahem/AlRasikhoon#36 loading-state test.
 ///
-/// Result screens must NOT render a grade computed from a default level=1 while
-/// the student async value is still loading — that flashes a harsher grade to a
-/// higher-level student. While loading, a placeholder shows in place of the
-/// GradeDisplay, and no grade name appears. SardResultScreen (teacher, manuscript
-/// UI, al_rasikhoon-ulz) uses the shared LoadingState widget; ExamResultScreen
-/// (supervisor) has not been reskinned yet and still shows a bare spinner.
+/// #36 guarded against a level-based grade being computed from a default
+/// level=1 while the student was still loading. Assessments are no longer
+/// graded on the level-based راسخ..محب scale at all: the curriculum's سرد and
+/// اختبار sheets judge the four error types against fixed per-face /
+/// per-question allowances that are identical across all ten levels, so the
+/// binary verdict (موفق / غير موفق) is final the moment the screen opens.
 ///
-/// Each known grade name (راسخ / متقن / حافظ / مجتهد / محب) must be absent in the
-/// loading state — they only render once the real level resolves.
-const _gradeNames = ['راسخ', 'متقن', 'حافظ', 'مجتهد', 'محب'];
+/// What this now pins:
+/// 1. A lesson-scale grade name NEVER renders on an assessment result screen —
+///    loading or loaded.
+/// 2. The verdict does NOT wait for the student to resolve: it is shown even
+///    while the student future is still pending.
+const _lessonGradeNames = ['راسخ', 'متقن', 'حافظ', 'مجتهد', 'محب'];
 
-void _expectNoGradeWhileLoading(WidgetTester tester, Finder placeholderFinder) {
-  // A placeholder shows in place of the grade.
-  expect(placeholderFinder, findsWidgets);
-  // No grade name leaks while the level is still loading.
-  for (final name in _gradeNames) {
+void _expectVerdictWithoutLessonGrades(WidgetTester tester, String verdict) {
+  expect(find.text(verdict), findsOneWidget);
+  for (final name in _lessonGradeNames) {
     expect(
       find.text(name),
       findsNothing,
-      reason: 'grade "$name" must not render before the level resolves (#36)',
+      reason:
+          'lesson grade "$name" must never render on an assessment result — '
+          'assessments are موفق/غير موفق only',
     );
   }
 }
 
 void main() {
-  group('Result screens withhold grade while student loads (#36)', () {
-    testWidgets(
-      'SardResultScreen shows a placeholder, not a grade, while loading',
-      (tester) async {
-        // A never-completing future keeps the provider in the loading state.
-        final pending = Completer<StudentWithUser?>();
-        addTearDown(() => pending.complete(null));
+  group('Assessment result screens show the sheet verdict, never a lesson '
+      'grade', () {
+    testWidgets('SardResultScreen shows موفق immediately, even while the '
+        'student is still loading', (tester) async {
+      // A never-completing future keeps the provider in the loading state.
+      final pending = Completer<StudentWithUser?>();
+      addTearDown(() => pending.complete(null));
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              // SardResultScreen resolves its student through the teacher-scoped
-              // studentProvider (سرد is teacher-conducted, al_rasikhoon-801).
-              studentProvider.overrideWith((ref, id) => pending.future),
-            ],
-            child: const MaterialApp(
-              home: SardResultScreen(studentId: 'student1', errorCount: 3),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            // SardResultScreen resolves its student through the teacher-scoped
+            // studentProvider (سرد is teacher-conducted, al_rasikhoon-801).
+            studentProvider.overrideWith((ref, id) => pending.future),
+          ],
+          child: const MaterialApp(
+            home: SardResultScreen(
+              studentId: 'student1',
+              // Every face within its allowance — موفق regardless of level.
+              faces: [RecitationErrorTally(tanbeehat: 3)],
             ),
           ),
-        );
-        // Do NOT pumpAndSettle — that would wait for the future forever.
-        await tester.pump();
+        ),
+      );
+      // Do NOT pumpAndSettle — that would wait for the future forever.
+      await tester.pump();
 
-        _expectNoGradeWhileLoading(tester, find.byType(LoadingState));
-      },
-    );
+      _expectVerdictWithoutLessonGrades(tester, 'موفق');
+    });
 
-    testWidgets(
-      'ExamResultScreen shows a placeholder, not a grade, while loading',
-      (tester) async {
-        final pending = Completer<StudentWithUser?>();
-        addTearDown(() => pending.complete(null));
+    testWidgets('ExamResultScreen shows غير موفق immediately, even while the '
+        'student is still loading', (tester) async {
+      final pending = Completer<StudentWithUser?>();
+      addTearDown(() => pending.complete(null));
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              examStudentProvider.overrideWith((ref, id) => pending.future),
-            ],
-            child: const MaterialApp(
-              home: ExamResultScreen(studentId: 'student1', errorCount: 3),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            examStudentProvider.overrideWith((ref, id) => pending.future),
+          ],
+          child: const MaterialApp(
+            home: ExamResultScreen(
+              studentId: 'student1',
+              // One question past its تجويد allowance (5) — غير موفق, and no
+              // level can change that.
+              questions: [
+                RecitationErrorTally(tajweed: 6),
+                RecitationErrorTally.empty,
+                RecitationErrorTally.empty,
+                RecitationErrorTally.empty,
+                RecitationErrorTally.empty,
+              ],
             ),
           ),
-        );
-        await tester.pump();
+        ),
+      );
+      await tester.pump();
 
-        _expectNoGradeWhileLoading(
-          tester,
-          find.byType(CircularProgressIndicator),
-        );
-      },
-    );
+      _expectVerdictWithoutLessonGrades(tester, 'غير موفق');
+    });
   });
 }

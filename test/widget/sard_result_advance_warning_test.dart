@@ -14,6 +14,7 @@ import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
+import 'package:al_rasikhoon/domain/assessment/assessment_evaluation.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/features/teacher/screens/sard_result_screen.dart';
 import 'package:al_rasikhoon/routing/app_router.dart';
@@ -128,8 +129,12 @@ void main() {
       routes: [
         GoRoute(
           path: '/',
-          builder: (context, state) =>
-              const SardResultScreen(studentId: 'student1', errorCount: 0),
+          builder: (context, state) => const SardResultScreen(
+            studentId: 'student1',
+            // A clean single-face سرد — موفق, so the save flow tries to
+            // advance the student.
+            faces: [RecitationErrorTally.empty],
+          ),
         ),
         GoRoute(
           path: AppRoutes.teacherStudents,
@@ -159,6 +164,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // The result screen scrolls (verdict + per-face breakdown + notes), so
+    // the save button can sit below the fold — bring it into view first.
+    await tester.scrollUntilVisible(
+      find.text('حفظ النتيجة'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.text('حفظ النتيجة'));
     // Let the async save flow run to completion (record save, advance
     // attempt, SnackBar, navigation) without waiting for the SnackBar's

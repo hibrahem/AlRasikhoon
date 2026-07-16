@@ -14,6 +14,7 @@ import 'package:al_rasikhoon/data/repositories/session_repository.dart';
 import 'package:al_rasikhoon/data/repositories/student_repository.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
+import 'package:al_rasikhoon/domain/assessment/assessment_evaluation.dart';
 import 'package:al_rasikhoon/features/supervisor/providers/supervisor_provider.dart';
 import 'package:al_rasikhoon/features/supervisor/screens/exam_result_screen.dart';
 import 'package:al_rasikhoon/routing/app_router.dart';
@@ -133,8 +134,18 @@ void main() {
         routes: [
           GoRoute(
             path: '/',
-            builder: (context, state) =>
-                const ExamResultScreen(studentId: 'student1', errorCount: 0),
+            builder: (context, state) => const ExamResultScreen(
+              studentId: 'student1',
+              // Five clean questions — موفق, so the save flow tries to
+              // advance the student.
+              questions: [
+                RecitationErrorTally.empty,
+                RecitationErrorTally.empty,
+                RecitationErrorTally.empty,
+                RecitationErrorTally.empty,
+                RecitationErrorTally.empty,
+              ],
+            ),
           ),
           GoRoute(
             path: AppRoutes.examQueue,

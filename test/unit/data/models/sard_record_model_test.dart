@@ -3,6 +3,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/data/models/sard_record_model.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
+import 'package:al_rasikhoon/domain/assessment/assessment_evaluation.dart';
 
 /// Direct unit tests for [SardRecordModel] — the سرد a student recited to their
 /// teacher. Coverage previously came only through the repositories that build
@@ -191,6 +192,56 @@ void main() {
         expect(round.errorCount, 2);
         expect(round.duration, const Duration(minutes: 12));
       });
+    });
+
+    group('faceErrors', () {
+      test(
+        'per-face error tallies survive a write and read unchanged',
+        () async {
+          final original = unit().copyWith(
+            faceErrors: const [
+              RecitationErrorTally(tanbeehat: 5, tajweed: 8),
+              RecitationErrorTally(talqeenat: 2, tashkeel: 1),
+              RecitationErrorTally.empty,
+            ],
+          );
+
+          await firestore
+              .collection('sard_records')
+              .doc('r4')
+              .set(original.toFirestore());
+          final doc = await firestore
+              .collection('sard_records')
+              .doc('r4')
+              .get();
+          final round = SardRecordModel.fromFirestore(doc);
+
+          expect(round.faceErrors, hasLength(3));
+          expect(round.faceErrors[0].tanbeehat, 5);
+          expect(round.faceErrors[0].tajweed, 8);
+          expect(round.faceErrors[1].talqeenat, 2);
+          expect(round.faceErrors[1].tashkeel, 1);
+          expect(round.faceErrors[2], RecitationErrorTally.empty);
+        },
+      );
+
+      test(
+        'a legacy record with no face_errors field reads back empty',
+        () async {
+          await firestore.collection('sard_records').doc('legacy').set({
+            'tier': 'unit',
+            'date': Timestamp.now(),
+            'created_at': Timestamp.now(),
+          });
+
+          final doc = await firestore
+              .collection('sard_records')
+              .doc('legacy')
+              .get();
+
+          expect(SardRecordModel.fromFirestore(doc).faceErrors, isEmpty);
+        },
+      );
     });
 
     group('copyWith', () {

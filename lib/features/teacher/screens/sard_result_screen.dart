@@ -2,27 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
-import '../../../core/utils/grade_calculator.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/student_repository.dart';
+import '../../../domain/assessment/assessment_evaluation.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_button.dart';
-import '../../../shared/widgets/grade_display.dart';
-import '../../../shared/widgets/states/error_state.dart';
-import '../../../shared/widgets/states/loading_state.dart';
+import '../../../shared/widgets/assessment_outcome_display.dart';
 import '../providers/teacher_provider.dart';
 
 class SardResultScreen extends ConsumerStatefulWidget {
   final String studentId;
-  final int errorCount;
+
+  /// The per-face error tallies the teacher recorded, in recitation order.
+  final List<RecitationErrorTally> faces;
+
   final DateTime? startedAt;
 
   const SardResultScreen({
     super.key,
     required this.studentId,
-    required this.errorCount,
+    required this.faces,
     this.startedAt,
   });
 
@@ -33,6 +34,11 @@ class SardResultScreen extends ConsumerStatefulWidget {
 class _SardResultScreenState extends ConsumerState<SardResultScreen> {
   bool _isSaving = false;
   final _notesController = TextEditingController();
+
+  /// The curriculum's verdict: موفق only if every face stayed within the
+  /// per-face allowance (5/2/1/8). Level plays no part — the allowance is the
+  /// same across all ten levels.
+  late final SardEvaluation _evaluation = SardEvaluation(widget.faces);
 
   @override
   void dispose() {
@@ -89,7 +95,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
         scopeLabelAr: scope.labelAr,
         levelId: student.currentLevel,
         attemptNumber: attemptCount + 1,
-        errorCount: widget.errorCount,
+        evaluation: _evaluation,
         startedAt: widget.startedAt,
         notes: _notesController.text.trim().isNotEmpty
             ? _notesController.text.trim()
@@ -136,13 +142,13 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
               'تالية في المنهج.';
           background = tokens.maroon;
         } else if (curriculumCompleted) {
-          message = 'تم حفظ السرد - ناجح. أتم الطالب المنهج كاملًا.';
+          message = 'تم حفظ السرد - موفق. أتم الطالب المنهج كاملًا.';
           background = tokens.green;
         } else if (record.passed) {
-          message = 'تم حفظ السرد - ناجح';
+          message = 'تم حفظ السرد - موفق';
           background = tokens.green;
         } else {
-          message = 'تم حفظ السرد - راسب';
+          message = 'تم حفظ السرد - غير موفق';
           background = tokens.maroon;
         }
 
@@ -174,15 +180,6 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final studentAsync = ref.watch(studentProvider(widget.studentId));
-    // Grade is level-based (hibrahem/AlRasikhoon#22). The level-based grade is
-    // only computed once the student value resolves — never from a default
-    // level=1 while loading, which would flash a harsher grade (#36).
-    final gradeInfo = studentAsync.value != null
-        ? GradeCalculator.calculateForLevel(
-            studentAsync.value!.student.currentLevel,
-            widget.errorCount,
-          )
-        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -225,28 +222,24 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Grade display — withhold until the real level resolves (#36).
-              studentAsync.when(
-                data: (_) => GradeDisplay(
-                  errorCount: widget.errorCount,
-                  gradeInfo: gradeInfo,
-                  showStars: true,
-                  showPassStatus: true,
-                ),
-                loading: () => const LoadingState(lines: 1),
-                error: (e, _) {
-                  // The raw exception goes to the log, never onto the screen.
-                  debugPrint('studentProvider failed: $e');
-                  return ErrorState(
-                    message: 'تعذّر تحميل النتيجة',
-                    // studentProvider is derived from the teacher's cached
-                    // roster, so the source list must be invalidated too.
-                    onRetry: () {
-                      ref.invalidate(teacherStudentsProvider);
-                      ref.invalidate(studentProvider(widget.studentId));
-                    },
-                  );
-                },
+              // The verdict. Unlike a lesson's grade it does NOT wait for the
+              // student's level to resolve: the سرد allowance is the same for
+              // every level, so the outcome is already final (contrast #36,
+              // which only applies to level-based grades).
+              AssessmentOutcomeDisplay(
+                outcome: _evaluation.outcome,
+                // The سرد sheet's own consequence: موفق وينقل للاختبار.
+                passedDetailAr: 'وينقل للاختبار',
+              ),
+
+              const SizedBox(height: 16),
+
+              // جدول توضيح أخطاء الطالب بالتفصيل — face by face, the failing
+              // faces marked.
+              AssessmentBreakdownTable(
+                units: widget.faces,
+                limits: SardEvaluation.limits,
+                unitLabelAr: (i) => 'الوجه ${i + 1}',
               ),
 
               const SizedBox(height: 32),
@@ -282,7 +275,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
                 size: AppButtonSize.large,
               ),
               const SizedBox(height: 12),
-              if (gradeInfo != null && !gradeInfo.passed)
+              if (!_evaluation.passed)
                 AppButton(
                   text: 'إعادة السرد',
                   onPressed: () {

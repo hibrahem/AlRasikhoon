@@ -2,26 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
-import '../../../core/utils/grade_calculator.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/student_repository.dart';
+import '../../../domain/assessment/assessment_evaluation.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_button.dart';
-import '../../../shared/widgets/grade_display.dart';
-import '../../../shared/widgets/states/error_state.dart';
+import '../../../shared/widgets/assessment_outcome_display.dart';
 import '../providers/supervisor_provider.dart';
+
+/// The sheet's own ordinals for the five questions.
+const _questionNamesAr = [
+  'السؤال الأول',
+  'السؤال الثاني',
+  'السؤال الثالث',
+  'السؤال الرابع',
+  'السؤال الخامس',
+];
 
 class ExamResultScreen extends ConsumerStatefulWidget {
   final String studentId;
-  final int errorCount;
+
+  /// The per-question error tallies the supervisor recorded, in sheet order
+  /// (السؤال الأول..الخامس).
+  final List<RecitationErrorTally> questions;
+
   final DateTime? startedAt;
 
   const ExamResultScreen({
     super.key,
     required this.studentId,
-    required this.errorCount,
+    required this.questions,
     this.startedAt,
   });
 
@@ -32,6 +44,11 @@ class ExamResultScreen extends ConsumerStatefulWidget {
 class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
   bool _isSaving = false;
   final _notesController = TextEditingController();
+
+  /// The curriculum's verdict: موفق only if every question stayed within the
+  /// per-question allowance (3/2/1/5). Level plays no part — the allowance is
+  /// the same across all ten levels.
+  late final ExamEvaluation _evaluation = ExamEvaluation(widget.questions);
 
   @override
   void dispose() {
@@ -84,7 +101,7 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
         scopeLabelAr: scope.labelAr,
         levelId: student.currentLevel,
         attemptNumber: attemptCount + 1,
-        errorCount: widget.errorCount,
+        evaluation: _evaluation,
         notes: _notesController.text.trim().isNotEmpty
             ? _notesController.text.trim()
             : null,
@@ -127,16 +144,16 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
           // per the table's AppColors.error mapping.
           background = tokens.maroon;
         } else if (curriculumCompleted) {
-          message = 'تم حفظ الاختبار - ناجح. أتم الطالب المنهج كاملًا.';
+          message = 'تم حفظ الاختبار - موفق. أتم الطالب المنهج كاملًا.';
           // No manuscript token for a distinct "success" hue — the primary
           // green already carries the positive/affirmative role, so it is
           // reused here.
           background = tokens.green;
         } else if (record.passed) {
-          message = 'تم حفظ الاختبار - ناجح';
+          message = 'تم حفظ الاختبار - موفق';
           background = tokens.green;
         } else {
-          message = 'تم حفظ الاختبار - راسب';
+          message = 'تم حفظ الاختبار - غير موفق';
           // AppColors.warning has no direct AppTokens equivalent. A failed
           // اختبار is an expected, non-alarming outcome — distinct from the
           // genuine data anomaly above, which already uses tokens.maroon —
@@ -173,15 +190,6 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final studentAsync = ref.watch(examStudentProvider(widget.studentId));
-    // Grade is level-based (hibrahem/AlRasikhoon#22). The level-based grade is
-    // only computed once the student value resolves — never from a default
-    // level=1 while loading, which would flash a harsher grade (#36).
-    final gradeInfo = studentAsync.value != null
-        ? GradeCalculator.calculateForLevel(
-            studentAsync.value!.student.currentLevel,
-            widget.errorCount,
-          )
-        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -220,29 +228,24 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Grade display — withhold until the real level resolves (#36).
-              studentAsync.when(
-                data: (_) => GradeDisplay(
-                  errorCount: widget.errorCount,
-                  gradeInfo: gradeInfo,
-                  showStars: true,
-                  showPassStatus: true,
-                ),
-                // Deliberately NOT LoadingState here: result_grade_loading_
-                // test.dart (#36) asserts find.byType(CircularProgressIndicator)
-                // specifically, to prove no grade is computed/shown before the
-                // real level resolves. LoadingState renders ShimmerBox, not a
-                // CircularProgressIndicator, so it would silently defeat that
-                // regression guard. The original bespoke spinner is kept.
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(20),
-                  child: CircularProgressIndicator(),
-                ),
-                error: (_, _) => ErrorState(
-                  message: 'تعذّر تحميل النتيجة',
-                  onRetry: () =>
-                      ref.invalidate(examStudentProvider(widget.studentId)),
-                ),
+              // The verdict. Unlike a lesson's grade it does NOT wait for the
+              // student's level to resolve: the اختبار allowance is the same
+              // for every level, so the outcome is already final (contrast
+              // #36, which only applies to level-based grades).
+              AssessmentOutcomeDisplay(
+                outcome: _evaluation.outcome,
+                // The اختبار sheet's own consequence: موفق ويستكمل حفظه.
+                passedDetailAr: 'ويستكمل حفظه',
+              ),
+
+              const SizedBox(height: 16),
+
+              // The sheet's error table — question by question, the failing
+              // questions marked.
+              AssessmentBreakdownTable(
+                units: widget.questions,
+                limits: ExamEvaluation.limits,
+                unitLabelAr: (i) => _questionNamesAr[i],
               ),
 
               const SizedBox(height: 32),
@@ -280,7 +283,7 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
                 backgroundColor: tokens.gold,
               ),
               const SizedBox(height: 12),
-              if (gradeInfo != null && !gradeInfo.passed)
+              if (!_evaluation.passed)
                 AppButton(
                   text: 'إعادة الاختبار',
                   onPressed: () {

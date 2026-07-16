@@ -3,9 +3,32 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/repositories/session_repository.dart';
+import 'package:al_rasikhoon/domain/assessment/assessment_evaluation.dart';
 import 'package:al_rasikhoon/domain/curriculum/curriculum_pace.dart';
 import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/domain/session/student_history_entry.dart';
+
+/// A سرد whose every face stayed within the per-face allowance — موفق.
+/// [errors] puts that many تنبيهات on the single face (allowance is 5).
+SardEvaluation passingSard({int errors = 0}) =>
+    SardEvaluation([RecitationErrorTally(tanbeehat: errors)]);
+
+/// A سرد with one face past its تشكيل allowance (1) — غير موفق.
+SardEvaluation failingSard() =>
+    SardEvaluation(const [RecitationErrorTally(tashkeel: 2)]);
+
+/// An اختبار whose every question stayed within the per-question allowance —
+/// موفق. [errors] puts that many تنبيهات on the first question (allowance 3).
+ExamEvaluation passingExam({int errors = 0}) => ExamEvaluation([
+  RecitationErrorTally(tanbeehat: errors),
+  ...List.filled(4, RecitationErrorTally.empty),
+]);
+
+/// An اختبار with one question past its تجويد allowance (5) — غير موفق.
+ExamEvaluation failingExam() => ExamEvaluation([
+  const RecitationErrorTally(tajweed: 6),
+  ...List.filled(4, RecitationErrorTally.empty),
+]);
 
 /// A one-session meeting standing in for whatever `PacedSessionComposer`
 /// would have produced — these tests exercise `SessionRepository`, not
@@ -789,7 +812,8 @@ void main() {
     });
 
     group('createSardRecord', () {
-      test('creates record with passing grade (0 errors)', () async {
+      test('a سرد whose every face stays within the per-face allowance is '
+          'recorded موفق', () async {
         final record = await sessionRepository.createSardRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
@@ -800,15 +824,16 @@ void main() {
           scopeLabelAr: 'سرد الحزب رقم 59 كاملًا على المحفظ المتابع',
           levelId: 1,
           attemptNumber: 1,
-          errorCount: 0,
+          evaluation: passingSard(),
         );
 
         expect(record.passed, true);
-        expect(record.grade, 'راسخ');
+        expect(record.grade, 'موفق');
         expect(record.errorCount, 0);
       });
 
-      test('creates record with failing grade (7+ errors)', () async {
+      test('a سرد with one face past its allowance is recorded غير موفق — '
+          'even though the total is tiny', () async {
         final record = await sessionRepository.createSardRecord(
           studentId: 'student1',
           teacherId: 'teacher1',
@@ -818,11 +843,42 @@ void main() {
           hizbNumber: 59,
           levelId: 1,
           attemptNumber: 2,
-          errorCount: 8,
+          // 2 تشكيل on one face: past that face's allowance of 1, though only
+          // 2 errors in the whole سرد.
+          evaluation: failingSard(),
         );
 
         expect(record.passed, false);
-        expect(record.grade, 'محب');
+        expect(record.grade, 'غير موفق');
+      });
+
+      test('the per-face tallies are persisted with the record', () async {
+        final record = await sessionRepository.createSardRecord(
+          studentId: 'student1',
+          teacherId: 'teacher1',
+          curriculumSessionId: 'L1_J30_S30',
+          tier: AssessmentTier.unit,
+          juzNumbers: const [30],
+          hizbNumber: 59,
+          levelId: 1,
+          attemptNumber: 1,
+          evaluation: SardEvaluation(const [
+            RecitationErrorTally(tanbeehat: 2, tajweed: 1),
+            RecitationErrorTally(talqeenat: 1),
+          ]),
+        );
+
+        expect(record.faceErrors, hasLength(2));
+        expect(record.errorCount, 4);
+
+        final doc = await fakeFirestore
+            .collection('sard_records')
+            .doc(record.id)
+            .get();
+        final faces = doc.data()?['face_errors'] as List;
+        expect(faces, hasLength(2));
+        expect((faces[0] as Map)['tanbeehat'], 2);
+        expect((faces[1] as Map)['talqeenat'], 1);
       });
 
       test(
@@ -840,7 +896,7 @@ void main() {
             scopeLabelAr: 'سرد الجزء رقم 30 كاملًا على المحفظ المتابع',
             levelId: 1,
             attemptNumber: 1,
-            errorCount: 1,
+            evaluation: passingSard(errors: 1),
           );
 
           final doc = await fakeFirestore
@@ -872,7 +928,7 @@ void main() {
                 'سرد المستوى كاملًا الأجزاء رقم 28 ــ  29 ــ 30 على المحفظ المتابع',
             levelId: 1,
             attemptNumber: 1,
-            errorCount: 2,
+            evaluation: passingSard(errors: 2),
           );
 
           expect(record.tier, AssessmentTier.cumulative);
@@ -897,7 +953,7 @@ void main() {
           hizbNumber: 59,
           levelId: 1,
           attemptNumber: 1,
-          errorCount: 3,
+          evaluation: passingSard(errors: 3),
           notes: 'جيد',
         );
 
@@ -923,7 +979,7 @@ void main() {
             juzNumbers: const [30],
             levelId: 1,
             attemptNumber: attempt,
-            errorCount: 9, // failing, over and over
+            evaluation: failingSard(), // failing, over and over
           );
         }
 
@@ -945,7 +1001,7 @@ void main() {
           tier: AssessmentTier.unit,
           levelId: 1,
           attemptNumber: 1,
-          errorCount: 0,
+          evaluation: passingSard(),
           startedAt: started,
           now: started.add(const Duration(hours: 2)),
         );
@@ -963,7 +1019,7 @@ void main() {
           tier: AssessmentTier.unit,
           levelId: 1,
           attemptNumber: 1,
-          errorCount: 0,
+          evaluation: passingSard(),
         );
         expect(record.duration, isNull);
       });
@@ -997,7 +1053,8 @@ void main() {
     });
 
     group('createExamRecord', () {
-      test('creates exam record with passing grade', () async {
+      test('an اختبار whose every question stays within the per-question '
+          'allowance is recorded موفق', () async {
         final record = await sessionRepository.createExamRecord(
           studentId: 'student1',
           supervisorId: 'supervisor1',
@@ -1007,15 +1064,17 @@ void main() {
           hizbNumber: 59,
           levelId: 1,
           attemptNumber: 1,
-          errorCount: 2,
+          evaluation: passingExam(errors: 2),
         );
 
         expect(record.passed, true);
+        expect(record.grade, 'موفق');
         expect(record.supervisorId, 'supervisor1');
         expect(record.errorCount, 2);
       });
 
-      test('creates exam record with failing grade', () async {
+      test('an اختبار with one question past its allowance is recorded '
+          'غير موفق', () async {
         final record = await sessionRepository.createExamRecord(
           studentId: 'student1',
           supervisorId: 'supervisor1',
@@ -1025,10 +1084,35 @@ void main() {
           hizbNumber: 59,
           levelId: 1,
           attemptNumber: 1,
-          errorCount: 10,
+          evaluation: failingExam(),
         );
 
         expect(record.passed, false);
+        expect(record.grade, 'غير موفق');
+      });
+
+      test('the per-question tallies are persisted with the record', () async {
+        final record = await sessionRepository.createExamRecord(
+          studentId: 'student1',
+          supervisorId: 'supervisor1',
+          curriculumSessionId: 'L1_J30_S31',
+          tier: AssessmentTier.unit,
+          juzNumbers: const [30],
+          hizbNumber: 59,
+          levelId: 1,
+          attemptNumber: 1,
+          evaluation: passingExam(errors: 3),
+        );
+
+        expect(record.questionErrors, hasLength(5));
+
+        final doc = await fakeFirestore
+            .collection('exam_records')
+            .doc(record.id)
+            .get();
+        final questions = doc.data()?['question_errors'] as List;
+        expect(questions, hasLength(5));
+        expect((questions[0] as Map)['tanbeehat'], 3);
       });
 
       test('a JUZ-tier اختبار produces a record carrying its scope', () async {
@@ -1043,7 +1127,7 @@ void main() {
           scopeLabelAr: 'اختبار في الجزء رقم 30 كاملًا من قِبل إدارة الحلقات',
           levelId: 1,
           attemptNumber: 1,
-          errorCount: 0,
+          evaluation: passingExam(),
         );
 
         expect(record.tier, AssessmentTier.juz);
@@ -1072,7 +1156,7 @@ void main() {
             juzNumbers: const [28, 29, 30],
             levelId: 1,
             attemptNumber: 1,
-            errorCount: 1,
+            evaluation: passingExam(errors: 1),
           );
 
           expect(record.tier, AssessmentTier.cumulative);
@@ -1092,7 +1176,7 @@ void main() {
               juzNumbers: const [30],
               levelId: 1,
               attemptNumber: attempt,
-              errorCount: 9,
+              evaluation: failingExam(),
             );
           }
 
@@ -1114,7 +1198,7 @@ void main() {
           hizbNumber: 59,
           levelId: 1,
           attemptNumber: 1,
-          errorCount: 0,
+          evaluation: passingExam(),
           notes: 'ممتاز',
         );
 
@@ -1137,7 +1221,7 @@ void main() {
           tier: AssessmentTier.juz,
           levelId: 1,
           attemptNumber: 1,
-          errorCount: 0,
+          evaluation: passingExam(),
           startedAt: started,
           now: started.add(const Duration(minutes: 35)),
         );
@@ -1152,7 +1236,7 @@ void main() {
           tier: AssessmentTier.juz,
           levelId: 1,
           attemptNumber: 1,
-          errorCount: 0,
+          evaluation: passingExam(),
         );
         expect(record.duration, isNull);
       });

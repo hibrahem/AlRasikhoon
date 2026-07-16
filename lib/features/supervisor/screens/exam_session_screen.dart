@@ -2,15 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../domain/assessment/assessment_evaluation.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/error_counter.dart';
+import '../../../shared/widgets/assessment_error_counters.dart';
 import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/session_timer.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/supervisor_provider.dart';
+
+/// The sheet's own ordinals for the five questions.
+const _questionNamesAr = [
+  'السؤال الأول',
+  'السؤال الثاني',
+  'السؤال الثالث',
+  'السؤال الرابع',
+  'السؤال الخامس',
+];
 
 class ExamSessionScreen extends ConsumerStatefulWidget {
   final String studentId;
@@ -22,7 +32,14 @@ class ExamSessionScreen extends ConsumerStatefulWidget {
 }
 
 class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
-  int _errorCount = 0;
+  // An اختبار is five questions, judged question by question: the sheet
+  // allows each question 3 تنبيهات / 2 تلقينات / 1 تشكيل / 5 تجويد, and ONE
+  // question past its allowance fails the whole اختبار.
+  final List<RecitationErrorTally> _questions = List.filled(
+    ExamEvaluation.questionCount,
+    RecitationErrorTally.empty,
+  );
+  int _currentQuestion = 0;
   late final DateTime _startedAt;
 
   @override
@@ -196,22 +213,48 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
 
                       const Spacer(),
 
-                      // Error counter
+                      // Which of the five questions is being examined. A
+                      // question that already broke its allowance keeps a
+                      // maroon mark — one such question fails the whole
+                      // اختبار.
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: ErrorCounter(
-                          errorCount: _errorCount,
-                          // Level-aware so the live grade agrees with the
-                          // saved result (see ErrorCounter.level).
-                          level: student.currentLevel,
-                          onAddError: () {
-                            setState(() => _errorCount++);
-                          },
-                          onUndoError: () {
-                            if (_errorCount > 0) {
-                              setState(() => _errorCount--);
-                            }
-                          },
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            for (
+                              var i = 0;
+                              i < ExamEvaluation.questionCount;
+                              i++
+                            )
+                              _QuestionChip(
+                                label: _questionNamesAr[i],
+                                selected: i == _currentQuestion,
+                                exceeded: !ExamEvaluation.limits.allows(
+                                  _questions[i],
+                                ),
+                                onTap: () =>
+                                    setState(() => _currentQuestion = i),
+                              ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // The current question's error board: the four
+                      // curriculum error types, each against its per-question
+                      // allowance.
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: AssessmentErrorCounters(
+                          tally: _questions[_currentQuestion],
+                          limits: ExamEvaluation.limits,
+                          onChanged: (tally) => setState(
+                            () => _questions[_currentQuestion] = tally,
+                          ),
                         ),
                       ),
 
@@ -229,7 +272,10 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                                 widget.studentId,
                               ),
                               extra: (
-                                errorCount: _errorCount,
+                                questions:
+                                    List<RecitationErrorTally>.unmodifiable(
+                                      _questions,
+                                    ),
                                 startedAt: _startedAt,
                               ),
                             );
@@ -286,6 +332,61 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
             child: const Text('نعم، إلغاء'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// One of the five question selectors. Gold marks the question being
+/// examined; maroon marks a question that already broke its allowance.
+class _QuestionChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final bool exceeded;
+  final VoidCallback onTap;
+
+  const _QuestionChip({
+    required this.label,
+    required this.selected,
+    required this.exceeded,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    final accent = exceeded ? tokens.maroon : tokens.gold;
+
+    return Material(
+      color: selected ? accent.withValues(alpha: 0.15) : tokens.card,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: selected ? accent : tokens.sepia.withValues(alpha: 0.3),
+        ),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (exceeded) ...[
+                Icon(Icons.cancel, size: 14, color: tokens.maroon),
+                const SizedBox(width: 4),
+              ],
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: selected ? accent : null,
+                  fontWeight: selected ? FontWeight.bold : null,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

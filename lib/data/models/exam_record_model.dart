@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../domain/assessment/assessment_evaluation.dart';
+import 'recitation_error_tally_fields.dart';
 import 'session_model.dart';
 
 /// An اختبار a student sat with the supervisor (إدارة الحلقات).
@@ -25,12 +27,23 @@ class ExamRecordModel {
 
   final int levelId;
   final DateTime date;
+
+  /// Total errors across all five questions and all four error types. Kept
+  /// for statistics; NEVER what pass/fail is judged on — that is per-question.
   final int errorCount;
+
+  /// The sheet's verdict wording: موفق / غير موفق. Records written before the
+  /// curriculum-correct evaluation carry a lesson-scale grade (راسخ..محب)
+  /// here; both display as stored.
   final String grade;
   final bool passed;
   final int attemptNumber;
   final String? notes;
   final DateTime createdAt;
+
+  /// Errors per question in sheet order (السؤال الأول..الخامس). Empty for
+  /// records written before assessments tracked per-question error types.
+  final List<RecitationErrorTally> questionErrors;
 
   /// How long the assessment took, wall-clock from opening the session screen
   /// to save. Raw elapsed — assessments have no pace target, so there is no
@@ -54,6 +67,7 @@ class ExamRecordModel {
     required this.attemptNumber,
     this.notes,
     required this.createdAt,
+    this.questionErrors = const [],
     this.duration,
   });
 
@@ -76,6 +90,7 @@ class ExamRecordModel {
       attemptNumber: data['attempt_number'] ?? 1,
       notes: data['notes'],
       createdAt: (data['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      questionErrors: recitationTalliesFromJson(data['question_errors']),
       duration: (data['duration_seconds'] as int?) == null
           ? null
           : Duration(seconds: data['duration_seconds'] as int),
@@ -99,6 +114,7 @@ class ExamRecordModel {
       'attempt_number': attemptNumber,
       'notes': notes,
       'created_at': Timestamp.fromDate(createdAt),
+      'question_errors': recitationTalliesToJson(questionErrors),
       'duration_seconds': duration?.inSeconds,
     };
   }
@@ -120,6 +136,7 @@ class ExamRecordModel {
     int? attemptNumber,
     String? notes,
     DateTime? createdAt,
+    List<RecitationErrorTally>? questionErrors,
     Duration? duration,
   }) {
     return ExamRecordModel(
@@ -139,6 +156,7 @@ class ExamRecordModel {
       attemptNumber: attemptNumber ?? this.attemptNumber,
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
+      questionErrors: questionErrors ?? this.questionErrors,
       duration: duration ?? this.duration,
     );
   }

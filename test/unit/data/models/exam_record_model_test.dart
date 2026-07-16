@@ -3,6 +3,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/data/models/exam_record_model.dart';
 import 'package:al_rasikhoon/data/models/session_model.dart';
+import 'package:al_rasikhoon/domain/assessment/assessment_evaluation.dart';
 
 /// Direct unit tests for [ExamRecordModel] — the اختبار a student sat with the
 /// supervisor (إدارة الحلقات). Unlike a سرد it carries a [supervisorId] and has
@@ -186,6 +187,51 @@ void main() {
         expect(round.supervisorId, 'sup1');
         expect(round.attemptNumber, 4);
         expect(round.duration, const Duration(minutes: 25));
+      });
+    });
+
+    group('questionErrors', () {
+      test('per-question error tallies survive a write and read '
+          'unchanged', () async {
+        final original = cumulative().copyWith(
+          questionErrors: const [
+            RecitationErrorTally(tanbeehat: 3, tajweed: 5),
+            RecitationErrorTally(talqeenat: 2, tashkeel: 1),
+            RecitationErrorTally.empty,
+            RecitationErrorTally.empty,
+            RecitationErrorTally(tajweed: 4),
+          ],
+        );
+
+        await firestore
+            .collection('exam_records')
+            .doc('q1')
+            .set(original.toFirestore());
+        final doc = await firestore.collection('exam_records').doc('q1').get();
+        final round = ExamRecordModel.fromFirestore(doc);
+
+        expect(round.questionErrors, hasLength(5));
+        expect(round.questionErrors[0].tanbeehat, 3);
+        expect(round.questionErrors[0].tajweed, 5);
+        expect(round.questionErrors[1].talqeenat, 2);
+        expect(round.questionErrors[1].tashkeel, 1);
+        expect(round.questionErrors[4].tajweed, 4);
+      });
+
+      test('a legacy record with no question_errors field reads back '
+          'empty', () async {
+        await firestore.collection('exam_records').doc('legacy').set({
+          'tier': 'unit',
+          'date': Timestamp.now(),
+          'created_at': Timestamp.now(),
+        });
+
+        final doc = await firestore
+            .collection('exam_records')
+            .doc('legacy')
+            .get();
+
+        expect(ExamRecordModel.fromFirestore(doc).questionErrors, isEmpty);
       });
     });
 

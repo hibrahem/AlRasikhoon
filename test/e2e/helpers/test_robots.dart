@@ -581,11 +581,14 @@ class TeacherRobot extends TestRobot {
     expect(find.text('السرد'), findsWidgets);
   }
 
-  /// Enter Sard errors by tapping the ErrorCounter add button N times.
+  /// Enter Sard errors by tapping the current face's تنبيهات counter N times.
+  /// The سرد screen tracks the four curriculum error types per face
+  /// (AssessmentErrorCounters); the first add_circle button is the تنبيهات
+  /// row, whose per-face allowance is 5 — so N ≤ 5 keeps the سرد موفق.
   Future<void> enterSardErrors(int errors) async {
     for (int i = 0; i < errors; i++) {
-      final addButtons = find.byIcon(Icons.add);
-      await tester.tap(addButtons.last);
+      final addButtons = find.byIcon(Icons.add_circle);
+      await tester.tap(addButtons.first);
       await pumpAndSettle();
     }
   }
@@ -849,12 +852,15 @@ class SupervisorRobot extends TestRobot {
     expect(find.textContaining('اختبار'), findsWidgets);
   }
 
-  /// Enter exam errors by tapping the ErrorCounter add button N times.
-  /// The exam session screen uses an ErrorCounter widget, not a TextField.
+  /// Enter exam errors by tapping the current question's تنبيهات counter N
+  /// times. The اختبار screen tracks the four curriculum error types per
+  /// question (AssessmentErrorCounters); the first add_circle button is the
+  /// تنبيهات row, whose per-question allowance is 3 — so N ≤ 3 keeps the
+  /// اختبار موفق and N > 3 fails it.
   Future<void> enterExamErrors(int errors) async {
     for (int i = 0; i < errors; i++) {
-      final addButtons = find.byIcon(Icons.add);
-      await tester.tap(addButtons.last);
+      final addButtons = find.byIcon(Icons.add_circle);
+      await tester.tap(addButtons.first);
       await pumpAndSettle();
     }
   }
@@ -899,16 +905,17 @@ class SupervisorRobot extends TestRobot {
     await tester.pump(const Duration(milliseconds: 500));
   }
 
-  /// Verify pass result
+  /// Verify pass result — the sheet's verdict is موفق, never a lesson grade.
+  /// Exact match: textContaining('موفق') would also match 'غير موفق'.
   Future<void> verifyPassResult() async {
     await pumpAndSettle();
-    expect(find.textContaining('ناجح'), findsOneWidget);
+    expect(find.text('موفق'), findsOneWidget);
   }
 
-  /// Verify fail result
+  /// Verify fail result — غير موفق, with the second attempt granted.
   Future<void> verifyFailResult() async {
     await pumpAndSettle();
-    expect(find.textContaining('راسب'), findsOneWidget);
+    expect(find.text('غير موفق'), findsOneWidget);
   }
 
   // Sard (السرد) is now conducted from the TEACHER's Students tab

@@ -6,7 +6,7 @@ import '../models/sard_record_model.dart';
 import '../models/exam_record_model.dart';
 import '../services/firebase_service.dart';
 import '../../core/constants/app_constants.dart';
-import '../../core/utils/grade_calculator.dart';
+import '../../domain/assessment/assessment_evaluation.dart';
 import '../../domain/curriculum/curriculum_pace.dart';
 import '../../domain/curriculum/paced_session.dart';
 import '../../domain/session/session_duration.dart';
@@ -338,15 +338,15 @@ class SessionRepository {
     String scopeLabelAr = '',
     required int levelId,
     required int attemptNumber,
-    required int errorCount,
+    required SardEvaluation evaluation,
     String? notes,
     DateTime? startedAt,
     DateTime? now,
   }) async {
-    // Per-component grade is level-based (hibrahem/AlRasikhoon#22): the same
-    // error count maps to a different grade depending on the student's level.
-    final gradeInfo = GradeCalculator.calculateForLevel(levelId, errorCount);
-
+    // A سرد is NOT graded on the راسخ..محب lesson scale: the curriculum's
+    // sheet tracks the four error types per face and the verdict is binary —
+    // موفق only if every face stays within the per-face allowance (5/2/1/8).
+    // That rule lives in [SardEvaluation]; this method only records it.
     final writtenAt = now ?? DateTime.now();
     final docRef = _sardRecordsCollection.doc();
     final record = SardRecordModel(
@@ -360,12 +360,13 @@ class SessionRepository {
       scopeLabelAr: scopeLabelAr,
       levelId: levelId,
       date: writtenAt,
-      errorCount: errorCount,
-      grade: gradeInfo.nameAr,
-      passed: gradeInfo.passed,
+      errorCount: evaluation.totalErrors,
+      grade: evaluation.outcome.nameAr,
+      passed: evaluation.passed,
       attemptNumber: attemptNumber,
       notes: notes,
       createdAt: writtenAt,
+      faceErrors: evaluation.faces,
       duration: startedAt == null ? null : writtenAt.difference(startedAt),
     );
 
@@ -420,15 +421,16 @@ class SessionRepository {
     String scopeLabelAr = '',
     required int levelId,
     required int attemptNumber,
-    required int errorCount,
+    required ExamEvaluation evaluation,
     String? notes,
     DateTime? startedAt,
     DateTime? now,
   }) async {
-    // Per-component grade is level-based (hibrahem/AlRasikhoon#22): the same
-    // error count maps to a different grade depending on the student's level.
-    final gradeInfo = GradeCalculator.calculateForLevel(levelId, errorCount);
-
+    // An اختبار is NOT graded on the راسخ..محب lesson scale: the curriculum's
+    // sheet is five questions with the four error types tracked per question,
+    // and the verdict is binary — موفق only if every question stays within
+    // the per-question allowance (3/2/1/5). That rule lives in
+    // [ExamEvaluation]; this method only records it.
     final writtenAt = now ?? DateTime.now();
     final docRef = _examRecordsCollection.doc();
     final record = ExamRecordModel(
@@ -442,12 +444,13 @@ class SessionRepository {
       scopeLabelAr: scopeLabelAr,
       levelId: levelId,
       date: writtenAt,
-      errorCount: errorCount,
-      grade: gradeInfo.nameAr,
-      passed: gradeInfo.passed,
+      errorCount: evaluation.totalErrors,
+      grade: evaluation.outcome.nameAr,
+      passed: evaluation.passed,
       attemptNumber: attemptNumber,
       notes: notes,
       createdAt: writtenAt,
+      questionErrors: evaluation.questions,
       duration: startedAt == null ? null : writtenAt.difference(startedAt),
     );
 
