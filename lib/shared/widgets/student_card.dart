@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_dimens.dart';
+import '../../core/theme/app_shadows.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../data/models/session_model.dart';
 import '../../data/repositories/curriculum_repository.dart';
@@ -48,171 +50,186 @@ class StudentCard extends ConsumerWidget {
               sessionCount
         : 0.0;
 
-    return Material(
-      color: tokens.card,
-      borderRadius: BorderRadius.circular(12),
-      elevation: 1,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header: Name and level
-              Row(
-                children: [
-                  // Avatar
-                  CircleAvatar(
-                    backgroundColor: tokens.green.withValues(alpha: 0.1),
-                    child: Text(
-                      user.name.isNotEmpty ? user.name[0] : '?',
-                      style: TextStyle(
-                        color: tokens.green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Name and level
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user.name,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        Text(
-                          'المستوى ${student.currentLevel}',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-                        ),
-                        if (instituteName != null &&
-                            instituteName!.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          _InstituteBadge(name: instituteName!),
-                        ],
-                        // A teacher-less student is in no teacher's
-                        // getStudentsForTeacher list, so nobody can conduct
-                        // their حلقة or their سرد — surfaced here so a
-                        // supervisor can find and rescue them
-                        // (al_rasikhoon-6bw).
-                        if (student.teacherId == null) ...[
-                          const SizedBox(height: 4),
-                          const _TeacherlessBadge(),
-                        ],
-                      ],
-                    ),
-                  ),
-                  // What the student is standing on — the curriculum's word for
-                  // it (kind), not an inference from the session number.
-                  if (showSession)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _kindColor(
-                          student.currentSessionKind,
-                          tokens,
-                        ).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: _kindColor(student.currentSessionKind, tokens),
-                        ),
-                      ),
+    final brightness = Theme.of(context).brightness;
+    return Container(
+      decoration: BoxDecoration(
+        color: tokens.card,
+        borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+        boxShadow: AppShadows.card(brightness),
+        border: brightness == Brightness.dark
+            ? Border.all(color: tokens.rewardDim)
+            : null,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header: Name and level
+                Row(
+                  children: [
+                    // Avatar
+                    CircleAvatar(
+                      backgroundColor: tokens.green.withValues(alpha: 0.1),
                       child: Text(
-                        _kindLabel(
-                          student.currentSessionKind,
-                          student.currentSession,
-                        ),
+                        user.name.isNotEmpty ? user.name[0] : '?',
                         style: TextStyle(
-                          fontSize: 12,
+                          color: tokens.green,
                           fontWeight: FontWeight.bold,
-                          color: _kindColor(student.currentSessionKind, tokens),
                         ),
                       ),
                     ),
-                ],
-              ),
-
-              if (showProgress) ...[
-                const SizedBox(height: 16),
-                // Progress info. `currentHizb` is never shown here: it is the
-                // denormalized STRUCTURAL value, which can disagree with the
-                // student's own assessment's verbatim label (level 2's source
-                // workbooks contradict themselves on which hizb is which). The
-                // juz is always consistent with the data.
-                Row(
-                  children: [
-                    _InfoChip(
-                      icon: Icons.menu_book,
-                      label: 'الجزء ${student.currentJuz}',
-                    ),
-                    const SizedBox(width: 8),
-                    _InfoChip(
-                      icon: Icons.school,
-                      label: 'الحلقة ${student.currentSession}',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                // Progress through the LEVEL: order_in_level over the level's
-                // real session count, from the catalog — never `/ 36`. The
-                // count (current/total) mirrors the level-progress figure the
-                // student detail screen shows, so a teacher sees how far into
-                // the level a student is — and how far is left — without
-                // opening the card.
-                Row(
-                  children: [
+                    const SizedBox(width: 12),
+                    // Name and level
                     Expanded(
-                      child: ProgressBar(
-                        progress: progress,
-                        height: 4,
-                        showPercentage: false,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user.name,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          Text(
+                            'المستوى ${student.currentLevel}',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: tokens.sepia),
+                          ),
+                          if (instituteName != null &&
+                              instituteName!.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            _InstituteBadge(name: instituteName!),
+                          ],
+                          // A teacher-less student is in no teacher's
+                          // getStudentsForTeacher list, so nobody can conduct
+                          // their حلقة or their سرد — surfaced here so a
+                          // supervisor can find and rescue them
+                          // (al_rasikhoon-6bw).
+                          if (student.teacherId == null) ...[
+                            const SizedBox(height: 4),
+                            const _TeacherlessBadge(),
+                          ],
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      sessionCount > 0
-                          ? '${student.currentOrderInLevel}/$sessionCount'
-                          : '—',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: tokens.sepia,
+                    // What the student is standing on — the curriculum's word for
+                    // it (kind), not an inference from the session number.
+                    if (showSession)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _kindColor(
+                            student.currentSessionKind,
+                            tokens,
+                          ).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: _kindColor(
+                              student.currentSessionKind,
+                              tokens,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          _kindLabel(
+                            student.currentSessionKind,
+                            student.currentSession,
+                          ),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: _kindColor(
+                              student.currentSessionKind,
+                              tokens,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
                   ],
                 ),
-              ],
 
-              // Attempt indicator if not first attempt
-              if (student.currentAttempt > 1) ...[
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+                if (showProgress) ...[
+                  const SizedBox(height: 16),
+                  // Progress info. `currentHizb` is never shown here: it is the
+                  // denormalized STRUCTURAL value, which can disagree with the
+                  // student's own assessment's verbatim label (level 2's source
+                  // workbooks contradict themselves on which hizb is which). The
+                  // juz is always consistent with the data.
+                  Row(
+                    children: [
+                      _InfoChip(
+                        icon: Icons.menu_book,
+                        label: 'الجزء ${student.currentJuz}',
+                      ),
+                      const SizedBox(width: 8),
+                      _InfoChip(
+                        icon: Icons.school,
+                        label: 'الحلقة ${student.currentSession}',
+                      ),
+                    ],
                   ),
-                  decoration: BoxDecoration(
-                    color: AppColors.warning.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                  const SizedBox(height: 12),
+                  // Progress through the LEVEL: order_in_level over the level's
+                  // real session count, from the catalog — never `/ 36`. The
+                  // count (current/total) mirrors the level-progress figure the
+                  // student detail screen shows, so a teacher sees how far into
+                  // the level a student is — and how far is left — without
+                  // opening the card.
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ProgressBar(
+                          progress: progress,
+                          height: 4,
+                          showPercentage: false,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        sessionCount > 0
+                            ? '${student.currentOrderInLevel}/$sessionCount'
+                            : '—',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: tokens.sepia,
+                        ),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    'المحاولة ${student.currentAttempt}',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: AppColors.warning,
-                      fontWeight: FontWeight.w500,
+                ],
+
+                // Attempt indicator if not first attempt
+                if (student.currentAttempt > 1) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.warning.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'المحاولة ${student.currentAttempt}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.warning,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -224,7 +241,10 @@ class StudentCard extends ConsumerWidget {
       case SessionKind.exam:
         return tokens.gold;
       case SessionKind.sard:
-        return AppColors.info;
+        // سرد wears maroon — the palette's rubrication/attention hue — as on
+        // the student dashboard's ticket card; the legacy "info" blue has no
+        // place in the manuscript palette.
+        return tokens.maroon;
       case SessionKind.talqeen:
       case SessionKind.lesson:
         // A تلقين teaches new content like a lesson does and is never

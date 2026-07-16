@@ -1,60 +1,86 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../routing/app_router.dart';
-import '../../../shared/widgets/app_greeting_header.dart';
+import '../../../shared/widgets/hero_header.dart';
 import '../../../shared/widgets/stat_card.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/admin_provider.dart';
 
-/// The admin Management hub (branch 0 of the admin shell). Welcome header + a
-/// 2×2 grid of stat cards that double as the navigation into each management
-/// area: institutes, teachers, supervisors, students. Sign-out now lives in the
-/// Profile tab, so there is no AppBar action here.
+/// The admin Management hub (branch 0 of the admin shell). A full-bleed hero
+/// (wordmark + role) in the calm register — no ring, no beads, no gold
+/// fills; management is action, not achievement — over a 2×2 grid of stat
+/// cards that double as the navigation into each management area:
+/// institutes, teachers, supervisors, students. Sign-out lives in the
+/// Profile tab.
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // No AppBar: the hub leads with a scrolling AppGreetingHeader (wordmark +
-    // role) instead of a green title bar. Sign-out lives in the Profile tab.
+    final tokens = context.tokens;
+    // No SafeArea: the hero owns the top edge and bleeds behind the status
+    // bar.
     return Scaffold(
-      body: SafeArea(bottom: false, child: _buildBody(context, ref)),
+      body: RefreshIndicator(
+        color: tokens.onHero,
+        backgroundColor: tokens.heroTop,
+        onRefresh: () async {
+          ref.invalidate(adminStatsProvider);
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildHero(context, tokens),
+              Transform.translate(
+                offset: const Offset(0, -28),
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                  child: ref
+                      .watch(adminStatsProvider)
+                      .when(
+                        data: (stats) => _buildStats(context, stats),
+                        loading: () => const LoadingState(),
+                        error: (e, _) =>
+                            ErrorState(message: 'تعذر تحميل الإحصائيات: $e'),
+                      ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildBody(BuildContext context, WidgetRef ref) {
-    final tokens = context.tokens;
-    final statsAsync = ref.watch(adminStatsProvider);
-
-    return RefreshIndicator(
-      onRefresh: () async {
-        ref.invalidate(adminStatsProvider);
-      },
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const AppGreetingHeader(greeting: 'مدير النظام', title: 'الراسخون'),
-            const SizedBox(height: 4),
-            Text(
-              'إدارة المعاهد والمعلمين والمشرفين والطلاب',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: tokens.sepia),
+  Widget _buildHero(BuildContext context, AppTokens tokens) {
+    return HeroHeader(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'مدير النظام',
+            style: GoogleFonts.cairo(fontSize: 13, color: tokens.onHeroMuted),
+          ),
+          Text(
+            'الراسخون',
+            style: GoogleFonts.amiri(
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+              color: tokens.onHero,
             ),
-            const SizedBox(height: 24),
-            statsAsync.when(
-              data: (stats) => _buildStats(context, stats),
-              loading: () => const LoadingState(),
-              error: (e, _) => ErrorState(message: 'تعذر تحميل الإحصائيات: $e'),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'إدارة المعاهد والمعلمين والمشرفين والطلاب',
+            style: GoogleFonts.cairo(fontSize: 14, color: tokens.onHeroMuted),
+          ),
+        ],
       ),
     );
   }

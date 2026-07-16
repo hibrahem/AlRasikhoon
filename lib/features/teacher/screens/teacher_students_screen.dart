@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/institute_model.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/providers/institute_provider.dart';
+import '../../../shared/widgets/hero_header.dart';
 import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
-import '../../../shared/widgets/app_top_bar.dart';
 import '../../../shared/widgets/student_card.dart';
 import '../providers/teacher_provider.dart';
 
@@ -29,10 +31,44 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
     // Watch auth state for reactivity
     ref.watch(authRepositoryProvider);
 
+    // No AppBar: a compact hero owns the top edge (the teacher's calm
+    // register — title + roster count, no gamification).
     return Scaffold(
-      appBar: const AppTopBar(title: 'طلابي'),
       body: Column(
         children: [
+          HeroHeader(
+            padding: const EdgeInsetsDirectional.fromSTEB(20, 12, 20, 24),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'طلابي',
+                        style: GoogleFonts.amiri(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: context.tokens.onHero,
+                        ),
+                      ),
+                      studentsAsync.maybeWhen(
+                        data: (students) => Text(
+                          '${students.length} طالباً',
+                          style: GoogleFonts.cairo(
+                            fontSize: 13,
+                            color: context.tokens.onHeroMuted,
+                          ),
+                        ),
+                        orElse: () => const SizedBox.shrink(),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
           // Institute filter — only shown when teacher has multiple institutes
           institutesAsync.maybeWhen(
             data: (institutes) {

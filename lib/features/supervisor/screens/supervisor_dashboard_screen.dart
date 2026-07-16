@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/app_greeting_header.dart';
+import '../../../shared/widgets/hero_header.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/stat_card.dart';
@@ -25,82 +26,128 @@ class _SupervisorDashboardScreenState
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final statsAsync = ref.watch(supervisorStatsProvider);
-    final currentUser = ref.watch(currentUserProvider);
 
-    // No AppBar: the dashboard leads with a scrolling AppGreetingHeader instead
-    // of a green title bar. Sign-out still lives, confirmed, in الإعدادات.
+    // No SafeArea: the hero owns the top edge and bleeds behind the status
+    // bar. Sign-out still lives, confirmed, in الإعدادات.
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(supervisorStatsProvider);
-            ref.invalidate(examQueueProvider);
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
+      body: RefreshIndicator(
+        color: tokens.onHero,
+        backgroundColor: tokens.heroTop,
+        onRefresh: () async {
+          ref.invalidate(supervisorStatsProvider);
+          ref.invalidate(examQueueProvider);
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildHero(tokens),
+              Transform.translate(
+                offset: const Offset(0, -28),
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Stats
+                      statsAsync.when(
+                        data: (stats) => _buildStats(stats),
+                        loading: () => const LoadingState(lines: 2),
+                        error: (e, _) =>
+                            ErrorState(message: 'تعذر تحميل الإحصائيات: $e'),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Quick action - Exam queue
+                      Text(
+                        'الإجراءات السريعة',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 12),
+                      AppListTile(
+                        title: 'قائمة الاختبارات',
+                        subtitle: 'الطلاب الجاهزون للاختبار',
+                        leading: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: tokens.gold.withValues(alpha: 0.1),
+                          ),
+                          child: Icon(Icons.quiz, color: tokens.gold),
+                        ),
+                        trailing: const Icon(Icons.chevron_left),
+                        onTap: () => context.go(AppRoutes.examQueue),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Calm hero: greeting + avatar + role line. No ring, no beads — the
+  /// supervisor's day is examinations, not celebration.
+  Widget _buildHero(AppTokens tokens) {
+    final currentUser = ref.watch(currentUserProvider);
+    return HeroHeader(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppGreetingHeader(
-                  greeting: 'السلام عليكم',
-                  title: currentUser?.name ?? 'المشرف',
-                  trailing: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: tokens.primaryContainer,
-                    child: Text(
-                      (currentUser?.name ?? '؟').characters.first,
-                      style: TextStyle(
-                        color: tokens.green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                Text(
+                  'السلام عليكم',
+                  style: GoogleFonts.cairo(
+                    fontSize: 13,
+                    color: tokens.onHeroMuted,
+                  ),
+                ),
+                Text(
+                  currentUser?.name ?? 'المشرف',
+                  style: GoogleFonts.amiri(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: tokens.onHero,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'إدارة اختبارات الطلاب',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: tokens.sepia),
-                ),
-                const SizedBox(height: 24),
-
-                // Stats
-                statsAsync.when(
-                  data: (stats) => _buildStats(stats),
-                  loading: () => const LoadingState(lines: 2),
-                  error: (e, _) =>
-                      ErrorState(message: 'تعذر تحميل الإحصائيات: $e'),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Quick action - Exam queue
-                Text(
-                  'الإجراءات السريعة',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 12),
-                AppListTile(
-                  title: 'قائمة الاختبارات',
-                  subtitle: 'الطلاب الجاهزون للاختبار',
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: tokens.gold.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(Icons.quiz, color: tokens.gold),
+                  style: GoogleFonts.cairo(
+                    fontSize: 14,
+                    color: tokens.onHeroMuted,
                   ),
-                  trailing: const Icon(Icons.chevron_left),
-                  onTap: () => context.go(AppRoutes.examQueue),
                 ),
               ],
             ),
           ),
-        ),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: tokens.gold.withValues(alpha: 0.15),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              (currentUser?.name ?? '؟').characters.first,
+              style: GoogleFonts.cairo(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: tokens.gold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

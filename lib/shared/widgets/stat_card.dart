@@ -1,6 +1,14 @@
+
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../../core/theme/app_dimens.dart';
+import '../../core/theme/app_shadows.dart';
 import '../../core/theme/app_tokens.dart';
 
+/// A stat card in the bento language: circular tinted icon medallion, big
+/// Cairo-bold tabular numeral, sepia caption. Warm shadow in light mode,
+/// gold hairline in dark. Tappable cards double as navigation.
 class StatCard extends StatelessWidget {
   final String title;
   final String value;
@@ -24,64 +32,74 @@ class StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
-    return Material(
-      color: backgroundColor ?? tokens.card,
-      borderRadius: BorderRadius.circular(12),
-      elevation: 1,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  if (icon != null) ...[
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: (iconColor ?? tokens.green).withValues(
-                          alpha: 0.1,
+    final brightness = Theme.of(context).brightness;
+    final accent = iconColor ?? tokens.green;
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor ?? tokens.card,
+        borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+        boxShadow: AppShadows.card(brightness),
+        border: brightness == Brightness.dark
+            ? Border.all(color: tokens.rewardDim)
+            : null,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+          child: Padding(
+            padding: const EdgeInsetsDirectional.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    if (icon != null) ...[
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: accent.withValues(alpha: 0.1),
                         ),
-                        borderRadius: BorderRadius.circular(8),
+                        child: Icon(icon, color: accent, size: 20),
                       ),
-                      child: Icon(
-                        icon,
-                        color: iconColor ?? tokens.green,
-                        size: 20,
+                      const SizedBox(width: 10),
+                    ],
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                       ),
                     ),
-                    const SizedBox(width: 12),
                   ],
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-                    ),
+                ),
+                const Spacer(),
+                Text(
+                  value,
+                  style: GoogleFonts.cairo(
+                    fontSize: 28,
+                    height: 1.15,
+                    fontWeight: FontWeight.bold,
+                    color: tokens.ink,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                   ),
                 ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                value,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (subtitle != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  subtitle!,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-                ),
               ],
-            ],
+            ),
           ),
         ),
       ),

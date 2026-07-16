@@ -13,12 +13,17 @@ void main() {
       brightness: Brightness.dark,
       child: const AppCard(child: Text('محتوى')),
     );
-    final material = tester.widget<Material>(
-      find
-          .descendant(of: find.byType(AppCard), matching: find.byType(Material))
-          .first,
-    );
-    expect(material.color, AppTokens.dark.card);
+    // The card surface is painted by the decorated container (the Material
+    // above it is transparent, existing only for ink effects).
+    final container = tester
+        .widgetList<Container>(
+          find.descendant(
+            of: find.byType(AppCard),
+            matching: find.byType(Container),
+          ),
+        )
+        .firstWhere((c) => c.decoration is BoxDecoration);
+    expect((container.decoration! as BoxDecoration).color, AppTokens.dark.card);
   });
 
   testWidgets('illuminated AppCard draws a gold border', (tester) async {
