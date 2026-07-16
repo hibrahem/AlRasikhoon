@@ -58,6 +58,8 @@ class AppRoutes {
   static const String teachers = '/admin/teachers';
   static const String addTeacher = '/admin/teachers/add';
   static const String addSupervisor = '/admin/supervisors/add';
+  static const String supervisors = '/admin/supervisors';
+  static const String supervisorDetail = '/admin/supervisors/:id';
   static const String teacherDetail = '/admin/teachers/:id';
   static const String curriculum = '/admin/curriculum';
   static const String levelDetail = '/admin/curriculum/:levelNumber';
