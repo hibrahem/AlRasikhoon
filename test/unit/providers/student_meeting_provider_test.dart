@@ -319,8 +319,25 @@ void main() {
         pace: CurriculumPace(2),
       );
 
+      // The supervisor is scoped to institute-1 through supervisor_institutes
+      // membership (al_rasikhoon-3n6), which is how the supervisor student
+      // providers resolve which institutes' students they may see.
+      await firestore.collection('institutes').doc('institute-1').set({
+        'name': 'معهد الاختبار',
+        'location': 'الرياض',
+        'created_by': 'admin',
+        'created_at': Timestamp.now(),
+        'is_active': true,
+      });
+      await firestore.collection('supervisor_institutes').add({
+        'supervisor_id': 'supervisor-1',
+        'institute_id': 'institute-1',
+        'is_active': true,
+      });
+
       final container = ProviderContainer(
         overrides: [
+          firestoreProvider.overrideWithValue(firestore),
           currentUserProvider.overrideWithValue(buildSupervisor()),
           studentRepositoryProvider.overrideWithValue(studentRepository),
           curriculumRepositoryProvider.overrideWithValue(curriculumRepository),
