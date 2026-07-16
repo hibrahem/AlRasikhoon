@@ -104,7 +104,7 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         iconTheme: IconThemeData(color: t.ink),
         titleTextStyle: GoogleFonts.amiri(
-          fontSize: 20,
+          fontSize: 22,
           fontWeight: FontWeight.bold,
           color: t.ink,
         ),
