@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:al_rasikhoon/data/models/user_model.dart';
+import 'package:al_rasikhoon/features/student/widgets/progress_hero_card.dart';
 import 'package:al_rasikhoon/shared/widgets/app_card.dart';
+import 'package:al_rasikhoon/shared/widgets/level_progression_widget.dart';
 import 'package:al_rasikhoon/features/teacher/screens/teacher_students_screen.dart';
 import 'package:al_rasikhoon/features/settings/screens/settings_screen.dart';
 
@@ -690,10 +692,22 @@ class StudentRobot extends TestRobot {
     expect(find.textContaining('مرحباً'), findsOneWidget);
   }
 
-  /// Verify current level displayed
+  /// Verify current level displayed. The redesigned dashboard no longer
+  /// renders a single concatenated 'المستوى N' string — the level lives in
+  /// the progress hero's own value/label pair (al_rasikhoon-4gw) — so this
+  /// checks the hero card carries both the label and the level's numeral.
   Future<void> verifyCurrentLevel(int level) async {
     await pumpAndSettle();
-    expect(find.textContaining('المستوى $level'), findsOneWidget);
+    final heroCard = find.byType(ProgressHeroCard);
+    expect(heroCard, findsOneWidget);
+    expect(
+      find.descendant(of: heroCard, matching: find.text('المستوى')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: heroCard, matching: find.text('$level')),
+      findsWidgets,
+    );
   }
 
   /// Navigate to session history
@@ -721,10 +735,18 @@ class StudentRobot extends TestRobot {
     expect(find.textContaining('تفاصيل'), findsWidgets);
   }
 
-  /// Verify level progression widget
+  /// Verify level progression widget. It now lives inside a collapsed
+  /// 'رحلة المستويات' expander (al_rasikhoon-4gw) — open it, then confirm the
+  /// tile grid itself is present.
   Future<void> verifyLevelProgression() async {
     await pumpAndSettle();
-    expect(find.text('المستويات'), findsWidgets);
+    final journeyTile = find.text('رحلة المستويات');
+    expect(journeyTile, findsOneWidget);
+    await tester.ensureVisible(journeyTile);
+    await pumpAndSettle();
+    await tester.tap(journeyTile);
+    await pumpAndSettle();
+    expect(find.byType(LevelProgressionWidget), findsOneWidget);
   }
 
   /// Navigate to home practice screen
