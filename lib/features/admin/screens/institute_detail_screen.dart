@@ -105,6 +105,8 @@ class InstituteDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     UserModel teacher,
   ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final maroon = context.tokens.maroon;
     Navigator.pop(context);
 
     try {
@@ -115,20 +117,16 @@ class InstituteDetailScreen extends ConsumerWidget {
       );
       ref.invalidate(teachersForInstituteProvider(instituteId));
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('تم إضافة ${teacher.name} بنجاح')),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(content: Text('تم إضافة ${teacher.name} بنجاح')),
+      );
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('فشل في إضافة المعلم: $e'),
-            backgroundColor: context.tokens.maroon,
-          ),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('فشل في إضافة المعلم: $e'),
+          backgroundColor: maroon,
+        ),
+      );
     }
   }
 
@@ -162,6 +160,8 @@ class InstituteDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     UserModel teacher,
   ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final maroon = context.tokens.maroon;
     Navigator.pop(context);
 
     try {
@@ -172,20 +172,16 @@ class InstituteDetailScreen extends ConsumerWidget {
       );
       ref.invalidate(teachersForInstituteProvider(instituteId));
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('تم إزالة ${teacher.name} بنجاح')),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(content: Text('تم إزالة ${teacher.name} بنجاح')),
+      );
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('فشل في إزالة المعلم: $e'),
-            backgroundColor: context.tokens.maroon,
-          ),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('فشل في إزالة المعلم: $e'),
+          backgroundColor: maroon,
+        ),
+      );
     }
   }
 
@@ -277,6 +273,8 @@ class InstituteDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     UserModel supervisor,
   ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final maroon = context.tokens.maroon;
     Navigator.pop(context);
     try {
       final repo = ref.read(instituteRepositoryProvider);
@@ -287,20 +285,16 @@ class InstituteDetailScreen extends ConsumerWidget {
       ref.invalidate(supervisorsForInstituteProvider(instituteId));
       ref.invalidate(institutesForSupervisorProvider(supervisor.id));
       ref.invalidate(allSupervisorsProvider);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('تم إضافة ${supervisor.name} بنجاح')),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(content: Text('تم إضافة ${supervisor.name} بنجاح')),
+      );
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('فشل في إضافة المشرف: $e'),
-            backgroundColor: context.tokens.maroon,
-          ),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('فشل في إضافة المشرف: $e'),
+          backgroundColor: maroon,
+        ),
+      );
     }
   }
 
@@ -336,6 +330,8 @@ class InstituteDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     UserModel supervisor,
   ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final maroon = context.tokens.maroon;
     Navigator.pop(context);
     try {
       final repo = ref.read(instituteRepositoryProvider);
@@ -346,20 +342,16 @@ class InstituteDetailScreen extends ConsumerWidget {
       ref.invalidate(supervisorsForInstituteProvider(instituteId));
       ref.invalidate(institutesForSupervisorProvider(supervisor.id));
       ref.invalidate(allSupervisorsProvider);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('تم إزالة ${supervisor.name} بنجاح')),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(content: Text('تم إزالة ${supervisor.name} بنجاح')),
+      );
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('فشل في إزالة المشرف: $e'),
-            backgroundColor: context.tokens.maroon,
-          ),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('فشل في إزالة المشرف: $e'),
+          backgroundColor: maroon,
+        ),
+      );
     }
   }
 

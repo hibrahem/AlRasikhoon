@@ -114,6 +114,8 @@ class SupervisorDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     InstituteModel institute,
   ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final maroon = context.tokens.maroon;
     Navigator.pop(context);
     try {
       final repo = ref.read(instituteRepositoryProvider);
@@ -122,20 +124,16 @@ class SupervisorDetailScreen extends ConsumerWidget {
         instituteId: institute.id,
       );
       _refresh(ref, institute.id);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('تم إسناد ${institute.name} بنجاح')),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(content: Text('تم إسناد ${institute.name} بنجاح')),
+      );
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('فشل في إسناد المعهد: $e'),
-            backgroundColor: context.tokens.maroon,
-          ),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('فشل في إسناد المعهد: $e'),
+          backgroundColor: maroon,
+        ),
+      );
     }
   }
 
@@ -169,6 +167,8 @@ class SupervisorDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     InstituteModel institute,
   ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final maroon = context.tokens.maroon;
     Navigator.pop(context);
     try {
       final repo = ref.read(instituteRepositoryProvider);
@@ -177,20 +177,16 @@ class SupervisorDetailScreen extends ConsumerWidget {
         instituteId: institute.id,
       );
       _refresh(ref, institute.id);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('تم إزالة إسناد ${institute.name}')),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(content: Text('تم إزالة إسناد ${institute.name}')),
+      );
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('فشل في إزالة الإسناد: $e'),
-            backgroundColor: context.tokens.maroon,
-          ),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('فشل في إزالة الإسناد: $e'),
+          backgroundColor: maroon,
+        ),
+      );
     }
   }
 
