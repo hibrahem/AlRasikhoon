@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/user_model.dart';
 import '../../../domain/curriculum/paced_session.dart';
-import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
+import '../../../shared/providers/curriculum_progress_provider.dart';
 import '../../../shared/providers/current_student_provider.dart';
 import '../../../shared/providers/stats_provider.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_card.dart';
-import '../../../shared/widgets/stat_card.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
-import '../../../shared/widgets/student_level_progress.dart';
 import '../../../shared/widgets/level_progression_widget.dart';
 import '../providers/student_provider.dart';
-import '../widgets/home_assignment_card.dart';
+import '../widgets/home_practice_card.dart';
+import '../widgets/progress_hero_card.dart';
 
 class StudentDashboardScreen extends ConsumerStatefulWidget {
   const StudentDashboardScreen({super.key});
@@ -30,10 +28,10 @@ class _StudentDashboardScreenState
     extends ConsumerState<StudentDashboardScreen> {
   @override
   Widget build(BuildContext context) {
-    final tokens = context.tokens;
     final currentUser = ref.watch(currentUserProvider);
     final statsAsync = ref.watch(studentStatsProvider);
     final meetingAsync = ref.watch(studentDashboardMeetingProvider);
+    final progressAsync = ref.watch(curriculumProgressProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -53,12 +51,14 @@ class _StudentDashboardScreenState
           ref.invalidate(studentStatsProvider);
           ref.invalidate(studentDashboardMeetingProvider);
           ref.invalidate(homePracticeStatsProvider);
+          ref.invalidate(curriculumProgressProvider);
 
           // Wait for providers to reload
           await Future.wait([
             ref.read(studentStatsProvider.future),
             ref.read(studentDashboardMeetingProvider.future),
             ref.read(homePracticeStatsProvider.future),
+            ref.read(curriculumProgressProvider.future),
           ]);
         },
         child: SingleChildScrollView(
@@ -67,48 +67,44 @@ class _StudentDashboardScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Guardian child switcher — only shown for guardians with 2+ children
               if (currentUser?.role == UserRole.guardian)
                 const _GuardianChildSwitcher(),
 
-              // Welcome
               Text(
                 'مرحباً، ${currentUser?.name ?? 'الطالب'}',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
-              const SizedBox(height: 8),
-              Text(
-                'تقدمك في حفظ القرآن الكريم',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: tokens.sepia),
-              ),
               const SizedBox(height: 24),
 
-              // The student's level and where they stand within it, against
-              // the level's real session count from the catalog.
+              // Progress hero — the screen's headline. Needs curriculum progress, the
+              // student's position (level/juz/passed), and the streak; renders only
+              // when all three have resolved, else a single loading block.
               statsAsync.when(
-                data: (stats) => _buildProgressCard(stats),
+                data: (stats) => progressAsync.when(
+                  data: (progress) {
+                    final practice = ref
+                        .watch(homePracticeStatsProvider)
+                        .asData
+                        ?.value;
+                    return ProgressHeroCard(
+                      percent: progress.percent,
+                      fraction: progress.fraction,
+                      juzMemorized: progress.juzMemorized,
+                      currentLevel: stats.currentLevel,
+                      streakDays: practice?.streakDays ?? 0,
+                      passedSessions: stats.passedSessions,
+                    );
+                  },
+                  loading: () => const LoadingState(),
+                  error: (e, _) => ErrorState(message: 'تعذر تحميل التقدم: $e'),
+                ),
                 loading: () => const LoadingState(),
                 error: (e, _) => ErrorState(message: 'تعذر تحميل التقدم: $e'),
               ),
 
               const SizedBox(height: 24),
 
-              // Level progression
-              statsAsync.when(
-                data: (stats) => LevelProgressionWidget(
-                  currentLevel: stats.currentLevel,
-                  unlockedLevels: stats.unlockedLevelsList,
-                  completedLevels: stats.completedLevelsList,
-                ),
-                loading: () => const SizedBox(),
-                error: (_, _) => const SizedBox(),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Current session
+              // Current session — juz lives here, and only here.
               Text(
                 'الحلقة الحالية',
                 style: Theme.of(context).textTheme.titleMedium,
@@ -122,23 +118,24 @@ class _StudentDashboardScreenState
 
               const SizedBox(height: 24),
 
-              // What the student owes at home — renders nothing when there is
-              // no assignment, so it is safe to always place here (spec §5:
-              // both the dashboard and the home-practice screen show it).
-              const HomeAssignmentCard(),
+              // Home practice — one merged card.
+              const HomePracticeCard(),
 
               const SizedBox(height: 24),
 
-              // Home practice card
-              _buildHomePracticeCard(),
-
-              const SizedBox(height: 24),
-
-              // Quick stats
-              Text('إحصائياتي', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 12),
+              // Level journey — collapsed by default; the only home of completed-levels.
               statsAsync.when(
-                data: (stats) => _buildQuickStats(stats),
+                data: (stats) => _buildJourneyExpander(stats),
+                loading: () => const SizedBox(),
+                error: (_, _) => const SizedBox(),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Full stats — collapsed by default; no 'المستويات' tile (it lives in the
+              // hero chip and the journey row above).
+              statsAsync.when(
+                data: (stats) => _buildStatsExpander(stats),
                 loading: () => const SizedBox(),
                 error: (_, _) => const SizedBox(),
               ),
@@ -149,139 +146,79 @@ class _StudentDashboardScreenState
     );
   }
 
-  Widget _buildHomePracticeCard() {
+  /// The level journey, collapsed. Its header carries the completed count; the
+  /// body is the full ten-tile grid. This is the single place completed-levels
+  /// is shown on the dashboard.
+  Widget _buildJourneyExpander(StudentStats stats) {
     final tokens = context.tokens;
-    final practiceStatsAsync = ref.watch(homePracticeStatsProvider);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return AppCard(
+      margin: EdgeInsets.zero,
+      padding: EdgeInsets.zero,
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          title: Text(
+            'رحلة المستويات',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          trailing: Text(
+            '${stats.completedLevels}/10 مكتمل',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
+          ),
           children: [
-            // Flexible, not bare: the title and the action together are wider
-            // than a phone at this text size, and an unflexed Row would overflow
-            // (75px on a 390pt screen) — cutting the action off the edge where
-            // the student cannot reach it.
-            Flexible(
-              child: Text(
-                'التكرار في المنزل',
-                style: Theme.of(context).textTheme.titleMedium,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            TextButton.icon(
-              onPressed: () => context.push(AppRoutes.homePractice),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('تسجيل'),
+            LevelProgressionWidget(
+              currentLevel: stats.currentLevel,
+              unlockedLevels: stats.unlockedLevelsList,
+              completedLevels: stats.completedLevelsList,
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        practiceStatsAsync.when(
-          data: (stats) => AppCard(
-            onTap: () => context.push(AppRoutes.homePractice),
-            child: Row(
+      ),
+    );
+  }
+
+  /// The full stat set, collapsed. No 'المستويات' tile — that figure lives in
+  /// the hero chip and the journey header.
+  Widget _buildStatsExpander(StudentStats stats) {
+    final tokens = context.tokens;
+    return AppCard(
+      margin: EdgeInsets.zero,
+      padding: EdgeInsets.zero,
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          title: Text(
+            'إحصائياتي',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          children: [
+            Row(
               children: [
                 Expanded(
-                  child: _PracticeStatItem(
-                    icon: Icons.today,
-                    label: 'اليوم',
-                    value: '${stats.todayRepetitions}',
+                  child: _StatTile(
+                    label: 'الحلقات',
+                    value: '${stats.totalSessions}',
+                    color: tokens.green,
                   ),
                 ),
-                Container(width: 1, height: 40, color: tokens.hairline),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: _PracticeStatItem(
-                    icon: Icons.local_fire_department,
-                    label: 'متتالية',
-                    value: '${stats.streakDays}',
-                  ),
-                ),
-                Container(width: 1, height: 40, color: tokens.hairline),
-                Expanded(
-                  child: _PracticeStatItem(
-                    icon: Icons.repeat,
-                    label: 'الإجمالي',
-                    value: '${stats.totalRepetitions}',
+                  child: _StatTile(
+                    label: 'الناجحة',
+                    value: '${stats.passedSessions}',
+                    color: tokens.green,
                   ),
                 ),
               ],
             ),
-          ),
-          loading: () => const LoadingState(lines: 1),
-          error: (_, _) => const SizedBox(),
+          ],
         ),
-      ],
-    );
-  }
-
-  Widget _buildProgressCard(StudentStats stats) {
-    final tokens = context.tokens;
-    return AppCard(
-      backgroundColor: tokens.green.withValues(alpha: 0.05),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: tokens.green.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(Icons.school, color: tokens.green, size: 28),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'المستوى ${stats.currentLevel}',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    Text(
-                      // Never an app-derived hizb: it can disagree with the
-                      // assessment's own verbatim label for the very session
-                      // the student stands on (level 2's structural hizb is
-                      // known to contradict its source text). The juz is
-                      // always consistent with the data.
-                      'الجزء ${stats.currentJuz}',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: tokens.gold.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  '${stats.completedLevels}/10',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: tokens.gold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Progress through the level, against the level's real session count
-          // from the catalog (210 in level 1, 49 in level 10) — never `/ 36`.
-          StudentLevelProgress(
-            level: stats.currentLevel,
-            orderInLevel: stats.currentOrderInLevel,
-          ),
-        ],
       ),
     );
   }
@@ -492,43 +429,6 @@ class _StudentDashboardScreenState
       error: (e, _) => ErrorState(message: 'تعذر تحميل الطالب: $e'),
     );
   }
-
-  Widget _buildQuickStats(StudentStats stats) {
-    final tokens = context.tokens;
-    return Row(
-      children: [
-        Expanded(
-          child: StatCardCompact(
-            label: 'الحلقات',
-            value: '${stats.totalSessions}',
-            icon: Icons.school,
-            color: tokens.green,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: StatCardCompact(
-            label: 'الناجحة',
-            value: '${stats.passedSessions}',
-            icon: Icons.check_circle,
-            // No manuscript token for a distinct "success" hue — the
-            // primary green already carries the positive/affirmative role
-            // elsewhere on this screen, so it is reused here too.
-            color: tokens.green,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: StatCardCompact(
-            label: 'المستويات',
-            value: '${stats.completedLevels}',
-            icon: Icons.emoji_events,
-            color: tokens.gold,
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 class _ContentRow extends StatelessWidget {
@@ -568,37 +468,44 @@ class _ContentRow extends StatelessWidget {
   }
 }
 
-class _PracticeStatItem extends StatelessWidget {
-  final IconData icon;
+class _StatTile extends StatelessWidget {
   final String label;
   final String value;
+  final Color color;
 
-  const _PracticeStatItem({
-    required this.icon,
+  const _StatTile({
     required this.label,
     required this.value,
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
-    return Column(
-      children: [
-        Icon(icon, color: tokens.green, size: 20),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        Text(
-          label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -9,11 +9,15 @@ import 'package:al_rasikhoon/shared/providers/current_student_provider.dart';
 import 'package:al_rasikhoon/shared/providers/stats_provider.dart';
 import 'package:al_rasikhoon/features/student/screens/student_dashboard_screen.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
+import 'package:al_rasikhoon/shared/widgets/progress_bar.dart';
 
 /// hibrahem/AlRasikhoon final-review finding #5: the spec (§5) says the
 /// student's DASHBOARD and the home-practice screen both show what he owes.
-/// Only the home-practice screen had `HomeAssignmentCard` wired in — this
-/// pins it onto the dashboard too.
+///
+/// The dashboard redesign (al_rasikhoon-4gw) merged the standalone
+/// `HomeAssignmentCard` into `HomePracticeCard` — one card, not two — so this
+/// now pins the assignment's progress onto the dashboard via that merged
+/// card instead of the old separate heading.
 void main() {
   const lessonSession = SessionModel(
     id: 'L1_J30_S2',
@@ -98,8 +102,8 @@ void main() {
       ),
     );
 
-    expect(find.text('واجب التكرار في المنزل'), findsOneWidget);
     expect(find.text('4 / 10'), findsOneWidget);
+    expect(find.byType(ProgressBar), findsOneWidget);
   });
 
   testWidgets(
@@ -107,7 +111,8 @@ void main() {
     (tester) async {
       await pump(tester, null);
 
-      expect(find.text('واجب التكرار في المنزل'), findsNothing);
+      expect(find.text('4 / 10'), findsNothing);
+      expect(find.byType(ProgressBar), findsNothing);
     },
   );
 }
