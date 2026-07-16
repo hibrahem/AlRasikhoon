@@ -49,10 +49,26 @@ void main() {
         );
       }
     });
+
+    test('superAdmin has three tabs: management, curriculum, profile', () {
+      final destinations = destinationsFor(UserRole.superAdmin);
+
+      expect(destinations.map((d) => d.label), [
+        'الإدارة',
+        'المنهج',
+        'الملف الشخصي',
+      ]);
+      expect(destinations.map((d) => d.rootPath), [
+        AppRoutes.adminDashboard,
+        AppRoutes.curriculum,
+        AppRoutes.adminSettings,
+      ]);
+    });
   });
 
   group('destinationsFor account tab', () {
     for (final role in [
+      UserRole.superAdmin,
       UserRole.teacher,
       UserRole.student,
       UserRole.guardian,

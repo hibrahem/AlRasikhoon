@@ -14,6 +14,8 @@ import '../features/admin/screens/edit_institute_screen.dart';
 import '../features/admin/screens/teachers_screen.dart';
 import '../features/admin/screens/add_teacher_screen.dart';
 import '../features/admin/screens/add_supervisor_screen.dart';
+import '../features/admin/screens/supervisors_screen.dart';
+import '../features/admin/screens/supervisor_detail_screen.dart';
 import '../features/admin/screens/teacher_detail_screen.dart';
 import '../features/admin/screens/curriculum_screen.dart';
 import '../features/admin/screens/level_detail_screen.dart';
@@ -72,6 +74,7 @@ class AppRoutes {
   // collides with the 3-segment `:id` progress route.
   static const String adminStudentSessionDetail =
       '/admin/students/history/:recordId';
+  static const String adminSettings = '/admin/settings';
 
   // Supervisor
   static const String supervisorDashboard = '/supervisor';
@@ -188,20 +191,81 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const AccountNotFoundScreen(),
       ),
 
-      // Admin shell — Home / Institutes / Teachers / Curriculum
+      // Admin shell — Management / Curriculum / Profile. Management (branch 0)
+      // is the hub: it hosts the dashboard plus every management sub-screen
+      // (institutes, teachers, supervisors, students) so navigation between
+      // them never crosses a shell boundary (#45).
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => RoleShell(
           navigationShell: navigationShell,
           role: UserRole.superAdmin,
         ),
         branches: [
-          // Branch 0: Home (also hosts students list/detail pushed from dashboard)
+          // Branch 0: Management hub (dashboard + institutes + teachers +
+          // supervisors + students).
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: AppRoutes.adminDashboard,
                 builder: (context, state) => const AdminDashboardScreen(),
               ),
+              // Institutes
+              GoRoute(
+                path: AppRoutes.institutes,
+                builder: (context, state) => const InstitutesScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.createInstitute,
+                builder: (context, state) => const CreateInstituteScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.instituteDetail,
+                builder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  return InstituteDetailScreen(instituteId: id);
+                },
+              ),
+              GoRoute(
+                path: AppRoutes.editInstitute,
+                builder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  return EditInstituteScreen(instituteId: id);
+                },
+              ),
+              // Teachers
+              GoRoute(
+                path: AppRoutes.teachers,
+                builder: (context, state) => const TeachersScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.addTeacher,
+                builder: (context, state) => const AddTeacherScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.teacherDetail,
+                builder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  return TeacherDetailScreen(teacherId: id);
+                },
+              ),
+              // Supervisors. `add` is registered BEFORE `:id` so the literal
+              // segment still matches AddSupervisorScreen.
+              GoRoute(
+                path: AppRoutes.supervisors,
+                builder: (context, state) => const SupervisorsScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.addSupervisor,
+                builder: (context, state) => const AddSupervisorScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.supervisorDetail,
+                builder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  return SupervisorDetailScreen(supervisorId: id);
+                },
+              ),
+              // Students
               GoRoute(
                 path: AppRoutes.adminStudents,
                 builder: (context, state) => const AllStudentsScreen(),
@@ -228,58 +292,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // Branch 1: Institutes
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.institutes,
-                builder: (context, state) => const InstitutesScreen(),
-              ),
-              GoRoute(
-                path: AppRoutes.createInstitute,
-                builder: (context, state) => const CreateInstituteScreen(),
-              ),
-              GoRoute(
-                path: AppRoutes.instituteDetail,
-                builder: (context, state) {
-                  final id = state.pathParameters['id']!;
-                  return InstituteDetailScreen(instituteId: id);
-                },
-              ),
-              GoRoute(
-                path: AppRoutes.editInstitute,
-                builder: (context, state) {
-                  final id = state.pathParameters['id']!;
-                  return EditInstituteScreen(instituteId: id);
-                },
-              ),
-            ],
-          ),
-          // Branch 2: Teachers
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.teachers,
-                builder: (context, state) => const TeachersScreen(),
-              ),
-              GoRoute(
-                path: AppRoutes.addTeacher,
-                builder: (context, state) => const AddTeacherScreen(),
-              ),
-              GoRoute(
-                path: AppRoutes.addSupervisor,
-                builder: (context, state) => const AddSupervisorScreen(),
-              ),
-              GoRoute(
-                path: AppRoutes.teacherDetail,
-                builder: (context, state) {
-                  final id = state.pathParameters['id']!;
-                  return TeacherDetailScreen(teacherId: id);
-                },
-              ),
-            ],
-          ),
-          // Branch 3: Curriculum
+          // Branch 1: Curriculum
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -294,6 +307,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                   );
                   return LevelDetailScreen(levelNumber: levelNumber);
                 },
+              ),
+            ],
+          ),
+          // Branch 2: Profile
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.adminSettings,
+                builder: (context, state) => const SettingsScreen(),
               ),
             ],
           ),
