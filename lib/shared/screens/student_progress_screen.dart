@@ -42,6 +42,18 @@ class StudentProgressScreen extends ConsumerWidget {
   /// screen neither knows the rule nor imports the supervisor feature.
   final Widget? repositionSection;
 
+  /// An optional role-specific pace control rendered under the header, INJECTED
+  /// by the router like [repositionSection]. The supervisor shell passes a
+  /// [StudentPaceControl] here (a supervisor scoped to the student's institute
+  /// may set pace — firestore.rules already authorises it); the admin shell
+  /// passes nothing and stays read-only. This screen never knows the rule nor
+  /// imports the supervisor feature.
+  ///
+  /// A BUILDER, not a plain widget: the pace control needs the student's
+  /// current pace, known only once the student has loaded — so the screen
+  /// calls this with the loaded [StudentModel].
+  final Widget Function(StudentModel student)? paceSection;
+
   const StudentProgressScreen({
     super.key,
     required this.studentId,
@@ -50,6 +62,7 @@ class StudentProgressScreen extends ConsumerWidget {
     required this.sessionHistoryProvider,
     required this.sessionDetailRoute,
     this.repositionSection,
+    this.paceSection,
   });
 
   @override
@@ -78,6 +91,7 @@ class StudentProgressScreen extends ConsumerWidget {
                 sessionHistoryProvider: sessionHistoryProvider,
                 sessionDetailRoute: sessionDetailRoute,
                 repositionSection: repositionSection,
+                paceSection: paceSection,
               ),
             ),
           );
@@ -96,6 +110,7 @@ class _ProgressBody extends ConsumerWidget {
   sessionHistoryProvider;
   final String sessionDetailRoute;
   final Widget? repositionSection;
+  final Widget Function(StudentModel student)? paceSection;
 
   const _ProgressBody({
     required this.studentWithUser,
@@ -103,6 +118,7 @@ class _ProgressBody extends ConsumerWidget {
     required this.sessionHistoryProvider,
     required this.sessionDetailRoute,
     this.repositionSection,
+    this.paceSection,
   });
 
   @override
@@ -119,6 +135,10 @@ class _ProgressBody extends ConsumerWidget {
         if (repositionSection != null) ...[
           const SizedBox(height: 16),
           repositionSection!,
+        ],
+        if (paceSection != null) ...[
+          const SizedBox(height: 16),
+          paceSection!(student),
         ],
         const SizedBox(height: 24),
 
