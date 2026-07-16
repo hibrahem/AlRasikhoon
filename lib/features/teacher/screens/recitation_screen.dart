@@ -55,7 +55,27 @@ class RecitationScreen extends ConsumerStatefulWidget {
 }
 
 class _RecitationScreenState extends ConsumerState<RecitationScreen> {
-  int _errorCount = 0;
+  late int _errorCount;
+
+  @override
+  void initState() {
+    super.initState();
+    // Seed from the active session: coming BACK to a part (السابق, or a
+    // system back-swipe and re-entry) must show the count already recorded
+    // for it, not silently restart at 0 and overwrite it on the next save.
+    final session = ref.read(activeSessionProvider);
+    _errorCount = session == null
+        ? 0
+        : recitationPartErrors(session, widget.part);
+  }
+
+  /// The one place the current count is persisted — the التالي/السابق
+  /// buttons and the system back gesture all funnel through it.
+  void _saveErrors() {
+    ref
+        .read(activeSessionProvider.notifier)
+        .setPartErrors(widget.part, _errorCount);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,149 +83,152 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
       studentCurrentMeetingProvider(widget.studentId),
     );
 
-    return Scaffold(
-      body: meetingAsync.when(
-        data: (meeting) {
-          // A تلقين is never graded, failed, or attempt-limited — it has no
-          // entry point to this screen in-app (student_profile_screen.dart
-          // branches on isTalqeen before ever reaching the regular-session
-          // card), but a hand-edited URL could still land here directly.
-          // Mirror the guard in talqeen_session_screen.dart: refuse to run
-          // the grading flow unless the student is actually on a lesson.
-          //
-          // A meeting batches lessons and nothing else, so its FIRST session
-          // decides: if that is not a lesson, the meeting is a lone تلقين,
-          // سرد or اختبار and has no business here.
-          if (meeting == null || !meeting.first.isLesson) {
-            return const Center(child: Text('لا توجد بيانات للتسميع'));
-          }
+    return PopScope(
+      // A system back-swipe must not lose the tallied errors: persist them
+      // exactly as the السابق button does before the route pops.
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) _saveErrors();
+      },
+      child: Scaffold(
+        body: meetingAsync.when(
+          data: (meeting) {
+            // A تلقين is never graded, failed, or attempt-limited — it has no
+            // entry point to this screen in-app (student_profile_screen.dart
+            // branches on isTalqeen before ever reaching the regular-session
+            // card), but a hand-edited URL could still land here directly.
+            // Mirror the guard in talqeen_session_screen.dart: refuse to run
+            // the grading flow unless the student is actually on a lesson.
+            //
+            // A meeting batches lessons and nothing else, so its FIRST session
+            // decides: if that is not a lesson, the meeting is a lone تلقين,
+            // سرد or اختبار and has no business here.
+            if (meeting == null || !meeting.first.isLesson) {
+              return const Center(child: Text('لا توجد بيانات للتسميع'));
+            }
 
-          // A content block is legitimately absent on review-only lessons —
-          // absence is data, and reads as an empty range, not a crash.
-          final content = recitationPartContentAr(meeting, widget.part);
+            // A content block is legitimately absent on review-only lessons —
+            // absence is data, and reads as an empty range, not a crash.
+            final content = recitationPartContentAr(meeting, widget.part);
 
-          // Reachable in-app only for present parts, but a hand-edited URL can
-          // land on a part that is not in presentParts. Guard the derived
-          // position and last-part flag so that never renders as "الجزء 0 من N"
-          // or "إنهاء التسميع": fall back to the raw part number, and treat a
-          // non-present part as not-last (partAfter also returns null for it).
-          final presentParts = meeting.presentParts;
-          final isPresentPart = presentParts.contains(widget.part);
-          final position = isPresentPart
-              ? presentParts.indexOf(widget.part) + 1
-              : widget.part;
-          final nextPart = meeting.partAfter(widget.part);
-          final isLastPart = isPresentPart && nextPart == null;
+            // Reachable in-app only for present parts, but a hand-edited URL can
+            // land on a part that is not in presentParts. Guard the derived
+            // position and last-part flag so that never renders as "الجزء 0 من N"
+            // or "إنهاء التسميع": fall back to the raw part number, and treat a
+            // non-present part as not-last (partAfter also returns null for it).
+            final presentParts = meeting.presentParts;
+            final isPresentPart = presentParts.contains(widget.part);
+            final position = isPresentPart
+                ? presentParts.indexOf(widget.part) + 1
+                : widget.part;
+            final nextPart = meeting.partAfter(widget.part);
+            final isLastPart = isPresentPart && nextPart == null;
 
-          // The hero, the counter and the actions are taller than the
-          // viewport the teacher shell leaves on a phone, so the content
-          // scrolls. SliverFillRemaining keeps the Spacer honest: when there
-          // IS room, it still pushes the actions to the bottom.
-          return CustomScrollView(
-            slivers: [
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Column(
-                  children: [
-                    _buildHero(context, presentParts, position),
-                    Transform.translate(
-                      offset: const Offset(0, -28),
-                      child: _buildPassageCard(context, content),
-                    ),
-
-                    const Spacer(),
-
-                    // Error counter
-                    Padding(
-                      padding: const EdgeInsetsDirectional.symmetric(
-                        horizontal: 16,
+            // The hero, the counter and the actions are taller than the
+            // viewport the teacher shell leaves on a phone, so the content
+            // scrolls. SliverFillRemaining keeps the Spacer honest: when there
+            // IS room, it still pushes the actions to the bottom.
+            return CustomScrollView(
+              slivers: [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Column(
+                    children: [
+                      _buildHero(context, presentParts, position),
+                      Transform.translate(
+                        offset: const Offset(0, -28),
+                        child: _buildPassageCard(context, content),
                       ),
-                      child: ErrorCounter(
-                        errorCount: _errorCount,
-                        onAddError: () {
-                          setState(() => _errorCount++);
-                        },
-                        onUndoError: () {
-                          if (_errorCount > 0) {
-                            setState(() => _errorCount--);
-                          }
-                        },
-                      ),
-                    ),
 
-                    const SizedBox(height: 24),
+                      const Spacer(),
 
-                    // Action buttons
-                    Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                        16,
-                        0,
-                        16,
-                        16,
+                      // Error counter
+                      Padding(
+                        padding: const EdgeInsetsDirectional.symmetric(
+                          horizontal: 16,
+                        ),
+                        child: ErrorCounter(
+                          errorCount: _errorCount,
+                          // Level-aware so the live grade agrees with the
+                          // summary (see ErrorCounter.level).
+                          level: meeting.first.levelId,
+                          onAddError: () {
+                            setState(() => _errorCount++);
+                          },
+                          onUndoError: () {
+                            if (_errorCount > 0) {
+                              setState(() => _errorCount--);
+                            }
+                          },
+                        ),
                       ),
-                      child: Row(
-                        children: [
-                          if (widget.part > 1)
+
+                      const SizedBox(height: 24),
+
+                      // Action buttons
+                      Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                          16,
+                          0,
+                          16,
+                          16,
+                        ),
+                        child: Row(
+                          children: [
+                            if (widget.part > 1)
+                              Expanded(
+                                child: AppButton(
+                                  text: 'السابق',
+                                  onPressed: () {
+                                    _saveErrors();
+                                    context.pop();
+                                  },
+                                  type: AppButtonType.outline,
+                                ),
+                              ),
+                            if (widget.part > 1) const SizedBox(width: 12),
                             Expanded(
+                              flex: 2,
                               child: AppButton(
-                                text: 'السابق',
+                                text: isLastPart ? 'إنهاء التسميع' : 'التالي',
                                 onPressed: () {
-                                  // Save current part errors
-                                  ref
-                                      .read(activeSessionProvider.notifier)
-                                      .setPartErrors(widget.part, _errorCount);
+                                  _saveErrors();
 
-                                  context.pop();
+                                  // Go straight to the next evaluation screen —
+                                  // no intermediate per-part result screen — or
+                                  // to the session summary after the last part.
+                                  // Per-part grades are shown on the summary.
+                                  if (isLastPart) {
+                                    context.push(
+                                      AppRoutes.sessionSummary.replaceFirst(
+                                        ':studentId',
+                                        widget.studentId,
+                                      ),
+                                    );
+                                  } else {
+                                    context.push(
+                                      AppRoutes.recitation
+                                          .replaceFirst(
+                                            ':studentId',
+                                            widget.studentId,
+                                          )
+                                          .replaceFirst(':part', '$nextPart'),
+                                    );
+                                  }
                                 },
-                                type: AppButtonType.outline,
                               ),
                             ),
-                          if (widget.part > 1) const SizedBox(width: 12),
-                          Expanded(
-                            flex: 2,
-                            child: AppButton(
-                              text: isLastPart ? 'إنهاء التسميع' : 'التالي',
-                              onPressed: () {
-                                // Save current part errors
-                                ref
-                                    .read(activeSessionProvider.notifier)
-                                    .setPartErrors(widget.part, _errorCount);
-
-                                // Go straight to the next evaluation screen —
-                                // no intermediate per-part result screen — or
-                                // to the session summary after the last part.
-                                // Per-part grades are shown on the summary.
-                                if (isLastPart) {
-                                  context.push(
-                                    AppRoutes.sessionSummary.replaceFirst(
-                                      ':studentId',
-                                      widget.studentId,
-                                    ),
-                                  );
-                                } else {
-                                  context.push(
-                                    AppRoutes.recitation
-                                        .replaceFirst(
-                                          ':studentId',
-                                          widget.studentId,
-                                        )
-                                        .replaceFirst(':part', '$nextPart'),
-                                  );
-                                }
-                              },
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
-        loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(message: 'تعذر تحميل الحلقة: $e'),
+              ],
+            );
+          },
+          loading: () => const LoadingState(),
+          error: (e, _) => ErrorState(message: 'تعذر تحميل الحلقة: $e'),
+        ),
       ),
     );
   }

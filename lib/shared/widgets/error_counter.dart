@@ -12,17 +12,27 @@ class ErrorCounter extends StatelessWidget {
   final VoidCallback onUndoError;
   final bool showGrade;
 
+  /// The student's level. When known, the LIVE grade uses the same
+  /// level-aware thresholds ([GradeCalculator.calculateForLevel]) as the
+  /// summary/result screens — a level-9 student at 4 errors must not be
+  /// shown راسب mid-recitation and ناجح afterwards. Null falls back to the
+  /// level-agnostic mapping.
+  final int? level;
+
   const ErrorCounter({
     super.key,
     required this.errorCount,
     required this.onAddError,
     required this.onUndoError,
     this.showGrade = true,
+    this.level,
   });
 
   @override
   Widget build(BuildContext context) {
-    final gradeInfo = GradeCalculator.calculate(errorCount);
+    final gradeInfo = level != null
+        ? GradeCalculator.calculateForLevel(level!, errorCount)
+        : GradeCalculator.calculate(errorCount);
     final tokens = context.tokens;
     final brightness = Theme.of(context).brightness;
 

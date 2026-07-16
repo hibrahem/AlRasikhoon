@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../shared/providers/current_student_provider.dart';
+import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/student_provider.dart';
 import '../widgets/home_practice_view.dart';
@@ -68,7 +69,15 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
           padding: const EdgeInsetsDirectional.all(16),
           child: statsAsync.when(
             loading: () => const LoadingState(),
-            error: (_, _) => const SizedBox.shrink(),
+            // Never a blank page: a stats failure on the student's main
+            // logging flow gets a message and a one-tap retry.
+            error: (_, _) => ErrorState(
+              message: 'تعذر تحميل بيانات التكرار',
+              onRetry: () {
+                ref.invalidate(homePracticeStatsProvider);
+                ref.invalidate(studentHomePracticesProvider);
+              },
+            ),
             data: (stats) {
               final student = studentAsync.asData?.value;
               final practices = practicesAsync.asData?.value ?? const [];

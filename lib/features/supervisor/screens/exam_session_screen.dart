@@ -198,6 +198,9 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: ErrorCounter(
                           errorCount: _errorCount,
+                          // Level-aware so the live grade agrees with the
+                          // saved result (see ErrorCounter.level).
+                          level: student.currentLevel,
                           onAddError: () {
                             setState(() => _errorCount++);
                           },

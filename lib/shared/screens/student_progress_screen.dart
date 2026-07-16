@@ -12,6 +12,8 @@ import '../../domain/session/student_history_entry.dart';
 import '../curriculum/assessment_copy.dart';
 import '../curriculum/recitation_part_copy.dart';
 import '../widgets/app_card.dart';
+import '../widgets/states/error_state.dart';
+import '../widgets/states/loading_state.dart';
 import '../widgets/icon_medallion.dart';
 import '../widgets/student_level_progress.dart';
 
@@ -98,8 +100,11 @@ class StudentProgressScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(
+          message: 'تعذر تحميل بيانات الطالب',
+          onRetry: () => ref.invalidate(studentProvider(studentId)),
+        ),
       ),
     );
   }
@@ -148,8 +153,13 @@ class _ProgressBody extends ConsumerWidget {
         const SizedBox(height: 12),
         meetingAsync.when(
           data: (meeting) => _CurrentSessionCard(meeting: meeting),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Text('Error: $e'),
+          loading: () => const LoadingState(lines: 2),
+          error: (e, _) => ErrorState(
+            message: 'تعذر تحميل الحلقة الحالية',
+            onRetry: () => ref.invalidate(
+              currentMeetingProvider(studentWithUser.student.id),
+            ),
+          ),
         ),
 
         const SizedBox(height: 24),
@@ -175,8 +185,13 @@ class _ProgressBody extends ConsumerWidget {
             entries: entries,
             sessionDetailRoute: sessionDetailRoute,
           ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Text('Error: $e'),
+          loading: () => const LoadingState(lines: 2),
+          error: (e, _) => ErrorState(
+            message: 'تعذر تحميل سجل الحلقات',
+            onRetry: () => ref.invalidate(
+              sessionHistoryProvider(studentWithUser.student.id),
+            ),
+          ),
         ),
       ],
     );
