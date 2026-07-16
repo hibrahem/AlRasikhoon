@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_greeting_header.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/stat_card.dart';
@@ -23,70 +25,80 @@ class _SupervisorDashboardScreenState
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final statsAsync = ref.watch(supervisorStatsProvider);
+    final currentUser = ref.watch(currentUserProvider);
 
+    // No AppBar: the dashboard leads with a scrolling AppGreetingHeader instead
+    // of a green title bar. Sign-out still lives, confirmed, in الإعدادات.
     return Scaffold(
-      appBar: AppBar(
-        // Sign-out is not offered here: it lives, confirmed, in الإعدادات
-        // (the shared SettingsScreen) so a destructive action never fires on a
-        // single unconfirmed tap next to routine navigation.
-        title: const Text('الراسخون - المشرف'),
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(supervisorStatsProvider);
-          ref.invalidate(examQueueProvider);
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Welcome
-              Text(
-                'مرحباً، المشرف',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'إدارة اختبارات الطلاب',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: tokens.sepia),
-              ),
-              const SizedBox(height: 24),
-
-              // Stats
-              statsAsync.when(
-                data: (stats) => _buildStats(stats),
-                loading: () => const LoadingState(lines: 2),
-                error: (e, _) =>
-                    ErrorState(message: 'تعذر تحميل الإحصائيات: $e'),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Quick action - Exam queue
-              Text(
-                'الإجراءات السريعة',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 12),
-              AppListTile(
-                title: 'قائمة الاختبارات',
-                subtitle: 'الطلاب الجاهزون للاختبار',
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: tokens.gold.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+      body: SafeArea(
+        bottom: false,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(supervisorStatsProvider);
+            ref.invalidate(examQueueProvider);
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppGreetingHeader(
+                  greeting: 'السلام عليكم',
+                  title: currentUser?.name ?? 'المشرف',
+                  trailing: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: tokens.primaryContainer,
+                    child: Text(
+                      (currentUser?.name ?? '؟').characters.first,
+                      style: TextStyle(
+                        color: tokens.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                  child: Icon(Icons.quiz, color: tokens.gold),
                 ),
-                trailing: const Icon(Icons.chevron_left),
-                onTap: () => context.go(AppRoutes.examQueue),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  'إدارة اختبارات الطلاب',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: tokens.sepia),
+                ),
+                const SizedBox(height: 24),
+
+                // Stats
+                statsAsync.when(
+                  data: (stats) => _buildStats(stats),
+                  loading: () => const LoadingState(lines: 2),
+                  error: (e, _) =>
+                      ErrorState(message: 'تعذر تحميل الإحصائيات: $e'),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Quick action - Exam queue
+                Text(
+                  'الإجراءات السريعة',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 12),
+                AppListTile(
+                  title: 'قائمة الاختبارات',
+                  subtitle: 'الطلاب الجاهزون للاختبار',
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: tokens.gold.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(Icons.quiz, color: tokens.gold),
+                  ),
+                  trailing: const Icon(Icons.chevron_left),
+                  onTap: () => context.go(AppRoutes.examQueue),
+                ),
+              ],
+            ),
           ),
         ),
       ),

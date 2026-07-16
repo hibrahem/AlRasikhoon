@@ -98,7 +98,7 @@ void main() {
 
       // Assert
       await tester.pumpAndSettle();
-      expect(find.text('الراسخون - المشرف'), findsOneWidget);
+      expect(find.text('إدارة اختبارات الطلاب'), findsOneWidget);
     });
   });
 }
