@@ -685,7 +685,7 @@ class StudentRobot extends TestRobot {
   /// Verify student dashboard
   Future<void> verifyDashboard() async {
     await pumpAndSettle();
-    expect(find.textContaining('مرحباً'), findsOneWidget);
+    expect(find.textContaining('السلام عليكم'), findsOneWidget);
   }
 
   /// Verify current level displayed. The redesigned dashboard no longer
