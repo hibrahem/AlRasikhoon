@@ -71,5 +71,25 @@ void main() {
       expect(find.textContaining('متتالية 12'), findsOneWidget);
       expect(find.textContaining('الإجمالي 50'), findsOneWidget);
     });
+
+    testWidgets('caps displayed repetition count when student over-practises', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        assignment: const HomeAssignment(
+          curriculumSessionId: 'L1_J30_S1',
+          repetitionsRequired: 10,
+          repetitionsDone: 12,
+        ),
+        stats: const HomePracticeStats(
+          todayRepetitions: 3,
+          streakDays: 12,
+          totalRepetitions: 50,
+        ),
+      );
+      expect(find.textContaining('10 / 10'), findsOneWidget);
+      expect(find.textContaining('12 / 10'), findsNothing);
+    });
   });
 }
