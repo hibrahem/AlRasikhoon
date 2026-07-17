@@ -19,6 +19,15 @@ void main() {
       expect(() => CurriculumPace(-1), throwsArgumentError);
     });
 
+    test('a pace above the ceiling is not a pace', () {
+      expect(CurriculumPace(CurriculumPace.maxMultiplier).multiplier, 10);
+      expect(
+        () => CurriculumPace(CurriculumPace.maxMultiplier + 1),
+        throwsArgumentError,
+      );
+      expect(() => CurriculumPace.fromJson(99), throwsArgumentError);
+    });
+
     test('a student with no stored pace reads back as the standard pace', () {
       expect(CurriculumPace.fromJson(null), CurriculumPace.standard);
     });

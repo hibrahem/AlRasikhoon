@@ -12,6 +12,7 @@ import '../../domain/session/student_history_entry.dart';
 import '../curriculum/assessment_copy.dart';
 import '../curriculum/recitation_part_copy.dart';
 import '../widgets/app_card.dart';
+import '../widgets/completion_forecast_card.dart';
 import '../widgets/states/error_state.dart';
 import '../widgets/states/loading_state.dart';
 import '../widgets/icon_medallion.dart';
@@ -184,6 +185,13 @@ class _ProgressBody extends ConsumerWidget {
             orderInLevel: student.currentOrderInLevel,
           ),
         ),
+
+        const SizedBox(height: 24),
+
+        // Role-agnostic and read-only (its simulator never writes), so the
+        // screen renders it itself — unlike the pace control, which only the
+        // supervisor shell may inject.
+        CompletionForecastCard(student: student),
 
         const SizedBox(height: 24),
 

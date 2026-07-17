@@ -17,6 +17,8 @@ import 'data/models/user_model.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/curriculum_repository.dart';
 import 'data/repositories/student_repository.dart';
+import 'domain/curriculum/completion_forecast.dart';
+import 'domain/curriculum/curriculum_pace.dart';
 import 'domain/curriculum/paced_session.dart';
 import 'features/admin/providers/admin_provider.dart';
 import 'features/admin/screens/admin_dashboard_screen.dart';
@@ -29,8 +31,10 @@ import 'features/teacher/providers/teacher_provider.dart';
 import 'features/teacher/screens/recitation_screen.dart';
 import 'features/teacher/screens/student_profile_screen.dart';
 import 'features/teacher/screens/teacher_students_screen.dart';
+import 'shared/providers/completion_forecast_provider.dart';
 import 'shared/providers/institute_provider.dart';
 import 'shared/providers/user_provider.dart';
+import 'shared/widgets/completion_forecast_card.dart';
 
 void main() {
   runApp(const DesignPreviewApp());
@@ -124,6 +128,14 @@ class _PreviewShellState extends State<_PreviewShell> {
 
 const _mockBeads = [true, true, false, true, true, true, true];
 
+/// A plausible remainder for the mock level-2 student: 130 standalone rows
+/// (تلقين/سرد/اختبار) and 96 lesson runs of 5 — ~610 rows ahead, so the
+/// forecast card shows real-looking numbers and the simulator has room to move.
+final _mockRemaining = RemainingCurriculum(
+  standaloneCount: 130,
+  lessonRuns: List.filled(96, 5),
+);
+
 UserModel _user(String id, String name, UserRole role) => UserModel(
   id: id,
   email: '$id@example.com',
@@ -139,6 +151,7 @@ StudentModel _student(
   int session = 12,
   int order = 12,
   SessionKind kind = SessionKind.lesson,
+  int pace = 2,
 }) => StudentModel(
   id: id,
   userId: 'u-$id',
@@ -149,6 +162,7 @@ StudentModel _student(
   currentSessionId: 'L${level}_J${juz}_S$session',
   currentSessionKind: kind,
   currentOrderInLevel: order,
+  pace: CurriculumPace(pace),
   createdAt: DateTime(2026, 1, 1),
 );
 
@@ -196,6 +210,19 @@ class _DashboardPreview extends StatelessWidget {
         streakDays: 5,
         totalRepetitions: 214,
         onLog: () {},
+      ),
+      forecastCard: ProviderScope(
+        overrides: [
+          remainingCurriculumProvider((
+            level: 2,
+            order: 12,
+            completed: false,
+          )).overrideWith((ref) async => _mockRemaining),
+        ],
+        child: CompletionForecastCard(
+          student: _student('s1'),
+          margin: EdgeInsets.zero,
+        ),
       ),
     );
   }
@@ -363,6 +390,11 @@ class _StudentProfilePreview extends StatelessWidget {
         teacherStudentSessionHistoryProvider(
           's1',
         ).overrideWith((ref) async => []),
+        remainingCurriculumProvider((
+          level: 2,
+          order: 12,
+          completed: false,
+        )).overrideWith((ref) async => _mockRemaining),
       ],
       child: const StudentProfileScreen(studentId: 's1'),
     );

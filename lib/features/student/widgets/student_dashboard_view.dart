@@ -84,6 +84,10 @@ class StudentDashboardView extends StatelessWidget {
   /// mock-backed one).
   final Widget? practiceCard;
 
+  /// Slot for the provider-bound "متى الختم؟" forecast card — how long until
+  /// the student finishes the whole Quran at their configured plan.
+  final Widget? forecastCard;
+
   /// Slot rendered above the content column (e.g. the guardian's child
   /// switcher).
   final Widget? leading;
@@ -92,6 +96,7 @@ class StudentDashboardView extends StatelessWidget {
     super.key,
     required this.data,
     this.practiceCard,
+    this.forecastCard,
     this.leading,
   });
 
@@ -123,6 +128,10 @@ class StudentDashboardView extends StatelessWidget {
                   if (practiceCard != null) ...[
                     const SizedBox(height: AppDimens.space16),
                     _EntranceSlot(index: 2, child: practiceCard!),
+                  ],
+                  if (forecastCard != null) ...[
+                    const SizedBox(height: AppDimens.space16),
+                    _EntranceSlot(index: 3, child: forecastCard!),
                   ],
                   const SizedBox(height: AppDimens.space16),
                   _buildJourneyExpander(context, tokens),

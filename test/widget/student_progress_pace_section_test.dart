@@ -26,6 +26,15 @@ class MockStudentRepository extends Mock implements StudentRepository {}
 void main() {
   setUpAll(() => registerFallbackValue(CurriculumPace.standard));
 
+  /// Moves the pace slider to [multiplier] and releases — the write fires on
+  /// release (onChangeEnd), which is the control's contract.
+  Future<void> setPace(WidgetTester tester, int multiplier) async {
+    final slider = tester.widget<Slider>(find.byType(Slider));
+    slider.onChanged!(multiplier.toDouble());
+    slider.onChangeEnd!(multiplier.toDouble());
+    await tester.pumpAndSettle();
+  }
+
   final lesson = SessionModel(
     id: 'L1_J30_S5',
     levelId: 1,
@@ -119,17 +128,17 @@ void main() {
       paceSection: (s) => StudentPaceControl(
         studentId: s.id,
         currentPace: s.pace,
-        onPaceChanged: (_) => refreshed = true,
+        currentMeetingsPerWeek: s.meetingsPerWeek,
+        onPlanChanged: (_) => refreshed = true,
       ),
     );
 
     expect(find.text('وتيرة الحفظ'), findsOneWidget);
 
-    await tester.tap(find.text('2x'));
-    await tester.pumpAndSettle();
+    await setPace(tester, 2);
 
     verify(() => repo.setStudentPace('s1', CurriculumPace(2))).called(1);
-    // onPaceChanged fires only on a successful write.
+    // onPlanChanged fires only on a successful write.
     expect(refreshed, isTrue);
   });
 
@@ -142,7 +151,7 @@ void main() {
   });
 
   testWidgets(
-    'on a failed write, shows the error and does not fire onPaceChanged',
+    'on a failed write, shows the error, reverts and does not fire onPlanChanged',
     (tester) async {
       final repo = MockStudentRepository();
       when(
@@ -156,14 +165,16 @@ void main() {
         paceSection: (s) => StudentPaceControl(
           studentId: s.id,
           currentPace: s.pace,
-          onPaceChanged: (_) => refreshed = true,
+          currentMeetingsPerWeek: s.meetingsPerWeek,
+          onPlanChanged: (_) => refreshed = true,
         ),
       );
 
-      await tester.tap(find.text('3x'));
-      await tester.pumpAndSettle();
+      await setPace(tester, 3);
 
       expect(find.text('تعذر تحديث وتيرة الحفظ'), findsOneWidget);
+      // The optimistic slider value snaps back to what is actually stored.
+      expect(find.text('1×'), findsOneWidget);
       expect(refreshed, isFalse);
     },
   );

@@ -453,7 +453,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                     paceSection: (student) => StudentPaceControl(
                       studentId: student.id,
                       currentPace: student.pace,
-                      onPaceChanged: (ref) {
+                      currentMeetingsPerWeek: student.meetingsPerWeek,
+                      onPlanChanged: (ref) {
                         ref.invalidate(supervisorStudentProvider(student.id));
                         ref.invalidate(
                           supervisorStudentCurrentMeetingProvider(student.id),

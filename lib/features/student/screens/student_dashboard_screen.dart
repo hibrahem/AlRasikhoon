@@ -9,6 +9,7 @@ import '../../../shared/providers/curriculum_progress_provider.dart';
 import '../../../shared/providers/current_student_provider.dart';
 import '../../../shared/providers/stats_provider.dart';
 import '../../../shared/providers/user_provider.dart';
+import '../../../shared/widgets/completion_forecast_card.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/student_provider.dart';
@@ -87,6 +88,10 @@ class _StudentDashboardScreenState
             final practice = ref.watch(homePracticeStatsProvider).asData?.value;
             final meeting = meetingAsync.asData?.value;
             final streakDays = practice?.streakDays ?? 0;
+            // The forecast needs the student document itself (position, pace,
+            // cadence). Its absence must not hold the dashboard hostage — the
+            // card simply doesn't render until the student has loaded.
+            final student = ref.watch(currentStudentProvider).asData?.value;
 
             return StudentDashboardView(
               data: StudentDashboardData(
@@ -107,6 +112,12 @@ class _StudentDashboardScreenState
                 session: _sessionInfoOf(meeting),
               ),
               practiceCard: const HomePracticeCard(),
+              forecastCard: student == null
+                  ? null
+                  : CompletionForecastCard(
+                      student: student,
+                      margin: EdgeInsets.zero,
+                    ),
               leading: currentUser?.role == UserRole.guardian
                   ? const _GuardianChildSwitcher()
                   : null,

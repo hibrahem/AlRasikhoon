@@ -18,13 +18,22 @@ class MockStudentRepository extends Mock implements StudentRepository {}
 
 /// Pins the pace control (Task 10): either a teacher or a supervisor may set
 /// a student's pace directly on the session-overview screen — no approval
-/// workflow, no history, just a segmented `1x / 2x / 3x` that calls
-/// `StudentRepository.setStudentPace` and widens the pending meeting
-/// immediately by invalidating the student provider.
+/// workflow, no history, just a 1×..10× slider that calls
+/// `StudentRepository.setStudentPace` on release and widens the pending
+/// meeting immediately by invalidating the student provider.
 void main() {
   setUpAll(() {
     registerFallbackValue(CurriculumPace.standard);
   });
+
+  /// Moves the pace slider to [multiplier] and releases — the write fires on
+  /// release (onChangeEnd), which is the control's contract.
+  Future<void> setPace(WidgetTester tester, int multiplier) async {
+    final slider = tester.widget<Slider>(find.byType(Slider));
+    slider.onChanged!(multiplier.toDouble());
+    slider.onChangeEnd!(multiplier.toDouble());
+    await tester.pumpAndSettle();
+  }
 
   final regularSession = SessionModel(
     id: 'L1_J30_S1',
@@ -115,8 +124,7 @@ void main() {
     addTearDown(container.dispose);
     await pumpScreen(tester, container);
 
-    await tester.tap(find.text('2x'));
-    await tester.pumpAndSettle();
+    await setPace(tester, 2);
 
     verify(() => studentRepo.setStudentPace('s1', CurriculumPace(2))).called(1);
   });
@@ -141,7 +149,7 @@ void main() {
     addTearDown(container.dispose);
     await pumpScreen(tester, container);
 
-    expect(find.text('1x'), findsOneWidget);
+    expect(find.text('1×'), findsOneWidget);
   });
 
   testWidgets(
@@ -174,16 +182,15 @@ void main() {
       );
       addTearDown(container.dispose);
       await pumpScreen(tester, container);
-      expect(find.text('1x'), findsOneWidget);
+      expect(find.text('1×'), findsOneWidget);
 
-      await tester.tap(find.text('2x'));
-      await tester.pumpAndSettle();
+      await setPace(tester, 2);
 
       // The control now reads the re-fetched (post-invalidate) student, which
       // reports pace 2x — this only happens if setting the pace invalidated
       // `studentProvider('s1')` rather than leaving the old snapshot cached.
       expect(reads, greaterThan(1));
-      expect(find.text('2x'), findsWidgets);
+      expect(find.text('2×'), findsWidgets);
     },
   );
 }
