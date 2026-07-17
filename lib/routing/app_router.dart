@@ -158,14 +158,56 @@ class AppRoutes {
   static const String studentSettings = '/student/settings';
 }
 
-// Matches the literal `/sard` PATH SEGMENT (followed by `/` or end-of-string),
-// not any substring occurrence. `matchedLocation` carries substituted path
-// params, so a naive `.contains('/sard')` also fires for e.g. a student whose
-// doc id merely begins with "sard" (`/supervisor/students/sardOoPs123`),
-// bouncing legitimate navigation. Anchoring to a real path segment excludes
-// that false positive while still catching both real Sard routes
-// (`/teacher/session/:studentId/sard` and `.../sard/result`).
-final RegExp _sardPathSegment = RegExp(r'/sard(?:/|$)');
+// Matches ONLY the teacher Sard SESSION routes —
+// `/teacher/session/:studentId/sard` and `.../sard/result` — the two places a
+// Sard is actually conducted. Anchoring to the full route shape matters twice
+// over: `matchedLocation` carries substituted path params, so a naive
+// `.contains('/sard')` fires for a student whose doc id merely begins with
+// "sard" (`/supervisor/students/sardOoPs123`), and even a segment-anchored
+// `/sard(?:/|$)` fires on the `:kind` segment of every ASSESSMENT-DETAIL route
+// (`/student/assessment/sard/:recordId` and its admin/supervisor twins),
+// bouncing a student who taps a سرد record in their own history back to home
+// (al_rasikhoon-b75). Viewing a past سرد record is open to every role; only
+// CONDUCTING a Sard is teacher-only.
+final RegExp _teacherSardSessionPath = RegExp(
+  r'^/teacher/session/[^/]+/sard(?:/|$)',
+);
+
+/// The route-level guard applied to every navigation, extracted from the
+/// GoRouter `redirect` callback so it is testable without pumping the app.
+/// Returns the location to redirect to, or null to let navigation proceed.
+@visibleForTesting
+String? guardRedirect({
+  required bool isAuthenticated,
+  required UserRole? userRole,
+  required String matchedLocation,
+}) {
+  final isLoggingIn =
+      matchedLocation == AppRoutes.login ||
+      matchedLocation == AppRoutes.accountNotFound;
+
+  // Not authenticated - redirect to login
+  if (!isAuthenticated && !isLoggingIn) {
+    return AppRoutes.login;
+  }
+
+  // Authenticated but on login page - redirect to appropriate dashboard
+  if (isAuthenticated && isLoggingIn) {
+    return _getDashboardRoute(userRole);
+  }
+
+  // Conducting a Sard (السرد) is teacher-only (al_rasikhoon-801). Block any
+  // non-teacher that reaches a teacher Sard SESSION path (e.g. a supervisor
+  // crafting the URL): bounce them to their own dashboard. UI hides the entry
+  // point; this is the navigation-level backstop. Firestore rules are the
+  // true backstop.
+  if (_teacherSardSessionPath.hasMatch(matchedLocation) &&
+      userRole != UserRole.teacher) {
+    return _getDashboardRoute(userRole);
+  }
+
+  return null;
+}
 
 final routerProvider = Provider<GoRouter>((ref) {
   final isAuthenticated = ref.watch(isAuthenticatedProvider);
@@ -174,32 +216,11 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: AppRoutes.login,
     debugLogDiagnostics: true,
-    redirect: (context, state) {
-      final isLoggingIn =
-          state.matchedLocation == AppRoutes.login ||
-          state.matchedLocation == AppRoutes.accountNotFound;
-
-      // Not authenticated - redirect to login
-      if (!isAuthenticated && !isLoggingIn) {
-        return AppRoutes.login;
-      }
-
-      // Authenticated but on login page - redirect to appropriate dashboard
-      if (isAuthenticated && isLoggingIn) {
-        return _getDashboardRoute(userRole);
-      }
-
-      // Sard (السرد) is teacher-only (al_rasikhoon-801). Block any non-teacher
-      // that reaches a teacher Sard path (e.g. a supervisor crafting the URL):
-      // bounce them to their own dashboard. UI hides the entry point; this is
-      // the navigation-level backstop. Firestore rules are the true backstop.
-      if (_sardPathSegment.hasMatch(state.matchedLocation) &&
-          userRole != UserRole.teacher) {
-        return _getDashboardRoute(userRole);
-      }
-
-      return null;
-    },
+    redirect: (context, state) => guardRedirect(
+      isAuthenticated: isAuthenticated,
+      userRole: userRole,
+      matchedLocation: state.matchedLocation,
+    ),
     routes: [
       // Auth routes (no shell)
       GoRoute(
