@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/institute_model.dart';
+import '../../../data/models/user_model.dart';
+import '../../../data/repositories/user_repository.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/widgets/edit_profile_dialog.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/states/empty_state.dart';
@@ -45,6 +48,27 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
     setState(_selectedInstituteIds.clear);
   }
 
+  void _showEditProfileDialog(BuildContext context, UserModel teacher) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => EditProfileDialog(
+        initialName: teacher.name,
+        initialPhone: teacher.phone,
+        onSave: (name, phone) async {
+          await ref
+              .read(userRepositoryProvider)
+              .updateProfileFields(
+                userId: teacher.id,
+                name: name,
+                phone: phone,
+              );
+          ref.invalidate(teacherProvider(teacherId));
+          ref.invalidate(allTeachersProvider);
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
@@ -56,9 +80,15 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
       appBar: AppBar(
         title: const Text('تفاصيل المعلم'),
         actions: [
-          // Account-level action on the teacher, so it belongs with the
+          // Account-level actions on the teacher, so they belong with the
           // screen chrome — not buried inside the institutes section.
-          if (teacherAsync.asData?.value != null)
+          if (teacherAsync.asData?.value != null) ...[
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: 'تعديل الملف الشخصي',
+              onPressed: () =>
+                  _showEditProfileDialog(context, teacherAsync.asData!.value!),
+            ),
             IconButton(
               icon: const Icon(Icons.lock_reset),
               tooltip: 'إعادة تعيين كلمة المرور',
@@ -73,6 +103,7 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                 );
               },
             ),
+          ],
         ],
       ),
       body: teacherAsync.when(

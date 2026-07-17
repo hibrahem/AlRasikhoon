@@ -6,10 +6,13 @@ import 'package:mocktail/mocktail.dart';
 import 'package:al_rasikhoon/data/models/institute_model.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/institute_repository.dart';
+import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/features/admin/providers/admin_provider.dart';
 import 'package:al_rasikhoon/features/admin/screens/supervisor_detail_screen.dart';
 
 class _MockInstituteRepository extends Mock implements InstituteRepository {}
+
+class _MockUserRepository extends Mock implements UserRepository {}
 
 const _supervisorId = 's1';
 
@@ -35,6 +38,7 @@ Future<void> _pump(
   required List<InstituteModel> assigned,
   required List<InstituteModel> allInstitutes,
   InstituteRepository? repo,
+  UserRepository? userRepo,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -47,6 +51,8 @@ Future<void> _pump(
         ).overrideWith((ref) async => assigned),
         institutesProvider.overrideWith((ref) async => allInstitutes),
         if (repo != null) instituteRepositoryProvider.overrideWithValue(repo),
+        if (userRepo != null)
+          userRepositoryProvider.overrideWithValue(userRepo),
       ],
       child: const MaterialApp(
         home: SupervisorDetailScreen(supervisorId: _supervisorId),
@@ -122,6 +128,74 @@ void main() {
         instituteId: 'i1',
       ),
     ).called(1);
+  });
+
+  group('account actions (al_rasikhoon-1nw)', () {
+    testWidgets('the app bar carries reset-password and edit-profile actions', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        assigned: const [],
+        allInstitutes: [_institute('i1', 'معهد النور')],
+      );
+
+      expect(find.byTooltip('إعادة تعيين كلمة المرور'), findsOneWidget);
+      expect(find.byTooltip('تعديل الملف الشخصي'), findsOneWidget);
+    });
+
+    testWidgets('reset-password opens the dialog for THIS supervisor', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        assigned: const [],
+        allInstitutes: [_institute('i1', 'معهد النور')],
+      );
+
+      await tester.tap(find.byTooltip('إعادة تعيين كلمة المرور'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('إعادة تعيين كلمة مرور مشرف النور'), findsOneWidget);
+    });
+
+    testWidgets('saving an edited name writes through UserRepository', (
+      tester,
+    ) async {
+      final userRepo = _MockUserRepository();
+      when(
+        () => userRepo.updateProfileFields(
+          userId: any(named: 'userId'),
+          name: any(named: 'name'),
+          phone: any(named: 'phone'),
+        ),
+      ).thenAnswer((_) async {});
+
+      await _pump(
+        tester,
+        assigned: const [],
+        allInstitutes: [_institute('i1', 'معهد النور')],
+        userRepo: userRepo,
+      );
+
+      await tester.tap(find.byTooltip('تعديل الملف الشخصي'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'مشرف النور'),
+        'مشرف النور المحدث',
+      );
+      await tester.tap(find.text('حفظ'));
+      await tester.pumpAndSettle();
+
+      verify(
+        () => userRepo.updateProfileFields(
+          userId: _supervisorId,
+          name: 'مشرف النور المحدث',
+          phone: null,
+        ),
+      ).called(1);
+    });
   });
 
   testWidgets('assign calls the repository for the tapped institute', (

@@ -3,8 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/institute_model.dart';
+import '../../../data/models/user_model.dart';
 import '../../../data/repositories/institute_repository.dart';
+import '../../../data/repositories/user_repository.dart';
+import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/widgets/edit_profile_dialog.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/icon_medallion.dart';
@@ -209,6 +213,31 @@ class SupervisorDetailScreen extends ConsumerWidget {
     }
   }
 
+  void _showEditProfileDialog(
+    BuildContext context,
+    WidgetRef ref,
+    UserModel supervisor,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => EditProfileDialog(
+        initialName: supervisor.name,
+        initialPhone: supervisor.phone,
+        onSave: (name, phone) async {
+          await ref
+              .read(userRepositoryProvider)
+              .updateProfileFields(
+                userId: supervisor.id,
+                name: name,
+                phone: phone,
+              );
+          ref.invalidate(supervisorProvider(supervisorId));
+          ref.invalidate(allSupervisorsProvider);
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tokens = context.tokens;
@@ -218,7 +247,39 @@ class SupervisorDetailScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('تفاصيل المشرف')),
+      appBar: AppBar(
+        title: const Text('تفاصيل المشرف'),
+        actions: [
+          // Account-level actions on the supervisor live with the screen
+          // chrome, mirroring TeacherDetailScreen. The setUserPassword Cloud
+          // Function already authorizes super_admin → any user.
+          if (supervisorAsync.asData?.value != null) ...[
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: 'تعديل الملف الشخصي',
+              onPressed: () => _showEditProfileDialog(
+                context,
+                ref,
+                supervisorAsync.asData!.value!,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.lock_reset),
+              tooltip: 'إعادة تعيين كلمة المرور',
+              onPressed: () {
+                final supervisor = supervisorAsync.asData!.value!;
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => ResetPasswordDialog(
+                    userId: supervisor.id,
+                    userDisplayName: supervisor.name,
+                  ),
+                );
+              },
+            ),
+          ],
+        ],
+      ),
       body: supervisorAsync.when(
         data: (supervisor) {
           if (supervisor == null) {
