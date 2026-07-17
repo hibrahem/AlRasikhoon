@@ -65,7 +65,7 @@ class _RootedLettermarkPainter extends CustomPainter {
 
   // Layout in font units (y-down, baseline at 0 — see the generated path
   // file). Extra room below the deepest descender for tendrils and dots.
-  static const _extraBelow = 920.0;
+  static const _extraBelow = 1000.0;
   static const _unitsHeight = kWordmarkAscent + _extraBelow;
 
   /// Natural height/width ratio of the mark.
@@ -77,12 +77,12 @@ class _RootedLettermarkPainter extends CustomPainter {
   static final List<Path> _tendrils = [
     // ر — curls down-left, the direction its tail already flows.
     Path()
-      ..moveTo(4682, 557)
-      ..cubicTo(4682, 680, 4630, 760, 4560, 850),
+      ..moveTo(4757, 567)
+      ..cubicTo(4757, 690, 4705, 770, 4635, 860),
     // و — curls down-right, mirroring.
     Path()
-      ..moveTo(1333, 558)
-      ..cubicTo(1333, 680, 1380, 760, 1445, 850),
+      ..moveTo(1216, 564)
+      ..cubicTo(1216, 686, 1263, 766, 1328, 856),
     // ن — a shorter drop from its shallower bowl.
     Path()
       ..moveTo(312, 346)
@@ -90,8 +90,8 @@ class _RootedLettermarkPainter extends CustomPainter {
   ];
 
   static const List<Offset> _dots = [
-    Offset(4535, 900),
-    Offset(1468, 900),
+    Offset(4610, 908),
+    Offset(1353, 904),
     Offset(238, 668),
   ];
   static const _tendrilStarts = [0.62, 0.68, 0.74];

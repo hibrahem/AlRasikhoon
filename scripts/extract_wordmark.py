@@ -13,7 +13,7 @@ import uharfbuzz as hb
 from fontTools.ttLib import TTFont
 from fontTools.pens.basePen import BasePen
 
-FONT = "./fonts/UthmanTahaNaskhBold.otf"  # KFGQPC Uthman Taha Naskh Bold
+FONT = "./fonts/UthmanicHafsBold.ttf"  # KFGQPC HAFS Uthmanic Script Bold
 TEXT = "الراسخون"
 OUT = "."
 
