@@ -244,6 +244,65 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
     );
   });
 
+  // === al_rasikhoon-1nw — profile self-service on docs WITHOUT institute_id ==
+  // Teachers/students/guardians provisioned by createUserAccount have NO
+  // institute_id key at all. The old equality freeze
+  // (request.resource.data.institute_id == resource.data.institute_id) errors
+  // on the missing key and denied every self-edit for those roles; the
+  // diff().affectedKeys() form must allow profile fields while still freezing
+  // role and institute_id.
+
+  it("ALLOWS a teacher (doc without institute_id) editing own name + phone (al_rasikhoon-1nw)", async () => {
+    const db = asUser("teacher_a");
+    await assertSucceeds(
+      updateDoc(doc(db, "users", "teacher_a"), {
+        name: "Teacher A (renamed)",
+        phone: "+966500000001",
+      })
+    );
+  });
+
+  it("ALLOWS a student (doc without institute_id) editing own name + phone (al_rasikhoon-1nw)", async () => {
+    const db = asUser("stu_user_a");
+    await assertSucceeds(
+      updateDoc(doc(db, "users", "stu_user_a"), {
+        name: "Student user A (renamed)",
+        phone: "+966500000002",
+      })
+    );
+  });
+
+  it("DENIES a teacher self-promoting to super_admin (freeze survives the diff rewrite)", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      updateDoc(doc(db, "users", "teacher_a"), { role: "super_admin" })
+    );
+  });
+
+  it("DENIES a teacher granting THEMSELVES an institute_id", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      updateDoc(doc(db, "users", "teacher_a"), { institute_id: INST_A })
+    );
+  });
+
+  it("DENIES a teacher editing ANOTHER user's name", async () => {
+    const db = asUser("teacher_a");
+    await assertFails(
+      updateDoc(doc(db, "users", "teacher_b"), { name: "hijacked" })
+    );
+  });
+
+  it("ALLOWS a super_admin editing another user's name + phone", async () => {
+    const db = asUser("admin");
+    await assertSucceeds(
+      updateDoc(doc(db, "users", "teacher_b"), {
+        name: "Teacher B (renamed)",
+        phone: "+966500000003",
+      })
+    );
+  });
+
   // === al_rasikhoon-3n6 — supervisor_institutes is the escalation boundary ==
   // Supervisor scoping moved from users/{uid}.institute_id to the
   // supervisor_institutes MEMBERSHIP doc. The self-promotion guard MUST move

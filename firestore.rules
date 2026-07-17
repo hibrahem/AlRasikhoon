@@ -211,10 +211,16 @@ service cloud.firestore {
       // this freeze is now belt-and-suspenders rather than the primary boundary.
       // Privilege boundary: only a superadmin may move a user between roles, and
       // only a superadmin may write supervisor_institutes memberships.
+      //
+      // The freeze is expressed as "the write must not TOUCH role/institute_id"
+      // (diff().affectedKeys()) rather than old==new equality: most user docs
+      // (teachers/students/guardians provisioned by createUserAccount) have NO
+      // institute_id key at all, and equality against a missing key errors —
+      // which denied every legitimate profile self-edit (al_rasikhoon-1nw).
       allow update: if isSuperAdmin() ||
         (request.auth.uid == userId &&
-         request.resource.data.role == resource.data.role &&
-         request.resource.data.institute_id == resource.data.institute_id);
+         !request.resource.data.diff(resource.data).affectedKeys()
+           .hasAny(['role', 'institute_id']));
       allow delete: if isSuperAdmin();
     }
 
