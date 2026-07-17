@@ -1,0 +1,18 @@
+flutter_launcher_icons:
+  # Masters are rendered from the الراسخون lettermark painter:
+  #   flutter test tools/render_app_icon.dart
+  # then regenerate the platform icons with:
+  #   dart run flutter_launcher_icons
+  android: true
+  ios: true
+  image_path: assets/branding/app_icon.png
+  # Android 13+ themed/adaptive icon: brand green behind the word within
+  # the safe zone.
+  adaptive_icon_background: "#1B5E20"
+  adaptive_icon_foreground: assets/branding/app_icon_foreground.png
+  remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: assets/branding/app_icon.png
+    background_color: "#1B5E20"
+    theme_color: "#1B5E20"
