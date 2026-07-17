@@ -13,7 +13,7 @@ import uharfbuzz as hb
 from fontTools.ttLib import TTFont
 from fontTools.pens.basePen import BasePen
 
-FONT = "./fonts/UthmanicHafsBold.ttf"  # KFGQPC HAFS Uthmanic Script Bold
+FONT = "./fonts/DecoTypeThuluth.ttf"  # DecoType Thuluth v2.00
 TEXT = "الراسخون"
 OUT = "."
 

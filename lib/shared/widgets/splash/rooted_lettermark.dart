@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import 'rasikhoon_wordmark_path.dart';
 
 /// The typographic brand mark built from the word itself: الراسخون set in
-/// Uthman Taha Naskh Bold — the hand of the Madinah mushaf — via real
-/// shaped outlines (see rasikhoon_wordmark_path.dart). A gold "earth line"
-/// runs along the baseline; the word's own descenders (ر، و، ن) below the
-/// line wear the root green, and fine root tendrils grow on from their
-/// tips, ending in the logo's root-tip dots. The letters literally take
-/// root: الراسخون are the firmly rooted.
+/// DecoType Thuluth — خط الثلث — via real shaped outlines (see
+/// rasikhoon_wordmark_path.dart). A gold "earth line" runs along the
+/// baseline; the word's own descenders (ر، و، ن) below the line wear the
+/// root green, and fine root tendrils grow on from their tips, ending in
+/// the logo's root-tip dots. The letters literally take root: الراسخون
+/// are the firmly rooted.
 ///
 /// Choreography by [progress]: the word writes itself on right-to-left
 /// (soft ink edge), the earth line draws across, the below-ground strokes
@@ -65,7 +65,7 @@ class _RootedLettermarkPainter extends CustomPainter {
 
   // Layout in font units (y-down, baseline at 0 — see the generated path
   // file). Extra room below the deepest descender for tendrils and dots.
-  static const _extraBelow = 1000.0;
+  static const _extraBelow = 1180.0;
   static const _unitsHeight = kWordmarkAscent + _extraBelow;
 
   /// Natural height/width ratio of the mark.
@@ -77,22 +77,22 @@ class _RootedLettermarkPainter extends CustomPainter {
   static final List<Path> _tendrils = [
     // ر — curls down-left, the direction its tail already flows.
     Path()
-      ..moveTo(4757, 567)
-      ..cubicTo(4757, 690, 4705, 770, 4635, 860),
+      ..moveTo(4923, 584)
+      ..cubicTo(4923, 720, 4865, 810, 4790, 905),
     // و — curls down-right, mirroring.
     Path()
-      ..moveTo(1216, 564)
-      ..cubicTo(1216, 686, 1263, 766, 1328, 856),
+      ..moveTo(930, 727)
+      ..cubicTo(930, 845, 975, 920, 1038, 1005),
     // ن — a shorter drop from its shallower bowl.
     Path()
-      ..moveTo(312, 346)
-      ..cubicTo(312, 460, 285, 540, 250, 620),
+      ..moveTo(598, 279)
+      ..cubicTo(598, 400, 570, 480, 533, 562),
   ];
 
   static const List<Offset> _dots = [
-    Offset(4610, 908),
-    Offset(1353, 904),
-    Offset(238, 668),
+    Offset(4763, 955),
+    Offset(1060, 1053),
+    Offset(520, 612),
   ];
   static const _tendrilStarts = [0.62, 0.68, 0.74];
 
