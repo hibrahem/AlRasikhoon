@@ -63,6 +63,15 @@ class StudentProgressScreen extends ConsumerWidget {
   /// calls this with the loaded [StudentModel].
   final Widget Function(StudentModel student)? paceSection;
 
+  /// An optional institute badge rendered inside the header card, under the
+  /// level line — the same placement [StudentCard] gives it. INJECTED by the
+  /// router like [paceSection], and a BUILDER for the same reason: the
+  /// institute is known only from the loaded [StudentModel]. The admin shell
+  /// passes one because an admin sees students across every institute, so a
+  /// student's affiliation is not implied by the shell; teacher- and
+  /// supervisor-scoped shells pass nothing.
+  final Widget Function(StudentModel student)? instituteBadge;
+
   const StudentProgressScreen({
     super.key,
     required this.studentId,
@@ -73,6 +82,7 @@ class StudentProgressScreen extends ConsumerWidget {
     required this.assessmentDetailRoute,
     this.repositionSection,
     this.paceSection,
+    this.instituteBadge,
   });
 
   @override
@@ -103,6 +113,7 @@ class StudentProgressScreen extends ConsumerWidget {
                 assessmentDetailRoute: assessmentDetailRoute,
                 repositionSection: repositionSection,
                 paceSection: paceSection,
+                instituteBadge: instituteBadge,
               ),
             ),
           );
@@ -126,6 +137,7 @@ class _ProgressBody extends ConsumerWidget {
   final String assessmentDetailRoute;
   final Widget? repositionSection;
   final Widget Function(StudentModel student)? paceSection;
+  final Widget Function(StudentModel student)? instituteBadge;
 
   const _ProgressBody({
     required this.studentWithUser,
@@ -135,6 +147,7 @@ class _ProgressBody extends ConsumerWidget {
     required this.assessmentDetailRoute,
     this.repositionSection,
     this.paceSection,
+    this.instituteBadge,
   });
 
   @override
@@ -147,7 +160,11 @@ class _ProgressBody extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _StudentHeaderCard(user: user, student: student),
+        _StudentHeaderCard(
+          user: user,
+          student: student,
+          instituteBadge: instituteBadge?.call(student),
+        ),
         if (repositionSection != null) ...[
           const SizedBox(height: 16),
           repositionSection!,
@@ -212,7 +229,15 @@ class _StudentHeaderCard extends StatelessWidget {
   final UserModel user;
   final StudentModel student;
 
-  const _StudentHeaderCard({required this.user, required this.student});
+  /// Already-built institute badge (or null when the shell implies the
+  /// institute) — see [StudentProgressScreen.instituteBadge].
+  final Widget? instituteBadge;
+
+  const _StudentHeaderCard({
+    required this.user,
+    required this.student,
+    this.instituteBadge,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -245,6 +270,10 @@ class _StudentHeaderCard extends StatelessWidget {
                     context,
                   ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                 ),
+                if (instituteBadge != null) ...[
+                  const SizedBox(height: 4),
+                  instituteBadge!,
+                ],
               ],
             ),
           ),

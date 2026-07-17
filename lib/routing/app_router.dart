@@ -23,6 +23,7 @@ import '../features/admin/screens/curriculum_screen.dart';
 import '../features/admin/screens/level_detail_screen.dart';
 import '../features/admin/screens/all_students_screen.dart';
 import '../features/admin/providers/admin_provider.dart';
+import '../features/admin/widgets/student_institute_badge.dart';
 import '../shared/screens/student_progress_screen.dart';
 import '../features/supervisor/screens/supervisor_dashboard_screen.dart';
 import '../features/supervisor/screens/exam_queue_screen.dart';
@@ -301,6 +302,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                     sessionDetailRoute: AppRoutes.adminStudentSessionDetail,
                     assessmentDetailRoute:
                         AppRoutes.adminStudentAssessmentDetail,
+                    // Admin-only: an admin sees students across every
+                    // institute, so the header names the student's — the
+                    // teacher/supervisor shells are institute-scoped and
+                    // pass nothing here.
+                    instituteBadge: (student) =>
+                        StudentInstituteBadge(instituteId: student.instituteId),
                   );
                 },
               ),

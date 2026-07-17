@@ -6,6 +6,7 @@ import '../../core/theme/app_tokens.dart';
 import '../../data/models/session_model.dart';
 import '../../data/repositories/curriculum_repository.dart';
 import '../../data/repositories/student_repository.dart';
+import 'institute_badge.dart';
 import 'progress_bar.dart';
 
 /// A student, as every list shows them.
@@ -107,7 +108,7 @@ class StudentCard extends ConsumerWidget {
                           if (instituteName != null &&
                               instituteName!.isNotEmpty) ...[
                             const SizedBox(height: 4),
-                            _InstituteBadge(name: instituteName!),
+                            InstituteBadge(name: instituteName!),
                           ],
                           // A teacher-less student is in no teacher's
                           // getStudentsForTeacher list, so nobody can conduct
@@ -333,45 +334,6 @@ class _TeacherlessBadge extends StatelessWidget {
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: tokens.gold,
               fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Small text badge naming the institute a student belongs to. Text-based
-/// (not colour-only) so the affiliation is accessible. Shown on student
-/// cards when a list spans more than one institute — see #53.
-class _InstituteBadge extends StatelessWidget {
-  final String name;
-
-  const _InstituteBadge({required this.name});
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.tokens;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: tokens.green.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.account_balance, size: 12, color: tokens.green),
-          const SizedBox(width: 4),
-          Flexible(
-            child: Text(
-              name,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                color: tokens.green,
-                fontWeight: FontWeight.w500,
-              ),
             ),
           ),
         ],
