@@ -28,6 +28,26 @@ void main() {
     expect(find.text('تطبيق حفظ القرآن الكريم'), findsOneWidget);
   });
 
+  testWidgets('the rooted-mushaf variant still renders the full composition', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: const Directionality(
+          textDirection: TextDirection.rtl,
+          child: SplashOverlay(
+            variant: SplashVariant.rootedMushaf,
+            child: Scaffold(body: Center(child: Text('الشاشة الأولى'))),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('الراسخون'), findsOneWidget);
+    expect(find.text('تطبيق حفظ القرآن الكريم'), findsOneWidget);
+  });
+
   testWidgets('splash dismisses itself and reveals the app', (tester) async {
     await _pumpApp(tester);
 

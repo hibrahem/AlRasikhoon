@@ -4,16 +4,33 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../khatam_lattice.dart';
+import 'growing_roots.dart';
 import 'rooted_mushaf_mark.dart';
 
+/// Which brand mark the splash animates.
+enum SplashVariant {
+  /// The rooted-mushaf pictogram: pages settle, lines write, roots grow.
+  rootedMushaf,
+
+  /// The typographic mark: الراسخون writes itself on in Amiri (a qalam-like
+  /// right-to-left ink reveal), then the roots grow from beneath the word —
+  /// the word itself takes root.
+  rootedWord,
+}
+
 /// The splash composition: token hero gradient, faint khatam lattice, the
-/// animated rooted-mushaf mark, then the Amiri wordmark rising beneath it.
+/// animated brand mark ([SplashVariant]), and the gold rule + tagline.
 /// Pure presentation — [progress] 0→1 drives the whole choreography, so the
 /// preview harness can render any frame of it.
 class BrandSplashView extends StatelessWidget {
   final double progress;
+  final SplashVariant variant;
 
-  const BrandSplashView({super.key, required this.progress});
+  const BrandSplashView({
+    super.key,
+    required this.progress,
+    this.variant = SplashVariant.rootedWord,
+  });
 
   double _stage(double begin, double end, [Curve curve = Curves.easeOutCubic]) {
     return Interval(begin, end, curve: curve).transform(progress.clamp(0, 1));
@@ -24,7 +41,6 @@ class BrandSplashView extends StatelessWidget {
     final tokens = context.tokens;
 
     final latticeIn = _stage(0.0, 0.35, Curves.easeOut);
-    final wordmarkIn = _stage(0.72, 0.90);
     final captionIn = _stage(0.82, 1.0);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -50,23 +66,11 @@ class BrandSplashView extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    RootedMushafMark(progress: progress, size: 176),
-                    const SizedBox(height: 28),
-                    Opacity(
-                      opacity: wordmarkIn,
-                      child: Transform.translate(
-                        offset: Offset(0, 12 * (1 - wordmarkIn)),
-                        child: Text(
-                          'الراسخون',
-                          style: GoogleFonts.amiri(
-                            fontSize: 44,
-                            fontWeight: FontWeight.bold,
-                            color: tokens.onHero,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
+                    ...switch (variant) {
+                      SplashVariant.rootedMushaf => _rootedMushaf(tokens),
+                      SplashVariant.rootedWord => _rootedWord(tokens),
+                    },
+                    const SizedBox(height: 24),
                     Opacity(
                       opacity: captionIn,
                       child: Column(
@@ -102,6 +106,70 @@ class BrandSplashView extends StatelessWidget {
       ),
     );
   }
+
+  /// The pictogram variant: animated mushaf mark with the wordmark rising
+  /// beneath it.
+  List<Widget> _rootedMushaf(AppTokens tokens) {
+    final wordmarkIn = _stage(0.72, 0.90);
+    return [
+      RootedMushafMark(progress: progress, size: 176),
+      const SizedBox(height: 28),
+      Opacity(
+        opacity: wordmarkIn,
+        child: Transform.translate(
+          offset: Offset(0, 12 * (1 - wordmarkIn)),
+          child: Text(
+            'الراسخون',
+            style: GoogleFonts.amiri(
+              fontSize: 44,
+              fontWeight: FontWeight.bold,
+              color: tokens.onHero,
+            ),
+          ),
+        ),
+      ),
+    ];
+  }
+
+  /// The typographic variant: الراسخون writes itself on right-to-left, then
+  /// the root triad grows from beneath the word.
+  List<Widget> _rootedWord(AppTokens tokens) {
+    final written = _stage(0.06, 0.52, Curves.easeInOut);
+    final rooting = _stage(0.48, 0.92);
+    return [
+      ShaderMask(
+        blendMode: BlendMode.dstIn,
+        shaderCallback: (rect) {
+          // A soft ink edge sweeping right→left, the direction a qalam
+          // writes. `written` 0→1 maps to the leading edge's position with
+          // a 12% feather.
+          final edge = written * 1.12;
+          return LinearGradient(
+            begin: Alignment.centerRight,
+            end: Alignment.centerLeft,
+            colors: const [Colors.white, Colors.white, Color(0x00FFFFFF)],
+            stops: [0, (edge - 0.12).clamp(0.0, 1.0), edge.clamp(0.0, 1.0)],
+          ).createShader(rect);
+        },
+        child: Text(
+          'الراسخون',
+          style: GoogleFonts.amiri(
+            fontSize: 64,
+            fontWeight: FontWeight.bold,
+            color: tokens.onHero,
+            height: 1.1,
+          ),
+        ),
+      ),
+      // Tuck the crown up under the word's descenders: the glyphs' visual
+      // bottom sits above the text box's bottom, so the roots pull up to
+      // read as growing FROM the word, not floating beneath it.
+      Transform.translate(
+        offset: const Offset(0, -12),
+        child: GrowingRoots(progress: rooting, width: 96),
+      ),
+    ];
+  }
 }
 
 /// Plays the brand splash once over the app's first frame, then fades away
@@ -113,8 +181,13 @@ class BrandSplashView extends StatelessWidget {
 /// immediately) and the splash dismisses after a short hold.
 class SplashOverlay extends StatefulWidget {
   final Widget child;
+  final SplashVariant variant;
 
-  const SplashOverlay({super.key, required this.child});
+  const SplashOverlay({
+    super.key,
+    required this.child,
+    this.variant = SplashVariant.rootedWord,
+  });
 
   @override
   State<SplashOverlay> createState() => _SplashOverlayState();
@@ -190,7 +263,10 @@ class _SplashOverlayState extends State<SplashOverlay>
               ignoring: fading,
               child: Opacity(
                 opacity: opacity,
-                child: BrandSplashView(progress: _play.value),
+                child: BrandSplashView(
+                  progress: _play.value,
+                  variant: widget.variant,
+                ),
               ),
             );
           },
