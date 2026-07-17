@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/core/theme/app_theme.dart';
+import 'package:al_rasikhoon/shared/widgets/splash/rooted_lettermark.dart';
 import 'package:al_rasikhoon/shared/widgets/splash/splash_overlay.dart';
 
 Future<void> _pumpApp(WidgetTester tester) {
@@ -24,7 +25,8 @@ void main() {
     await _pumpApp(tester);
 
     expect(find.byType(BrandSplashView), findsOneWidget);
-    expect(find.text('الراسخون'), findsOneWidget);
+    // The default variant paints الراسخون as a vector lettermark.
+    expect(find.byType(RootedLettermark), findsOneWidget);
     expect(find.text('تطبيق حفظ القرآن الكريم'), findsOneWidget);
   });
 

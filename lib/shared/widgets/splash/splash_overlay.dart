@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../khatam_lattice.dart';
-import 'growing_roots.dart';
+import 'rooted_lettermark.dart';
 import 'rooted_mushaf_mark.dart';
 
 /// Which brand mark the splash animates.
@@ -12,9 +12,10 @@ enum SplashVariant {
   /// The rooted-mushaf pictogram: pages settle, lines write, roots grow.
   rootedMushaf,
 
-  /// The typographic mark: الراسخون writes itself on in Amiri (a qalam-like
-  /// right-to-left ink reveal), then the roots grow from beneath the word —
-  /// the word itself takes root.
+  /// The typographic lettermark built from the word itself: الراسخون in
+  /// real Amiri outlines writes itself on, a gold earth line draws along
+  /// its baseline, and the descenders of ر/و/ن below the line come alive
+  /// as roots (see [RootedLettermark]).
   rootedWord,
 }
 
@@ -73,28 +74,13 @@ class BrandSplashView extends StatelessWidget {
                     const SizedBox(height: 24),
                     Opacity(
                       opacity: captionIn,
-                      child: Column(
-                        children: [
-                          // Gold = achievement: a single quiet rule under the
-                          // name — no glows, no halos.
-                          Container(
-                            width: 48,
-                            height: 2,
-                            decoration: BoxDecoration(
-                              color: tokens.gold,
-                              borderRadius: BorderRadius.circular(1),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'تطبيق حفظ القرآن الكريم',
-                            style: GoogleFonts.cairo(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: tokens.onHeroMuted,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        'تطبيق حفظ القرآن الكريم',
+                        style: GoogleFonts.cairo(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: tokens.onHeroMuted,
+                        ),
                       ),
                     ),
                   ],
@@ -128,45 +114,34 @@ class BrandSplashView extends StatelessWidget {
           ),
         ),
       ),
-    ];
-  }
-
-  /// The typographic variant: الراسخون writes itself on right-to-left, then
-  /// the root triad grows from beneath the word.
-  List<Widget> _rootedWord(AppTokens tokens) {
-    final written = _stage(0.06, 0.52, Curves.easeInOut);
-    final rooting = _stage(0.48, 0.92);
-    return [
-      ShaderMask(
-        blendMode: BlendMode.dstIn,
-        shaderCallback: (rect) {
-          // A soft ink edge sweeping right→left, the direction a qalam
-          // writes. `written` 0→1 maps to the leading edge's position with
-          // a 12% feather.
-          final edge = written * 1.12;
-          return LinearGradient(
-            begin: Alignment.centerRight,
-            end: Alignment.centerLeft,
-            colors: const [Colors.white, Colors.white, Color(0x00FFFFFF)],
-            stops: [0, (edge - 0.12).clamp(0.0, 1.0), edge.clamp(0.0, 1.0)],
-          ).createShader(rect);
-        },
-        child: Text(
-          'الراسخون',
-          style: GoogleFonts.amiri(
-            fontSize: 64,
-            fontWeight: FontWeight.bold,
-            color: tokens.onHero,
-            height: 1.1,
+      const SizedBox(height: 16),
+      // Gold = achievement: a single quiet rule under the name — no glows,
+      // no halos. (The lettermark variant carries its gold in the earth
+      // line instead.)
+      Opacity(
+        opacity: _stage(0.82, 1.0),
+        child: Container(
+          width: 48,
+          height: 2,
+          decoration: BoxDecoration(
+            color: tokens.gold,
+            borderRadius: BorderRadius.circular(1),
           ),
         ),
       ),
-      // Tuck the crown up under the word's descenders: the glyphs' visual
-      // bottom sits above the text box's bottom, so the roots pull up to
-      // read as growing FROM the word, not floating beneath it.
-      Transform.translate(
-        offset: const Offset(0, -12),
-        child: GrowingRoots(progress: rooting, width: 96),
+    ];
+  }
+
+  /// The typographic variant: the الراسخون lettermark — real Amiri
+  /// outlines writing themselves on, the gold earth line, and the
+  /// descenders rooting below it.
+  List<Widget> _rootedWord(AppTokens tokens) {
+    return [
+      RootedLettermark(
+        progress: progress,
+        width: 296,
+        ink: tokens.onHero,
+        earth: tokens.gold,
       ),
     ];
   }
