@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers/test_app.dart';
@@ -58,10 +59,7 @@ void main() {
       // Arrange
       final admin = env.createSuperAdmin();
       await env.setUp(authenticatedUser: admin);
-      await env.addInstitute(
-        name: 'معهد النور',
-        location: 'الرياض',
-      );
+      await env.addInstitute(name: 'معهد النور', location: 'الرياض');
 
       // Act
       await tester.pumpWidget(TestApp(overrides: env.overrides));
@@ -103,7 +101,10 @@ void main() {
       await env.setUp(authenticatedUser: admin);
       await env.addInstitute(name: 'معهد الفرقان');
       final teacher = env.createTeacher(name: 'محمد علي');
-      await env.fakeFirestore.collection('users').doc(teacher.id).set(teacher.toFirestore());
+      await env.fakeFirestore
+          .collection('users')
+          .doc(teacher.id)
+          .set(teacher.toFirestore());
 
       // Act
       await tester.pumpWidget(TestApp(overrides: env.overrides));
@@ -167,5 +168,77 @@ void main() {
       await adminRobot.pumpAndSettle();
       expect(find.text('منهج الراسخون'), findsOneWidget);
     });
+
+    testWidgets(
+      'Admin can edit a supervisor profile end-to-end (al_rasikhoon-1nw)',
+      (tester) async {
+        // Arrange: an admin, plus a supervisor profile in Firestore.
+        final admin = env.createSuperAdmin();
+        await env.setUp(authenticatedUser: admin);
+        final supervisor = env.createSupervisor();
+        await env.fakeFirestore
+            .collection('users')
+            .doc(supervisor.id)
+            .set(supervisor.toFirestore());
+
+        // Act: dashboard → المشرفون → supervisor detail → edit → save.
+        await tester.pumpWidget(TestApp(overrides: env.overrides));
+        adminRobot = AdminRobot(tester);
+
+        await adminRobot.verifyDashboard();
+        await adminRobot.tapByText('المشرفون');
+        await adminRobot.tapByText('مشرف تجريبي');
+        await adminRobot.pumpUntilFound(find.byTooltip('تعديل الملف الشخصي'));
+        await tester.tap(find.byTooltip('تعديل الملف الشخصي'));
+        await adminRobot.pumpAndSettle();
+
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'مشرف تجريبي'),
+          'مشرف تجريبي المحدث',
+        );
+        await tester.tap(find.text('حفظ'));
+
+        // Assert: the write landed and the detail header refetched the new
+        // name from Firestore (provider invalidation round-trip).
+        final renamed = await adminRobot.pumpUntilFound(
+          find.text('مشرف تجريبي المحدث'),
+        );
+        expect(renamed, isTrue);
+        final doc = await env.fakeFirestore
+            .collection('users')
+            .doc(supervisor.id)
+            .get();
+        expect(doc.data()?['name'], 'مشرف تجريبي المحدث');
+      },
+    );
+
+    testWidgets(
+      'Admin detail screen offers a supervisor password reset (al_rasikhoon-1nw)',
+      (tester) async {
+        final admin = env.createSuperAdmin();
+        await env.setUp(authenticatedUser: admin);
+        final supervisor = env.createSupervisor();
+        await env.fakeFirestore
+            .collection('users')
+            .doc(supervisor.id)
+            .set(supervisor.toFirestore());
+
+        await tester.pumpWidget(TestApp(overrides: env.overrides));
+        adminRobot = AdminRobot(tester);
+
+        await adminRobot.verifyDashboard();
+        await adminRobot.tapByText('المشرفون');
+        await adminRobot.tapByText('مشرف تجريبي');
+        await adminRobot.pumpUntilFound(
+          find.byTooltip('إعادة تعيين كلمة المرور'),
+        );
+        await tester.tap(find.byTooltip('إعادة تعيين كلمة المرور'));
+        await adminRobot.pumpAndSettle();
+
+        // The reset dialog is up, addressed to THIS supervisor. (The actual
+        // reset calls the setUserPassword Cloud Function — no backend here.)
+        expect(find.text('إعادة تعيين كلمة مرور مشرف تجريبي'), findsOneWidget);
+      },
+    );
   });
 }
