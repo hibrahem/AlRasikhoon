@@ -19,6 +19,17 @@ void main() {
       expect(() => CurriculumPace(-1), throwsArgumentError);
     });
 
+    test('the useful cap the UI offers is itself a valid pace', () {
+      expect(
+        CurriculumPace(CurriculumPace.maxUsefulMultiplier).multiplier,
+        CurriculumPace.maxUsefulMultiplier,
+      );
+      expect(
+        CurriculumPace.maxUsefulMultiplier,
+        lessThanOrEqualTo(CurriculumPace.maxMultiplier),
+      );
+    });
+
     test('a pace above the ceiling is not a pace', () {
       expect(CurriculumPace(CurriculumPace.maxMultiplier).multiplier, 10);
       expect(

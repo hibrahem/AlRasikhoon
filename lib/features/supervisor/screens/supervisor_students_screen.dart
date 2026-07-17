@@ -177,9 +177,7 @@ class SupervisorStudentsScreen extends ConsumerWidget {
                       // write would snatch the second away. Dismiss is the
                       // barrier tap, as with any read-and-adjust dialog.
                       child: StudentPaceControl(
-                        studentId: student.id,
-                        currentPace: student.pace,
-                        currentMeetingsPerWeek: student.meetingsPerWeek,
+                        student: student,
                         onPlanChanged: (ref) {
                           ref.invalidate(supervisorStudentsProvider);
                         },

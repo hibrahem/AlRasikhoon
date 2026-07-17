@@ -14,6 +14,15 @@ class CurriculumPace {
   /// already an exceptional student; beyond it the "meeting" stops being one.
   static const int maxMultiplier = 10;
 
+  /// The fastest pace the UI offers. Pace compresses LESSON RUNS only — the
+  /// 275 تلقين/سرد/اختبار rows each keep their own meeting at any pace, and
+  /// most lesson runs are 4-8 long, so against today's curriculum the whole
+  /// journey speeds up ×1.52 at 2x, ×2.21 at 5x, and only ×2.61 at 10x.
+  /// Offering detents past 5x would promise acceleration the curriculum
+  /// cannot deliver. [maxMultiplier] stays above this as validation headroom
+  /// for values already stored.
+  static const int maxUsefulMultiplier = 5;
+
   final int multiplier;
 
   /// A value object validates its invariant in its constructor, so this cannot
