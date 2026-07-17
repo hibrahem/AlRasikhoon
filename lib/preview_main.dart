@@ -35,6 +35,7 @@ import 'shared/providers/completion_forecast_provider.dart';
 import 'shared/providers/institute_provider.dart';
 import 'shared/providers/user_provider.dart';
 import 'shared/widgets/completion_forecast_card.dart';
+import 'shared/widgets/splash/splash_overlay.dart';
 
 void main() {
   runApp(const DesignPreviewApp());
@@ -85,6 +86,7 @@ class _PreviewShellState extends State<_PreviewShell> {
     'تسميع ٣',
     'مشرف',
     'مدير',
+    'شاشة البداية',
   ];
 
   @override
@@ -99,7 +101,8 @@ class _PreviewShellState extends State<_PreviewShell> {
         5 => const _RecitationPreview(part: 2),
         6 => const _RecitationPreview(part: 3),
         7 => const _SupervisorPreview(),
-        _ => const _AdminPreview(),
+        8 => const _AdminPreview(),
+        _ => const _SplashPreview(),
       },
       bottomNavigationBar: SafeArea(
         child: SizedBox(
@@ -446,6 +449,97 @@ class _SupervisorPreview extends StatelessWidget {
 }
 
 // ─── Admin ───────────────────────────────────────────────────────────────
+
+// ─── Splash ──────────────────────────────────────────────────────────────
+
+/// The brand splash, scrubbable: `/?tab=9&p=0.5` renders the choreography
+/// frozen at progress 0.5 for deterministic screenshots
+/// (`&variant=book|word` picks the mark); the slider scrubs it live, the
+/// «كلمة/كتاب» chips switch variants, and «تشغيل» replays the real
+/// self-dismissing overlay.
+class _SplashPreview extends StatefulWidget {
+  const _SplashPreview();
+
+  @override
+  State<_SplashPreview> createState() => _SplashPreviewState();
+}
+
+class _SplashPreviewState extends State<_SplashPreview> {
+  double _progress =
+      double.tryParse(Uri.base.queryParameters['p'] ?? '') ?? 1.0;
+  SplashVariant _variant = Uri.base.queryParameters['variant'] == 'book'
+      ? SplashVariant.rootedMushaf
+      : SplashVariant.rootedWord;
+  int _replayKey = 0;
+  bool _playing = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_playing) {
+      return SplashOverlay(
+        key: ValueKey(_replayKey),
+        variant: _variant,
+        child: Scaffold(
+          body: Center(
+            child: FilledButton(
+              onPressed: () => setState(() {
+                _replayKey++;
+                _playing = true;
+              }),
+              child: const Text('إعادة التشغيل'),
+            ),
+          ),
+        ),
+      );
+    }
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: BrandSplashView(progress: _progress, variant: _variant),
+        ),
+        PositionedDirectional(
+          start: 0,
+          end: 0,
+          bottom: 0,
+          child: SafeArea(
+            child: Row(
+              children: [
+                const SizedBox(width: 8),
+                FilledButton(
+                  onPressed: () => setState(() {
+                    _replayKey++;
+                    _playing = true;
+                  }),
+                  child: const Text('تشغيل'),
+                ),
+                const SizedBox(width: 8),
+                ChoiceChip(
+                  label: const Text('كلمة'),
+                  selected: _variant == SplashVariant.rootedWord,
+                  onSelected: (_) =>
+                      setState(() => _variant = SplashVariant.rootedWord),
+                ),
+                const SizedBox(width: 4),
+                ChoiceChip(
+                  label: const Text('كتاب'),
+                  selected: _variant == SplashVariant.rootedMushaf,
+                  onSelected: (_) =>
+                      setState(() => _variant = SplashVariant.rootedMushaf),
+                ),
+                Expanded(
+                  child: Slider(
+                    value: _progress,
+                    onChanged: (v) => setState(() => _progress = v),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 class _AdminPreview extends StatelessWidget {
   const _AdminPreview();
