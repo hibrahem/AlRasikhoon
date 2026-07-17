@@ -27,6 +27,13 @@ const {
   setDoc,
   updateDoc,
   deleteDoc,
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs,
+  getCountFromServer,
+  Timestamp,
 } = require("firebase/firestore");
 
 const PROJECT_ID = "alrasikhoon-57151";
@@ -1059,6 +1066,128 @@ describe("Firestore rules — supervisor institute scoping (#28 / PR #35)", func
     const db = asUser("stu_user_a");
     await assertFails(
       deleteDoc(doc(db, "home_practices", "hp_child_b"))
+    );
+  });
+
+  // === al_rasikhoon-or1 — author-scoped record LIST queries =================
+  // Every canReadRecord() role resolves through get(students/$(student_id)),
+  // which the rules engine can only execute when the query pins student_id.
+  // The author-facing queries don't: the supervisor home stats/سجل query
+  // exam_records by supervisor_id, and the teacher profile counts query
+  // session_records by teacher_id. Without an author-scoped clause those
+  // queries are denied WHOLESALE (rules are not filters) — the supervisor
+  // dashboard sat on its loading skeleton forever. isRecordExaminer /
+  // isRecordAuthorTeacher are the provable scopes that let an author read
+  // exactly the records carrying their own uid.
+
+  function seedAuthoredRecords() {
+    return Promise.all([
+      seed("exam_records", "exam_by_sup_a", {
+        student_id: "stu_child_a",
+        supervisor_id: "sup_a",
+        date: Timestamp.now(),
+        passed: true,
+      }),
+      seed("session_records", "sess_by_teacher_a", {
+        student_id: "stu_child_a",
+        teacher_id: "teacher_a",
+        date: Timestamp.now(),
+        passed: true,
+      }),
+    ]);
+  }
+
+  it("ALLOWS a supervisor listing their OWN exam_records by supervisor_id (stats/history, al_rasikhoon-or1)", async () => {
+    await seedAuthoredRecords();
+    const db = asUser("sup_a");
+    await assertSucceeds(
+      getDocs(
+        query(
+          collection(db, "exam_records"),
+          where("supervisor_id", "==", "sup_a"),
+          orderBy("date", "desc")
+        )
+      )
+    );
+  });
+
+  it("ALLOWS a supervisor's date-ranged exam_records stats query (al_rasikhoon-or1)", async () => {
+    await seedAuthoredRecords();
+    const db = asUser("sup_a");
+    const dayStart = new Date();
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+    await assertSucceeds(
+      getDocs(
+        query(
+          collection(db, "exam_records"),
+          where("supervisor_id", "==", "sup_a"),
+          orderBy("date", "desc"),
+          where("date", ">=", Timestamp.fromDate(dayStart)),
+          where("date", "<=", Timestamp.fromDate(dayEnd))
+        )
+      )
+    );
+  });
+
+  it("DENIES a supervisor listing ANOTHER supervisor's exam_records (al_rasikhoon-or1)", async () => {
+    await seedAuthoredRecords();
+    const db = asUser("sup_multi");
+    await assertFails(
+      getDocs(
+        query(
+          collection(db, "exam_records"),
+          where("supervisor_id", "==", "sup_a"),
+          orderBy("date", "desc")
+        )
+      )
+    );
+  });
+
+  it("DENIES an unfiltered exam_records sweep even for a supervisor (al_rasikhoon-or1)", async () => {
+    await seedAuthoredRecords();
+    const db = asUser("sup_a");
+    await assertFails(getDocs(collection(db, "exam_records")));
+  });
+
+  it("ALLOWS a teacher listing their OWN session_records by teacher_id (al_rasikhoon-or1)", async () => {
+    await seedAuthoredRecords();
+    const db = asUser("teacher_a");
+    await assertSucceeds(
+      getDocs(
+        query(
+          collection(db, "session_records"),
+          where("teacher_id", "==", "teacher_a"),
+          orderBy("date", "desc")
+        )
+      )
+    );
+  });
+
+  it("ALLOWS a teacher's session_records count() aggregation (profile stats, al_rasikhoon-or1)", async () => {
+    await seedAuthoredRecords();
+    const db = asUser("teacher_a");
+    await assertSucceeds(
+      getCountFromServer(
+        query(
+          collection(db, "session_records"),
+          where("teacher_id", "==", "teacher_a")
+        )
+      )
+    );
+  });
+
+  it("DENIES a teacher listing ANOTHER teacher's session_records (al_rasikhoon-or1)", async () => {
+    await seedAuthoredRecords();
+    const db = asUser("teacher_b");
+    await assertFails(
+      getDocs(
+        query(
+          collection(db, "session_records"),
+          where("teacher_id", "==", "teacher_a"),
+          orderBy("date", "desc")
+        )
+      )
     );
   });
 });

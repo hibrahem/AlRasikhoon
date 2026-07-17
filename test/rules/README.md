@@ -26,3 +26,6 @@ Requires `firebase-tools` and a JDK (the Firestore emulator runs on the JVM).
 - Supervisor in-institute student create → ALLOWED
 - Teacher creating / updating a `sard_records` doc → ALLOWED (سرد is teacher-conducted, al_rasikhoon-801)
 - Supervisor creating / updating a `sard_records` doc → DENIED, even in-institute
+- Supervisor listing their OWN `exam_records` by `supervisor_id` (home stats / سجل queries, incl. date range) → ALLOWED (al_rasikhoon-or1)
+- Teacher listing / `count()`-ing their OWN `session_records` by `teacher_id` (profile stats) → ALLOWED (al_rasikhoon-or1)
+- Author-scoped queries for ANOTHER author's uid, or unfiltered sweeps → DENIED (al_rasikhoon-or1)

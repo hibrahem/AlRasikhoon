@@ -189,6 +189,30 @@ service cloud.firestore {
         isOwnRecord(recordData);
     }
 
+    // The record's AUTHOR reads their own records: the examining supervisor
+    // (exam_records.supervisor_id) and the conducting teacher
+    // (session_records.teacher_id). These clauses exist because every
+    // canReadRecord() role resolves through get(students/$(student_id)) —
+    // a lookup the rules engine can only execute when the query pins
+    // student_id. The author-facing list queries
+    // (.where('supervisor_id'/'teacher_id', ==, own uid) — supervisor home
+    // stats/سجل and the teacher profile counts) don't, so WITHOUT an
+    // author clause they are denied wholesale (rules are not filters), which
+    // left the supervisor dashboard stuck on its loading skeleton. Scoped to
+    // records carrying the caller's OWN uid in the author field — a query for
+    // anyone else's uid, or with no author filter, stays unprovable → denied.
+    function isRecordExaminer(recordData) {
+      return isSupervisor() &&
+        ('supervisor_id' in recordData) &&
+        recordData.supervisor_id == request.auth.uid;
+    }
+
+    function isRecordAuthorTeacher(recordData) {
+      return isTeacher() &&
+        ('teacher_id' in recordData) &&
+        recordData.teacher_id == request.auth.uid;
+    }
+
     // Users collection
     match /users/{userId} {
       // Reads require auth. The username+password flow looks up users
@@ -310,8 +334,11 @@ service cloud.firestore {
     // can no longer fabricate/alter another teacher's student's progress.
     match /session_records/{recordId} {
       // Read-scoped by role through the record's student (al_rasikhoon-bpk +
-      // al_rasikhoon-ob7 for the teacher scope).
-      allow read: if canReadRecord(resource.data);
+      // al_rasikhoon-ob7 for the teacher scope), OR by the conducting teacher
+      // reading their own records (al_rasikhoon-or1 — the provable scope for
+      // the teacher's .where('teacher_id', ==, own uid) count/list queries).
+      allow read: if canReadRecord(resource.data) ||
+        isRecordAuthorTeacher(resource.data);
       allow create: if isTeacherOfRecordStudent(request.resource.data) ||
         isSupervisorOfRecordStudent(request.resource.data);
       // A teacher (like a supervisor) must own BOTH the existing record's
@@ -347,8 +374,13 @@ service cloud.firestore {
 
     // Exam records
     match /exam_records/{examId} {
-      // Read-scoped by role through the record's student (al_rasikhoon-bpk).
-      allow read: if canReadRecord(resource.data);
+      // Read-scoped by role through the record's student (al_rasikhoon-bpk),
+      // OR by the examiner reading their own records (al_rasikhoon-or1 — the
+      // provable scope for the supervisor's .where('supervisor_id', ==, own
+      // uid) stats/history queries; without it the supervisor home screen's
+      // stats query is denied wholesale and the dashboard never loads).
+      allow read: if canReadRecord(resource.data) ||
+        isRecordExaminer(resource.data);
       allow create: if isSupervisor();
       allow update: if isSupervisor();
     }
