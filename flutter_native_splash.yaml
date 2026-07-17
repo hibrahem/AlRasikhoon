@@ -1,16 +1,15 @@
 flutter_native_splash:
+  # Color-only native splash: a plain brand-green field (matching the
+  # in-app splash gradient) so startup flows straight into the animated
+  # الراسخون lettermark with no static logo shown first.
   # Light: brand green between the hero gradient stops (#1E6923→#14501B).
-  # Dark: the dark-mode heroTop token, so the OS splash hands off seamlessly
-  # into the in-app animated splash in both brightnesses.
+  # Dark: the dark-mode heroTop token.
+  # Android 12+ still shows the launcher icon briefly — the OS forces it.
   color: "#1B5E20"
   color_dark: "#0F3D16"
-  image: assets/images/logo.png
-  image_dark: assets/images/logo.png
   android_12:
     color: "#1B5E20"
     color_dark: "#0F3D16"
-    image: assets/images/logo.png
-    image_dark: assets/images/logo.png
   fullscreen: true
   android: true
   ios: true
