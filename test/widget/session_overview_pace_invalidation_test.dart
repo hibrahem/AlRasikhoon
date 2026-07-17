@@ -3,6 +3,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:al_rasikhoon/data/models/session_model.dart';
@@ -34,6 +35,12 @@ class _MockFirebaseService extends Mock implements FirebaseService {}
 /// `studentProvider` or `studentCurrentMeetingProvider` would bypass the very
 /// provider graph the bug lived in and could not have caught it.
 void main() {
+  // The forecast card on the profile screen formats the expected ختم date in
+  // Arabic.
+  setUpAll(() async {
+    await initializeDateFormatting('ar');
+  });
+
   testWidgets(
     "doubling a student's pace widens the pending meeting on screen, not "
     'just in Firestore',
@@ -216,7 +223,10 @@ void main() {
       // 1x: the authored content of session 5 alone.
       expect(find.text('النبأ: 31 - 37'), findsOneWidget);
 
-      await tester.tap(find.text('2x'));
+      // Move the pace slider to 2× and release — the write fires on release.
+      final slider = tester.widget<Slider>(find.byType(Slider));
+      slider.onChanged!(2);
+      slider.onChangeEnd!(2);
       await tester.pumpAndSettle();
 
       // 2x: sessions 5 and 6 merged into one contiguous range. If the pace

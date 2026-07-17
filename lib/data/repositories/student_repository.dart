@@ -6,6 +6,7 @@ import '../models/user_model.dart';
 import '../services/firebase_service.dart';
 import '../../core/constants/app_constants.dart';
 import '../../domain/curriculum/curriculum_pace.dart';
+import '../../domain/curriculum/meetings_per_week.dart';
 import '../../domain/curriculum/curriculum_position.dart';
 import '../../domain/curriculum/reposition_exceptions.dart';
 import 'curriculum_repository.dart';
@@ -637,6 +638,19 @@ class StudentRepository {
   Future<void> setStudentPace(String studentId, CurriculumPace pace) async {
     await _studentsCollection.doc(studentId).update({
       'pace': pace.toJson(),
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Sets how many meetings the student attends in one week — the declared
+  /// cadence behind the completion forecast. Pure config, like the pace: it
+  /// schedules nothing and touches no position.
+  Future<void> setStudentMeetingsPerWeek(
+    String studentId,
+    MeetingsPerWeek meetingsPerWeek,
+  ) async {
+    await _studentsCollection.doc(studentId).update({
+      'meetings_per_week': meetingsPerWeek.toJson(),
       'updated_at': FieldValue.serverTimestamp(),
     });
   }

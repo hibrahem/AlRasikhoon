@@ -164,7 +164,7 @@ class SupervisorStudentsScreen extends ConsumerWidget {
             // (firestore.rules). Refreshes the list so the change is reflected.
             ListTile(
               leading: Icon(Icons.speed, color: tokens.gold),
-              title: const Text('تغيير وتيرة الحفظ'),
+              title: const Text('تغيير خطة الحفظ'),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 showDialog<void>(
@@ -172,12 +172,16 @@ class SupervisorStudentsScreen extends ConsumerWidget {
                   builder: (dialogContext) => AlertDialog(
                     content: SizedBox(
                       width: double.maxFinite,
+                      // The dialog stays open on a change — the card holds TWO
+                      // dials (pace and cadence) and popping after the first
+                      // write would snatch the second away. Dismiss is the
+                      // barrier tap, as with any read-and-adjust dialog.
                       child: StudentPaceControl(
                         studentId: student.id,
                         currentPace: student.pace,
-                        onPaceChanged: (ref) {
+                        currentMeetingsPerWeek: student.meetingsPerWeek,
+                        onPlanChanged: (ref) {
                           ref.invalidate(supervisorStudentsProvider);
-                          Navigator.of(dialogContext).pop();
                         },
                       ),
                     ),

@@ -15,6 +15,7 @@ import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/session_record_row.dart';
+import '../../../shared/widgets/completion_forecast_card.dart';
 import '../../../shared/widgets/student_pace_control.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
@@ -76,8 +77,16 @@ class StudentProfileScreen extends ConsumerWidget {
                   StudentPaceControl(
                     studentId: student.id,
                     currentPace: student.pace,
-                    onPaceChanged: (ref) => _onPaceChanged(ref, student.id),
+                    currentMeetingsPerWeek: student.meetingsPerWeek,
+                    onPlanChanged: (ref) => _onPaceChanged(ref, student.id),
                   ),
+
+                  const SizedBox(height: 16),
+
+                  // When the plan above changes, _onPaceChanged refreshes the
+                  // teacher's student provider, which rebuilds this card with
+                  // the new pace/cadence — the forecast follows the plan live.
+                  CompletionForecastCard(student: student),
 
                   const SizedBox(height: 24),
 

@@ -10,6 +10,10 @@ class CurriculumPace {
   /// One lesson per meeting — the curriculum exactly as authored.
   static final CurriculumPace standard = CurriculumPace(1);
 
+  /// The fastest pace a supervisor may set. Ten lessons in one sitting is
+  /// already an exceptional student; beyond it the "meeting" stops being one.
+  static const int maxMultiplier = 10;
+
   final int multiplier;
 
   /// A value object validates its invariant in its constructor, so this cannot
@@ -21,6 +25,13 @@ class CurriculumPace {
         multiplier,
         'multiplier',
         'A pace covers at least one session',
+      );
+    }
+    if (multiplier > maxMultiplier) {
+      throw ArgumentError.value(
+        multiplier,
+        'multiplier',
+        'A pace covers at most $maxMultiplier sessions',
       );
     }
   }
@@ -38,6 +49,13 @@ class CurriculumPace {
     }
     if (json < 1) {
       throw ArgumentError.value(json, 'pace', 'A pace must be at least 1');
+    }
+    if (json > maxMultiplier) {
+      throw ArgumentError.value(
+        json,
+        'pace',
+        'A pace must be at most $maxMultiplier',
+      );
     }
     return CurriculumPace(json);
   }

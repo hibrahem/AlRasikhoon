@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:al_rasikhoon/core/constants/app_constants.dart';
 import '../../domain/curriculum/curriculum_pace.dart';
 import '../../domain/curriculum/curriculum_position.dart';
+import '../../domain/curriculum/meetings_per_week.dart';
 import 'session_model.dart';
 
 class StudentModel {
@@ -83,6 +84,11 @@ class StudentModel {
   /// change take effect immediately with nothing to migrate.
   final CurriculumPace pace;
 
+  /// How many meetings this student attends in one week — the declared cadence
+  /// behind the completion forecast (متى الختم؟), set by their teacher or
+  /// supervisor alongside the pace. Pure config: it schedules nothing.
+  final MeetingsPerWeek meetingsPerWeek;
+
   StudentModel({
     required this.id,
     required this.userId,
@@ -108,7 +114,9 @@ class StudentModel {
     this.curriculumCompletedAt,
     this.enrollmentPosition = CurriculumPosition.start,
     CurriculumPace? pace,
-  }) : pace = pace ?? CurriculumPace.standard;
+    MeetingsPerWeek? meetingsPerWeek,
+  }) : pace = pace ?? CurriculumPace.standard,
+       meetingsPerWeek = meetingsPerWeek ?? MeetingsPerWeek.standard;
 
   /// Enrolls a student onto [session], crediting every level before it as
   /// already memorized. The student's current position *is* the anchor: they
@@ -219,6 +227,7 @@ class StudentModel {
               Map<String, dynamic>.from(data['enrollment_position'] as Map),
             ),
       pace: CurriculumPace.fromJson(data['pace']),
+      meetingsPerWeek: MeetingsPerWeek.fromJson(data['meetings_per_week']),
     );
   }
 
@@ -249,6 +258,7 @@ class StudentModel {
           : null,
       'enrollment_position': enrollmentPosition.toMap(),
       'pace': pace.toJson(),
+      'meetings_per_week': meetingsPerWeek.toJson(),
     };
   }
 
@@ -277,6 +287,7 @@ class StudentModel {
     DateTime? curriculumCompletedAt,
     CurriculumPosition? enrollmentPosition,
     CurriculumPace? pace,
+    MeetingsPerWeek? meetingsPerWeek,
   }) {
     return StudentModel(
       id: id ?? this.id,
@@ -305,6 +316,7 @@ class StudentModel {
           curriculumCompletedAt ?? this.curriculumCompletedAt,
       enrollmentPosition: enrollmentPosition ?? this.enrollmentPosition,
       pace: pace ?? this.pace,
+      meetingsPerWeek: meetingsPerWeek ?? this.meetingsPerWeek,
     );
   }
 
