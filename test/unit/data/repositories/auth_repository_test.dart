@@ -285,6 +285,172 @@ void main() {
     // setPasswordForUser is intentionally not unit-tested — it just calls
     // the setUserPassword Cloud Function (covered by functions/test/).
 
+    group('updateOwnProfile', () {
+      test('writes the profile fields, refreshes the app user from the server, '
+          'and re-caches the session', () async {
+        final cached = buildUser(id: 'uid-1', name: 'Old Name');
+        final refreshed = buildUser(id: 'uid-1', name: 'New Name');
+        when(() => mockSessionCache.readUser()).thenReturn(cached);
+        when(
+          () => mockUserRepository.updateProfileFields(
+            userId: 'uid-1',
+            name: 'New Name',
+            phone: '+966500000001',
+          ),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockUserRepository.getUserById('uid-1'),
+        ).thenAnswer((_) async => refreshed);
+
+        final authRepo = container.read(authRepositoryProvider.notifier);
+        await authRepo.updateOwnProfile(
+          name: 'New Name',
+          phone: '+966500000001',
+        );
+
+        verify(
+          () => mockUserRepository.updateProfileFields(
+            userId: 'uid-1',
+            name: 'New Name',
+            phone: '+966500000001',
+          ),
+        ).called(1);
+        expect(container.read(authRepositoryProvider).appUser, refreshed);
+        expect(
+          container.read(authRepositoryProvider).appUser?.name,
+          'New Name',
+        );
+        verify(() => mockSessionCache.cacheUser(refreshed)).called(1);
+      });
+
+      test(
+        'falls back to a local copy when the post-write refetch misses',
+        () async {
+          final cached = buildUser(id: 'uid-1', name: 'Old Name');
+          when(() => mockSessionCache.readUser()).thenReturn(cached);
+          when(
+            () => mockUserRepository.updateProfileFields(
+              userId: any(named: 'userId'),
+              name: any(named: 'name'),
+              phone: any(named: 'phone'),
+            ),
+          ).thenAnswer((_) async {});
+          when(
+            () => mockUserRepository.getUserById('uid-1'),
+          ).thenAnswer((_) async => null);
+
+          final authRepo = container.read(authRepositoryProvider.notifier);
+          await authRepo.updateOwnProfile(name: 'New Name', phone: null);
+
+          expect(
+            container.read(authRepositoryProvider).appUser?.name,
+            'New Name',
+          );
+        },
+      );
+
+      test('throws when no user is signed in', () async {
+        final authRepo = container.read(authRepositoryProvider.notifier);
+        expect(
+          () => authRepo.updateOwnProfile(name: 'X', phone: null),
+          throwsStateError,
+        );
+      });
+    });
+
+    group('changeOwnPassword', () {
+      test('returns null on success', () async {
+        when(
+          () => mockFirebaseService.changePassword(
+            currentPassword: 'old-pass',
+            newPassword: 'new-pass',
+          ),
+        ).thenAnswer((_) async {});
+
+        final authRepo = container.read(authRepositoryProvider.notifier);
+        final error = await authRepo.changeOwnPassword(
+          currentPassword: 'old-pass',
+          newPassword: 'new-pass',
+        );
+
+        expect(error, isNull);
+        verify(
+          () => mockFirebaseService.changePassword(
+            currentPassword: 'old-pass',
+            newPassword: 'new-pass',
+          ),
+        ).called(1);
+      });
+
+      test('maps a wrong current password to Arabic copy', () async {
+        when(
+          () => mockFirebaseService.changePassword(
+            currentPassword: any(named: 'currentPassword'),
+            newPassword: any(named: 'newPassword'),
+          ),
+        ).thenThrow(FakeFirebaseAuthException(code: 'wrong-password'));
+
+        final authRepo = container.read(authRepositoryProvider.notifier);
+        final error = await authRepo.changeOwnPassword(
+          currentPassword: 'bad',
+          newPassword: 'new-pass',
+        );
+
+        expect(error, 'كلمة المرور الحالية غير صحيحة');
+      });
+
+      test('maps invalid-credential to the same wrong-password copy', () async {
+        when(
+          () => mockFirebaseService.changePassword(
+            currentPassword: any(named: 'currentPassword'),
+            newPassword: any(named: 'newPassword'),
+          ),
+        ).thenThrow(FakeFirebaseAuthException(code: 'invalid-credential'));
+
+        final authRepo = container.read(authRepositoryProvider.notifier);
+        final error = await authRepo.changeOwnPassword(
+          currentPassword: 'bad',
+          newPassword: 'new-pass',
+        );
+
+        expect(error, 'كلمة المرور الحالية غير صحيحة');
+      });
+
+      test('maps weak-password to Arabic copy', () async {
+        when(
+          () => mockFirebaseService.changePassword(
+            currentPassword: any(named: 'currentPassword'),
+            newPassword: any(named: 'newPassword'),
+          ),
+        ).thenThrow(FakeFirebaseAuthException(code: 'weak-password'));
+
+        final authRepo = container.read(authRepositoryProvider.notifier);
+        final error = await authRepo.changeOwnPassword(
+          currentPassword: 'old-pass',
+          newPassword: '123',
+        );
+
+        expect(error, 'كلمة المرور الجديدة ضعيفة، اختر كلمة أقوى');
+      });
+
+      test('returns a generic Arabic message on unexpected failure', () async {
+        when(
+          () => mockFirebaseService.changePassword(
+            currentPassword: any(named: 'currentPassword'),
+            newPassword: any(named: 'newPassword'),
+          ),
+        ).thenThrow(Exception('network down'));
+
+        final authRepo = container.read(authRepositoryProvider.notifier);
+        final error = await authRepo.changeOwnPassword(
+          currentPassword: 'old-pass',
+          newPassword: 'new-pass',
+        );
+
+        expect(error, 'تعذر تغيير كلمة المرور، حاول مرة أخرى');
+      });
+    });
+
     group('signOut', () {
       test('signs out and clears the cached session', () async {
         when(() => mockFirebaseService.signOut()).thenAnswer((_) async {});

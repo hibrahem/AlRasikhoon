@@ -49,6 +49,27 @@ class FirebaseService {
     );
   }
 
+  // Change the signed-in user's own password. Reauthenticates with the
+  // current password first (against the synthesized email already on the
+  // auth user) — both to prove knowledge of it and to satisfy Firebase's
+  // requires-recent-login guard on updatePassword.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = _auth.currentUser;
+    final email = user?.email;
+    if (user == null || email == null) {
+      throw FirebaseAuthException(code: 'user-not-found');
+    }
+    final credential = EmailAuthProvider.credential(
+      email: email,
+      password: currentPassword,
+    );
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(newPassword);
+  }
+
   // Atomic server-side account provisioning. Creates both the Firebase Auth
   // user AND the users/{uid} Firestore profile in one call (with rollback
   // on partial failure). The client SDK's createUserWithEmailAndPassword

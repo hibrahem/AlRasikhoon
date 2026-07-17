@@ -81,6 +81,24 @@ class UserRepository {
     });
   }
 
+  /// Update just the editable profile fields (name, phone).
+  ///
+  /// A targeted partial update rather than a full [updateUser] doc rewrite:
+  /// the security rules freeze `role`/`institute_id` on self-edits, and a
+  /// partial update provably never touches them. A null [phone] clears the
+  /// stored number.
+  Future<void> updateProfileFields({
+    required String userId,
+    required String name,
+    String? phone,
+  }) async {
+    await _usersCollection.doc(userId).update({
+      'name': name,
+      'phone': phone,
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+  }
+
   /// Delete user (soft delete)
   Future<void> deleteUser(String userId) async {
     await _usersCollection.doc(userId).update({

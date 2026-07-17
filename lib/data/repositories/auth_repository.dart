@@ -165,6 +165,77 @@ class AuthRepository extends Notifier<AuthState> {
     });
   }
 
+  /// Update the signed-in user's own profile (name, phone), then reconcile
+  /// local state and the session cache so the UI reflects the change
+  /// immediately. The post-write refetch keeps the server the source of
+  /// truth (server timestamp on updated_at); if it misses (e.g. transient
+  /// read failure right after a successful write), fall back to a local copy
+  /// so the visible profile still matches what was saved.
+  Future<void> updateOwnProfile({
+    required String name,
+    required String? phone,
+  }) async {
+    final current = state.appUser;
+    if (current == null) {
+      throw StateError('updateOwnProfile called with no signed-in user');
+    }
+
+    await _userRepository.updateProfileFields(
+      userId: current.id,
+      name: name,
+      phone: phone,
+    );
+
+    // Not copyWith: its null-coalescing semantics can't CLEAR phone.
+    final updated =
+        await _userRepository.getUserById(current.id) ??
+        UserModel(
+          id: current.id,
+          username: current.username,
+          email: current.email,
+          phone: phone,
+          name: name,
+          role: current.role,
+          authProvider: current.authProvider,
+          instituteId: current.instituteId,
+          createdAt: current.createdAt,
+          updatedAt: DateTime.now(),
+          isActive: current.isActive,
+        );
+    state = state.copyWith(appUser: updated);
+    await _sessionCache.cacheUser(updated);
+  }
+
+  /// Change the signed-in user's own password (any role, including admins).
+  /// Reauthenticates with [currentPassword] first. Returns null on success,
+  /// or a user-facing Arabic error message on failure.
+  Future<String?> changeOwnPassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await _firebaseService.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      return null;
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'wrong-password':
+        case 'invalid-credential':
+          return 'كلمة المرور الحالية غير صحيحة';
+        case 'weak-password':
+          return 'كلمة المرور الجديدة ضعيفة، اختر كلمة أقوى';
+        case 'too-many-requests':
+          return 'تم تجاوز عدد المحاولات، يرجى المحاولة لاحقاً';
+        default:
+          return 'تعذر تغيير كلمة المرور، حاول مرة أخرى';
+      }
+    } catch (_) {
+      return 'تعذر تغيير كلمة المرور، حاول مرة أخرى';
+    }
+  }
+
   Future<void> signOut() async {
     await _firebaseService.signOut();
     await _sessionCache.clear();
