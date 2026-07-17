@@ -14,6 +14,7 @@ import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/domain/session/student_history_entry.dart';
 import 'package:al_rasikhoon/features/admin/providers/admin_provider.dart';
 import 'package:al_rasikhoon/shared/screens/student_progress_screen.dart';
+import 'package:al_rasikhoon/shared/widgets/completion_forecast_card.dart';
 import 'package:al_rasikhoon/shared/widgets/student_pace_control.dart';
 
 class MockStudentRepository extends Mock implements StudentRepository {}
@@ -126,14 +127,15 @@ void main() {
       tester,
       repo: repo,
       paceSection: (s) => StudentPaceControl(
-        studentId: s.id,
-        currentPace: s.pace,
-        currentMeetingsPerWeek: s.meetingsPerWeek,
+        student: s,
         onPlanChanged: (_) => refreshed = true,
       ),
     );
 
     expect(find.text('وتيرة الحفظ'), findsOneWidget);
+    // A shell that injects the plan card gets NO standalone forecast card —
+    // the plan card carries the forecast itself.
+    expect(find.byType(CompletionForecastCard), findsNothing);
 
     await setPace(tester, 2);
 
@@ -148,6 +150,8 @@ void main() {
     await pump(tester, repo: MockStudentRepository(), paceSection: null);
 
     expect(find.text('وتيرة الحفظ'), findsNothing);
+    // The read-only shell still gets the standalone forecast card.
+    expect(find.byType(CompletionForecastCard), findsOneWidget);
   });
 
   testWidgets(
@@ -163,9 +167,7 @@ void main() {
         tester,
         repo: repo,
         paceSection: (s) => StudentPaceControl(
-          studentId: s.id,
-          currentPace: s.pace,
-          currentMeetingsPerWeek: s.meetingsPerWeek,
+          student: s,
           onPlanChanged: (_) => refreshed = true,
         ),
       );

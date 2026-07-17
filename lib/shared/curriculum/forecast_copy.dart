@@ -51,3 +51,11 @@ String meetingsAr(int meetings) {
   if (meetings >= 3 && meetings <= 10) return '$meetings لقاءات';
   return '$meetings لقاءً';
 }
+
+/// Why the forecast flattens at high paces: every تقييم and تلقين keeps its
+/// own meeting whatever the pace, so only the lessons between them speed up.
+/// Shown wherever a pace dial sits next to a forecast, so the diminishing
+/// returns read as curriculum truth, not a broken calculator.
+String paceHintAr(int standaloneMeetings) =>
+    'التقييمات والتلقين (${meetingsAr(standaloneMeetings)}) تُعقد كما هي مهما '
+    'كانت الوتيرة — لذلك لا يتضاعف التسارع مع رفعها';

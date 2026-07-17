@@ -69,6 +69,9 @@ void main() {
     expect(find.text('3 أسابيع'), findsOneWidget);
     expect(find.textContaining('5 لقاءات'), findsOneWidget);
     expect(find.textContaining('الختم المتوقع'), findsOneWidget);
+    // The hint that explains why higher paces flatten: the 2 standalone
+    // تقييم/تلقين rows keep their meetings at any pace.
+    expect(find.textContaining('التقييمات والتلقين'), findsOneWidget);
   });
 
   testWidgets('the simulator re-evaluates locally and never writes', (
@@ -86,9 +89,13 @@ void main() {
     );
     expect(find.text('3 أسابيع'), findsNWidgets(2));
 
-    // Push the what-if pace to 10× → 4 meetings → 2 weeks.
+    // The slider offers only the useful range — past it, assessments dominate
+    // and higher paces stop buying time (see CurriculumPace.maxUsefulMultiplier).
     final slider = tester.widget<Slider>(find.byType(Slider));
-    slider.onChanged!(10);
+    expect(slider.max, CurriculumPace.maxUsefulMultiplier.toDouble());
+
+    // Push the what-if pace to the 5× cap → 4 meetings → 2 weeks.
+    slider.onChanged!(CurriculumPace.maxUsefulMultiplier.toDouble());
     await tester.pumpAndSettle();
 
     expect(find.text('أسبوعان'), findsOneWidget);

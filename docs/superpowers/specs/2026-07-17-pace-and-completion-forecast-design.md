@@ -101,6 +101,30 @@ dual/plural forms (أسبوع/أسبوعان/أسابيع…).
 - Widget: updated `student_pace_control_test.dart` (slider), forecast card
   rendering (headline, simulator recompute, no-write guarantee).
 
+## Addendum (same day) — useful cap, hint, merged plan card
+
+Measured against the real curriculum, pace speeds the whole journey up
+×1.52 at 2×, ×2.21 at 5×, and only ×2.61 at 10× — 275 of the 955 rows are
+تلقين/سرد/اختبار, which never batch, and lesson runs are mostly 4-8 long.
+Ten detents therefore promised near-linear acceleration the curriculum
+cannot deliver. Changes (issue al_rasikhoon-a75):
+
+- **Cap at the useful range.** `CurriculumPace.maxUsefulMultiplier = 5` is
+  what every slider offers (validation headroom stays at 10 for stored
+  values; a legacy value above the cap widens that slider's range rather
+  than crashing it).
+- **Hint.** `paceHintAr` under every forecast: التقييمات والتلقين keep their
+  meetings at any pace, so acceleration flattens — curriculum truth, not a
+  broken calculator.
+- **One card for editors.** `StudentPaceControl` (خطة الحفظ) now takes the
+  `StudentModel` and renders the forecast LIVE under its dials, computed from
+  the dials' current (optimistic) values — dragging the slider moves the ختم
+  date before the finger lifts. Teacher profile and supervisor surfaces show
+  only this merged card; `StudentProgressScreen` renders the standalone
+  `CompletionForecastCard` (with its what-if simulator) only when no
+  `paceSection` is injected — i.e. for the read-only admin shell — and the
+  student/guardian dashboard keeps it as before.
+
 ## Alternatives considered
 
 - **Precomputed per-level meeting-count tables on level docs** (import-time):

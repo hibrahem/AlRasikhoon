@@ -188,12 +188,14 @@ class _ProgressBody extends ConsumerWidget {
 
         const SizedBox(height: 24),
 
-        // Role-agnostic and read-only (its simulator never writes), so the
-        // screen renders it itself — unlike the pace control, which only the
-        // supervisor shell may inject.
-        CompletionForecastCard(student: student),
-
-        const SizedBox(height: 24),
+        // Read-only shells (admin) get the standalone forecast card, simulator
+        // included. A shell that injected a plan card ([paceSection]) already
+        // shows the forecast live under its dials — a second copy here would
+        // just disagree with the dials mid-drag.
+        if (paceSection == null) ...[
+          CompletionForecastCard(student: student),
+          const SizedBox(height: 24),
+        ],
 
         Text('سجل الحلقات', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),

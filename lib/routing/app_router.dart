@@ -451,9 +451,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                     // loaded student so the control shows the current pace, and
                     // refreshing the supervisor's own caches on a change.
                     paceSection: (student) => StudentPaceControl(
-                      studentId: student.id,
-                      currentPace: student.pace,
-                      currentMeetingsPerWeek: student.meetingsPerWeek,
+                      student: student,
                       onPlanChanged: (ref) {
                         ref.invalidate(supervisorStudentProvider(student.id));
                         ref.invalidate(

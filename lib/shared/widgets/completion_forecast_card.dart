@@ -54,6 +54,12 @@ class _CompletionForecastCardState
     }
   }
 
+  /// The simulator slider's ceiling: the useful cap, widened only to hold a
+  /// legacy stored pace above it (a Slider throws on value > max).
+  int get _simSliderMax => _simPace > CurriculumPace.maxUsefulMultiplier
+      ? _simPace
+      : CurriculumPace.maxUsefulMultiplier;
+
   ForecastPosition get _position => (
     level: widget.student.currentLevel,
     order: widget.student.currentOrderInLevel,
@@ -143,6 +149,11 @@ class _CompletionForecastCardState
         ),
         const SizedBox(height: 4),
         Text('الختم المتوقع: ${_dateAr(planned)}', style: textTheme.bodyMedium),
+        const SizedBox(height: 4),
+        Text(
+          paceHintAr(remaining.standaloneCount),
+          style: textTheme.bodySmall?.copyWith(color: tokens.sepia),
+        ),
         const SizedBox(height: 8),
 
         // --- The what-if simulator ------------------------------------------
@@ -202,11 +213,14 @@ class _CompletionForecastCardState
             ),
           ],
         ),
+        // Capped at the useful range — see CurriculumPace.maxUsefulMultiplier
+        // for the curriculum math; widened only if a legacy stored pace sits
+        // above the cap (a Slider throws on value > max).
         Slider(
           value: _simPace.toDouble(),
           min: 1,
-          max: CurriculumPace.maxMultiplier.toDouble(),
-          divisions: CurriculumPace.maxMultiplier - 1,
+          max: _simSliderMax.toDouble(),
+          divisions: _simSliderMax - 1,
           label: '$_simPace×',
           onChanged: (value) => setState(() => _simPace = value.round()),
         ),

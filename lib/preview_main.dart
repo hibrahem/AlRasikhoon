@@ -129,11 +129,11 @@ class _PreviewShellState extends State<_PreviewShell> {
 const _mockBeads = [true, true, false, true, true, true, true];
 
 /// A plausible remainder for the mock level-2 student: 130 standalone rows
-/// (تلقين/سرد/اختبار) and 96 lesson runs of 5 — ~610 rows ahead, so the
-/// forecast card shows real-looking numbers and the simulator has room to move.
+/// (تلقين/سرد/اختبار) and 96 lesson runs of 4..8 — ~700 rows ahead, shaped
+/// like the real curriculum so every slider detent changes the forecast.
 final _mockRemaining = RemainingCurriculum(
   standaloneCount: 130,
-  lessonRuns: List.filled(96, 5),
+  lessonRuns: List.generate(96, (i) => 4 + i % 5),
 );
 
 UserModel _user(String id, String name, UserRole role) => UserModel(
