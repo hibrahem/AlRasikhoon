@@ -31,6 +31,7 @@ import 'features/teacher/screens/student_profile_screen.dart';
 import 'features/teacher/screens/teacher_students_screen.dart';
 import 'shared/providers/institute_provider.dart';
 import 'shared/providers/user_provider.dart';
+import 'shared/widgets/splash/splash_overlay.dart';
 
 void main() {
   runApp(const DesignPreviewApp());
@@ -81,6 +82,7 @@ class _PreviewShellState extends State<_PreviewShell> {
     'تسميع ٣',
     'مشرف',
     'مدير',
+    'شاشة البداية',
   ];
 
   @override
@@ -95,7 +97,8 @@ class _PreviewShellState extends State<_PreviewShell> {
         5 => const _RecitationPreview(part: 2),
         6 => const _RecitationPreview(part: 3),
         7 => const _SupervisorPreview(),
-        _ => const _AdminPreview(),
+        8 => const _AdminPreview(),
+        _ => const _SplashPreview(),
       },
       bottomNavigationBar: SafeArea(
         child: SizedBox(
@@ -414,6 +417,75 @@ class _SupervisorPreview extends StatelessWidget {
 }
 
 // ─── Admin ───────────────────────────────────────────────────────────────
+
+// ─── Splash ──────────────────────────────────────────────────────────────
+
+/// The brand splash, scrubbable: `/?tab=9&p=0.5` renders the choreography
+/// frozen at progress 0.5 for deterministic screenshots; the slider scrubs
+/// it live, and «تشغيل» replays the real self-dismissing overlay.
+class _SplashPreview extends StatefulWidget {
+  const _SplashPreview();
+
+  @override
+  State<_SplashPreview> createState() => _SplashPreviewState();
+}
+
+class _SplashPreviewState extends State<_SplashPreview> {
+  double _progress =
+      double.tryParse(Uri.base.queryParameters['p'] ?? '') ?? 1.0;
+  int _replayKey = 0;
+  bool _playing = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_playing) {
+      return SplashOverlay(
+        key: ValueKey(_replayKey),
+        child: Scaffold(
+          body: Center(
+            child: FilledButton(
+              onPressed: () => setState(() {
+                _replayKey++;
+                _playing = true;
+              }),
+              child: const Text('إعادة التشغيل'),
+            ),
+          ),
+        ),
+      );
+    }
+    return Stack(
+      children: [
+        Positioned.fill(child: BrandSplashView(progress: _progress)),
+        PositionedDirectional(
+          start: 0,
+          end: 0,
+          bottom: 0,
+          child: SafeArea(
+            child: Row(
+              children: [
+                const SizedBox(width: 8),
+                FilledButton(
+                  onPressed: () => setState(() {
+                    _replayKey++;
+                    _playing = true;
+                  }),
+                  child: const Text('تشغيل'),
+                ),
+                Expanded(
+                  child: Slider(
+                    value: _progress,
+                    onChanged: (v) => setState(() => _progress = v),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 class _AdminPreview extends StatelessWidget {
   const _AdminPreview();

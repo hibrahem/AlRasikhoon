@@ -1,9 +1,16 @@
 flutter_native_splash:
+  # Light: brand green between the hero gradient stops (#1E6923→#14501B).
+  # Dark: the dark-mode heroTop token, so the OS splash hands off seamlessly
+  # into the in-app animated splash in both brightnesses.
   color: "#1B5E20"
+  color_dark: "#0F3D16"
   image: assets/images/logo.png
+  image_dark: assets/images/logo.png
   android_12:
     color: "#1B5E20"
+    color_dark: "#0F3D16"
     image: assets/images/logo.png
+    image_dark: assets/images/logo.png
   fullscreen: true
   android: true
   ios: true

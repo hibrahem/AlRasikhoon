@@ -5,6 +5,7 @@ import 'l10n/app_localizations.dart';
 import 'core/theme/app_theme.dart';
 import 'routing/app_router.dart';
 import 'features/settings/providers/theme_mode_provider.dart';
+import 'shared/widgets/splash/splash_overlay.dart';
 
 class AlRasikhoonApp extends ConsumerWidget {
   const AlRasikhoonApp({super.key});
@@ -21,10 +22,7 @@ class AlRasikhoonApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       locale: const Locale('ar'),
-      supportedLocales: const [
-        Locale('ar'),
-        Locale('en'),
-      ],
+      supportedLocales: const [Locale('ar'), Locale('en')],
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -35,7 +33,9 @@ class AlRasikhoonApp extends ConsumerWidget {
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.rtl,
-          child: child!,
+          // The animated brand splash plays once over the first frame while
+          // routing/auth resolve beneath it, then removes itself.
+          child: SplashOverlay(child: child!),
         );
       },
     );
