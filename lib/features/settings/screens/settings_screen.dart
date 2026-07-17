@@ -3,11 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/user_model.dart';
+import '../../../data/repositories/auth_repository.dart';
+import '../../../features/auth/widgets/change_password_dialog.dart';
 import '../../../shared/providers/institute_provider.dart';
 import '../../../shared/providers/stats_provider.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/confirm_sign_out.dart';
+import '../../../shared/widgets/edit_profile_dialog.dart';
 import '../../../shared/widgets/icon_medallion.dart';
 import '../widgets/theme_mode_selector.dart';
 
@@ -33,6 +36,8 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           _ProfileCard(user: user),
           const SizedBox(height: 16),
+          const _AccountCard(),
+          const SizedBox(height: 16),
           const ThemeModeSelector(),
           if (user.role == UserRole.teacher) ...[
             const SizedBox(height: 16),
@@ -52,13 +57,26 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-class _ProfileCard extends StatelessWidget {
+class _ProfileCard extends ConsumerWidget {
   final UserModel user;
 
   const _ProfileCard({required this.user});
 
+  void _showEditProfileDialog(BuildContext context, WidgetRef ref) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => EditProfileDialog(
+        initialName: user.name,
+        initialPhone: user.phone,
+        onSave: (name, phone) => ref
+            .read(authRepositoryProvider.notifier)
+            .updateOwnProfile(name: name, phone: phone),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final tokens = context.tokens;
     // The person's own login name is the identity worth showing here; fall
     // back to a phone only when there is genuinely no username to show.
@@ -99,7 +117,34 @@ class _ProfileCard extends StatelessWidget {
               ],
             ),
           ),
+          IconButton(
+            icon: Icon(Icons.edit_outlined, color: tokens.sepia),
+            tooltip: 'تعديل الملف الشخصي',
+            onPressed: () => _showEditProfileDialog(context, ref),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+/// Account-level self-service actions (currently: change own password).
+class _AccountCard extends StatelessWidget {
+  const _AccountCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    return AppCard(
+      padding: EdgeInsets.zero,
+      child: ListTile(
+        leading: Icon(Icons.lock_outline, color: tokens.green),
+        title: const Text('تغيير كلمة المرور'),
+        trailing: Icon(Icons.chevron_left, color: tokens.sepia),
+        onTap: () => showDialog<void>(
+          context: context,
+          builder: (_) => const ChangePasswordDialog(),
+        ),
       ),
     );
   }

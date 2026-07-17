@@ -23,7 +23,9 @@ class Country {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Country && runtimeType == other.runtimeType && code == other.code;
+      other is Country &&
+          runtimeType == other.runtimeType &&
+          code == other.code;
 
   @override
   int get hashCode => code.hashCode;
@@ -148,6 +150,17 @@ class Countries {
   static Country? findByDialCode(String dialCode) {
     try {
       return all.firstWhere((c) => c.dialCode == dialCode);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Find the country whose dial code prefixes a full international phone
+  /// number (e.g. '+20101234567' → Egypt). Used to prefill phone editors
+  /// from a stored formatPhoneWithCountryCode value.
+  static Country? findByPhone(String phone) {
+    try {
+      return all.firstWhere((c) => phone.startsWith(c.dialCode));
     } catch (_) {
       return null;
     }
