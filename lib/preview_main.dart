@@ -453,10 +453,8 @@ class _SupervisorPreview extends StatelessWidget {
 // ─── Splash ──────────────────────────────────────────────────────────────
 
 /// The brand splash, scrubbable: `/?tab=9&p=0.5` renders the choreography
-/// frozen at progress 0.5 for deterministic screenshots
-/// (`&variant=book|word` picks the mark); the slider scrubs it live, the
-/// «كلمة/كتاب» chips switch variants, and «تشغيل» replays the real
-/// self-dismissing overlay.
+/// frozen at progress 0.5 for deterministic screenshots; the slider scrubs
+/// it live and «تشغيل» replays the real self-dismissing overlay.
 class _SplashPreview extends StatefulWidget {
   const _SplashPreview();
 
@@ -467,9 +465,6 @@ class _SplashPreview extends StatefulWidget {
 class _SplashPreviewState extends State<_SplashPreview> {
   double _progress =
       double.tryParse(Uri.base.queryParameters['p'] ?? '') ?? 1.0;
-  SplashVariant _variant = Uri.base.queryParameters['variant'] == 'book'
-      ? SplashVariant.rootedMushaf
-      : SplashVariant.rootedWord;
   int _replayKey = 0;
   bool _playing = false;
 
@@ -478,7 +473,6 @@ class _SplashPreviewState extends State<_SplashPreview> {
     if (_playing) {
       return SplashOverlay(
         key: ValueKey(_replayKey),
-        variant: _variant,
         child: Scaffold(
           body: Center(
             child: FilledButton(
@@ -494,9 +488,7 @@ class _SplashPreviewState extends State<_SplashPreview> {
     }
     return Stack(
       children: [
-        Positioned.fill(
-          child: BrandSplashView(progress: _progress, variant: _variant),
-        ),
+        Positioned.fill(child: BrandSplashView(progress: _progress)),
         PositionedDirectional(
           start: 0,
           end: 0,
@@ -511,20 +503,6 @@ class _SplashPreviewState extends State<_SplashPreview> {
                     _playing = true;
                   }),
                   child: const Text('تشغيل'),
-                ),
-                const SizedBox(width: 8),
-                ChoiceChip(
-                  label: const Text('كلمة'),
-                  selected: _variant == SplashVariant.rootedWord,
-                  onSelected: (_) =>
-                      setState(() => _variant = SplashVariant.rootedWord),
-                ),
-                const SizedBox(width: 4),
-                ChoiceChip(
-                  label: const Text('كتاب'),
-                  selected: _variant == SplashVariant.rootedMushaf,
-                  onSelected: (_) =>
-                      setState(() => _variant = SplashVariant.rootedMushaf),
                 ),
                 Expanded(
                   child: Slider(
