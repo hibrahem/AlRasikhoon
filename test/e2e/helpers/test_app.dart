@@ -62,7 +62,7 @@ void pinPhoneViewport() {
 /// Stubs the platform channels the app touches that have no headless
 /// implementation on the Dart VM (no device, no simulator).
 ///
-/// `google_fonts` (via `AppTextStyles`, built into every screen's theme)
+/// `google_fonts` (via `AppTheme`, built into every screen's theme)
 /// calls `path_provider`'s `getApplicationSupportDirectory` on first render
 /// to cache downloaded font files. On a device this resolves through a
 /// platform-specific plugin; on the host nothing registers one, so

@@ -194,7 +194,7 @@ class AppTheme {
         ),
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => GoogleFonts.cairo(
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: states.contains(WidgetState.selected)
                 ? FontWeight.w600
                 : FontWeight.w400,
@@ -228,7 +228,7 @@ class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: t.surfaceVariant,
         selectedColor: t.primaryContainer,
-        labelStyle: GoogleFonts.cairo(fontSize: 12, color: t.ink),
+        labelStyle: GoogleFonts.cairo(fontSize: 13, color: t.ink),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );

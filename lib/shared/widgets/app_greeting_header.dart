@@ -33,7 +33,7 @@ class AppGreetingHeader extends StatelessWidget {
                 if (greeting != null)
                   Text(
                     greeting!,
-                    style: GoogleFonts.cairo(fontSize: 12, color: tokens.sepia),
+                    style: GoogleFonts.cairo(fontSize: 13, color: tokens.sepia),
                   ),
                 const SizedBox(height: 2),
                 Text(

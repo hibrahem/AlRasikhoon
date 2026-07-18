@@ -147,7 +147,7 @@ class GradeDisplay extends StatelessWidget {
           child: Text(
             gradeInfo.nameAr,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 13,
               fontWeight: FontWeight.bold,
               color: tokens.colorForGrade(gradeInfo.grade),
             ),
@@ -221,7 +221,7 @@ class GradeBadge extends StatelessWidget {
           Text(
             gradeInfo.nameAr,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 13,
               fontWeight: FontWeight.bold,
               color: tokens.colorForGrade(gradeInfo.grade),
             ),

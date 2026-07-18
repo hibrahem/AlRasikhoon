@@ -298,7 +298,7 @@ class _StudentHeaderCard extends StatelessWidget {
               ),
               child: Text(
                 'المحاولة ${student.currentAttempt}',
-                style: TextStyle(fontSize: 11, color: tokens.gold),
+                style: TextStyle(fontSize: 12, color: tokens.gold),
               ),
             ),
         ],

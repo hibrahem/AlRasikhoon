@@ -149,7 +149,7 @@ class StudentCard extends ConsumerWidget {
                             student.currentSession,
                           ),
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 13,
                             fontWeight: FontWeight.bold,
                             color: _kindColor(
                               student.currentSessionKind,
@@ -299,7 +299,7 @@ class _InfoChip extends StatelessWidget {
         children: [
           Icon(icon, size: 14, color: tokens.sepia),
           const SizedBox(width: 4),
-          Text(label, style: TextStyle(fontSize: 11, color: tokens.sepia)),
+          Text(label, style: TextStyle(fontSize: 12, color: tokens.sepia)),
         ],
       ),
     );
