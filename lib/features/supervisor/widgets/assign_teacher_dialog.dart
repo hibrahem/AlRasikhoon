@@ -133,7 +133,7 @@ class _AssignTeacherDialogState extends ConsumerState<AssignTeacherDialog> {
             const SizedBox(height: 8),
             Text(
               _error!,
-              style: const TextStyle(color: AppColors.error, fontSize: 12),
+              style: const TextStyle(color: AppColors.error, fontSize: 13),
             ),
           ],
         ],

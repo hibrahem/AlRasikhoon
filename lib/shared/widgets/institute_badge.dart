@@ -30,7 +30,7 @@ class InstituteBadge extends StatelessWidget {
               name,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 12,
                 color: tokens.green,
                 fontWeight: FontWeight.w500,
               ),

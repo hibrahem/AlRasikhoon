@@ -13,6 +13,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## Unreleased
 
+- Small text throughout the app (badges, labels, error messages, and button
+  text) is now larger and easier to read.
 - Refreshed the look and feel across the whole app, including a proper dark
   mode that's easy on the eyes at night.
 - Grade colors now stay clear and readable in dark mode.
