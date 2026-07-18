@@ -31,29 +31,19 @@ Runs with working directory `functions/`.
 | Build | `npm run build` | `tsc` per `functions/package.json`. |
 | Lint | `npm run lint --if-present` | Runs `eslint --ext .ts src/`; `--if-present` makes it a no-op if the script is ever removed. |
 
-## `functions-iam-audit.yml`
-
-**Triggers:** daily at 06:00 UTC, plus manual `workflow_dispatch`.
-
-Runs `scripts/audit_functions_iam.sh` against production to assert every Gen2
-Cloud Function's backing Cloud Run service still has the `allUsers` →
-`roles/run.invoker` binding (the drift that silently broke `setUserPassword`
-on 2026-05-10). On a genuine finding it opens/updates a tracking issue
-labelled `functions-iam-audit`.
-
-**Configuration:** three repository *variables* (Settings → Secrets and
-variables → Actions → Variables) — `GCP_PROJECT_ID`, `GCP_WIF_PROVIDER`, and
-`GCP_WIF_SERVICE_ACCOUNT` (a read-only service account:
-`roles/cloudfunctions.viewer` + `roles/run.viewer` only). Until all three are
-set, the job skips the audit with a warning annotation instead of failing —
-see the header comment in the workflow file for details.
-
 ## Secrets
 
-None required. `ci.yml` does no deploy, signing, or emulator work — those
+None required. This pipeline does no deploy, signing, or emulator work — those
 live under `scripts/` and are out of scope for issue #6.
-`functions-iam-audit.yml` authenticates via Workload Identity Federation
-(OIDC), so it needs the repository variables above but no long-lived secret.
+
+## Removed workflows
+
+- `functions-iam-audit.yml` (daily Gen2 Cloud Functions IAM audit) was removed
+  because its Workload Identity Federation auth was never configured, so it
+  failed every scheduled run without ever checking anything. The same audit
+  (`scripts/audit_functions_iam.sh`) still runs after every deploy via
+  `scripts/deploy_functions.sh`, which is where the 2026-05-10
+  `setUserPassword` 403 regression it guards against would be introduced.
 
 ## Maintenance notes
 
