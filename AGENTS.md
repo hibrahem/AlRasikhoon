@@ -82,3 +82,26 @@ bd close <id>         # Complete work
 - NEVER say "ready to push when you are" - YOU must push
 - If push fails, resolve and retry until it succeeds
 <!-- END BEADS INTEGRATION -->
+
+## Changelog (stakeholder release notes)
+
+Stakeholder test builds are cut **on demand** — a maintainer clicks "Run
+workflow" on the **Distribute Android** GitHub Action, which builds an Android
+APK and ships it via Firebase App Distribution. The release notes stakeholders
+read come **verbatim from the top section of `CHANGELOG.md`**, so the top
+section must always reflect everything merged since the last distribution.
+
+**Rule:** For any change that affects what a user can see or do, add a bullet to
+the top (`## Unreleased`) section of `CHANGELOG.md` **in the same change**,
+written for a non-technical business stakeholder — describe the outcome, not the
+implementation.
+
+- Write outcomes, not commits: ✅ "Teachers can now see a student's full history
+  on one screen." — ❌ "Refactor StudentProfileScreen to use shared providers."
+- Skip purely internal work (refactors, tests, CI, dependency bumps, chores)
+  that a stakeholder would never notice — those need no changelog entry.
+- The distribution run fails if the top section is empty, so don't leave it
+  blank when user-facing work has landed.
+
+See `docs/superpowers/specs/2026-07-15-android-firebase-distribution-design.md`
+and `docs/agdr/AgDR-0004-android-firebase-distribution.md`.

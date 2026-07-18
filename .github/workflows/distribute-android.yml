@@ -1,0 +1,148 @@
+# Distribute Android — Al-Rasikhoon
+#
+# Publishes a release-signed APK to Firebase App Distribution ON DEMAND, not on
+# every push. A maintainer opens the Actions tab, picks this workflow, clicks
+# "Run workflow", and chooses which commit becomes the next stakeholder test
+# build. This is the deliberate "cut a release" button.
+#
+# Why manual (not push-triggered): stakeholders should receive a curated build
+# when the team decides one is ready — not one per merge. See AgDR-0004.
+#
+# It re-runs the same quality gates as CI (analyze + tests) against the chosen
+# commit BEFORE building, so a broken commit can never be shipped even if the
+# operator points it at an arbitrary ref. Then it reuses the existing
+# scripts/distribute_android.sh (build + upload) and scripts/extract_release_notes.sh
+# (stakeholder notes taken verbatim from the top section of CHANGELOG.md).
+#
+# Required repo secrets (Settings → Secrets and variables → Actions):
+#   ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS,
+#   ANDROID_KEY_PASSWORD, FIREBASE_TOKEN
+# See .github/workflows/README.md for how to produce each.
+#
+# Design: docs/superpowers/specs/2026-07-15-android-firebase-distribution-design.md
+#         docs/agdr/AgDR-0004-android-firebase-distribution.md
+
+name: Distribute Android
+
+# Manual trigger only. The "Use workflow from" dropdown in the Actions UI picks
+# the branch/tag; the optional `ref` input below lets you target a specific
+# commit SHA instead (e.g. an earlier merge on main).
+"on":
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Commit SHA or branch/tag to ship (blank = the ref selected in the UI, normally main)"
+        required: false
+        type: string
+      groups:
+        description: "Firebase App Distribution tester group(s), comma-separated"
+        required: false
+        default: "beta-testers"
+        type: string
+
+# Never run two distributions at once, and never cancel one in flight (a
+# half-finished upload is worse than waiting).
+concurrency:
+  group: distribute-android
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  # Keep in sync with .github/workflows/ci.yml — same pinned toolchain so the
+  # distributed build matches what CI validated. Flutter 3.35.7 bundles Dart
+  # 3.9.2 (satisfies pubspec.yaml's `sdk: ^3.9.2`; 3.35.0–3.35.2 do NOT).
+  FLUTTER_VERSION: "3.35.7"
+  NODE_VERSION: "22"
+
+jobs:
+  distribute:
+    name: Build & distribute APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the chosen commit. `inputs.ref` wins when provided; otherwise
+      # fall back to the ref the workflow was dispatched on (the UI dropdown).
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      # Android Gradle builds run on JDK 17 regardless of the app's Java 11
+      # source/target compatibility. Pin it so the toolchain is deterministic.
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      # Node is needed only to install the Firebase CLI used for the upload.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      # Quality gate: mirror the CI `flutter` job so the exact commit being
+      # shipped is proven green first. `--no-fatal-infos` matches ci.yml (the
+      # repo carries known info-level debt; warnings and errors still fail).
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+      - name: Unit, widget and E2E tests
+        run: flutter test test/
+
+      # Reconstruct release signing from secrets. The keystore is decoded to a
+      # runner-local file OUTSIDE the repo tree ($RUNNER_TEMP) so it can never
+      # be committed; android/key.properties (gitignored) points gradle at it.
+      # GitHub masks registered secret values in logs, so the writes are safe.
+      - name: Configure release signing
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$ANDROID_KEYSTORE_BASE64" ]]; then
+            echo "ERROR: ANDROID_KEYSTORE_BASE64 secret is empty or unset." >&2
+            exit 1
+          fi
+          KEYSTORE_PATH="$RUNNER_TEMP/upload-keystore.jks"
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_PATH"
+          {
+            echo "storeFile=$KEYSTORE_PATH"
+            echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
+            echo "keyAlias=$ANDROID_KEY_ALIAS"
+            echo "keyPassword=$ANDROID_KEY_PASSWORD"
+          } > android/key.properties
+
+      # Fails loudly if the changelog's top section is missing or empty, so a
+      # forgotten changelog blocks the release instead of shipping empty notes.
+      - name: Generate stakeholder release notes
+        run: scripts/extract_release_notes.sh CHANGELOG.md > "$RUNNER_TEMP/release-notes.txt"
+
+      # BUILD_NUMBER=run_number gives every distribution a unique, increasing
+      # Android versionCode so App Distribution treats each as a new release.
+      # FIREBASE_TOKEN is auto-detected by firebase-tools from the environment.
+      # GROUPS comes from the workflow input (defaults to beta-testers).
+      - name: Build and distribute APK
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GROUPS: ${{ inputs.groups }}
+          BUILD_NUMBER: ${{ github.run_number }}
+          RELEASE_NOTES_FILE: ${{ runner.temp }}/release-notes.txt
+        run: scripts/distribute_android.sh apk

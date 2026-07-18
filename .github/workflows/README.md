@@ -31,10 +31,56 @@ Runs with working directory `functions/`.
 | Build | `npm run build` | `tsc` per `functions/package.json`. |
 | Lint | `npm run lint --if-present` | Runs `eslint --ext .ts src/`; `--if-present` makes it a no-op if the script is ever removed. |
 
+## `distribute-android.yml`
+
+**Trigger:** **manual only** (`workflow_dispatch`) — there is a **"Run
+workflow"** button in the Actions tab. Distribution never happens automatically
+on push; a maintainer clicks it to cut a stakeholder build. This is deliberate:
+stakeholders get a curated build when the team decides one is ready, not one per
+merge (see [`AgDR-0004`](../../docs/agdr/AgDR-0004-android-firebase-distribution.md)).
+
+**How to release:** Actions tab → **Distribute Android** → **Run workflow** →
+(optionally set inputs) → **Run workflow**.
+
+| Input | Default | Purpose |
+|-------|---------|---------|
+| `ref` | the ref picked in the "Use workflow from" dropdown (normally `main`) | A specific commit SHA / branch / tag to ship. Leave blank to ship the selected branch tip; set it to release an earlier merge. |
+| `groups` | `beta-testers` | Firebase App Distribution tester group(s), comma-separated. |
+
+Builds a release-signed APK and uploads it to Firebase App Distribution. Reuses
+`scripts/distribute_android.sh` (build + upload) and
+`scripts/extract_release_notes.sh` (release notes).
+
+| Step | Notes |
+|------|-------|
+| Checkout | Checks out `inputs.ref` (or the dispatched ref). |
+| Set up JDK 17 | Android Gradle runs on JDK 17 (app source/target stays Java 11). |
+| Set up Flutter | Same pinned `FLUTTER_VERSION` as `ci.yml`. |
+| Analyze + tests | Re-runs the CI quality gate (`flutter analyze --no-fatal-infos`, `flutter test test/`) against the chosen commit, so a broken ref can never be shipped. |
+| Set up Node + Firebase CLI | Node installs `firebase-tools` for the upload. |
+| Configure release signing | Decodes `ANDROID_KEYSTORE_BASE64` to `$RUNNER_TEMP` and writes `android/key.properties` pointing at it. |
+| Generate release notes | `scripts/extract_release_notes.sh CHANGELOG.md`; **fails if the top section is empty**. |
+| Build and distribute APK | `scripts/distribute_android.sh apk` with `BUILD_NUMBER=github.run_number` (unique `versionCode`) and the notes file. |
+
+**Release notes** are the top section of the root `CHANGELOG.md`, written for
+stakeholders. Keeping it current is a convention documented in `CLAUDE.md` /
+`AGENTS.md`.
+
 ## Secrets
 
-None required. This pipeline does no deploy, signing, or emulator work — those
-live under `scripts/` and are out of scope for issue #6.
+`ci.yml` (`flutter` and `functions`) requires no secrets. The
+`distribute-android.yml` workflow requires these repo secrets (Settings →
+Secrets and variables → Actions); provision them once:
+
+| Secret | Source |
+|--------|--------|
+| `ANDROID_KEYSTORE_BASE64` | `base64 -i /path/to/upload.jks` (the whole file, base64-encoded) |
+| `ANDROID_KEYSTORE_PASSWORD` | keystore store password |
+| `ANDROID_KEY_ALIAS` | key alias (e.g. `al_rasikhoon`) |
+| `ANDROID_KEY_PASSWORD` | key password |
+| `FIREBASE_TOKEN` | `firebase login:ci` (account with Firebase App Distribution Admin on `alrasikhoon-57151`) |
+
+Also ensure the `beta-testers` group exists in Firebase App Distribution.
 
 ## Removed workflows
 
