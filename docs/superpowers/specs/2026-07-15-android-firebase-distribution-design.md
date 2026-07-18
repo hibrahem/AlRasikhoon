@@ -1,16 +1,23 @@
-# Android Firebase App Distribution on every `main` push — design
+# On-demand Android Firebase App Distribution — design
 
 > In the context of stakeholders needing to test the Al-Rasikhoon Android app
 > without a local toolchain, facing the absence of any automated distribution,
-> I decided to add a gated `distribute-android` job to the existing CI workflow
-> that builds a release-signed APK and ships it to Firebase App Distribution on
-> every push to `main`, with stakeholder-readable release notes sourced from a
-> hand-maintained `CHANGELOG.md`, to get one-click testing for non-technical
-> stakeholders, accepting that the changelog must be kept current (enforced as
-> an agent/contributor convention) and that five GitHub secrets must be
-> provisioned once by a human.
+> I decided to add a standalone `distribute-android.yml` workflow triggered
+> **manually** (`workflow_dispatch`) that re-runs the CI quality gate against a
+> chosen commit, then builds a release-signed APK and ships it to Firebase App
+> Distribution, with stakeholder-readable release notes sourced from a
+> hand-maintained `CHANGELOG.md`, to give the team a deliberate "cut a build"
+> button for non-technical stakeholders, accepting that the changelog must be
+> kept current (enforced as an agent/contributor convention) and that five
+> GitHub secrets must be provisioned once by a human.
 
 Date: 2026-07-15
+
+> **Revision (2026-07-15):** the trigger was changed from automatic on every
+> `main` push to a **manual `workflow_dispatch` button** in its own workflow
+> file, so the team picks which commit becomes the next stakeholder build. The
+> job now re-runs the analyze + test gate itself (it no longer rides on a
+> push-triggered CI run). See [AgDR-0004](../../agdr/AgDR-0004-android-firebase-distribution.md).
 
 ## Problem
 
@@ -28,8 +35,9 @@ terms — what changed. Today:
 
 ## Goals
 
-1. On every push to `main`, and **only after tests pass**, build and distribute
-   an Android APK to the `beta-testers` group via Firebase App Distribution.
+1. On a maintainer's explicit click, and **only after the quality gate passes**,
+   build and distribute an Android APK to the `beta-testers` group via Firebase
+   App Distribution — for a chosen commit, not automatically per merge.
 2. Attach release notes written for a business audience (what they can now do),
    not commit messages.
 3. Keep those notes accurate over time with the least ongoing effort, by making
@@ -57,21 +65,26 @@ terms — what changed. Today:
 
 ### 1. Trigger & gating
 
-Add a third job, `distribute-android`, to the existing `ci.yml` (rather than a
-separate workflow, to avoid a fragile cross-workflow `workflow_run` trigger and
-to reuse the pinned Flutter setup):
+A standalone workflow `.github/workflows/distribute-android.yml` triggered
+**only** by `workflow_dispatch` — a "Run workflow" button in the Actions tab.
+Distribution is a deliberate action, never automatic:
 
 ```yaml
-distribute-android:
-  name: Distribute Android (Firebase App Distribution)
-  needs: [flutter, functions]
-  if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-  runs-on: ubuntu-latest
+"on":
+  workflow_dispatch:
+    inputs:
+      ref:     # commit SHA / branch / tag to ship (blank = the UI-selected ref)
+      groups:  # tester group(s), default "beta-testers"
 ```
 
-- `needs: [flutter, functions]` — a build reaches stakeholders only after the
-  app tests **and** the functions build are green. A red `main` never ships.
-- `if:` guard — never runs on pull requests, only on direct pushes to `main`.
+- **Operator control** — the maintainer picks *which* commit becomes the next
+  stakeholder version via the `ref` input (or the "Use workflow from" dropdown).
+- **Self-contained quality gate** — because it no longer rides on a
+  push-triggered CI run, the job re-runs `flutter analyze --no-fatal-infos` and
+  `flutter test test/` against the chosen commit before building, so a broken
+  ref can never be shipped.
+- `ci.yml` is unchanged apart from *removing* the old distribute job; it stays
+  tests-only (`flutter`, `functions`) on push/PR.
 
 ### 2. Reuse the existing distribution script
 
@@ -157,19 +170,20 @@ Assumptions to confirm before first run:
 ## Data flow
 
 ```
-push to main
-  └─ ci.yml: flutter job (analyze + tests)   ┐
-     ci.yml: functions job (build + lint)    ┘ both must pass
-        └─ distribute-android job
-             ├─ decode keystore secret → upload-keystore.jks
-             ├─ write android/key.properties
-             ├─ extract_release_notes.sh → notes.txt   (from CHANGELOG.md)
-             └─ BUILD_NUMBER=run_number GROUPS=beta-testers \
-                RELEASE_NOTES_FILE=notes.txt \
-                scripts/distribute_android.sh apk
-                  ├─ flutter build apk --release --build-number N
-                  └─ firebase appdistribution:distribute app-release.apk
-                        → beta-testers receive an install link + notes
+maintainer clicks "Run workflow" (picks ref + tester groups)
+  └─ distribute-android.yml: distribute job
+       ├─ checkout inputs.ref (or the UI-selected ref)
+       ├─ flutter analyze --no-fatal-infos  ┐ quality gate on the
+       ├─ flutter test test/                ┘ chosen commit (must pass)
+       ├─ decode keystore secret → upload-keystore.jks
+       ├─ write android/key.properties
+       ├─ extract_release_notes.sh → notes.txt   (from CHANGELOG.md)
+       └─ BUILD_NUMBER=run_number GROUPS=<input> \
+          RELEASE_NOTES_FILE=notes.txt \
+          scripts/distribute_android.sh apk
+            ├─ flutter build apk --release --build-number N
+            └─ firebase appdistribution:distribute app-release.apk
+                  → beta-testers receive an install link + notes
 ```
 
 ## Error handling
@@ -178,8 +192,8 @@ push to main
   job fails loudly (no silent empty-notes release).
 - Missing signing secrets → `key.properties` step fails before an unsigned/
   debug-signed build can be produced.
-- Test/functions failure → `needs:` short-circuits; the distribute job never
-  starts.
+- Analyze/test failure on the chosen commit → the job stops before signing or
+  building, so a broken ref is never shipped.
 
 ## Testing / verification
 
@@ -187,14 +201,17 @@ push to main
   `Unreleased`, top section as a version, missing file, empty section.
 - **`distribute_android.sh` `BUILD_NUMBER`**: verify the flag is appended only
   when set; verify existing no-env behavior is unchanged.
-- **First real run**: confirm on a `main` push that the APK appears in App
+- **First real run**: click "Run workflow" and confirm the APK appears in App
   Distribution with the expected notes and an incremented `versionCode`.
 
 ## Alternatives considered
 
-- **Separate `android-distribute.yml` gated via `workflow_run`**: cleaner
-  separation, but `workflow_run` runs the default-branch workflow file and
-  complicates checkout/ref handling. Rejected for a same-workflow `needs:` job.
+- **Automatic on every `main` push** (the original design): a gated job in
+  `ci.yml`. Rejected once the team preferred to choose *which* merge ships —
+  control over automation. The manual `workflow_dispatch` workflow replaced it.
+- **Git-tag trigger**: version-semantic, but releases from the terminal rather
+  than a button. Rejected in favor of the UI button; revisit if formal version
+  tagging becomes desirable.
 - **Auto-generate notes from PRs/commits**: rejected in brainstorming — the ask
   is explicitly business-readable notes, which conventional commits are not.
 - **AAB instead of APK**: rejected — App Distribution requires Play linkage for

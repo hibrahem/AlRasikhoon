@@ -31,22 +31,32 @@ Runs with working directory `functions/`.
 | Build | `npm run build` | `tsc` per `functions/package.json`. |
 | Lint | `npm run lint --if-present` | Runs `eslint --ext .ts src/`; `--if-present` makes it a no-op if the script is ever removed. |
 
-### Job: `distribute-android` — ship a test build to stakeholders
+## `distribute-android.yml`
 
-Runs **only on push to `main`**, and **only after `flutter` and `functions`
-pass** (`needs: [flutter, functions]`) — a red `main` never ships. Never runs on
-pull requests.
+**Trigger:** **manual only** (`workflow_dispatch`) — there is a **"Run
+workflow"** button in the Actions tab. Distribution never happens automatically
+on push; a maintainer clicks it to cut a stakeholder build. This is deliberate:
+stakeholders get a curated build when the team decides one is ready, not one per
+merge (see [`AgDR-0004`](../../docs/agdr/AgDR-0004-android-firebase-distribution.md)).
 
-Builds a release-signed APK and uploads it to Firebase App Distribution (group
-`beta-testers`) so stakeholders can test every change that lands on `main`.
-Reuses `scripts/distribute_android.sh` (build + upload) and
-`scripts/extract_release_notes.sh` (release notes). Design + rationale:
-[`AgDR-0004`](../../docs/agdr/AgDR-0004-android-firebase-distribution.md).
+**How to release:** Actions tab → **Distribute Android** → **Run workflow** →
+(optionally set inputs) → **Run workflow**.
+
+| Input | Default | Purpose |
+|-------|---------|---------|
+| `ref` | the ref picked in the "Use workflow from" dropdown (normally `main`) | A specific commit SHA / branch / tag to ship. Leave blank to ship the selected branch tip; set it to release an earlier merge. |
+| `groups` | `beta-testers` | Firebase App Distribution tester group(s), comma-separated. |
+
+Builds a release-signed APK and uploads it to Firebase App Distribution. Reuses
+`scripts/distribute_android.sh` (build + upload) and
+`scripts/extract_release_notes.sh` (release notes).
 
 | Step | Notes |
 |------|-------|
+| Checkout | Checks out `inputs.ref` (or the dispatched ref). |
 | Set up JDK 17 | Android Gradle runs on JDK 17 (app source/target stays Java 11). |
-| Set up Flutter | Same pinned `FLUTTER_VERSION` as the `flutter` job. |
+| Set up Flutter | Same pinned `FLUTTER_VERSION` as `ci.yml`. |
+| Analyze + tests | Re-runs the CI quality gate (`flutter analyze --no-fatal-infos`, `flutter test test/`) against the chosen commit, so a broken ref can never be shipped. |
 | Set up Node + Firebase CLI | Node installs `firebase-tools` for the upload. |
 | Configure release signing | Decodes `ANDROID_KEYSTORE_BASE64` to `$RUNNER_TEMP` and writes `android/key.properties` pointing at it. |
 | Generate release notes | `scripts/extract_release_notes.sh CHANGELOG.md`; **fails if the top section is empty**. |
@@ -58,9 +68,9 @@ stakeholders. Keeping it current is a convention documented in `CLAUDE.md` /
 
 ## Secrets
 
-The `flutter` and `functions` jobs require no secrets. The `distribute-android`
-job requires these repo secrets (Settings → Secrets and variables → Actions);
-provision them once:
+`ci.yml` (`flutter` and `functions`) requires no secrets. The
+`distribute-android.yml` workflow requires these repo secrets (Settings →
+Secrets and variables → Actions); provision them once:
 
 | Secret | Source |
 |--------|--------|

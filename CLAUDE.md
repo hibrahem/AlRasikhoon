@@ -68,9 +68,11 @@ _Add a brief overview of your project architecture_
 
 ### Changelog (stakeholder release notes)
 
-Every push to `main` builds an Android APK and ships it to stakeholders via
-Firebase App Distribution. The release notes they read come **verbatim from the
-top section of `CHANGELOG.md`**.
+Stakeholder test builds are cut **on demand** — a maintainer clicks "Run
+workflow" on the **Distribute Android** GitHub Action, which builds an Android
+APK and ships it via Firebase App Distribution. The release notes stakeholders
+read come **verbatim from the top section of `CHANGELOG.md`**, so the top
+section must always reflect everything merged since the last distribution.
 
 **Rule:** For any change that affects what a user can see or do, add a bullet to
 the top (`## Unreleased`) section of `CHANGELOG.md` **in the same change**,
@@ -81,8 +83,8 @@ implementation.
   on one screen." — ❌ "Refactor StudentProfileScreen to use shared providers."
 - Skip purely internal work (refactors, tests, CI, dependency bumps, chores)
   that a stakeholder would never notice — those need no changelog entry.
-- The build fails if the top section is empty, so don't leave it blank when
-  user-facing work has landed.
+- The distribution run fails if the top section is empty, so don't leave it
+  blank when user-facing work has landed.
 
 See `docs/superpowers/specs/2026-07-15-android-firebase-distribution-design.md`
 and `docs/agdr/AgDR-0004-android-firebase-distribution.md`.
