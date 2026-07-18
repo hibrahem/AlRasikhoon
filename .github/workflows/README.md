@@ -36,6 +36,15 @@ Runs with working directory `functions/`.
 None required. This pipeline does no deploy, signing, or emulator work — those
 live under `scripts/` and are out of scope for issue #6.
 
+## Removed workflows
+
+- `functions-iam-audit.yml` (daily Gen2 Cloud Functions IAM audit) was removed
+  because its Workload Identity Federation auth was never configured, so it
+  failed every scheduled run without ever checking anything. The same audit
+  (`scripts/audit_functions_iam.sh`) still runs after every deploy via
+  `scripts/deploy_functions.sh`, which is where the 2026-05-10
+  `setUserPassword` 403 regression it guards against would be introduced.
+
 ## Maintenance notes
 
 - **Flutter bump:** edit `FLUTTER_VERSION` in `ci.yml`. Keep it on a stable
