@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/providers/connectivity_provider.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
 import '../../../shared/widgets/icon_medallion.dart';
@@ -52,15 +53,17 @@ class _NextContentTalqeenScreenState
               advanceOutcome == StudentAdvanceOutcome.studentNotFound);
 
       if (record != null && mounted) {
+        final message = progressNotAdvanced
+            ? 'تم حفظ النتيجة، لكن تعذر تحديث تقدم الطالب: لا توجد حلقات '
+                  'تالية في المنهج.'
+            : (record.passed ? 'تم حفظ الحلقة - ناجح' : 'تم حفظ الحلقة - راسب');
+        // Saved locally either way — but the teacher must not read an
+        // unqualified "saved" as "reached the server" while offline.
+        final isOnline = ref.read(isConnectedProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              progressNotAdvanced
-                  ? 'تم حفظ النتيجة، لكن تعذر تحديث تقدم الطالب: لا توجد حلقات '
-                        'تالية في المنهج.'
-                  : (record.passed
-                        ? 'تم حفظ الحلقة - ناجح'
-                        : 'تم حفظ الحلقة - راسب'),
+              isOnline ? message : '$message — ستتم المزامنة عند عودة الاتصال',
             ),
             // No manuscript token for "success"/"warning" — the primary
             // green already carries the positive/affirmative role and
