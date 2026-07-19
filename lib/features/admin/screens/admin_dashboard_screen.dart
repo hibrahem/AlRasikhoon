@@ -70,7 +70,7 @@ class AdminDashboardScreen extends ConsumerWidget {
         children: [
           Text(
             'مدير النظام',
-            style: GoogleFonts.cairo(fontSize: 13, color: tokens.onHeroMuted),
+            style: GoogleFonts.cairo(fontSize: 14, color: tokens.onHeroMuted),
           ),
           Text(
             'الراسخون',
@@ -92,13 +92,18 @@ class AdminDashboardScreen extends ConsumerWidget {
 
   Widget _buildStats(BuildContext context, AdminStats stats) {
     final tokens = context.tokens;
-    return GridView.count(
-      crossAxisCount: 2,
+    // Fixed tile height (see supervisor dashboard): aspect-ratio tiles
+    // balloon on tablets; a max-extent grid keeps bento tiles compact and
+    // reflows to more columns on wide screens.
+    return GridView(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 1.3,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 220,
+        mainAxisExtent: 132,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+      ),
       children: [
         StatCard(
           title: 'المعاهد',
