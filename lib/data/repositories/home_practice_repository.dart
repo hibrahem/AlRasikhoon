@@ -2,17 +2,28 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/home_practice_model.dart';
 import '../services/firebase_service.dart';
+import '../services/firestore_read_source.dart';
 
 final homePracticeRepositoryProvider = Provider<HomePracticeRepository>((ref) {
   final firestore = ref.watch(firestoreProvider);
-  return HomePracticeRepository(firestore: firestore);
+  return HomePracticeRepository(
+    firestore: firestore,
+    readSource: ref.watch(firestoreReadSourceProvider),
+  );
 });
 
 class HomePracticeRepository {
   final FirebaseFirestore _firestore;
 
-  HomePracticeRepository({FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
+  /// Where reads resolve from — offline they pin to the local cache instead
+  /// of waiting out a doomed server attempt (al_rasikhoon-gy4).
+  final FirestoreReadSource _read;
+
+  HomePracticeRepository({
+    FirebaseFirestore? firestore,
+    FirestoreReadSource? readSource,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _read = readSource ?? const FirestoreReadSource.alwaysOnline();
 
   CollectionReference<Map<String, dynamic>> get _collection =>
       _firestore.collection('home_practices');
@@ -52,11 +63,12 @@ class HomePracticeRepository {
     String studentId, {
     int limit = 50,
   }) async {
-    final snapshot = await _collection
-        .where('student_id', isEqualTo: studentId)
-        .orderBy('practice_date', descending: true)
-        .limit(limit)
-        .get();
+    final snapshot = await _read.getQuery(
+      _collection
+          .where('student_id', isEqualTo: studentId)
+          .orderBy('practice_date', descending: true)
+          .limit(limit),
+    );
 
     return snapshot.docs
         .map((doc) => HomePracticeModel.fromFirestore(doc))
@@ -69,18 +81,19 @@ class HomePracticeRepository {
     required DateTime startDate,
     required DateTime endDate,
   }) async {
-    final snapshot = await _collection
-        .where('student_id', isEqualTo: studentId)
-        .where(
-          'practice_date',
-          isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
-        )
-        .where(
-          'practice_date',
-          isLessThanOrEqualTo: Timestamp.fromDate(endDate),
-        )
-        .orderBy('practice_date', descending: true)
-        .get();
+    final snapshot = await _read.getQuery(
+      _collection
+          .where('student_id', isEqualTo: studentId)
+          .where(
+            'practice_date',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
+          )
+          .where(
+            'practice_date',
+            isLessThanOrEqualTo: Timestamp.fromDate(endDate),
+          )
+          .orderBy('practice_date', descending: true),
+    );
 
     return snapshot.docs
         .map((doc) => HomePracticeModel.fromFirestore(doc))
