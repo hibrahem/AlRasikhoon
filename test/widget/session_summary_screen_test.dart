@@ -14,6 +14,7 @@ import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/features/teacher/screens/next_content_talqeen_screen.dart';
 import 'package:al_rasikhoon/features/teacher/screens/session_summary_screen.dart';
 import 'package:al_rasikhoon/routing/app_router.dart';
+import 'package:al_rasikhoon/shared/providers/connectivity_provider.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 
 class MockStudentRepository extends Mock implements StudentRepository {}
@@ -103,6 +104,9 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
+          // The save confirmation reads connectivity; the real plugin has no
+          // implementation under flutter_test.
+          isConnectedProvider.overrideWithValue(true),
           currentUserProvider.overrideWithValue(teacher),
           studentRepositoryProvider.overrideWithValue(mockStudentRepository),
           sessionRepositoryProvider.overrideWithValue(sessionRepository),
