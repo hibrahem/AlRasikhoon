@@ -55,11 +55,19 @@ commit. The maintainer wants distribution runs fast.
   dropping verification entirely would let a broken commit ship. The check
   preserves the invariant at ~5s instead of ~6–8 min. A `force` input allows a
   deliberate override.
-- **Tooling:** fastlane (`sigh` + `pilot`), preinstalled on GitHub macOS
-  runners. `sigh` fetches-or-creates the App Store provisioning profile from
-  the ASC API key at run time (auto-renews; no portal step). `pilot` uploads,
-  sets "What to Test" from the changelog, and distributes to the external
-  group — the pure `apple-actions/*` alternative cannot do those last two.
+- **Tooling:** `xcodebuild` cloud signing for the build, fastlane `pilot`
+  (preinstalled on GitHub macOS runners) for the upload. `pilot` sets "What to
+  Test" from the changelog and distributes to the external group — the pure
+  `apple-actions/*` alternative cannot do either.
+- **Signing (revised during planning):** Xcode **cloud signing** — automatic
+  signing style with `-allowProvisioningUpdates` authenticated by the ASC API
+  key. xcodebuild creates/manages the distribution certificate and App Store
+  profile itself, headlessly. This drops the `.p12` secrets, the certificate
+  export step, and `sigh` from the original design, and avoids the known
+  CocoaPods failure where global `PROVISIONING_PROFILE_SPECIFIER` /
+  `CODE_SIGN_IDENTITY` overrides break Pod targets during archive. Fallback if
+  cloud signing misbehaves: the manual p12 + `sigh` path (documented in
+  Alternatives).
 
 ## Design
 
@@ -95,21 +103,21 @@ jobs for that exact SHA all concluded `success`. Distinct failure messages:
 steps in favor of this check (same step, same messages). Everything else in
 the Android workflow is unchanged.
 
-### 3. Signing in CI
+### 3. Signing in CI (cloud signing)
 
-- **Certificate:** an *Apple Distribution* certificate exported from the
-  maintainer's Keychain as `.p12`, stored as secrets, installed into an
-  ephemeral keychain by `apple-actions/import-codesign-certs` (auto-deleted
-  with the runner).
-- **Profile:** `fastlane sigh` with the ASC API key, `--app_identifier
-  com.alrasikhoon.alRasikhoon`, fixed profile name (e.g. "AlRasikhoon
-  AppStore CI") so the export options can reference it deterministically.
-  Creates the profile on first run, renews on expiry.
+- **Build:** `flutter build ios --release --no-codesign` compiles the app;
+  `xcodebuild archive` + `xcodebuild -exportArchive` then run with
+  `-allowProvisioningUpdates -authenticationKeyPath/-authenticationKeyID/
+  -authenticationKeyIssuerID` (the ASC API key). Xcode registers the bundle
+  id if needed and creates/manages a cloud-managed *Apple Distribution*
+  certificate and App Store profile — no keychain import, no `sigh`, no
+  global signing-setting overrides (which are known to break CocoaPods
+  targets during archive).
 - **Export:** new `ios/ExportOptionsAppStore.plist` — `method:
-  app-store-connect`, `teamID: 327MX655VL`, `signingStyle: manual`,
-  `provisioningProfiles: {com.alrasikhoon.alRasikhoon: <fixed profile name>}`.
+  app-store-connect`, `teamID: 327MX655VL`, `signingStyle: automatic`.
 - **API key:** the `.p8` is materialized from secrets into `$RUNNER_TEMP`
-  (never the repo tree) as a fastlane API-key JSON file.
+  (never the repo tree), both as the raw key for xcodebuild and as a fastlane
+  API-key JSON file for `pilot`.
 
 ### 4. Build & upload
 
@@ -133,8 +141,9 @@ the Android workflow is unchanged.
 | `ASC_API_KEY_ID`            | App Store Connect → Users and Access → Integrations → new key (*App Manager* role) |
 | `ASC_API_ISSUER_ID`         | same page (issuer id is per-team)                                      |
 | `ASC_API_KEY_P8_BASE64`     | the downloaded `.p8`, base64-encoded (downloadable **once**)           |
-| `IOS_DIST_CERT_P12_BASE64`  | Apple Distribution cert + private key exported from Keychain as `.p12`, base64-encoded |
-| `IOS_DIST_CERT_P12_PASSWORD`| password chosen at `.p12` export                                       |
+
+(The original design also required a `.p12` distribution certificate; cloud
+signing made it unnecessary.)
 
 ### 6. One-time Apple setup checklist (maintainer, in the portals)
 
@@ -143,13 +152,10 @@ the Android workflow is unchanged.
 2. developer.apple.com → Identifiers: register `com.alrasikhoon.alRasikhoon`
    with capabilities matching the Xcode project (at minimum Push Notifications
    if FCM is used).
-3. Xcode → Settings → Accounts → Manage Certificates: create an **Apple
-   Distribution** certificate; export it (+ private key) from Keychain Access
-   as `.p12` → secrets above.
-4. App Store Connect → My Apps → New App: platform iOS, bundle id from step 2,
+3. App Store Connect → My Apps → New App: platform iOS, bundle id from step 2,
    name/primary language/SKU.
-5. Users and Access → Integrations: create the API key → secrets above.
-6. TestFlight tab: add internal testers; create external group `beta-testers`
+4. Users and Access → Integrations: create the API key → secrets above.
+5. TestFlight tab: add internal testers; create external group `beta-testers`
    (email invites or a shareable public link); fill in the required **Test
    Information** — beta description, feedback email, privacy policy URL, and
    **demo sign-in credentials for Apple's Beta App Review** (the app requires
@@ -170,9 +176,9 @@ maintainer clicks "Run workflow" (ref, groups, external?, force?)
   → green-CI check (gh api check-runs for SHA)        [~5s; force skips]
   → Flutter 3.35.7, pub get
   → extract_release_notes.sh CHANGELOG.md             [fails if empty]
-  → import .p12 into ephemeral keychain
-  → sigh: fetch/create App Store profile (ASC API key)
-  → flutter build ipa (manual signing, run_number as build number)
+  → write ASC API key files to $RUNNER_TEMP
+  → flutter build ios --no-codesign (run_number as build number)
+  → xcodebuild archive + -exportArchive (cloud signing via ASC API key)
   → pilot upload: → TestFlight processing → "What to Test" ← notes
        → internal testers (instant)
        → external group(s) (first build: Beta App Review ~24–48h)
@@ -184,8 +190,8 @@ maintainer clicks "Run workflow" (ref, groups, external?, force?)
   Android keystore check).
 - Green-CI check failures → the three distinct messages above.
 - Empty changelog top section → `extract_release_notes.sh` fails the run.
-- `sigh`/`pilot` failures (expired cert, bad API key, processing rejection)
-  surface as step failures with fastlane's error output.
+- `xcodebuild`/`pilot` failures (bad API key, signing errors, processing
+  rejection) surface as step failures with the tool's error output.
 
 ## Testing / verification
 
@@ -210,3 +216,8 @@ maintainer clicks "Run workflow" (ref, groups, external?, force?)
   gates/changelog conventions; rejected.
 - **Keeping full gate re-runs in distribution workflows** — safe but slow;
   replaced by the green-CI check which preserves the invariant at ~5s.
+- **Manual signing (p12 secrets + `fastlane sigh` + build-setting overrides)**
+  — the original §3; works, but needs two more secrets, a certificate export
+  ritual, and global `PROVISIONING_PROFILE_SPECIFIER` overrides that are known
+  to break CocoaPods targets during archive. Kept as the documented fallback
+  if cloud signing fails.
