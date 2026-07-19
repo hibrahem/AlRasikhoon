@@ -46,6 +46,8 @@ merge (see [`AgDR-0004`](../../docs/agdr/AgDR-0004-android-firebase-distribution
 |-------|---------|---------|
 | `ref` | the ref picked in the "Use workflow from" dropdown (normally `main`) | A specific commit SHA / branch / tag to ship. Leave blank to ship the selected branch tip; set it to release an earlier merge. |
 | `groups` | `beta-testers` | Firebase App Distribution tester group(s), comma-separated. |
+| `run_agent_tests` | `true` | Run the Firebase App Testing agent (AI tester on a real Test Lab device) against the release. See [`apptesting/README.md`](../../apptesting/README.md). |
+| `test_case_ids` | blank (= the smoke suite) | Override which test case ids from `apptesting/testcases.yaml` the agent runs. |
 
 Builds a release-signed APK and uploads it to Firebase App Distribution. Reuses
 `scripts/distribute_android.sh` (build + upload) and
@@ -60,7 +62,7 @@ Builds a release-signed APK and uploads it to Firebase App Distribution. Reuses
 | Set up Node + Firebase CLI | Node installs `firebase-tools` for the upload. |
 | Configure release signing | Decodes `ANDROID_KEYSTORE_BASE64` to `$RUNNER_TEMP` and writes `android/key.properties` pointing at it. |
 | Generate release notes | `scripts/extract_release_notes.sh CHANGELOG.md`; **fails if the top section is empty**. |
-| Build and distribute APK | `scripts/distribute_android.sh apk` with `BUILD_NUMBER=github.run_number` (unique `versionCode`) and the notes file. |
+| Build, distribute and run App Testing agent | `scripts/distribute_android.sh apk` with `BUILD_NUMBER=github.run_number` (unique `versionCode`) and the notes file. When `run_agent_tests` is on, the script also re-imports `apptesting/testcases.yaml` (upsert) and runs the smoke suite on the release via the App Testing agent; a test failure fails the run **after** distribution (post-release smoke alarm, not a delivery gate). Without the `APP_TESTING_*` secrets only the signed-out tests run. |
 
 **Release notes** are the top section of the root `CHANGELOG.md`, written for
 stakeholders. Keeping it current is a convention documented in `CLAUDE.md` /
@@ -79,6 +81,8 @@ Secrets and variables → Actions); provision them once:
 | `ANDROID_KEY_ALIAS` | key alias (e.g. `al_rasikhoon`) |
 | `ANDROID_KEY_PASSWORD` | key password |
 | `FIREBASE_TOKEN` | `firebase login:ci` (account with Firebase App Distribution Admin on `alrasikhoon-57151`) |
+| `APP_TESTING_USERNAME` | username of the dedicated QA account the App Testing agent signs in with (optional — without it only signed-out tests run) |
+| `APP_TESTING_PASSWORD` | password of that QA account (optional, pairs with the username) |
 
 Also ensure the `beta-testers` group exists in Firebase App Distribution.
 

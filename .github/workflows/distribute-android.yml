@@ -39,6 +39,15 @@ name: Distribute Android
         required: false
         default: "beta-testers"
         type: string
+      run_agent_tests:
+        description: "Run Firebase App Testing agent smoke tests on the release"
+        required: false
+        default: true
+        type: boolean
+      test_case_ids:
+        description: "App Testing agent test case ids to run, comma-separated (blank = the smoke suite)"
+        required: false
+        type: string
 
 # Never run two distributions at once, and never cancel one in flight (a
 # half-finished upload is worse than waiting).
@@ -139,10 +148,39 @@ jobs:
       # Android versionCode so App Distribution treats each as a new release.
       # FIREBASE_TOKEN is auto-detected by firebase-tools from the environment.
       # GROUPS comes from the workflow input (defaults to beta-testers).
-      - name: Build and distribute APK
+      #
+      # App Testing agent: when run_agent_tests is on, the script re-imports
+      # apptesting/testcases.yaml (upsert) and runs the smoke suite against
+      # this exact release on a real Test Lab device. Signed-in tests need the
+      # APP_TESTING_USERNAME/APP_TESTING_PASSWORD secrets (a dedicated QA
+      # account); without them only the signed-out tests run. A failed agent
+      # run fails this workflow AFTER the build has been distributed — it is a
+      # loud post-release smoke alarm, not a delivery gate.
+      - name: Build, distribute and run App Testing agent
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           GROUPS: ${{ inputs.groups }}
           BUILD_NUMBER: ${{ github.run_number }}
           RELEASE_NOTES_FILE: ${{ runner.temp }}/release-notes.txt
-        run: scripts/distribute_android.sh apk
+          RUN_AGENT_TESTS: ${{ inputs.run_agent_tests }}
+          TEST_CASE_IDS_INPUT: ${{ inputs.test_case_ids }}
+          APP_TESTING_USERNAME: ${{ secrets.APP_TESTING_USERNAME }}
+          APP_TESTING_PASSWORD: ${{ secrets.APP_TESTING_PASSWORD }}
+        run: |
+          set -euo pipefail
+          # Test case ids live in apptesting/testcases.yaml (mirrored to the
+          # Firebase console on import). Keep these lists in sync with it.
+          SMOKE_SIGNED_OUT="login-screen-loads,login-empty-form-blocked,login-wrong-credentials-rejected"
+          SMOKE_FULL="$SMOKE_SIGNED_OUT,login-with-test-account,profile-screen-opens,logout-returns-to-login"
+
+          if [[ "$RUN_AGENT_TESTS" == "true" ]]; then
+            if [[ -n "$APP_TESTING_USERNAME" && -n "$APP_TESTING_PASSWORD" ]]; then
+              export TEST_CASE_IDS="${TEST_CASE_IDS_INPUT:-$SMOKE_FULL}"
+              export TEST_USERNAME="$APP_TESTING_USERNAME"
+              export TEST_PASSWORD="$APP_TESTING_PASSWORD"
+            else
+              echo "::warning::APP_TESTING_USERNAME / APP_TESTING_PASSWORD secrets are not set — running only the signed-out App Testing agent tests."
+              export TEST_CASE_IDS="${TEST_CASE_IDS_INPUT:-$SMOKE_SIGNED_OUT}"
+            fi
+          fi
+          scripts/distribute_android.sh apk
