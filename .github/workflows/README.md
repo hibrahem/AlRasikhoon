@@ -48,6 +48,7 @@ merge (see [`AgDR-0004`](../../docs/agdr/AgDR-0004-android-firebase-distribution
 | `groups` | `beta-testers` | Firebase App Distribution tester group(s), comma-separated. |
 | `run_agent_tests` | `true` | Run the Firebase App Testing agent (AI tester on a real Test Lab device) against the release. See [`apptesting/README.md`](../../apptesting/README.md). |
 | `test_case_ids` | blank (= the smoke suite) | Override which test case ids from `apptesting/testcases.yaml` the agent runs. |
+| `force` | `false` | Skip the green-CI check (emergencies only). |
 
 Builds a release-signed APK and uploads it to Firebase App Distribution. Reuses
 `scripts/distribute_android.sh` (build + upload) and
@@ -58,7 +59,7 @@ Builds a release-signed APK and uploads it to Firebase App Distribution. Reuses
 | Checkout | Checks out `inputs.ref` (or the dispatched ref). |
 | Set up JDK 17 | Android Gradle runs on JDK 17 (app source/target stays Java 11). |
 | Set up Flutter | Same pinned `FLUTTER_VERSION` as `ci.yml`. |
-| Analyze + tests | Re-runs the CI quality gate (`flutter analyze --no-fatal-infos`, `flutter test test/`) against the chosen commit, so a broken ref can never be shipped. |
+| Require green CI | `.github/actions/require-green-ci` (~5s): fails unless the chosen commit already has a successful `CI` run — a broken or unvalidated ref still cannot ship, without re-running the gates. `force: true` skips it. |
 | Set up Node + Firebase CLI | Node installs `firebase-tools` for the upload. |
 | Configure release signing | Decodes `ANDROID_KEYSTORE_BASE64` to `$RUNNER_TEMP` and writes `android/key.properties` pointing at it. |
 | Generate release notes | `scripts/extract_release_notes.sh CHANGELOG.md`; **fails if the top section is empty**. |
@@ -68,11 +69,38 @@ Builds a release-signed APK and uploads it to Firebase App Distribution. Reuses
 stakeholders. Keeping it current is a convention documented in `CLAUDE.md` /
 `AGENTS.md`.
 
+## `distribute-ios.yml`
+
+On-demand TestFlight distribution — the iOS counterpart of
+`distribute-android.yml`. Manual trigger only ("Run workflow"), same
+green-CI gate, same stakeholder release notes taken verbatim from the top
+section of `CHANGELOG.md` (empty top section fails the run, shown in
+TestFlight as "What to Test").
+
+Runs on `macos-15` (free: public repo). Signing is Xcode **cloud signing**:
+automatic signing + `-allowProvisioningUpdates` authenticated by the App
+Store Connect API key — certificates and profiles are created and managed
+by Apple, nothing signing-related lives in secrets.
+
+Inputs: `ref` (commit to ship), `external_groups` (default `beta-testers`),
+`distribute_external` (default true; internal testers always receive the
+build), `force` (skip the green-CI check).
+
+Internal testers receive builds minutes after Apple finishes processing.
+External groups require Apple's Beta App Review on the first build
+(~24–48h) and completed TestFlight Test Information — including demo
+sign-in credentials, since the app requires login.
+
+Design: `docs/superpowers/specs/2026-07-19-ios-testflight-distribution-design.md`
+
+**How to release:** Actions tab → **Distribute iOS** → **Run workflow** →
+(optionally set inputs) → **Run workflow**.
+
 ## Secrets
 
-`ci.yml` (`flutter` and `functions`) requires no secrets. The
-`distribute-android.yml` workflow requires these repo secrets (Settings →
-Secrets and variables → Actions); provision them once:
+`ci.yml` (`flutter` and `functions`) requires no secrets. Both
+`distribute-android.yml` and `distribute-ios.yml` workflows require repo secrets
+(Settings → Secrets and variables → Actions); provision them once:
 
 | Secret | Source |
 |--------|--------|
@@ -85,6 +113,14 @@ Secrets and variables → Actions); provision them once:
 | `APP_TESTING_PASSWORD` | password of that QA account (optional, pairs with the username) |
 
 Also ensure the `beta-testers` group exists in Firebase App Distribution.
+
+### iOS (TestFlight)
+
+| Secret | How to produce it |
+|--------|-------------------|
+| `ASC_API_KEY_ID` | App Store Connect → Users and Access → Integrations → App Store Connect API → generate key with **App Manager** role; the Key ID shown in the list |
+| `ASC_API_ISSUER_ID` | same page — the team-wide Issuer ID above the key list |
+| `ASC_API_KEY_P8_BASE64` | download the key's `.p8` (possible **once**), then `base64 -i AuthKey_<KEYID>.p8 \| gh secret set ASC_API_KEY_P8_BASE64` |
 
 ## Removed workflows
 

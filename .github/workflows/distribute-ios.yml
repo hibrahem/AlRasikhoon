@@ -1,0 +1,187 @@
+# Distribute iOS — Al-Rasikhoon
+#
+# Publishes a TestFlight build ON DEMAND, not on every push. A maintainer
+# opens the Actions tab, picks this workflow, clicks "Run workflow", and
+# chooses which commit becomes the next stakeholder test build — the same
+# deliberate "cut a release" button as distribute-android.yml.
+#
+# Instead of re-running the CI gates, it verifies the chosen commit already
+# has a GREEN CI run (require-green-ci composite action, ~5s). The `force`
+# input skips the check for emergencies.
+#
+# Signing is Xcode CLOUD SIGNING: automatic signing + -allowProvisioningUpdates
+# authenticated by the App Store Connect API key. Certificates and profiles
+# are created and managed by Apple; no .p12 or provisioning profile secrets.
+#
+# Internal testers get every build within minutes of processing. External
+# groups additionally require Apple's Beta App Review on the first build
+# (~24-48h) and complete TestFlight Test Information (incl. demo sign-in
+# credentials — the app requires login).
+#
+# Required repo secrets (Settings → Secrets and variables → Actions):
+#   ASC_API_KEY_ID, ASC_API_ISSUER_ID, ASC_API_KEY_P8_BASE64
+# See .github/workflows/README.md for how to produce each.
+#
+# Design: docs/superpowers/specs/2026-07-19-ios-testflight-distribution-design.md
+
+name: Distribute iOS
+
+# Quoted for the YAML-1.1 Norway problem — see ci.yml.
+"on":
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Commit SHA or branch/tag to ship (blank = the ref selected in the UI, normally main)"
+        required: false
+        type: string
+      external_groups:
+        description: "TestFlight external tester group(s), comma-separated"
+        required: false
+        default: "beta-testers"
+        type: string
+      distribute_external:
+        description: "Also distribute to the external group(s); internal testers always receive the build"
+        required: false
+        default: true
+        type: boolean
+      force:
+        description: "Skip the green-CI check (emergencies only)"
+        required: false
+        default: false
+        type: boolean
+
+# Never run two distributions at once, and never cancel one in flight.
+concurrency:
+  group: distribute-ios
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  # Keep in sync with .github/workflows/ci.yml.
+  FLUTTER_VERSION: "3.35.7"
+  BUNDLE_ID: com.alrasikhoon.alRasikhoon
+  TEAM_ID: 327MX655VL
+
+jobs:
+  distribute:
+    name: Build & upload to TestFlight
+    # macOS runner required for xcodebuild; free on public repos.
+    runs-on: macos-15
+    # Apple-side IPA processing alone can take 10-30 min; leave headroom.
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Require green CI for this commit
+        uses: ./.github/actions/require-green-ci
+        with:
+          force: ${{ inputs.force }}
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      # Fails loudly if the changelog's top section is missing or empty, so a
+      # forgotten changelog blocks the release instead of shipping empty notes.
+      - name: Generate stakeholder release notes
+        run: scripts/extract_release_notes.sh CHANGELOG.md > "$RUNNER_TEMP/release-notes.txt"
+
+      # Materialize the App Store Connect API key OUTSIDE the repo tree:
+      # the raw .p8 for xcodebuild's authentication flags, and the JSON form
+      # fastlane pilot expects. GitHub masks registered secrets in logs.
+      - name: Write App Store Connect API key
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          ASC_API_KEY_P8_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+        run: |
+          set -euo pipefail
+          for v in ASC_API_KEY_ID ASC_API_ISSUER_ID ASC_API_KEY_P8_BASE64; do
+            if [[ -z "${!v}" ]]; then
+              echo "ERROR: $v secret is empty or unset." >&2
+              exit 1
+            fi
+          done
+          echo "$ASC_API_KEY_P8_BASE64" | base64 --decode > "$RUNNER_TEMP/asc_key.p8"
+          jq -n --arg key_id "$ASC_API_KEY_ID" \
+                --arg issuer_id "$ASC_API_ISSUER_ID" \
+                --rawfile key "$RUNNER_TEMP/asc_key.p8" \
+                '{key_id: $key_id, issuer_id: $issuer_id, key: $key, in_house: false}' \
+                > "$RUNNER_TEMP/asc_api_key.json"
+
+      # --build-number=run_number gives every distribution a unique, increasing
+      # CFBundleVersion so TestFlight treats each as a new build. Compilation
+      # happens here unsigned; signing happens in the archive step below.
+      - name: Build Flutter iOS (no codesign)
+        run: flutter build ios --release --no-codesign --build-number="${{ github.run_number }}"
+
+      # Cloud signing: -allowProvisioningUpdates + the API key lets xcodebuild
+      # register the bundle id and create/manage the distribution certificate
+      # and App Store profile headlessly. Auth flags are command-line only —
+      # no global signing build settings, so CocoaPods targets are untouched.
+      - name: Archive (cloud signing)
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          xcodebuild -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/Runner.xcarchive" \
+            archive \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/asc_key.p8" \
+            -authenticationKeyID "$ASC_API_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_API_ISSUER_ID"
+
+      - name: Export IPA
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Runner.xcarchive" \
+            -exportOptionsPlist ios/ExportOptionsAppStore.plist \
+            -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/asc_key.p8" \
+            -authenticationKeyID "$ASC_API_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_API_ISSUER_ID"
+
+      # pilot uploads, waits for Apple's processing, sets "What to Test" from
+      # the changelog notes, and (when distribute_external) pushes the build
+      # to the external group(s) — triggering Beta App Review when required.
+      - name: Upload to TestFlight
+        env:
+          GROUPS: ${{ inputs.external_groups }}
+          DISTRIBUTE_EXTERNAL: ${{ inputs.distribute_external }}
+        run: |
+          set -euo pipefail
+          IPA_PATH="$(ls "$RUNNER_TEMP"/export/*.ipa 2>/dev/null | head -n1 || true)"
+          if [[ -z "$IPA_PATH" || ! -f "$IPA_PATH" ]]; then
+            echo "ERROR: no IPA produced under $RUNNER_TEMP/export/." >&2
+            exit 1
+          fi
+          args=( --api_key_path "$RUNNER_TEMP/asc_api_key.json"
+                 --ipa "$IPA_PATH"
+                 --changelog "$(cat "$RUNNER_TEMP/release-notes.txt")" )
+          if [[ "$DISTRIBUTE_EXTERNAL" == "true" ]]; then
+            args+=( --distribute_external true --groups "$GROUPS" )
+          fi
+          fastlane pilot upload "${args[@]}"

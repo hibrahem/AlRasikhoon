@@ -8,9 +8,10 @@
 # Why manual (not push-triggered): stakeholders should receive a curated build
 # when the team decides one is ready — not one per merge. See AgDR-0004.
 #
-# It re-runs the same quality gates as CI (analyze + tests) against the chosen
-# commit BEFORE building, so a broken commit can never be shipped even if the
-# operator points it at an arbitrary ref. Then it reuses the existing
+# Instead of re-running the CI gates, it verifies the chosen commit already
+# has a GREEN CI run (require-green-ci composite action, ~5s) — a broken or
+# unvalidated commit still cannot ship, but a validated one ships fast. The
+# `force` input skips the check for emergencies. Then it reuses the existing
 # scripts/distribute_android.sh (build + upload) and scripts/extract_release_notes.sh
 # (stakeholder notes taken verbatim from the top section of CHANGELOG.md).
 #
@@ -48,6 +49,11 @@ name: Distribute Android
         description: "App Testing agent test case ids to run, comma-separated (blank = the smoke suite)"
         required: false
         type: string
+      force:
+        description: "Skip the green-CI check (emergencies only)"
+        required: false
+        default: false
+        type: boolean
 
 # Never run two distributions at once, and never cancel one in flight (a
 # half-finished upload is worse than waiting).
@@ -57,6 +63,7 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read
 
 env:
   # Keep in sync with .github/workflows/ci.yml — same pinned toolchain so the
@@ -77,6 +84,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref || github.ref }}
+
+      # Gate: the shipped commit must already be green in CI (see the header
+      # comment). Replaces the former Analyze + test re-run.
+      - name: Require green CI for this commit
+        uses: ./.github/actions/require-green-ci
+        with:
+          force: ${{ inputs.force }}
 
       # Android Gradle builds run on JDK 17 regardless of the app's Java 11
       # source/target compatibility. Pin it so the toolchain is deterministic.
@@ -104,15 +118,6 @@ jobs:
 
       - name: Resolve dependencies
         run: flutter pub get
-
-      # Quality gate: mirror the CI `flutter` job so the exact commit being
-      # shipped is proven green first. `--no-fatal-infos` matches ci.yml (the
-      # repo carries known info-level debt; warnings and errors still fail).
-      - name: Analyze
-        run: flutter analyze --no-fatal-infos
-
-      - name: Unit, widget and E2E tests
-        run: flutter test test/
 
       # Reconstruct release signing from secrets. The keystore is decoded to a
       # runner-local file OUTSIDE the repo tree ($RUNNER_TEMP) so it can never
