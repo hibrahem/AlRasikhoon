@@ -13,30 +13,37 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## Unreleased
 
-- Browsing screens (student profiles, lists, histories, and details) now
-  open with a large elegant title that gracefully shrinks into the top bar
-  as you scroll — like the polished apps you know.
-- Text across the whole app is now noticeably larger and easier to read,
-  and screen titles are bigger and more prominent at the top of every page.
-- Student cards in lists are tidier — the details sit closer together with
-  a clearer progress bar, so more students fit on screen.
-- The sign-in screen now greets you with the official gold الراسخون logo on
-  its own, without a caption underneath — matching the opening screen.
-- The opening screen now shows the الراسخون logo on its own — the caption
-  underneath it was removed for a cleaner look.
-- The app now wears the official الراسخون logo: the gold calligraphy mark is
-  the new app icon on your home screen, and the opening screen shows the full
-  gold-on-black logo while the app starts up.
-- Small text throughout the app (badges, labels, error messages, and button
-  text) is now larger and easier to read.
-- Refreshed the look and feel across the whole app, including a proper dark
-  mode that's easy on the eyes at night.
-- Grade colors now stay clear and readable in dark mode.
-- Teachers now see all of a student's information — including their session
-  history — on a single profile screen.
-- Supervisors can now set and adjust a student's starting point before they
-  begin, with the limits enforced securely.
-- The recitation (Talqeen) screen now shows how long the recitation is taking,
-  color-coded by pace, so progress is easy to follow at a glance.
-- Tightened data access so teachers and supervisors only ever see the students
-  and information that belong to them.
+- أصبح التطبيق يعمل الآن دون اتصال بالإنترنت داخل المعهد — يمكن للجميع تصفح
+  أحدث البيانات دون اتصال، وللمعلمين إجراء حلقات التسميع، وللمشرفين إجراء
+  الاختبارات. وتفتح الشاشات فورًا من آخر بيانات محفوظة بدل انتظار اتصال غير
+  موجود. كل ما يُحفظ دون اتصال تتم مزامنته تلقائيًا عند عودة الاتصال: يظهر
+  شريط تنبيه أثناء انقطاع الاتصال، ويُؤكَّد الحفظ بعبارة «تم الحفظ محليًا»،
+  وتحمل السجلات غير المُزامَنة علامة «بانتظار المزامنة» حتى تصل إلى الخادم.
+  أما الإجراءات التي تتطلب اتصالًا فعليًا (مثل إنشاء الحسابات أو المعاهد)
+  فتوضح ذلك بصراحة بدل الفشل بصمت.
+- شاشات التصفح (ملفات الطلاب والقوائم والسجلات والتفاصيل) تفتح الآن بعنوان
+  كبير أنيق يتقلص بسلاسة نحو الشريط العلوي أثناء التمرير — كما في التطبيقات
+  الاحترافية المألوفة.
+- أصبحت نصوص التطبيق كله أكبر وأسهل قراءةً بشكل ملحوظ، وعناوين الشاشات أكبر
+  وأبرز أعلى كل صفحة.
+- بطاقات الطلاب في القوائم أصبحت أكثر ترتيبًا — التفاصيل متقاربة وشريط
+  التقدم أوضح، فيظهر عدد أكبر من الطلاب على الشاشة.
+- شاشة تسجيل الدخول ترحب بك الآن بشعار الراسخون الذهبي الرسمي وحده، دون
+  عبارة أسفله — تماشيًا مع شاشة الافتتاح.
+- شاشة الافتتاح تعرض الآن شعار الراسخون وحده — حُذفت العبارة التي كانت
+  أسفله لمظهر أنقى.
+- يحمل التطبيق الآن شعار الراسخون الرسمي: الخط الذهبي هو أيقونة التطبيق
+  الجديدة على شاشة هاتفك، وتعرض شاشة الافتتاح الشعار الذهبي على خلفية سوداء
+  أثناء بدء التشغيل.
+- النصوص الصغيرة في أنحاء التطبيق (الشارات والتسميات ورسائل الخطأ ونصوص
+  الأزرار) أصبحت أكبر وأسهل قراءة.
+- تحديث شامل لمظهر التطبيق وإحساسه، بما في ذلك وضع ليلي متقن مريح للعين.
+- ألوان التقديرات تبقى الآن واضحة ومقروءة في الوضع الليلي.
+- يرى المعلمون الآن كل معلومات الطالب — بما فيها سجل حلقاته — في شاشة ملف
+  واحدة.
+- يمكن للمشرفين الآن تحديد نقطة انطلاق الطالب وتعديلها قبل أن يبدأ، ضمن
+  حدود مفروضة بشكل آمن.
+- شاشة التلقين تعرض الآن مدة التسميع بلون يعكس الوتيرة المطلوبة، ليسهل
+  متابعة التقدم بنظرة واحدة.
+- تشديد صلاحيات الوصول إلى البيانات بحيث لا يرى المعلمون والمشرفون إلا
+  الطلاب والمعلومات التي تخصهم.

@@ -2,20 +2,28 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
 import '../services/firebase_service.dart';
+import '../services/firestore_read_source.dart';
 import '../../core/constants/app_constants.dart';
 
 class UserRepository {
   final FirebaseFirestore _firestore;
 
-  UserRepository({FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
+  /// Where reads resolve from — offline they pin to the local cache instead
+  /// of waiting out a doomed server attempt (al_rasikhoon-gy4).
+  final FirestoreReadSource _read;
+
+  UserRepository({
+    FirebaseFirestore? firestore,
+    FirestoreReadSource? readSource,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _read = readSource ?? const FirestoreReadSource.alwaysOnline();
 
   CollectionReference<Map<String, dynamic>> get _usersCollection =>
       _firestore.collection(AppConstants.collectionUsers);
 
   /// Get user by ID
   Future<UserModel?> getUserById(String userId) async {
-    final doc = await _usersCollection.doc(userId).get();
+    final doc = await _read.getDoc(_usersCollection.doc(userId));
     if (doc.exists) {
       return UserModel.fromFirestore(doc);
     }
@@ -24,10 +32,9 @@ class UserRepository {
 
   /// Get user by email
   Future<UserModel?> getUserByEmail(String email) async {
-    final query = await _usersCollection
-        .where('email', isEqualTo: email.toLowerCase())
-        .limit(1)
-        .get();
+    final query = await _read.getQuery(
+      _usersCollection.where('email', isEqualTo: email.toLowerCase()).limit(1),
+    );
 
     if (query.docs.isNotEmpty) {
       return UserModel.fromFirestore(query.docs.first);
@@ -37,10 +44,11 @@ class UserRepository {
 
   /// Get user by username — the user-visible login identifier.
   Future<UserModel?> getUserByUsername(String username) async {
-    final query = await _usersCollection
-        .where('username', isEqualTo: username.toLowerCase())
-        .limit(1)
-        .get();
+    final query = await _read.getQuery(
+      _usersCollection
+          .where('username', isEqualTo: username.toLowerCase())
+          .limit(1),
+    );
 
     if (query.docs.isNotEmpty) {
       return UserModel.fromFirestore(query.docs.first);
@@ -119,11 +127,16 @@ class UserRepository {
     UserRole role, {
     Source source = Source.serverAndCache,
   }) async {
-    final query = await _usersCollection
+    final baseQuery = _usersCollection
         .where('role', isEqualTo: role.value)
         .where('is_active', isEqualTo: true)
-        .orderBy('created_at', descending: true)
-        .get(GetOptions(source: source));
+        .orderBy('created_at', descending: true);
+
+    // An explicit [source] (Source.server after a Cloud Function write)
+    // always wins; the default routes through the connectivity-aware policy.
+    final query = source == Source.serverAndCache
+        ? await _read.getQuery(baseQuery)
+        : await baseQuery.get(GetOptions(source: source));
 
     return query.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
   }
@@ -200,7 +213,7 @@ class UserRepository {
       return getUserById(oldId);
     }
 
-    final oldDoc = await _usersCollection.doc(oldId).get();
+    final oldDoc = await _read.getDoc(_usersCollection.doc(oldId));
     if (!oldDoc.exists) return null;
 
     final userData = oldDoc.data()!;
@@ -233,7 +246,7 @@ class UserRepository {
     }
 
     // Return the user with new ID
-    final newDoc = await _usersCollection.doc(newFirebaseUid).get();
+    final newDoc = await _read.getDoc(_usersCollection.doc(newFirebaseUid));
     if (newDoc.exists) {
       return UserModel.fromFirestore(newDoc);
     }
@@ -252,7 +265,7 @@ class UserRepository {
     }
 
     // Firestore doesn't support full-text search, so we'll get all and filter
-    final result = await baseQuery.get();
+    final result = await _read.getQuery(baseQuery);
 
     return result.docs
         .map((doc) => UserModel.fromFirestore(doc))
@@ -268,5 +281,8 @@ class UserRepository {
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
   final firestore = ref.watch(firestoreProvider);
-  return UserRepository(firestore: firestore);
+  return UserRepository(
+    firestore: firestore,
+    readSource: ref.watch(firestoreReadSourceProvider),
+  );
 });

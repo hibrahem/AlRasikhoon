@@ -9,6 +9,7 @@ import '../../../core/utils/validators.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/services/firebase_service.dart';
 import '../../../shared/widgets/app_button.dart';
+import '../../../shared/utils/connectivity_guard.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/icon_medallion.dart';
 import '../providers/admin_provider.dart';
@@ -41,6 +42,9 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
   }
 
   Future<void> _handleCreate() async {
+    // Online-only by policy (offline spec §5): account provisioning runs a
+    // Cloud Function, and management edits are not queued offline.
+    if (!ensureOnline(context, ref)) return;
     if (_isLoading) return;
     if (!_formKey.currentState!.validate()) return;
 

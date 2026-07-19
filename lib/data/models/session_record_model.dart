@@ -173,6 +173,12 @@ class SessionRecordModel implements SessionTiming {
   @override
   final Duration? duration;
 
+  /// True while this record sits in Firestore's local write queue — saved
+  /// offline, not yet acknowledged by the server. Snapshot METADATA
+  /// (`hasPendingWrites`), never data: it is set only when reading back from
+  /// Firestore and is never written by [toFirestore].
+  final bool isPendingSync;
+
   const SessionRecordModel({
     required this.id,
     required this.studentId,
@@ -197,11 +203,17 @@ class SessionRecordModel implements SessionTiming {
     this.notes,
     required this.createdAt,
     this.duration,
+    this.isPendingSync = false,
   });
 
   factory SessionRecordModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    return SessionRecordModel.fromJson(doc.id, data);
+    // The pending flag is snapshot metadata, so it attaches here — fromJson
+    // has no snapshot and stays pure data.
+    return SessionRecordModel.fromJson(
+      doc.id,
+      data,
+    ).copyWith(isPendingSync: doc.metadata.hasPendingWrites);
   }
 
   factory SessionRecordModel.fromJson(String id, Map<String, dynamic> json) {
@@ -320,6 +332,7 @@ class SessionRecordModel implements SessionTiming {
     String? notes,
     DateTime? createdAt,
     Duration? duration,
+    bool? isPendingSync,
   }) {
     return SessionRecordModel(
       id: id ?? this.id,
@@ -347,6 +360,7 @@ class SessionRecordModel implements SessionTiming {
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       duration: duration ?? this.duration,
+      isPendingSync: isPendingSync ?? this.isPendingSync,
     );
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'firebase_options.dart';
@@ -42,6 +43,19 @@ void main() async {
 
   // Configure Firebase Emulators if enabled
   await FirebaseEmulatorConfig.configureEmulators();
+
+  // Offline mode rests on Firestore's disk cache (see
+  // docs/superpowers/specs/2026-07-19-offline-mode-design.md). Persistence is
+  // the platform default on mobile but is pinned here so it can never silently
+  // regress, and the cache is unbounded so LRU eviction cannot drop the
+  // curriculum catalog a teacher needs in a halaqa with no connectivity.
+  // copyWith — not a fresh Settings — so the emulator host applied above
+  // survives.
+  FirebaseFirestore.instance.settings = FirebaseFirestore.instance.settings
+      .copyWith(
+        persistenceEnabled: true,
+        cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+      );
 
   // Initialize Hive and open the session box BEFORE runApp so
   // AuthRepository.build() can read the cached user synchronously and route

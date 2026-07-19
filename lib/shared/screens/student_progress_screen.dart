@@ -235,7 +235,7 @@ class _ProgressBody extends ConsumerWidget {
         Text('سجل الحلقات', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
         historyAsync.when(
-          data: (entries) => _SessionHistoryList(
+          data: (entries) => SessionHistoryList(
             entries: entries,
             sessionDetailRoute: sessionDetailRoute,
             assessmentDetailRoute: assessmentDetailRoute,
@@ -542,12 +542,12 @@ class _PartTile extends StatelessWidget {
   }
 }
 
-class _SessionHistoryList extends StatelessWidget {
+class SessionHistoryList extends StatelessWidget {
   final List<StudentHistoryEntry> entries;
   final String sessionDetailRoute;
   final String assessmentDetailRoute;
 
-  const _SessionHistoryList({
+  const SessionHistoryList({
     required this.entries,
     required this.sessionDetailRoute,
     required this.assessmentDetailRoute,
@@ -643,6 +643,39 @@ class _SessionHistoryList extends StatelessWidget {
                         context,
                       ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                     ),
+                    // Saved offline on this device and still in Firestore's
+                    // local write queue — clears on its own once synced.
+                    if (entry.isPendingSync)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: tokens.gold.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: tokens.gold),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.cloud_upload_outlined,
+                                size: 12,
+                                color: tokens.ink,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'بانتظار المزامنة',
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(color: tokens.ink),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),

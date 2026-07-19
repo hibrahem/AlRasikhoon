@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/session_model.dart';
 import '../models/session_record_model.dart';
 import '../models/sard_record_model.dart';
 import '../models/exam_record_model.dart';
 import '../services/firebase_service.dart';
+import '../services/firestore_read_source.dart';
 import '../../core/constants/app_constants.dart';
 import '../../domain/assessment/assessment_evaluation.dart';
 import '../../domain/curriculum/curriculum_pace.dart';
@@ -15,8 +17,13 @@ import '../../domain/session/student_history_entry.dart';
 class SessionRepository {
   final FirebaseFirestore _firestore;
 
-  SessionRepository({FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
+  /// Where reads resolve from — offline they pin to the local cache instead
+  /// of waiting out a doomed server attempt (al_rasikhoon-gy4).
+  final FirestoreReadSource _read;
+
+  SessionRepository({FirebaseFirestore? firestore, FirestoreReadSource? readSource})
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _read = readSource ?? const FirestoreReadSource.alwaysOnline();
 
   CollectionReference<Map<String, dynamic>> get _sessionRecordsCollection =>
       _firestore.collection(AppConstants.collectionSessionRecords);
@@ -26,6 +33,36 @@ class SessionRepository {
 
   CollectionReference<Map<String, dynamic>> get _examRecordsCollection =>
       _firestore.collection(AppConstants.collectionExamRecords);
+
+  /// A fresh [WriteBatch] for an atomic save. Handed out here — rather than
+  /// callers reaching for a Firestore instance — so the batch is guaranteed
+  /// to come from the same instance the repositories write through.
+  WriteBatch newWriteBatch() => _firestore.batch();
+
+  /// Counts [query]'s results via [primary] (an aggregation `.count()`, which
+  /// is SERVER-ONLY and throws with no connectivity), falling back to the
+  /// size of the cached result set when the server is unreachable. The cache
+  /// may under-count — acceptable for attempt numbering (attempts are
+  /// numbered, never capped) and for profile statistics, both of which
+  /// self-correct once back online.
+  @visibleForTesting
+  Future<int> countWithCacheFallback(
+    Query<Map<String, dynamic>> query, {
+    required Future<int> Function() primary,
+  }) async {
+    // Offline the aggregation cannot succeed — skip straight to the cache
+    // instead of waiting out the doomed server attempt.
+    if (!_read.isOnline) {
+      final cached = await query.get(const GetOptions(source: Source.cache));
+      return cached.docs.length;
+    }
+    try {
+      return await primary();
+    } on FirebaseException {
+      final cached = await query.get(const GetOptions(source: Source.cache));
+      return cached.docs.length;
+    }
+  }
 
   // ==================== Session Records ====================
 
@@ -41,10 +78,18 @@ class SessionRepository {
   Future<SessionRecordModel> _writeSessionRecord(
     SessionRecordModel Function(String id, DateTime writtenAt) build, {
     DateTime? now,
+    WriteBatch? batch,
   }) async {
     final docRef = _sessionRecordsCollection.doc();
     final record = build(docRef.id, now ?? DateTime.now());
-    await docRef.set(record.toFirestore());
+    if (batch != null) {
+      // Staged into the caller's batch: nothing reaches Firestore (local
+      // cache included) until the caller commits, which is what makes the
+      // record + student-progress pair atomic under offline sync.
+      batch.set(docRef, record.toFirestore());
+    } else {
+      await docRef.set(record.toFirestore());
+    }
     return record;
   }
 
@@ -83,6 +128,7 @@ class SessionRepository {
     String? notes,
     DateTime? now,
     DateTime? startedAt,
+    WriteBatch? batch,
   }) {
     final grades = SessionGrades(
       newMemorizationErrors: newMemorizationErrors,
@@ -134,6 +180,7 @@ class SessionRepository {
               ).elapsed,
       ),
       now: now,
+      batch: batch,
     );
   }
 
@@ -171,6 +218,7 @@ class SessionRepository {
     String? notes,
     DateTime? now,
     DateTime? startedAt,
+    WriteBatch? batch,
   }) {
     return _writeSessionRecord(
       (id, writtenAt) => SessionRecordModel(
@@ -210,6 +258,7 @@ class SessionRepository {
               ).elapsed,
       ),
       now: now,
+      batch: batch,
     );
   }
 
@@ -234,12 +283,12 @@ class SessionRepository {
   /// query and its composite index (`student_id`, `date`, `order_in_level` in
   /// `firestore.indexes.json`) need no change.
   Future<SessionRecordModel?> getLatestSessionRecord(String studentId) async {
-    final query = await _sessionRecordsCollection
+    final query = await _read.getQuery(_sessionRecordsCollection
         .where('student_id', isEqualTo: studentId)
         .orderBy('date', descending: true)
         .orderBy('order_in_level', descending: true)
         .limit(1)
-        .get();
+        );
 
     if (query.docs.isEmpty) return null;
     return SessionRecordModel.fromFirestore(query.docs.first);
@@ -247,7 +296,7 @@ class SessionRepository {
 
   /// Get a single session record by id.
   Future<SessionRecordModel?> getSessionRecordById(String recordId) async {
-    final doc = await _sessionRecordsCollection.doc(recordId).get();
+    final doc = await _read.getDoc(_sessionRecordsCollection.doc(recordId));
     if (doc.exists) {
       return SessionRecordModel.fromFirestore(doc);
     }
@@ -267,7 +316,7 @@ class SessionRepository {
       query = query.limit(limit);
     }
 
-    final result = await query.get();
+    final result = await _read.getQuery(query);
     return result.docs
         .map((doc) => SessionRecordModel.fromFirestore(doc))
         .toList();
@@ -300,7 +349,7 @@ class SessionRepository {
       query = query.limit(limit);
     }
 
-    final result = await query.get();
+    final result = await _read.getQuery(query);
     return result.docs
         .map((doc) => SessionRecordModel.fromFirestore(doc))
         .toList();
@@ -310,14 +359,14 @@ class SessionRepository {
   Future<int> getAttemptCount({
     required String studentId,
     required String curriculumSessionId,
-  }) async {
-    final result = await _sessionRecordsCollection
+  }) {
+    final query = _sessionRecordsCollection
         .where('student_id', isEqualTo: studentId)
-        .where('curriculum_session_id', isEqualTo: curriculumSessionId)
-        .count()
-        .get();
-
-    return result.count ?? 0;
+        .where('curriculum_session_id', isEqualTo: curriculumSessionId);
+    return countWithCacheFallback(
+      query,
+      primary: () async => (await query.count().get()).count ?? 0,
+    );
   }
 
   // ==================== Sard Records ====================
@@ -342,6 +391,7 @@ class SessionRepository {
     String? notes,
     DateTime? startedAt,
     DateTime? now,
+    WriteBatch? batch,
   }) async {
     // A سرد is NOT graded on the راسخ..محب lesson scale: the curriculum's
     // sheet tracks the four error types per face and the verdict is binary —
@@ -370,13 +420,18 @@ class SessionRepository {
       duration: startedAt == null ? null : writtenAt.difference(startedAt),
     );
 
-    await docRef.set(record.toFirestore());
+    if (batch != null) {
+      // Staged into the caller's batch — see [_writeSessionRecord].
+      batch.set(docRef, record.toFirestore());
+    } else {
+      await docRef.set(record.toFirestore());
+    }
     return record;
   }
 
   /// Get a single سرد record by id — the source of its detail view.
   Future<SardRecordModel?> getSardRecordById(String recordId) async {
-    final doc = await _sardRecordsCollection.doc(recordId).get();
+    final doc = await _read.getDoc(_sardRecordsCollection.doc(recordId));
     if (doc.exists) {
       return SardRecordModel.fromFirestore(doc);
     }
@@ -387,10 +442,10 @@ class SessionRepository {
   Future<List<SardRecordModel>> getSardRecordsForStudent(
     String studentId,
   ) async {
-    final result = await _sardRecordsCollection
+    final result = await _read.getQuery(_sardRecordsCollection
         .where('student_id', isEqualTo: studentId)
         .orderBy('date', descending: true)
-        .get();
+        );
 
     return result.docs
         .map((doc) => SardRecordModel.fromFirestore(doc))
@@ -406,14 +461,14 @@ class SessionRepository {
   Future<int> getSardAttemptCount({
     required String studentId,
     required String curriculumSessionId,
-  }) async {
-    final result = await _sardRecordsCollection
+  }) {
+    final query = _sardRecordsCollection
         .where('student_id', isEqualTo: studentId)
-        .where('curriculum_session_id', isEqualTo: curriculumSessionId)
-        .count()
-        .get();
-
-    return result.count ?? 0;
+        .where('curriculum_session_id', isEqualTo: curriculumSessionId);
+    return countWithCacheFallback(
+      query,
+      primary: () async => (await query.count().get()).count ?? 0,
+    );
   }
 
   // ==================== Exam Records ====================
@@ -434,6 +489,7 @@ class SessionRepository {
     String? notes,
     DateTime? startedAt,
     DateTime? now,
+    WriteBatch? batch,
   }) async {
     // An اختبار is NOT graded on the راسخ..محب lesson scale: the curriculum's
     // sheet is five questions with the four error types tracked per question,
@@ -463,13 +519,18 @@ class SessionRepository {
       duration: startedAt == null ? null : writtenAt.difference(startedAt),
     );
 
-    await docRef.set(record.toFirestore());
+    if (batch != null) {
+      // Staged into the caller's batch — see [_writeSessionRecord].
+      batch.set(docRef, record.toFirestore());
+    } else {
+      await docRef.set(record.toFirestore());
+    }
     return record;
   }
 
   /// Get a single اختبار record by id — the source of its detail view.
   Future<ExamRecordModel?> getExamRecordById(String recordId) async {
-    final doc = await _examRecordsCollection.doc(recordId).get();
+    final doc = await _read.getDoc(_examRecordsCollection.doc(recordId));
     if (doc.exists) {
       return ExamRecordModel.fromFirestore(doc);
     }
@@ -480,10 +541,10 @@ class SessionRepository {
   Future<List<ExamRecordModel>> getExamRecordsForStudent(
     String studentId,
   ) async {
-    final result = await _examRecordsCollection
+    final result = await _read.getQuery(_examRecordsCollection
         .where('student_id', isEqualTo: studentId)
         .orderBy('date', descending: true)
-        .get();
+        );
 
     return result.docs
         .map((doc) => ExamRecordModel.fromFirestore(doc))
@@ -513,7 +574,7 @@ class SessionRepository {
       );
     }
 
-    final result = await query.get();
+    final result = await _read.getQuery(query);
     return result.docs
         .map((doc) => ExamRecordModel.fromFirestore(doc))
         .toList();
@@ -524,14 +585,14 @@ class SessionRepository {
   Future<int> getExamAttemptCount({
     required String studentId,
     required String curriculumSessionId,
-  }) async {
-    final result = await _examRecordsCollection
+  }) {
+    final query = _examRecordsCollection
         .where('student_id', isEqualTo: studentId)
-        .where('curriculum_session_id', isEqualTo: curriculumSessionId)
-        .count()
-        .get();
-
-    return result.count ?? 0;
+        .where('curriculum_session_id', isEqualTo: curriculumSessionId);
+    return countWithCacheFallback(
+      query,
+      primary: () async => (await query.count().get()).count ?? 0,
+    );
   }
 
   // ==================== Statistics ====================
@@ -546,7 +607,7 @@ class SessionRepository {
   Future<int> getSessionCountForTeacher(
     String teacherId, {
     DateTime? startDate,
-  }) async {
+  }) {
     Query<Map<String, dynamic>> query = _sessionRecordsCollection.where(
       'teacher_id',
       isEqualTo: teacherId,
@@ -559,8 +620,10 @@ class SessionRepository {
       );
     }
 
-    final result = await query.count().get();
-    return result.count ?? 0;
+    return countWithCacheFallback(
+      query,
+      primary: () async => (await query.count().get()).count ?? 0,
+    );
   }
 
   /// Whether the student has started: they have at least one progress record of
@@ -579,10 +642,9 @@ class SessionRepository {
       _sardRecordsCollection,
       _examRecordsCollection,
     ]) {
-      final hit = await collection
-          .where('student_id', isEqualTo: studentId)
-          .limit(1)
-          .get();
+      final hit = await _read.getQuery(
+        collection.where('student_id', isEqualTo: studentId).limit(1),
+      );
       if (hit.docs.isNotEmpty) return true;
     }
     return false;
@@ -621,6 +683,7 @@ class SessionRepository {
           duration: SessionDuration.fromRecord(r),
           // Lessons and تلقين both resolve in SessionDetailScreen.
           detailRecordId: r.id,
+          isPendingSync: r.isPendingSync,
         ),
       for (final r in sardRecords)
         StudentHistoryEntry(
@@ -634,6 +697,7 @@ class SessionRepository {
               ? null
               : SessionDuration(elapsed: r.duration!),
           detailRecordId: r.id,
+          isPendingSync: r.isPendingSync,
         ),
       for (final r in examRecords)
         StudentHistoryEntry(
@@ -647,6 +711,7 @@ class SessionRepository {
               ? null
               : SessionDuration(elapsed: r.duration!),
           detailRecordId: r.id,
+          isPendingSync: r.isPendingSync,
         ),
     ]..sort((a, b) => b.date.compareTo(a.date));
 
@@ -690,5 +755,8 @@ class SessionRepository {
 }
 
 final sessionRepositoryProvider = Provider<SessionRepository>((ref) {
-  return SessionRepository(firestore: ref.watch(firestoreProvider));
+  return SessionRepository(
+    firestore: ref.watch(firestoreProvider),
+    readSource: ref.watch(firestoreReadSourceProvider),
+  );
 });

@@ -3,12 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/institute_model.dart';
 import '../services/firebase_service.dart';
 import '../../core/constants/app_constants.dart';
+import '../services/firestore_read_source.dart';
 
 class InstituteRepository {
   final FirebaseFirestore _firestore;
 
-  InstituteRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  /// Where reads resolve from — offline they pin to the local cache instead
+  /// of waiting out a doomed server attempt (al_rasikhoon-gy4).
+  final FirestoreReadSource _read;
+
+  InstituteRepository({FirebaseFirestore? firestore, FirestoreReadSource? readSource})
+      : _firestore = firestore ?? FirebaseFirestore.instance,
+        _read = readSource ?? const FirestoreReadSource.alwaysOnline();
 
   CollectionReference<Map<String, dynamic>> get _institutesCollection =>
       _firestore.collection(AppConstants.collectionInstitutes);
@@ -21,17 +27,17 @@ class InstituteRepository {
 
   /// Get all institutes
   Future<List<InstituteModel>> getInstitutes() async {
-    final query = await _institutesCollection
+    final query = await _read.getQuery(_institutesCollection
         .where('is_active', isEqualTo: true)
         .orderBy('created_at', descending: true)
-        .get();
+        );
 
     return query.docs.map((doc) => InstituteModel.fromFirestore(doc)).toList();
   }
 
   /// Get institute by ID
   Future<InstituteModel?> getInstituteById(String instituteId) async {
-    final doc = await _institutesCollection.doc(instituteId).get();
+    final doc = await _read.getDoc(_institutesCollection.doc(instituteId));
     if (doc.exists) {
       return InstituteModel.fromFirestore(doc);
     }
@@ -101,10 +107,10 @@ class InstituteRepository {
 
   /// Get institutes for teacher
   Future<List<InstituteModel>> getInstitutesForTeacher(String teacherId) async {
-    final assignments = await _teacherInstitutesCollection
+    final assignments = await _read.getQuery(_teacherInstitutesCollection
         .where('teacher_id', isEqualTo: teacherId)
         .where('is_active', isEqualTo: true)
-        .get();
+        );
 
     final instituteIds = assignments.docs
         .map((doc) => doc.data()['institute_id'] as String)
@@ -121,10 +127,10 @@ class InstituteRepository {
 
   /// Get teachers for institute
   Future<List<String>> getTeacherIdsForInstitute(String instituteId) async {
-    final assignments = await _teacherInstitutesCollection
+    final assignments = await _read.getQuery(_teacherInstitutesCollection
         .where('institute_id', isEqualTo: instituteId)
         .where('is_active', isEqualTo: true)
-        .get();
+        );
 
     return assignments.docs
         .map((doc) => doc.data()['teacher_id'] as String)
@@ -159,10 +165,10 @@ class InstituteRepository {
 
   /// Get institutes for supervisor
   Future<List<InstituteModel>> getInstitutesForSupervisor(String supervisorId) async {
-    final assignments = await _supervisorInstitutesCollection
+    final assignments = await _read.getQuery(_supervisorInstitutesCollection
         .where('supervisor_id', isEqualTo: supervisorId)
         .where('is_active', isEqualTo: true)
-        .get();
+        );
 
     final instituteIds = assignments.docs
         .map((doc) => doc.data()['institute_id'] as String)
@@ -179,10 +185,10 @@ class InstituteRepository {
 
   /// Get supervisors for institute
   Future<List<String>> getSupervisorIdsForInstitute(String instituteId) async {
-    final assignments = await _supervisorInstitutesCollection
+    final assignments = await _read.getQuery(_supervisorInstitutesCollection
         .where('institute_id', isEqualTo: instituteId)
         .where('is_active', isEqualTo: true)
-        .get();
+        );
 
     return assignments.docs
         .map((doc) => doc.data()['supervisor_id'] as String)
@@ -203,5 +209,8 @@ class InstituteRepository {
 
 final instituteRepositoryProvider = Provider<InstituteRepository>((ref) {
   final firestore = ref.watch(firestoreProvider);
-  return InstituteRepository(firestore: firestore);
+  return InstituteRepository(
+    firestore: firestore,
+    readSource: ref.watch(firestoreReadSourceProvider),
+  );
 });

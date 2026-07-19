@@ -10,6 +10,7 @@ import '../../../data/models/institute_model.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/services/firebase_service.dart';
 import '../../../shared/widgets/app_button.dart';
+import '../../../shared/utils/connectivity_guard.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/states/loading_state.dart';
@@ -52,6 +53,9 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
   }
 
   Future<void> _handleCreate() async {
+    // Online-only by policy (offline spec §5): account provisioning runs a
+    // Cloud Function, and management edits are not queued offline.
+    if (!ensureOnline(context, ref)) return;
     if (_isLoading) return;
     // The institute dropdown is a form field with its own validator, so a
     // missing selection surfaces inline here like every other field. The

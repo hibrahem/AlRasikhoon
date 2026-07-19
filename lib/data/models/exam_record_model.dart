@@ -50,6 +50,12 @@ class ExamRecordModel {
   /// cap. Null for records written before assessments were timed.
   final Duration? duration;
 
+  /// True while this record sits in Firestore's local write queue — saved
+  /// offline, not yet acknowledged by the server. Snapshot METADATA
+  /// (`hasPendingWrites`), never data: set only in [fromFirestore], never
+  /// written by [toFirestore].
+  final bool isPendingSync;
+
   const ExamRecordModel({
     required this.id,
     required this.studentId,
@@ -69,6 +75,7 @@ class ExamRecordModel {
     required this.createdAt,
     this.questionErrors = const [],
     this.duration,
+    this.isPendingSync = false,
   });
 
   factory ExamRecordModel.fromFirestore(DocumentSnapshot doc) {
@@ -94,6 +101,7 @@ class ExamRecordModel {
       duration: (data['duration_seconds'] as int?) == null
           ? null
           : Duration(seconds: data['duration_seconds'] as int),
+      isPendingSync: doc.metadata.hasPendingWrites,
     );
   }
 
@@ -138,6 +146,7 @@ class ExamRecordModel {
     DateTime? createdAt,
     List<RecitationErrorTally>? questionErrors,
     Duration? duration,
+    bool? isPendingSync,
   }) {
     return ExamRecordModel(
       id: id ?? this.id,
@@ -158,6 +167,7 @@ class ExamRecordModel {
       createdAt: createdAt ?? this.createdAt,
       questionErrors: questionErrors ?? this.questionErrors,
       duration: duration ?? this.duration,
+      isPendingSync: isPendingSync ?? this.isPendingSync,
     );
   }
 

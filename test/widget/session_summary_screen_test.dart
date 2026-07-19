@@ -14,6 +14,7 @@ import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/features/teacher/screens/next_content_talqeen_screen.dart';
 import 'package:al_rasikhoon/features/teacher/screens/session_summary_screen.dart';
 import 'package:al_rasikhoon/routing/app_router.dart';
+import 'package:al_rasikhoon/shared/providers/connectivity_provider.dart';
 import 'package:al_rasikhoon/shared/providers/user_provider.dart';
 
 class MockStudentRepository extends Mock implements StudentRepository {}
@@ -97,11 +98,15 @@ void main() {
         () => mockStudentRepository.advanceStudentSession(
           'student-1',
           fromOrderInLevel: 7,
+          batch: any(named: 'batch'),
         ),
       ).thenAnswer((_) async => StudentAdvanceOutcome.advanced);
 
       final container = ProviderContainer(
         overrides: [
+          // The save confirmation reads connectivity; the real plugin has no
+          // implementation under flutter_test.
+          isConnectedProvider.overrideWithValue(true),
           currentUserProvider.overrideWithValue(teacher),
           studentRepositoryProvider.overrideWithValue(mockStudentRepository),
           sessionRepositoryProvider.overrideWithValue(sessionRepository),
@@ -192,6 +197,11 @@ void main() {
       // run to completion without waiting on the SnackBar's auto-dismiss.
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
+      // The batch commit is fire-and-forget (offline support): let the real
+      // async queue drain so the staged writes land before reading them back.
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 1)),
+      );
 
       // Not the returned value — a real document, fetched back through the
       // (real, fake-Firestore-backed) repository, proving the wiring actually

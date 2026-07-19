@@ -40,6 +40,11 @@ class StudentHistoryEntry {
   /// (al_rasikhoon-nyp).
   final String? detailRecordId;
 
+  /// True while the source record sits in Firestore's local write queue,
+  /// saved offline and not yet acknowledged by the server. Rendered as a
+  /// "بانتظار المزامنة" chip; clears on its own once sync completes.
+  final bool isPendingSync;
+
   const StudentHistoryEntry({
     required this.id,
     required this.kind,
@@ -50,6 +55,7 @@ class StudentHistoryEntry {
     required this.date,
     this.duration,
     this.detailRecordId,
+    this.isPendingSync = false,
   });
 
   bool get isTalqeen => kind == StudentHistoryKind.talqeen;

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/student_repository.dart';
@@ -406,7 +408,10 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     state = state!.copyWith(meeting: meeting);
 
     // Create session record. One recitation, one record — however many
-    // sessions the meeting batched together.
+    // sessions the meeting batched together. Record and student progress are
+    // STAGED into one WriteBatch so they land atomically: an offline save
+    // must never sync the record without the advancement, or vice versa.
+    final batch = sessionRepo.newWriteBatch();
     final record = await sessionRepo.createSessionRecord(
       studentId: student.id,
       teacherId: currentUser.id,
@@ -422,6 +427,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
       pace: student.pace,
       notes: state!.notes,
       startedAt: state!.startedAt,
+      batch: batch,
     );
 
     // Update student progress
@@ -432,12 +438,22 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
       advanceOutcome = await studentRepo.advanceStudentSession(
         student.id,
         fromOrderInLevel: meeting.toOrderInLevel,
+        batch: batch,
       );
     } else {
       // He repeats the MEETING, not half of it: his position is unchanged, so
       // the next composition rebuilds the same batch.
-      await studentRepo.incrementStudentAttempt(student.id);
+      await studentRepo.incrementStudentAttempt(student.id, batch: batch);
     }
+
+    // Commit fire-and-forget: Firestore applies the batch to the local cache
+    // immediately and queues it for sync. Awaiting would hang the save UI
+    // forever offline — the commit Future only completes on server ack.
+    unawaited(
+      batch.commit().catchError((Object e, StackTrace s) {
+        debugPrint('session save sync failed: $e');
+      }),
+    );
 
     // Clear state
     state = state!.copyWith(isComplete: true, advanceOutcome: advanceOutcome);
@@ -485,6 +501,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     );
     state = state!.copyWith(meeting: meeting);
 
+    // Record and advancement staged into one batch, committed without
+    // awaiting server ack — see completeSession for why.
+    final batch = sessionRepo.newWriteBatch();
     final record = await sessionRepo.createTalqeenRecord(
       studentId: student.id,
       teacherId: currentUser.id,
@@ -496,11 +515,19 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
       pace: student.pace,
       notes: state!.notes,
       startedAt: state!.startedAt,
+      batch: batch,
     );
 
     final advanceOutcome = await studentRepo.advanceStudentSession(
       student.id,
       fromOrderInLevel: meeting.toOrderInLevel,
+      batch: batch,
+    );
+
+    unawaited(
+      batch.commit().catchError((Object e, StackTrace s) {
+        debugPrint('talqeen save sync failed: $e');
+      }),
     );
 
     state = state!.copyWith(isComplete: true, advanceOutcome: advanceOutcome);

@@ -147,6 +147,7 @@ void main() {
           () => mockStudentRepository.advanceStudentSession(
             'student-1',
             fromOrderInLevel: 7,
+            batch: any(named: 'batch'),
           ),
         ).thenAnswer((_) async => StudentAdvanceOutcome.advanced);
 
@@ -157,6 +158,9 @@ void main() {
         notifier.setHomeRepetitionsRequired(15);
 
         final record = await notifier.completeTalqeenSession();
+        // The batch commit is fire-and-forget (offline support): drain the
+        // event queue so the staged writes land before asserting on them.
+        await pumpEventQueue();
 
         expect(record, isNotNull);
         expect(record!.curriculumSessionId, 'CUSTOM_SESSION_ID_NOT_REBUILT');
@@ -194,6 +198,7 @@ void main() {
           () => mockStudentRepository.advanceStudentSession(
             'student-1',
             fromOrderInLevel: 7,
+            batch: any(named: 'batch'),
           ),
         ).thenAnswer((_) async => StudentAdvanceOutcome.advanced);
 
@@ -202,12 +207,16 @@ void main() {
         notifier.startSession('student-1');
 
         final record = await notifier.completeTalqeenSession();
+        // The batch commit is fire-and-forget (offline support): drain the
+        // event queue so the staged writes land before asserting on them.
+        await pumpEventQueue();
 
         expect(record, isNotNull);
         verify(
           () => mockStudentRepository.advanceStudentSession(
             'student-1',
             fromOrderInLevel: 7,
+            batch: any(named: 'batch'),
           ),
         ).called(1);
         verifyNever(() => mockStudentRepository.incrementStudentAttempt(any()));
@@ -227,6 +236,7 @@ void main() {
         () => mockStudentRepository.advanceStudentSession(
           'student-1',
           fromOrderInLevel: 7,
+          batch: any(named: 'batch'),
         ),
       ).thenAnswer((_) async => StudentAdvanceOutcome.advanced);
 
@@ -244,6 +254,9 @@ void main() {
       final notifier = container.read(activeSessionProvider.notifier);
       notifier.startSession('student-1');
       await notifier.completeTalqeenSession();
+      // The batch commit is fire-and-forget (offline support): drain the
+      // event queue so the staged writes land before asserting on them.
+      await pumpEventQueue();
 
       // An invalidated provider rebuilds on the very next read: reading it
       // synchronously right afterwards must catch it mid-refresh (Riverpod
