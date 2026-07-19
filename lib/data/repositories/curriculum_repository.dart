@@ -4,6 +4,7 @@ import '../models/level_model.dart';
 import '../models/session_model.dart';
 import '../services/firebase_service.dart';
 import '../../core/constants/app_constants.dart';
+import '../services/firestore_read_source.dart';
 import '../../domain/curriculum/curriculum_position.dart';
 
 /// The single authority on what the curriculum CONTAINS.
@@ -20,8 +21,13 @@ import '../../domain/curriculum/curriculum_position.dart';
 class CurriculumRepository {
   final FirebaseFirestore _firestore;
 
-  CurriculumRepository({FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
+  /// Where reads resolve from — offline they pin to the local cache instead
+  /// of waiting out a doomed server attempt (al_rasikhoon-gy4).
+  final FirestoreReadSource _read;
+
+  CurriculumRepository({FirebaseFirestore? firestore, FirestoreReadSource? readSource})
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _read = readSource ?? const FirestoreReadSource.alwaysOnline();
 
   CollectionReference<Map<String, dynamic>> get _levelsCollection =>
       _firestore.collection(AppConstants.collectionLevels);
@@ -34,12 +40,12 @@ class CurriculumRepository {
   /// Every level, in teaching order. Each carries its per-juz session counts and
   /// the teaching order of its juz — the only honest source of both.
   Future<List<LevelModel>> getLevels() async {
-    final query = await _levelsCollection.orderBy('order').get();
+    final query = await _read.getQuery(_levelsCollection.orderBy('order'));
     return query.docs.map((doc) => LevelModel.fromFirestore(doc)).toList();
   }
 
   Future<LevelModel?> getLevelById(String levelId) async {
-    final doc = await _levelsCollection.doc(levelId).get();
+    final doc = await _read.getDoc(_levelsCollection.doc(levelId));
     if (doc.exists) {
       return LevelModel.fromFirestore(doc);
     }
@@ -72,7 +78,7 @@ class CurriculumRepository {
 
   /// The session with document id [sessionId] (`L{level}_J{juz}_S{n}`).
   Future<SessionModel?> getSessionById(String sessionId) async {
-    final doc = await _sessionsCollection.doc(sessionId).get();
+    final doc = await _read.getDoc(_sessionsCollection.doc(sessionId));
     if (doc.exists) {
       return SessionModel.fromFirestore(doc);
     }
@@ -102,11 +108,11 @@ class CurriculumRepository {
     required int level,
     required int orderInLevel,
   }) async {
-    final query = await _sessionsCollection
+    final query = await _read.getQuery(_sessionsCollection
         .where('level_id', isEqualTo: level)
         .where('order_in_level', isEqualTo: orderInLevel)
         .limit(1)
-        .get();
+        );
 
     if (query.docs.isEmpty) return null;
     return SessionModel.fromFirestore(query.docs.first);
@@ -117,11 +123,11 @@ class CurriculumRepository {
     required int level,
     required int juz,
   }) async {
-    final query = await _sessionsCollection
+    final query = await _read.getQuery(_sessionsCollection
         .where('level_id', isEqualTo: level)
         .where('juz_number', isEqualTo: juz)
         .orderBy('order_in_level')
-        .get();
+        );
 
     return query.docs.map((doc) => SessionModel.fromFirestore(doc)).toList();
   }
@@ -150,10 +156,10 @@ class CurriculumRepository {
   /// window behind it), and only the level holds all of them. Ordering by juz
   /// would be wrong in both directions — levels 1-9 descend, level 10 ascends.
   Future<List<SessionModel>> getSessionsForLevel({required int level}) async {
-    final query = await _sessionsCollection
+    final query = await _read.getQuery(_sessionsCollection
         .where('level_id', isEqualTo: level)
         .orderBy('order_in_level')
-        .get();
+        );
 
     return query.docs.map((doc) => SessionModel.fromFirestore(doc)).toList();
   }
@@ -166,7 +172,10 @@ class CurriculumRepository {
 }
 
 final curriculumRepositoryProvider = Provider<CurriculumRepository>((ref) {
-  return CurriculumRepository(firestore: ref.watch(firestoreProvider));
+  return CurriculumRepository(
+    firestore: ref.watch(firestoreProvider),
+    readSource: ref.watch(firestoreReadSourceProvider),
+  );
 });
 
 /// The levels catalog: names, juz in teaching order, and per-juz session counts.

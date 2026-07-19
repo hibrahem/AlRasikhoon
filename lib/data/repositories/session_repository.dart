@@ -6,6 +6,7 @@ import '../models/session_record_model.dart';
 import '../models/sard_record_model.dart';
 import '../models/exam_record_model.dart';
 import '../services/firebase_service.dart';
+import '../services/firestore_read_source.dart';
 import '../../core/constants/app_constants.dart';
 import '../../domain/assessment/assessment_evaluation.dart';
 import '../../domain/curriculum/curriculum_pace.dart';
@@ -16,8 +17,13 @@ import '../../domain/session/student_history_entry.dart';
 class SessionRepository {
   final FirebaseFirestore _firestore;
 
-  SessionRepository({FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
+  /// Where reads resolve from — offline they pin to the local cache instead
+  /// of waiting out a doomed server attempt (al_rasikhoon-gy4).
+  final FirestoreReadSource _read;
+
+  SessionRepository({FirebaseFirestore? firestore, FirestoreReadSource? readSource})
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _read = readSource ?? const FirestoreReadSource.alwaysOnline();
 
   CollectionReference<Map<String, dynamic>> get _sessionRecordsCollection =>
       _firestore.collection(AppConstants.collectionSessionRecords);
@@ -44,6 +50,12 @@ class SessionRepository {
     Query<Map<String, dynamic>> query, {
     required Future<int> Function() primary,
   }) async {
+    // Offline the aggregation cannot succeed — skip straight to the cache
+    // instead of waiting out the doomed server attempt.
+    if (!_read.isOnline) {
+      final cached = await query.get(const GetOptions(source: Source.cache));
+      return cached.docs.length;
+    }
     try {
       return await primary();
     } on FirebaseException {
@@ -271,12 +283,12 @@ class SessionRepository {
   /// query and its composite index (`student_id`, `date`, `order_in_level` in
   /// `firestore.indexes.json`) need no change.
   Future<SessionRecordModel?> getLatestSessionRecord(String studentId) async {
-    final query = await _sessionRecordsCollection
+    final query = await _read.getQuery(_sessionRecordsCollection
         .where('student_id', isEqualTo: studentId)
         .orderBy('date', descending: true)
         .orderBy('order_in_level', descending: true)
         .limit(1)
-        .get();
+        );
 
     if (query.docs.isEmpty) return null;
     return SessionRecordModel.fromFirestore(query.docs.first);
@@ -284,7 +296,7 @@ class SessionRepository {
 
   /// Get a single session record by id.
   Future<SessionRecordModel?> getSessionRecordById(String recordId) async {
-    final doc = await _sessionRecordsCollection.doc(recordId).get();
+    final doc = await _read.getDoc(_sessionRecordsCollection.doc(recordId));
     if (doc.exists) {
       return SessionRecordModel.fromFirestore(doc);
     }
@@ -304,7 +316,7 @@ class SessionRepository {
       query = query.limit(limit);
     }
 
-    final result = await query.get();
+    final result = await _read.getQuery(query);
     return result.docs
         .map((doc) => SessionRecordModel.fromFirestore(doc))
         .toList();
@@ -337,7 +349,7 @@ class SessionRepository {
       query = query.limit(limit);
     }
 
-    final result = await query.get();
+    final result = await _read.getQuery(query);
     return result.docs
         .map((doc) => SessionRecordModel.fromFirestore(doc))
         .toList();
@@ -419,7 +431,7 @@ class SessionRepository {
 
   /// Get a single سرد record by id — the source of its detail view.
   Future<SardRecordModel?> getSardRecordById(String recordId) async {
-    final doc = await _sardRecordsCollection.doc(recordId).get();
+    final doc = await _read.getDoc(_sardRecordsCollection.doc(recordId));
     if (doc.exists) {
       return SardRecordModel.fromFirestore(doc);
     }
@@ -430,10 +442,10 @@ class SessionRepository {
   Future<List<SardRecordModel>> getSardRecordsForStudent(
     String studentId,
   ) async {
-    final result = await _sardRecordsCollection
+    final result = await _read.getQuery(_sardRecordsCollection
         .where('student_id', isEqualTo: studentId)
         .orderBy('date', descending: true)
-        .get();
+        );
 
     return result.docs
         .map((doc) => SardRecordModel.fromFirestore(doc))
@@ -518,7 +530,7 @@ class SessionRepository {
 
   /// Get a single اختبار record by id — the source of its detail view.
   Future<ExamRecordModel?> getExamRecordById(String recordId) async {
-    final doc = await _examRecordsCollection.doc(recordId).get();
+    final doc = await _read.getDoc(_examRecordsCollection.doc(recordId));
     if (doc.exists) {
       return ExamRecordModel.fromFirestore(doc);
     }
@@ -529,10 +541,10 @@ class SessionRepository {
   Future<List<ExamRecordModel>> getExamRecordsForStudent(
     String studentId,
   ) async {
-    final result = await _examRecordsCollection
+    final result = await _read.getQuery(_examRecordsCollection
         .where('student_id', isEqualTo: studentId)
         .orderBy('date', descending: true)
-        .get();
+        );
 
     return result.docs
         .map((doc) => ExamRecordModel.fromFirestore(doc))
@@ -562,7 +574,7 @@ class SessionRepository {
       );
     }
 
-    final result = await query.get();
+    final result = await _read.getQuery(query);
     return result.docs
         .map((doc) => ExamRecordModel.fromFirestore(doc))
         .toList();
@@ -630,10 +642,9 @@ class SessionRepository {
       _sardRecordsCollection,
       _examRecordsCollection,
     ]) {
-      final hit = await collection
-          .where('student_id', isEqualTo: studentId)
-          .limit(1)
-          .get();
+      final hit = await _read.getQuery(
+        collection.where('student_id', isEqualTo: studentId).limit(1),
+      );
       if (hit.docs.isNotEmpty) return true;
     }
     return false;
@@ -744,5 +755,8 @@ class SessionRepository {
 }
 
 final sessionRepositoryProvider = Provider<SessionRepository>((ref) {
-  return SessionRepository(firestore: ref.watch(firestoreProvider));
+  return SessionRepository(
+    firestore: ref.watch(firestoreProvider),
+    readSource: ref.watch(firestoreReadSourceProvider),
+  );
 });

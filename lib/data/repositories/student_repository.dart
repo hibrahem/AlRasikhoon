@@ -4,6 +4,7 @@ import '../models/session_model.dart';
 import '../models/student_model.dart';
 import '../models/user_model.dart';
 import '../services/firebase_service.dart';
+import '../services/firestore_read_source.dart';
 import '../../core/constants/app_constants.dart';
 import '../../domain/curriculum/curriculum_pace.dart';
 import '../../domain/curriculum/meetings_per_week.dart';
@@ -80,20 +81,42 @@ class StudentRepository {
   final CurriculumRepository _curriculumRepository;
   final SessionRepository _sessionRepository;
 
+  /// Where reads resolve from — offline they pin to the local cache instead
+  /// of waiting out a doomed server attempt (al_rasikhoon-gy4).
+  final FirestoreReadSource _read;
+
   StudentRepository({
     FirebaseFirestore? firestore,
     required FirebaseService firebaseService,
     required UserRepository userRepository,
     required CurriculumRepository curriculumRepository,
     required SessionRepository sessionRepository,
+    FirestoreReadSource? readSource,
   }) : _firestore = firestore ?? FirebaseFirestore.instance,
        _firebaseService = firebaseService,
        _userRepository = userRepository,
        _curriculumRepository = curriculumRepository,
-       _sessionRepository = sessionRepository;
+       _sessionRepository = sessionRepository,
+       _read = readSource ?? const FirestoreReadSource.alwaysOnline();
 
   CollectionReference<Map<String, dynamic>> get _studentsCollection =>
       _firestore.collection(AppConstants.collectionStudents);
+
+  /// Resolves each student's user doc CONCURRENTLY. The old sequential
+  /// for-loop paid one round trip — or one offline fallback wait — per
+  /// student, which is what made the supervisor's list crawl offline
+  /// (al_rasikhoon-gy4). Students whose user doc is missing are dropped,
+  /// exactly as before.
+  Future<List<StudentWithUser>> _withUsers(List<StudentModel> students) async {
+    final users = await Future.wait(
+      students.map((s) => _userRepository.getUserById(s.userId)),
+    );
+    return [
+      for (var i = 0; i < students.length; i++)
+        if (users[i] != null)
+          StudentWithUser(student: students[i], user: users[i]!),
+    ];
+  }
 
   /// The ONLY writer of a student's `current_*` fields.
   ///
@@ -368,7 +391,7 @@ class StudentRepository {
 
   /// Get student by ID
   Future<StudentModel?> getStudentById(String studentId) async {
-    final doc = await _studentsCollection.doc(studentId).get();
+    final doc = await _read.getDoc(_studentsCollection.doc(studentId));
     if (doc.exists) {
       return StudentModel.fromFirestore(doc);
     }
@@ -378,10 +401,10 @@ class StudentRepository {
   /// Get student by user ID
   Future<StudentModel?> getStudentByUserId(String userId) async {
     // First try direct lookup by user_id
-    final query = await _studentsCollection
+    final query = await _read.getQuery(_studentsCollection
         .where('user_id', isEqualTo: userId)
         .limit(1)
-        .get();
+        );
 
     if (query.docs.isNotEmpty) {
       return StudentModel.fromFirestore(query.docs.first);
@@ -396,9 +419,9 @@ class StudentRepository {
 
     if (user != null && user.role == UserRole.student) {
       // Find all orphaned students (students whose user document no longer exists)
-      final allStudents = await _studentsCollection
+      final allStudents = await _read.getQuery(_studentsCollection
           .where('is_active', isEqualTo: true)
-          .get();
+          );
 
       final orphanedStudents = <DocumentSnapshot>[];
 
@@ -427,7 +450,9 @@ class StudentRepository {
         });
 
         // Return the repaired student
-        final repairedDoc = await _studentsCollection.doc(orphanDoc.id).get();
+        final repairedDoc = await _read.getDoc(
+          _studentsCollection.doc(orphanDoc.id),
+        );
         return StudentModel.fromFirestore(repairedDoc);
       }
     }
@@ -437,24 +462,16 @@ class StudentRepository {
 
   /// Get all active students across every institute.
   Future<List<StudentWithUser>> getAllStudents() async {
-    final query = await _studentsCollection
+    final query = await _read.getQuery(_studentsCollection
         .where('is_active', isEqualTo: true)
         .orderBy('created_at', descending: true)
-        .get();
+        );
 
     final students = query.docs
         .map((doc) => StudentModel.fromFirestore(doc))
         .toList();
 
-    final studentsWithUsers = <StudentWithUser>[];
-    for (final student in students) {
-      final user = await _userRepository.getUserById(student.userId);
-      if (user != null) {
-        studentsWithUsers.add(StudentWithUser(student: student, user: user));
-      }
-    }
-
-    return studentsWithUsers;
+    return _withUsers(students);
   }
 
   /// Get a single student plus its underlying user account.
@@ -468,51 +485,35 @@ class StudentRepository {
 
   /// Get students for teacher
   Future<List<StudentWithUser>> getStudentsForTeacher(String teacherId) async {
-    final query = await _studentsCollection
+    final query = await _read.getQuery(_studentsCollection
         .where('teacher_id', isEqualTo: teacherId)
         .where('is_active', isEqualTo: true)
         .orderBy('created_at', descending: true)
-        .get();
+        );
 
     final students = query.docs
         .map((doc) => StudentModel.fromFirestore(doc))
         .toList();
 
     // Get user data for each student
-    final studentsWithUsers = <StudentWithUser>[];
-    for (final student in students) {
-      final user = await _userRepository.getUserById(student.userId);
-      if (user != null) {
-        studentsWithUsers.add(StudentWithUser(student: student, user: user));
-      }
-    }
-
-    return studentsWithUsers;
+    return _withUsers(students);
   }
 
   /// Get students for institute
   Future<List<StudentWithUser>> getStudentsForInstitute(
     String instituteId,
   ) async {
-    final query = await _studentsCollection
+    final query = await _read.getQuery(_studentsCollection
         .where('institute_id', isEqualTo: instituteId)
         .where('is_active', isEqualTo: true)
         .orderBy('created_at', descending: true)
-        .get();
+        );
 
     final students = query.docs
         .map((doc) => StudentModel.fromFirestore(doc))
         .toList();
 
-    final studentsWithUsers = <StudentWithUser>[];
-    for (final student in students) {
-      final user = await _userRepository.getUserById(student.userId);
-      if (user != null) {
-        studentsWithUsers.add(StudentWithUser(student: student, user: user));
-      }
-    }
-
-    return studentsWithUsers;
+    return _withUsers(students);
   }
 
   /// Active students across SEVERAL institutes — the union a multi-institute
@@ -545,10 +546,10 @@ class StudentRepository {
             ? uniqueIds.length
             : start + chunkSize,
       );
-      final query = await _studentsCollection
+      final query = await _read.getQuery(_studentsCollection
           .where('institute_id', whereIn: chunk)
           .where('is_active', isEqualTo: true)
-          .get();
+          );
       for (final docSnap in query.docs) {
         final student = StudentModel.fromFirestore(docSnap);
         byId[student.id] = student;
@@ -558,15 +559,7 @@ class StudentRepository {
     final students = byId.values.toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-    final studentsWithUsers = <StudentWithUser>[];
-    for (final student in students) {
-      final user = await _userRepository.getUserById(student.userId);
-      if (user != null) {
-        studentsWithUsers.add(StudentWithUser(student: student, user: user));
-      }
-    }
-
-    return studentsWithUsers;
+    return _withUsers(students);
   }
 
   /// The supervisor's exam queue: the institute's active students who are
@@ -588,26 +581,18 @@ class StudentRepository {
   Future<List<StudentWithUser>> getStudentsReadyForExam(
     String instituteId,
   ) async {
-    final query = await _studentsCollection
+    final query = await _read.getQuery(_studentsCollection
         .where('institute_id', isEqualTo: instituteId)
         .where('current_session_kind', isEqualTo: AppConstants.sessionKindExam)
         .where('is_active', isEqualTo: true)
-        .get();
+        );
 
     final students = query.docs
         .map((doc) => StudentModel.fromFirestore(doc))
         .where((student) => !student.curriculumCompleted)
         .toList();
 
-    final studentsWithUsers = <StudentWithUser>[];
-    for (final student in students) {
-      final user = await _userRepository.getUserById(student.userId);
-      if (user != null) {
-        studentsWithUsers.add(StudentWithUser(student: student, user: user));
-      }
-    }
-
-    return studentsWithUsers;
+    return _withUsers(students);
   }
 
   /// Update student.
@@ -935,33 +920,25 @@ class StudentRepository {
   Future<List<StudentWithUser>> getStudentsByGuardianId(
     String guardianId,
   ) async {
-    final query = await _studentsCollection
+    final query = await _read.getQuery(_studentsCollection
         .where('guardian_id', isEqualTo: guardianId)
         .where('is_active', isEqualTo: true)
-        .get();
+        );
 
     final students = query.docs
         .map((doc) => StudentModel.fromFirestore(doc))
         .toList();
 
-    final studentsWithUsers = <StudentWithUser>[];
-    for (final student in students) {
-      final user = await _userRepository.getUserById(student.userId);
-      if (user != null) {
-        studentsWithUsers.add(StudentWithUser(student: student, user: user));
-      }
-    }
-
-    return studentsWithUsers;
+    return _withUsers(students);
   }
 
   /// Get first student by guardian ID (for simple case with one child)
   Future<StudentModel?> getFirstStudentByGuardianId(String guardianId) async {
-    final query = await _studentsCollection
+    final query = await _read.getQuery(_studentsCollection
         .where('guardian_id', isEqualTo: guardianId)
         .where('is_active', isEqualTo: true)
         .limit(1)
-        .get();
+        );
 
     if (query.docs.isNotEmpty) {
       return StudentModel.fromFirestore(query.docs.first);
@@ -974,6 +951,7 @@ final studentRepositoryProvider = Provider<StudentRepository>((ref) {
   return StudentRepository(
     firestore: ref.watch(firestoreProvider),
     firebaseService: ref.watch(firebaseServiceProvider),
+    readSource: ref.watch(firestoreReadSourceProvider),
     userRepository: ref.watch(userRepositoryProvider),
     curriculumRepository: ref.watch(curriculumRepositoryProvider),
     sessionRepository: ref.watch(sessionRepositoryProvider),

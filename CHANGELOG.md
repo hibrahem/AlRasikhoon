@@ -15,7 +15,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 - The app now works without internet at the institute — everyone can browse
   the latest data offline, teachers can run memorization sessions, and
-  supervisors can run exams. Everything saved offline syncs automatically
+  supervisors can run exams. Offline screens open instantly from the last
+  saved data instead of waiting on a connection that isn't there.
+  Everything saved offline syncs automatically
   when the connection returns: a banner shows while you are offline, saves
   are confirmed as "saved locally", and unsynced records carry a
   "بانتظار المزامنة" marker until they reach the server. Actions that truly
