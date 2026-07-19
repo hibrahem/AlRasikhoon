@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/session_model.dart';
 import '../models/session_record_model.dart';
@@ -26,6 +27,25 @@ class SessionRepository {
 
   CollectionReference<Map<String, dynamic>> get _examRecordsCollection =>
       _firestore.collection(AppConstants.collectionExamRecords);
+
+  /// Counts [query]'s results via [primary] (an aggregation `.count()`, which
+  /// is SERVER-ONLY and throws with no connectivity), falling back to the
+  /// size of the cached result set when the server is unreachable. The cache
+  /// may under-count — acceptable for attempt numbering (attempts are
+  /// numbered, never capped) and for profile statistics, both of which
+  /// self-correct once back online.
+  @visibleForTesting
+  Future<int> countWithCacheFallback(
+    Query<Map<String, dynamic>> query, {
+    required Future<int> Function() primary,
+  }) async {
+    try {
+      return await primary();
+    } on FirebaseException {
+      final cached = await query.get(const GetOptions(source: Source.cache));
+      return cached.docs.length;
+    }
+  }
 
   // ==================== Session Records ====================
 
@@ -310,14 +330,14 @@ class SessionRepository {
   Future<int> getAttemptCount({
     required String studentId,
     required String curriculumSessionId,
-  }) async {
-    final result = await _sessionRecordsCollection
+  }) {
+    final query = _sessionRecordsCollection
         .where('student_id', isEqualTo: studentId)
-        .where('curriculum_session_id', isEqualTo: curriculumSessionId)
-        .count()
-        .get();
-
-    return result.count ?? 0;
+        .where('curriculum_session_id', isEqualTo: curriculumSessionId);
+    return countWithCacheFallback(
+      query,
+      primary: () async => (await query.count().get()).count ?? 0,
+    );
   }
 
   // ==================== Sard Records ====================
@@ -406,14 +426,14 @@ class SessionRepository {
   Future<int> getSardAttemptCount({
     required String studentId,
     required String curriculumSessionId,
-  }) async {
-    final result = await _sardRecordsCollection
+  }) {
+    final query = _sardRecordsCollection
         .where('student_id', isEqualTo: studentId)
-        .where('curriculum_session_id', isEqualTo: curriculumSessionId)
-        .count()
-        .get();
-
-    return result.count ?? 0;
+        .where('curriculum_session_id', isEqualTo: curriculumSessionId);
+    return countWithCacheFallback(
+      query,
+      primary: () async => (await query.count().get()).count ?? 0,
+    );
   }
 
   // ==================== Exam Records ====================
@@ -524,14 +544,14 @@ class SessionRepository {
   Future<int> getExamAttemptCount({
     required String studentId,
     required String curriculumSessionId,
-  }) async {
-    final result = await _examRecordsCollection
+  }) {
+    final query = _examRecordsCollection
         .where('student_id', isEqualTo: studentId)
-        .where('curriculum_session_id', isEqualTo: curriculumSessionId)
-        .count()
-        .get();
-
-    return result.count ?? 0;
+        .where('curriculum_session_id', isEqualTo: curriculumSessionId);
+    return countWithCacheFallback(
+      query,
+      primary: () async => (await query.count().get()).count ?? 0,
+    );
   }
 
   // ==================== Statistics ====================
@@ -546,7 +566,7 @@ class SessionRepository {
   Future<int> getSessionCountForTeacher(
     String teacherId, {
     DateTime? startDate,
-  }) async {
+  }) {
     Query<Map<String, dynamic>> query = _sessionRecordsCollection.where(
       'teacher_id',
       isEqualTo: teacherId,
@@ -559,8 +579,10 @@ class SessionRepository {
       );
     }
 
-    final result = await query.count().get();
-    return result.count ?? 0;
+    return countWithCacheFallback(
+      query,
+      primary: () async => (await query.count().get()).count ?? 0,
+    );
   }
 
   /// Whether the student has started: they have at least one progress record of
