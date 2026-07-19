@@ -12,7 +12,7 @@
 # CLI rejects a bare top-level list), each with `id`, `displayName`,
 # optional `prerequisiteTestCaseId` (must reference an id that already
 # exists or appears earlier in this file), and `steps` of
-# {goal, hint?, successCriteria?}.
+# {goal, hint?, finalScreenAssertion?}.
 #
 # These run on real devices via the App Testing agent during each release
 # (see .github/workflows/distribute-android.yml). The app's UI is Arabic
@@ -35,7 +35,7 @@ tests:
       - goal: >-
           Launch the app and wait for the splash screen to finish loading.
           Do not enter any text and do not sign in.
-        successCriteria: >-
+        finalScreenAssertion: >-
           The login screen is visible, showing the gold الراسخون logo, a
           username field labeled "اسم المستخدم", a password field, and a login
           button labeled "تسجيل الدخول".
@@ -46,7 +46,7 @@ tests:
       - goal: >-
           On the login screen, tap the "تسجيل الدخول" button without typing
           anything into the username or password fields.
-        successCriteria: >-
+        finalScreenAssertion: >-
           The app stays on the login screen and validation error messages
           appear under the empty username and password fields. No dashboard
           is shown.
@@ -58,7 +58,7 @@ tests:
           On the login screen, type "qa.nonexistent.user" into the username
           field and "WrongPassword123" into the password field, then tap
           "تسجيل الدخول".
-        successCriteria: >-
+        finalScreenAssertion: >-
           An error message appears (for example in a snackbar at the bottom
           of the screen) and the app remains on the login screen without
           opening any dashboard.
@@ -73,7 +73,7 @@ tests:
           Type the username into the "اسم المستخدم" field and the password
           into the "كلمة المرور" field, then tap "تسجيل الدخول". Loading data
           after login can take a few seconds.
-        successCriteria: >-
+        finalScreenAssertion: >-
           A dashboard screen for the signed-in user is visible with a bottom
           navigation bar that includes a "الملف الشخصي" (profile) tab. The
           login screen is no longer shown and no error message is visible.
@@ -85,7 +85,7 @@ tests:
       - goal: >-
           Open the "الملف الشخصي" (profile) tab from the bottom navigation
           bar. Do not change any profile data.
-        successCriteria: >-
+        finalScreenAssertion: >-
           The profile screen titled "الملف الشخصي" is visible, showing the
           signed-in user's name and a logout button labeled "تسجيل الخروج".
 
@@ -97,7 +97,7 @@ tests:
           Open the "الملف الشخصي" (profile) tab, scroll down if needed, and
           tap the "تسجيل الخروج" (logout) button. If a confirmation dialog
           appears, confirm the logout.
-        successCriteria: >-
+        finalScreenAssertion: >-
           The app returns to the login screen showing the gold الراسخون logo
           and the "تسجيل الدخول" button, and no user dashboard is accessible.
 
@@ -113,7 +113,7 @@ tests:
       - goal: >-
           From the teacher's dashboard, open the "الطلاب" (students) tab in
           the bottom navigation bar. Do not add or edit any student.
-        successCriteria: >-
+        finalScreenAssertion: >-
           The students screen titled "طلابي" is visible, showing either a
           list of student cards or the empty state "لا يوجد طلاب".
 
@@ -129,7 +129,7 @@ tests:
         hint: >-
           If the list is empty ("لا يوجد طلاب"), this test cannot proceed
           and should fail its assertion.
-        successCriteria: >-
+        finalScreenAssertion: >-
           A student profile screen is visible showing the student's name and
           progress details such as the current level, juz ("الجزء") or
           session ("الحلقة"). No data was created or modified.
@@ -141,7 +141,7 @@ tests:
       - goal: >-
           From the student's dashboard, open the "السجل" (history) tab in
           the bottom navigation bar.
-        successCriteria: >-
+        finalScreenAssertion: >-
           The session history screen is visible, showing either a list of
           past sessions with grades or an empty state. The app did not
           crash.
@@ -153,7 +153,7 @@ tests:
       - goal: >-
           From the student's dashboard, open the "التكرار" (home practice)
           tab in the bottom navigation bar. Do not record any repetitions.
-        successCriteria: >-
+        finalScreenAssertion: >-
           The home practice screen is visible showing the assigned practice
           content. The app did not crash.
 
@@ -164,7 +164,7 @@ tests:
       - goal: >-
           From the supervisor's dashboard, open the "الاختبارات" (exams) tab
           in the bottom navigation bar. Do not start or grade any exam.
-        successCriteria: >-
+        finalScreenAssertion: >-
           The exam queue screen is visible, showing either students who are
           ready for their exam or an empty state. The app did not crash.
 
@@ -175,7 +175,7 @@ tests:
       - goal: >-
           From the admin dashboard ("مدير النظام"), open the "المعاهد"
           (institutes) section. Do not create, edit, or delete anything.
-        successCriteria: >-
+        finalScreenAssertion: >-
           The institutes screen is visible showing a list of institutes or
           an empty state. The app did not crash.
 
@@ -185,12 +185,12 @@ tests:
     steps:
       - goal: >-
           Open the "المنهج" (curriculum) tab from the bottom navigation bar.
-        successCriteria: >-
+        finalScreenAssertion: >-
           The curriculum screen is visible showing the list of levels
           ("المستوى").
       - goal: >-
           Tap the first level in the curriculum list to open its detail
           screen. Do not modify anything.
-        successCriteria: >-
+        finalScreenAssertion: >-
           The level detail screen is visible showing the level's juz range
           ("الجزء") and its hizb sessions. The app did not crash.
