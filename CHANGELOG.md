@@ -13,6 +13,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## Unreleased
 
+- Browsing screens (student profiles, lists, histories, and details) now
+  open with a large elegant title that gracefully shrinks into the top bar
+  as you scroll — like the polished apps you know.
 - Text across the whole app is now noticeably larger and easier to read,
   and screen titles are bigger and more prominent at the top of every page.
 - Student cards in lists are tidier — the details sit closer together with

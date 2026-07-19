@@ -12,6 +12,7 @@ import '../../domain/session/student_history_entry.dart';
 import '../curriculum/assessment_copy.dart';
 import '../curriculum/recitation_part_copy.dart';
 import '../widgets/app_card.dart';
+import '../widgets/app_large_top_bar.dart';
 import '../widgets/completion_forecast_card.dart';
 import '../widgets/states/error_state.dart';
 import '../widgets/states/loading_state.dart';
@@ -91,38 +92,55 @@ class StudentProgressScreen extends ConsumerWidget {
     final studentAsync = ref.watch(studentProvider(studentId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('تقدم الطالب')),
-      body: studentAsync.when(
-        data: (studentWithUser) {
-          if (studentWithUser == null) {
-            return const Center(child: Text('الطالب غير موجود'));
-          }
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(studentProvider(studentId));
-              ref.invalidate(currentMeetingProvider(studentId));
-              ref.invalidate(sessionHistoryProvider(studentId));
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              child: _ProgressBody(
-                studentWithUser: studentWithUser,
-                currentMeetingProvider: currentMeetingProvider,
-                sessionHistoryProvider: sessionHistoryProvider,
-                sessionDetailRoute: sessionDetailRoute,
-                assessmentDetailRoute: assessmentDetailRoute,
-                repositionSection: repositionSection,
-                paceSection: paceSection,
-                instituteBadge: instituteBadge,
+      // Large-title sliver bar; the refresh indicator wraps the whole scroll
+      // view so pull-to-refresh works from the loading/error states too.
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(studentProvider(studentId));
+          ref.invalidate(currentMeetingProvider(studentId));
+          ref.invalidate(sessionHistoryProvider(studentId));
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            const AppLargeTopBar(title: 'تقدم الطالب'),
+            studentAsync.when(
+              data: (studentWithUser) {
+                if (studentWithUser == null) {
+                  return const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(child: Text('الطالب غير موجود')),
+                  );
+                }
+                return SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverToBoxAdapter(
+                    child: _ProgressBody(
+                      studentWithUser: studentWithUser,
+                      currentMeetingProvider: currentMeetingProvider,
+                      sessionHistoryProvider: sessionHistoryProvider,
+                      sessionDetailRoute: sessionDetailRoute,
+                      assessmentDetailRoute: assessmentDetailRoute,
+                      repositionSection: repositionSection,
+                      paceSection: paceSection,
+                      instituteBadge: instituteBadge,
+                    ),
+                  ),
+                );
+              },
+              loading: () => const SliverFillRemaining(
+                hasScrollBody: false,
+                child: LoadingState(),
+              ),
+              error: (e, _) => SliverFillRemaining(
+                hasScrollBody: false,
+                child: ErrorState(
+                  message: 'تعذر تحميل بيانات الطالب',
+                  onRetry: () => ref.invalidate(studentProvider(studentId)),
+                ),
               ),
             ),
-          );
-        },
-        loading: () => const LoadingState(),
-        error: (e, _) => ErrorState(
-          message: 'تعذر تحميل بيانات الطالب',
-          onRetry: () => ref.invalidate(studentProvider(studentId)),
+          ],
         ),
       ),
     );

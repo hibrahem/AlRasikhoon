@@ -9,6 +9,7 @@ import '../../../shared/providers/institute_provider.dart';
 import '../../../shared/providers/stats_provider.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/confirm_sign_out.dart';
 import '../../../shared/widgets/edit_profile_dialog.dart';
 import '../../../shared/widgets/icon_medallion.dart';
@@ -30,27 +31,35 @@ class SettingsScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الملف الشخصي')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _ProfileCard(user: user),
-          const SizedBox(height: 16),
-          const _AccountCard(),
-          const SizedBox(height: 16),
-          const ThemeModeSelector(),
-          if (user.role == UserRole.teacher) ...[
-            const SizedBox(height: 16),
-            const _TeacherStatsCard(),
-            const SizedBox(height: 16),
-            const _InstitutesCard(),
-          ] else if (user.role == UserRole.student ||
-              user.role == UserRole.guardian) ...[
-            const SizedBox(height: 16),
-            const _StudentStatsCard(),
-          ],
-          const SizedBox(height: 24),
-          _SignOutButton(),
+      // Large-title sliver bar for the account screen.
+      body: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          const AppLargeTopBar(title: 'الملف الشخصي'),
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _ProfileCard(user: user),
+                const SizedBox(height: 16),
+                const _AccountCard(),
+                const SizedBox(height: 16),
+                const ThemeModeSelector(),
+                if (user.role == UserRole.teacher) ...[
+                  const SizedBox(height: 16),
+                  const _TeacherStatsCard(),
+                  const SizedBox(height: 16),
+                  const _InstitutesCard(),
+                ] else if (user.role == UserRole.student ||
+                    user.role == UserRole.guardian) ...[
+                  const SizedBox(height: 16),
+                  const _StudentStatsCard(),
+                ],
+                const SizedBox(height: 24),
+                _SignOutButton(),
+              ]),
+            ),
+          ),
         ],
       ),
     );

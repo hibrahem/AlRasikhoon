@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
@@ -18,32 +19,33 @@ class ExamQueueScreen extends ConsumerWidget {
     final examQueueAsync = ref.watch(examQueueProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('قائمة الاختبارات')),
-      body: examQueueAsync.when(
-        data: (students) {
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(examQueueProvider);
-            },
-            // The empty state must live INSIDE the refresh scroll view: a
-            // supervisor waits on this screen for students to become ready,
-            // so pull-to-refresh has to work when the queue is empty too.
-            child: students.isEmpty
-                ? const CustomScrollView(
-                    physics: AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: EmptyState(
-                          icon: Icons.check_circle_outline,
-                          title: 'لا يوجد طلاب بالانتظار',
-                          message: 'جميع الاختبارات مكتملة',
-                        ),
-                      ),
-                    ],
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+      // Large-title sliver bar; the refresh indicator wraps the whole scroll
+      // view so pull-to-refresh also works from the loading/error states —
+      // and from the empty queue: a supervisor waits on this screen for
+      // students to become ready.
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(examQueueProvider);
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            const AppLargeTopBar(title: 'قائمة الاختبارات'),
+            examQueueAsync.when(
+              data: (students) {
+                if (students.isEmpty) {
+                  return const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: EmptyState(
+                      icon: Icons.check_circle_outline,
+                      title: 'لا يوجد طلاب بالانتظار',
+                      message: 'جميع الاختبارات مكتملة',
+                    ),
+                  );
+                }
+                return SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList.builder(
                     itemCount: students.length,
                     itemBuilder: (context, index) {
                       final studentWithUser = students[index];
@@ -136,16 +138,25 @@ class ExamQueueScreen extends ConsumerWidget {
                       );
                     },
                   ),
-          );
-        },
-        loading: () => const LoadingState(),
-        error: (e, _) {
-          debugPrint('examQueueProvider failed: $e');
-          return ErrorState(
-            message: 'تعذر تحميل قائمة الاختبارات',
-            onRetry: () => ref.invalidate(examQueueProvider),
-          );
-        },
+                );
+              },
+              loading: () => const SliverFillRemaining(
+                hasScrollBody: false,
+                child: LoadingState(),
+              ),
+              error: (e, _) {
+                debugPrint('examQueueProvider failed: $e');
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: ErrorState(
+                    message: 'تعذر تحميل قائمة الاختبارات',
+                    onRetry: () => ref.invalidate(examQueueProvider),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

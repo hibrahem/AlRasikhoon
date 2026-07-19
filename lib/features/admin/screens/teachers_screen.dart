@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
@@ -18,31 +19,31 @@ class TeachersScreen extends ConsumerWidget {
     final teachersAsync = ref.watch(allTeachersProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('المعلمون')),
-      body: teachersAsync.when(
-        data: (teachers) {
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(allTeachersProvider);
-            },
-            // The empty state sits INSIDE the refresh scroll view so
-            // pull-to-refresh keeps working when the list is empty.
-            child: teachers.isEmpty
-                ? const CustomScrollView(
-                    physics: AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: EmptyState(
-                          icon: Icons.people_outline,
-                          title: 'لا يوجد معلمون',
-                          message: 'اضغط على + لإضافة معلم جديد',
-                        ),
-                      ),
-                    ],
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+      // Large-title sliver bar; the refresh indicator wraps the whole scroll
+      // view so pull-to-refresh works from the loading/error/empty states too.
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(allTeachersProvider);
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            const AppLargeTopBar(title: 'المعلمون'),
+            teachersAsync.when(
+              data: (teachers) {
+                if (teachers.isEmpty) {
+                  return const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: EmptyState(
+                      icon: Icons.people_outline,
+                      title: 'لا يوجد معلمون',
+                      message: 'اضغط على + لإضافة معلم جديد',
+                    ),
+                  );
+                }
+                return SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList.builder(
                     itemCount: teachers.length,
                     itemBuilder: (context, index) {
                       final teacher = teachers[index];
@@ -144,16 +145,25 @@ class TeachersScreen extends ConsumerWidget {
                       );
                     },
                   ),
-          );
-        },
-        loading: () => const LoadingState(),
-        error: (e, _) {
-          debugPrint('allTeachersProvider failed: $e');
-          return ErrorState(
-            message: 'تعذر تحميل المعلمين',
-            onRetry: () => ref.invalidate(allTeachersProvider),
-          );
-        },
+                );
+              },
+              loading: () => const SliverFillRemaining(
+                hasScrollBody: false,
+                child: LoadingState(),
+              ),
+              error: (e, _) {
+                debugPrint('allTeachersProvider failed: $e');
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: ErrorState(
+                    message: 'تعذر تحميل المعلمين',
+                    onRetry: () => ref.invalidate(allTeachersProvider),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.addTeacher),

@@ -9,6 +9,7 @@ import '../../../data/models/session_model.dart';
 import '../../../domain/session/session_duration.dart';
 import '../../../shared/curriculum/recitation_part_copy.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
@@ -25,217 +26,249 @@ class SessionDetailScreen extends ConsumerWidget {
     final recordAsync = ref.watch(sessionRecordByIdProvider(recordId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('تفاصيل الحلقة')),
-      body: recordAsync.when(
-        data: (record) {
-          if (record == null) {
-            return const Center(child: Text('الحلقة غير موجودة'));
-          }
+      // Large-title sliver bar for this read-only detail view.
+      body: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          const AppLargeTopBar(title: 'تفاصيل الحلقة'),
+          recordAsync.when(
+            data: (record) {
+              if (record == null) {
+                return const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: Text('الحلقة غير موجودة')),
+                );
+              }
 
-          final dateFormat = DateFormat('yyyy/MM/dd hh:mm a', 'ar');
+              final dateFormat = DateFormat('yyyy/MM/dd hh:mm a', 'ar');
 
-          // The record carries only the session id (`L1_J30_S1`). That id is a
-          // key, not a name: the title a student reads is the session's own
-          // Arabic title. Fall back to the id only if the session cannot be
-          // resolved at all.
-          final session = ref
-              .watch(curriculumSessionByIdProvider(record.curriculumSessionId))
-              .value;
-          final title = session?.titleAr ?? record.curriculumSessionId;
+              // The record carries only the session id (`L1_J30_S1`). That id is a
+              // key, not a name: the title a student reads is the session's own
+              // Arabic title. Fall back to the id only if the session cannot be
+              // resolved at all.
+              final session = ref
+                  .watch(
+                    curriculumSessionByIdProvider(record.curriculumSessionId),
+                  )
+                  .value;
+              final title = session?.titleAr ?? record.curriculumSessionId;
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Session info
-                AppCard(
-                  child: Row(
+              return SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      IconMedallion(
-                        icon: Icons.menu_book,
-                        accent: tokens.green,
-                        size: 48,
-                        iconSize: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      // Session info
+                      AppCard(
+                        child: Row(
                           children: [
-                            // The session's Quranic title reads in the
-                            // manuscript face, like passage names elsewhere.
-                            Text(
-                              title,
-                              style: GoogleFonts.amiri(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: tokens.ink,
-                              ),
+                            IconMedallion(
+                              icon: Icons.menu_book,
+                              accent: tokens.green,
+                              size: 48,
+                              iconSize: 24,
                             ),
-                            Text(
-                              dateFormat.format(record.date),
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: tokens.sepia),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // The session's Quranic title reads in the
+                                  // manuscript face, like passage names elsewhere.
+                                  Text(
+                                    title,
+                                    style: GoogleFonts.amiri(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: tokens.ink,
+                                    ),
+                                  ),
+                                  Text(
+                                    dateFormat.format(record.date),
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(color: tokens.sepia),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
 
-                const SizedBox(height: 12),
+                      const SizedBox(height: 12),
 
-                // At-a-glance session facts. Each chip appears only when it
-                // carries a value: pace is meaningful only above the normal 1×
-                // portion, duration only when the session was timed, and each
-                // repetition count only when it happened. The attempt number is
-                // a graded-lesson concept, so it is omitted for a تلقين.
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    const spacing = 8.0;
-                    final half = (constraints.maxWidth - spacing) / 2;
-                    final pace = _paceAmountAr(record.paceAtTime);
-                    return Wrap(
-                      spacing: spacing,
-                      runSpacing: spacing,
-                      children: [
-                        if (!record.isTalqeen)
-                          _StatChip(
-                            width: half,
-                            label: 'رقم المحاولة',
-                            value: '${record.attemptNumber}',
-                          ),
-                        if (pace != null)
-                          _StatChip(width: half, label: 'المقدار', value: pace),
-                        if (record.duration != null)
-                          _StatChip(
-                            width: half,
-                            label: 'المدة',
-                            value: SessionDuration.formatWordsAr(
-                              record.duration!,
+                      // At-a-glance session facts. Each chip appears only when it
+                      // carries a value: pace is meaningful only above the normal 1×
+                      // portion, duration only when the session was timed, and each
+                      // repetition count only when it happened. The attempt number is
+                      // a graded-lesson concept, so it is omitted for a تلقين.
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          const spacing = 8.0;
+                          final half = (constraints.maxWidth - spacing) / 2;
+                          final pace = _paceAmountAr(record.paceAtTime);
+                          return Wrap(
+                            spacing: spacing,
+                            runSpacing: spacing,
+                            children: [
+                              if (!record.isTalqeen)
+                                _StatChip(
+                                  width: half,
+                                  label: 'رقم المحاولة',
+                                  value: '${record.attemptNumber}',
+                                ),
+                              if (pace != null)
+                                _StatChip(
+                                  width: half,
+                                  label: 'المقدار',
+                                  value: pace,
+                                ),
+                              if (record.duration != null)
+                                _StatChip(
+                                  width: half,
+                                  label: 'المدة',
+                                  value: SessionDuration.formatWordsAr(
+                                    record.duration!,
+                                  ),
+                                ),
+                              if (record.repetitionsWithTeacher > 0)
+                                _StatChip(
+                                  width: half,
+                                  label: 'التكرار مع المعلم',
+                                  value: '${record.repetitionsWithTeacher}',
+                                ),
+                              if (record.homeRepetitionsRequired > 0)
+                                _StatChip(
+                                  width: constraints.maxWidth,
+                                  label: 'التكرار المطلوب في البيت',
+                                  value:
+                                      '${record.homeRepetitionsRequired} مرات',
+                                ),
+                            ],
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // A تلقين is never graded — no errors, no pass/fail, no
+                      // attempt cap. It must NOT show the overall result banner or
+                      // the part-by-part error breakdown below, which both imply a
+                      // graded outcome that a تلقين never has.
+                      if (record.isTalqeen)
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            // A 0.05 tint disappears against the dark surface, so
+                            // dark mode gets a stronger wash to stay visible.
+                            color: tokens.green.withValues(
+                              alpha:
+                                  Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? 0.10
+                                  : 0.05,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: tokens.green.withValues(alpha: 0.2),
                             ),
                           ),
-                        if (record.repetitionsWithTeacher > 0)
-                          _StatChip(
-                            width: half,
-                            label: 'التكرار مع المعلم',
-                            value: '${record.repetitionsWithTeacher}',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.record_voice_over,
+                                color: tokens.green,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'تلقين — قرأ المعلّم المقطع على الطالب وكرّره معه. '
+                                  'لا تسميع ولا تقييم ولا نجاح أو رسوب في هذه الحلقة.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ),
+                            ],
                           ),
-                        if (record.homeRepetitionsRequired > 0)
-                          _StatChip(
-                            width: constraints.maxWidth,
-                            label: 'التكرار المطلوب في البيت',
-                            value: '${record.homeRepetitionsRequired} مرات',
+                        )
+                      else ...[
+                        // Overall session result is a BINARY pass/fail ONLY (#24):
+                        // the session is failed if ANY single part grades محب, and
+                        // passes only if none is. It deliberately shows NO combined
+                        // grade tier and NO summed error "score" — grades and error
+                        // counts are never combined across parts. Each part's own
+                        // grade and pass/fail is shown, alone, in the cards below.
+                        Center(
+                          child: _OverallResultBanner(
+                            passed: record.grades.passesForLevel(
+                              record.levelId,
+                            ),
                           ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Part-by-part results
+                        Text(
+                          'تفاصيل الأجزاء',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Only the parts this meeting actually recited — a
+                        // review-only or short meeting omits parts 2/3, so a skipped
+                        // part is never rendered as a passing zero-error card. Legacy
+                        // records with no marker read back as all three (see
+                        // SessionRecordModel.presentParts).
+                        for (final part in record.presentParts) ...[
+                          _PartResultCard(
+                            part: part,
+                            errors: record.grades.errorsForPart(part),
+                            level: record.levelId,
+                            range: _rangeForPart(session, part),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
                       ],
-                    );
-                  },
-                ),
 
-                const SizedBox(height: 24),
-
-                // A تلقين is never graded — no errors, no pass/fail, no
-                // attempt cap. It must NOT show the overall result banner or
-                // the part-by-part error breakdown below, which both imply a
-                // graded outcome that a تلقين never has.
-                if (record.isTalqeen)
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      // A 0.05 tint disappears against the dark surface, so
-                      // dark mode gets a stronger wash to stay visible.
-                      color: tokens.green.withValues(
-                        alpha: Theme.of(context).brightness == Brightness.dark
-                            ? 0.10
-                            : 0.05,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: tokens.green.withValues(alpha: 0.2),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.record_voice_over, color: tokens.green),
-                        const SizedBox(width: 12),
-                        Expanded(
+                      // Notes
+                      if (record.notes != null && record.notes!.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        Text(
+                          'ملاحظات المعلم',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        AppCard(
                           child: Text(
-                            'تلقين — قرأ المعلّم المقطع على الطالب وكرّره معه. '
-                            'لا تسميع ولا تقييم ولا نجاح أو رسوب في هذه الحلقة.',
+                            record.notes!,
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ),
                       ],
-                    ),
-                  )
-                else ...[
-                  // Overall session result is a BINARY pass/fail ONLY (#24):
-                  // the session is failed if ANY single part grades محب, and
-                  // passes only if none is. It deliberately shows NO combined
-                  // grade tier and NO summed error "score" — grades and error
-                  // counts are never combined across parts. Each part's own
-                  // grade and pass/fail is shown, alone, in the cards below.
-                  Center(
-                    child: _OverallResultBanner(
-                      passed: record.grades.passesForLevel(record.levelId),
-                    ),
+                    ],
                   ),
-
-                  const SizedBox(height: 24),
-
-                  // Part-by-part results
-                  Text(
-                    'تفاصيل الأجزاء',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Only the parts this meeting actually recited — a
-                  // review-only or short meeting omits parts 2/3, so a skipped
-                  // part is never rendered as a passing zero-error card. Legacy
-                  // records with no marker read back as all three (see
-                  // SessionRecordModel.presentParts).
-                  for (final part in record.presentParts) ...[
-                    _PartResultCard(
-                      part: part,
-                      errors: record.grades.errorsForPart(part),
-                      level: record.levelId,
-                      range: _rangeForPart(session, part),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                ],
-
-                // Notes
-                if (record.notes != null && record.notes!.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  Text(
-                    'ملاحظات المعلم',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  AppCard(
-                    child: Text(
-                      record.notes!,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ),
-                ],
-              ],
+                ),
+              );
+            },
+            loading: () => const SliverFillRemaining(
+              hasScrollBody: false,
+              child: LoadingState(),
             ),
-          );
-        },
-        loading: () => const LoadingState(),
-        error: (e, _) {
-          // The raw exception goes to the log, never onto the screen.
-          debugPrint('sessionRecordByIdProvider failed: $e');
-          return ErrorState(
-            message: 'تعذر تحميل تفاصيل الحلقة',
-            onRetry: () => ref.invalidate(sessionRecordByIdProvider(recordId)),
-          );
-        },
+            error: (e, _) {
+              // The raw exception goes to the log, never onto the screen.
+              debugPrint('sessionRecordByIdProvider failed: $e');
+              return SliverFillRemaining(
+                hasScrollBody: false,
+                child: ErrorState(
+                  message: 'تعذر تحميل تفاصيل الحلقة',
+                  onRetry: () =>
+                      ref.invalidate(sessionRecordByIdProvider(recordId)),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

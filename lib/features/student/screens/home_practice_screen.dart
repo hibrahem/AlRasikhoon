@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../shared/providers/current_student_provider.dart';
+import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../providers/student_provider.dart';
@@ -58,7 +59,8 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
     final assignment = ref.watch(homeAssignmentProvider).asData?.value;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('التكرار في المنزل')),
+      // Large-title sliver bar; the refresh indicator wraps the whole scroll
+      // view so pull-to-refresh works from the loading/error states too.
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(homePracticeStatsProvider);
@@ -70,65 +72,83 @@ class _HomePracticeScreenState extends ConsumerState<HomePracticeScreen> {
             ref.read(studentHomePracticesProvider.future),
           ]);
         },
-        child: SingleChildScrollView(
+        child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsetsDirectional.all(16),
-          child: statsAsync.when(
-            loading: () => const LoadingState(),
-            // Never a blank page: a stats failure on the student's main
-            // logging flow gets a message and a one-tap retry.
-            error: (_, _) => ErrorState(
-              message: 'تعذر تحميل بيانات التكرار',
-              onRetry: () {
-                ref.invalidate(homePracticeStatsProvider);
-                ref.invalidate(studentHomePracticesProvider);
+          slivers: [
+            const AppLargeTopBar(title: 'التكرار في المنزل'),
+            statsAsync.when(
+              loading: () => const SliverFillRemaining(
+                hasScrollBody: false,
+                child: LoadingState(),
+              ),
+              // Never a blank page: a stats failure on the student's main
+              // logging flow gets a message and a one-tap retry.
+              error: (_, _) => SliverFillRemaining(
+                hasScrollBody: false,
+                child: ErrorState(
+                  message: 'تعذر تحميل بيانات التكرار',
+                  onRetry: () {
+                    ref.invalidate(homePracticeStatsProvider);
+                    ref.invalidate(studentHomePracticesProvider);
+                  },
+                ),
+              ),
+              data: (stats) {
+                final student = studentAsync.asData?.value;
+                final practices = practicesAsync.asData?.value ?? const [];
+                // Constructed only when there is history to format: DateFormat
+                // throws before locale data is initialized, and an empty
+                // history must not require it.
+                final dateFormat = practices.isEmpty
+                    ? null
+                    : DateFormat('EEEE، d MMMM yyyy', 'ar');
+
+                return SliverPadding(
+                  padding: const EdgeInsetsDirectional.all(16),
+                  sliver: SliverToBoxAdapter(
+                    child: HomePracticeView(
+                      data: HomePracticeData(
+                        assignmentDone: assignment?.repetitionsDone,
+                        assignmentRequired: assignment?.repetitionsRequired,
+                        assignmentComplete: assignment?.isComplete ?? false,
+                        todayRepetitions: stats.todayRepetitions,
+                        streakDays: stats.streakDays,
+                        totalRepetitions: stats.totalRepetitions,
+                        // No per-day practice history is available client-side, so
+                        // the beads render the streak itself: the last N days,
+                        // today first, are lit.
+                        weekBeads: List.generate(
+                          7,
+                          (i) => i < stats.streakDays,
+                        ),
+                        sessionTitle: student != null
+                            ? 'الحلقة ${student.currentSession}'
+                            : null,
+                        // Never an app-derived hizb: level 2's structural hizb can
+                        // disagree with the assessment's own verbatim label
+                        // (`scope.labelAr`) for the same session. The level and juz
+                        // are always consistent with the data.
+                        sessionSubtitle: student != null
+                            ? 'المستوى ${student.currentLevel} - الجزء ${student.currentJuz}'
+                            : null,
+                        history: [
+                          for (final practice in practices.take(10))
+                            PracticeHistoryEntry(
+                              repetitions: practice.repetitions,
+                              title: 'الحلقة ${practice.sessionNumber}',
+                              dateLabel: dateFormat!.format(
+                                practice.practiceDate,
+                              ),
+                            ),
+                        ],
+                      ),
+                      onSubmit: _submitPractice,
+                    ),
+                  ),
+                );
               },
             ),
-            data: (stats) {
-              final student = studentAsync.asData?.value;
-              final practices = practicesAsync.asData?.value ?? const [];
-              // Constructed only when there is history to format: DateFormat
-              // throws before locale data is initialized, and an empty
-              // history must not require it.
-              final dateFormat = practices.isEmpty
-                  ? null
-                  : DateFormat('EEEE، d MMMM yyyy', 'ar');
-
-              return HomePracticeView(
-                data: HomePracticeData(
-                  assignmentDone: assignment?.repetitionsDone,
-                  assignmentRequired: assignment?.repetitionsRequired,
-                  assignmentComplete: assignment?.isComplete ?? false,
-                  todayRepetitions: stats.todayRepetitions,
-                  streakDays: stats.streakDays,
-                  totalRepetitions: stats.totalRepetitions,
-                  // No per-day practice history is available client-side, so
-                  // the beads render the streak itself: the last N days,
-                  // today first, are lit.
-                  weekBeads: List.generate(7, (i) => i < stats.streakDays),
-                  sessionTitle: student != null
-                      ? 'الحلقة ${student.currentSession}'
-                      : null,
-                  // Never an app-derived hizb: level 2's structural hizb can
-                  // disagree with the assessment's own verbatim label
-                  // (`scope.labelAr`) for the same session. The level and juz
-                  // are always consistent with the data.
-                  sessionSubtitle: student != null
-                      ? 'المستوى ${student.currentLevel} - الجزء ${student.currentJuz}'
-                      : null,
-                  history: [
-                    for (final practice in practices.take(10))
-                      PracticeHistoryEntry(
-                        repetitions: practice.repetitions,
-                        title: 'الحلقة ${practice.sessionNumber}',
-                        dateLabel: dateFormat!.format(practice.practiceDate),
-                      ),
-                  ],
-                ),
-                onSubmit: _submitPractice,
-              );
-            },
-          ),
+          ],
         ),
       ),
     );

@@ -5,6 +5,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../domain/assessment/assessment_evaluation.dart';
 import '../../../domain/session/student_history_entry.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/assessment_outcome_display.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
@@ -102,29 +103,44 @@ class AssessmentDetailScreen extends ConsumerWidget {
               );
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isSard ? 'تفاصيل السرد' : 'تفاصيل الاختبار')),
-      body: viewAsync.when(
-        data: (facts) {
-          if (facts == null) {
-            return const Center(child: Text('السجل غير موجود'));
-          }
-          return _AssessmentDetailBody(isSard: _isSard, facts: facts);
-        },
-        loading: () => const LoadingState(),
-        error: (e, _) {
-          // The raw exception goes to the log, never onto the screen.
-          debugPrint('assessment record $recordId failed to load: $e');
-          return ErrorState(
-            message: _isSard
-                ? 'تعذر تحميل تفاصيل السرد'
-                : 'تعذر تحميل تفاصيل الاختبار',
-            onRetry: () => ref.invalidate(
-              _isSard
-                  ? sardRecordByIdProvider(recordId)
-                  : examRecordByIdProvider(recordId),
+      // Large-title sliver bar for this read-only detail view.
+      body: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          AppLargeTopBar(title: _isSard ? 'تفاصيل السرد' : 'تفاصيل الاختبار'),
+          viewAsync.when(
+            data: (facts) {
+              if (facts == null) {
+                return const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: Text('السجل غير موجود')),
+                );
+              }
+              return _AssessmentDetailBody(isSard: _isSard, facts: facts);
+            },
+            loading: () => const SliverFillRemaining(
+              hasScrollBody: false,
+              child: LoadingState(),
             ),
-          );
-        },
+            error: (e, _) {
+              // The raw exception goes to the log, never onto the screen.
+              debugPrint('assessment record $recordId failed to load: $e');
+              return SliverFillRemaining(
+                hasScrollBody: false,
+                child: ErrorState(
+                  message: _isSard
+                      ? 'تعذر تحميل تفاصيل السرد'
+                      : 'تعذر تحميل تفاصيل الاختبار',
+                  onRetry: () => ref.invalidate(
+                    _isSard
+                        ? sardRecordByIdProvider(recordId)
+                        : examRecordByIdProvider(recordId),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -168,107 +184,112 @@ class _AssessmentDetailBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
 
-    return SingleChildScrollView(
+    return SliverPadding(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // What was assessed: the curriculum's own wording, exactly as the
-          // record carries it.
-          Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: tokens.surfaceVariant,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                facts.scopeLabelAr.isNotEmpty
-                    ? facts.scopeLabelAr
-                    : (isSard ? 'سرد' : 'اختبار'),
-                style: Theme.of(context).textTheme.labelLarge,
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // The verdict, exactly as the result screen showed it when the
-          // assessment was conducted.
-          AssessmentOutcomeDisplay(
-            outcome: facts.passed
-                ? AssessmentOutcome.muwaffaq
-                : AssessmentOutcome.ghayrMuwaffaq,
-            passedDetailAr: isSard ? 'وينقل للاختبار' : 'ويستكمل حفظه',
-          ),
-          const SizedBox(height: 16),
-
-          // The sheet's error table — or, for a record written before
-          // assessments tracked per-unit error types, the total it stored.
-          if (facts.tallies.isNotEmpty)
-            AssessmentBreakdownTable(
-              units: facts.tallies,
-              limits: isSard ? SardEvaluation.limits : ExamEvaluation.limits,
-              unitLabelAr: (i) =>
-                  isSard ? 'الوجه ${i + 1}' : _questionNamesAr[i],
-            )
-          else
-            AppCard(
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, size: 20, color: tokens.sepia),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'سُجّل هذا التقييم قبل تتبع تفاصيل الأخطاء — '
-                      'إجمالي الأخطاء: ${facts.errorCount}'
-                      '${facts.grade.isNotEmpty ? '، التقدير: ${facts.grade}' : ''}',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          const SizedBox(height: 16),
-
-          // The record's facts.
-          AppCard(
-            child: Column(
-              children: [
-                _FactRow(
-                  label: 'التاريخ',
-                  value: DateFormat('yyyy/MM/dd', 'ar').format(facts.date),
+      sliver: SliverToBoxAdapter(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // What was assessed: the curriculum's own wording, exactly as the
+            // record carries it.
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
-                _FactRow(label: 'المستوى', value: '${facts.levelId}'),
-                _FactRow(label: 'المحاولة', value: '${facts.attemptNumber}'),
-                if (facts.duration != null)
-                  _FactRow(
-                    label: 'المدة',
-                    value: _formatDuration(facts.duration!),
-                  ),
-              ],
+                decoration: BoxDecoration(
+                  color: tokens.surfaceVariant,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  facts.scopeLabelAr.isNotEmpty
+                      ? facts.scopeLabelAr
+                      : (isSard ? 'سرد' : 'اختبار'),
+                  style: Theme.of(context).textTheme.labelLarge,
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ),
-          ),
-
-          if (facts.notes != null && facts.notes!.isNotEmpty) ...[
             const SizedBox(height: 16),
+
+            // The verdict, exactly as the result screen showed it when the
+            // assessment was conducted.
+            AssessmentOutcomeDisplay(
+              outcome: facts.passed
+                  ? AssessmentOutcome.muwaffaq
+                  : AssessmentOutcome.ghayrMuwaffaq,
+              passedDetailAr: isSard ? 'وينقل للاختبار' : 'ويستكمل حفظه',
+            ),
+            const SizedBox(height: 16),
+
+            // The sheet's error table — or, for a record written before
+            // assessments tracked per-unit error types, the total it stored.
+            if (facts.tallies.isNotEmpty)
+              AssessmentBreakdownTable(
+                units: facts.tallies,
+                limits: isSard ? SardEvaluation.limits : ExamEvaluation.limits,
+                unitLabelAr: (i) =>
+                    isSard ? 'الوجه ${i + 1}' : _questionNamesAr[i],
+              )
+            else
+              AppCard(
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, size: 20, color: tokens.sepia),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'سُجّل هذا التقييم قبل تتبع تفاصيل الأخطاء — '
+                        'إجمالي الأخطاء: ${facts.errorCount}'
+                        '${facts.grade.isNotEmpty ? '، التقدير: ${facts.grade}' : ''}',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 16),
+
+            // The record's facts.
             AppCard(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'ملاحظات',
-                    style: Theme.of(context).textTheme.titleSmall,
+                  _FactRow(
+                    label: 'التاريخ',
+                    value: DateFormat('yyyy/MM/dd', 'ar').format(facts.date),
                   ),
-                  const SizedBox(height: 8),
-                  Text(facts.notes!),
+                  _FactRow(label: 'المستوى', value: '${facts.levelId}'),
+                  _FactRow(label: 'المحاولة', value: '${facts.attemptNumber}'),
+                  if (facts.duration != null)
+                    _FactRow(
+                      label: 'المدة',
+                      value: _formatDuration(facts.duration!),
+                    ),
                 ],
               ),
             ),
+
+            if (facts.notes != null && facts.notes!.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ملاحظات',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(facts.notes!),
+                  ],
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
