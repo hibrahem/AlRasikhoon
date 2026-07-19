@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,7 @@ import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../domain/assessment/assessment_evaluation.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/providers/connectivity_provider.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/assessment_outcome_display.dart';
@@ -85,6 +88,11 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
         curriculumSessionId: session.id,
       );
 
+      // Record and student progress are STAGED into one WriteBatch and
+      // committed without awaiting server ack: offline, the save must return
+      // instantly (the commit Future only completes on server ack) and the
+      // pair must sync atomically.
+      final batch = sessionRepo.newWriteBatch();
       final record = await sessionRepo.createSardRecord(
         studentId: student.id,
         teacherId: currentUser.id,
@@ -100,15 +108,25 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
         notes: _notesController.text.trim().isNotEmpty
             ? _notesController.text.trim()
             : null,
+        batch: batch,
       );
 
       // Update student progress
       StudentAdvanceOutcome? advanceOutcome;
       if (record.passed) {
-        advanceOutcome = await studentRepo.advanceStudentSession(student.id);
+        advanceOutcome = await studentRepo.advanceStudentSession(
+          student.id,
+          batch: batch,
+        );
       } else {
-        await studentRepo.incrementStudentAttempt(student.id);
+        await studentRepo.incrementStudentAttempt(student.id, batch: batch);
       }
+
+      unawaited(
+        batch.commit().catchError((Object e, StackTrace s) {
+          debugPrint('sard save sync failed: $e');
+        }),
+      );
 
       // The four outcomes are four different things, and the teacher is told
       // which: a pass that MOVED the student, a pass that FINISHED the
@@ -133,7 +151,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
       ref.invalidate(teacherStudentSessionHistoryProvider(widget.studentId));
 
       if (mounted) {
-        final String message;
+        String message;
         final Color background;
         // No manuscript token for "success"/"warning" — the primary green
         // already carries the positive/affirmative role and maroon (the
@@ -154,6 +172,12 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
         } else {
           message = 'تم حفظ السرد - غير موفق';
           background = tokens.maroon;
+        }
+
+        // Saved locally either way — but the teacher must not read an
+        // unqualified "saved" as "reached the server" while offline.
+        if (!ref.read(isConnectedProvider)) {
+          message = '$message — ستتم المزامنة عند عودة الاتصال';
         }
 
         ScaffoldMessenger.of(context).showSnackBar(

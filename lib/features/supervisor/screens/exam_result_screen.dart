@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,7 @@ import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../domain/assessment/assessment_evaluation.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/providers/connectivity_provider.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/assessment_outcome_display.dart';
@@ -91,6 +94,11 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
         curriculumSessionId: session.id,
       );
 
+      // Record and student progress are STAGED into one WriteBatch and
+      // committed without awaiting server ack: offline, the save must return
+      // instantly (the commit Future only completes on server ack) and the
+      // pair must sync atomically.
+      final batch = sessionRepo.newWriteBatch();
       final record = await sessionRepo.createExamRecord(
         studentId: student.id,
         supervisorId: currentUser.id,
@@ -106,15 +114,25 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
             ? _notesController.text.trim()
             : null,
         startedAt: widget.startedAt,
+        batch: batch,
       );
 
       // Update student progress
       StudentAdvanceOutcome? advanceOutcome;
       if (record.passed) {
-        advanceOutcome = await studentRepo.advanceStudentSession(student.id);
+        advanceOutcome = await studentRepo.advanceStudentSession(
+          student.id,
+          batch: batch,
+        );
       } else {
-        await studentRepo.incrementStudentAttempt(student.id);
+        await studentRepo.incrementStudentAttempt(student.id, batch: batch);
       }
+
+      unawaited(
+        batch.commit().catchError((Object e, StackTrace s) {
+          debugPrint('exam save sync failed: $e');
+        }),
+      );
 
       // The four outcomes are four different things, and the supervisor is told
       // which: a pass that MOVED the student, a pass that FINISHED the
@@ -137,7 +155,7 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
 
       if (mounted) {
         final tokens = context.tokens;
-        final String message;
+        String message;
         final Color background;
         if (progressNotAdvanced) {
           message =
@@ -163,6 +181,12 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
           // so it gets tokens.gold instead of reusing maroon for a second,
           // unrelated meaning in this same method.
           background = tokens.gold;
+        }
+
+        // Saved locally either way — but the supervisor must not read an
+        // unqualified "saved" as "reached the server" while offline.
+        if (!ref.read(isConnectedProvider)) {
+          message = '$message — ستتم المزامنة عند عودة الاتصال';
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
