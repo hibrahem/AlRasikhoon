@@ -125,7 +125,7 @@ class ExamQueueScreen extends ConsumerWidget {
                               child: Text(
                                 'اختبار',
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                   color: tokens.gold,
                                 ),

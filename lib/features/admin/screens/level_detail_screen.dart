@@ -270,7 +270,7 @@ class _SessionKindChip extends StatelessWidget {
       child: Text(
         kind.nameAr,
         style: TextStyle(
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
           color: color,
         ),

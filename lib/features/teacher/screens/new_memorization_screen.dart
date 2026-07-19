@@ -225,7 +225,7 @@ class _InstructionTile extends StatelessWidget {
                 style: TextStyle(
                   color: tokens.green,
                   fontWeight: FontWeight.bold,
-                  fontSize: 12,
+                  fontSize: 13,
                 ),
               ),
             ),

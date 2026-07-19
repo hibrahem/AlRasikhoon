@@ -48,25 +48,28 @@ class AppTheme {
         color: t.ink,
       ),
       titleSmall: GoogleFonts.cairo(
-        fontSize: 16,
+        fontSize: 17,
         fontWeight: FontWeight.w600,
         color: t.ink,
       ),
-      bodyLarge: GoogleFonts.cairo(fontSize: 16, color: t.ink),
-      bodyMedium: GoogleFonts.cairo(fontSize: 15, color: t.ink),
-      bodySmall: GoogleFonts.cairo(fontSize: 14, color: t.sepia),
+      // Arabic (Cairo) renders visually smaller than Latin at equal sp, so
+      // the whole body/label scale sits ~1sp above Material defaults; 13sp
+      // is the app-wide floor (see al_rasikhoon-g7l).
+      bodyLarge: GoogleFonts.cairo(fontSize: 17, color: t.ink),
+      bodyMedium: GoogleFonts.cairo(fontSize: 16, color: t.ink),
+      bodySmall: GoogleFonts.cairo(fontSize: 15, color: t.sepia),
       labelLarge: GoogleFonts.cairo(
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: FontWeight.w500,
         color: t.ink,
       ),
       labelMedium: GoogleFonts.cairo(
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: FontWeight.w500,
         color: t.ink,
       ),
       labelSmall: GoogleFonts.cairo(
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: FontWeight.w500,
         color: t.sepia,
       ),
@@ -97,14 +100,20 @@ class AppTheme {
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
         elevation: 0,
-        scrolledUnderElevation: 0,
+        // The bar sits flat on the page at rest; once content slides under
+        // it, a warm umber shadow (never black on parchment) separates the
+        // two planes. Dark mode stays shadow-free per the design system —
+        // tone steps carry the depth there.
+        scrolledUnderElevation: brightness == Brightness.light ? 3 : 0,
+        shadowColor: const Color(0x2E4A3A1E),
         centerTitle: false,
+        toolbarHeight: 64,
         backgroundColor: t.page,
         foregroundColor: t.ink,
         surfaceTintColor: Colors.transparent,
         iconTheme: IconThemeData(color: t.ink),
         titleTextStyle: GoogleFonts.amiri(
-          fontSize: 22,
+          fontSize: 26,
           fontWeight: FontWeight.bold,
           color: t.ink,
         ),
@@ -150,7 +159,7 @@ class AppTheme {
         style: TextButton.styleFrom(
           foregroundColor: t.green,
           textStyle: GoogleFonts.cairo(
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -178,8 +187,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppDimens.radiusControl),
           borderSide: BorderSide(color: t.maroon),
         ),
-        labelStyle: GoogleFonts.cairo(fontSize: 14, color: t.sepia),
-        hintStyle: GoogleFonts.cairo(fontSize: 14, color: t.sepia),
+        labelStyle: GoogleFonts.cairo(fontSize: 15, color: t.sepia),
+        hintStyle: GoogleFonts.cairo(fontSize: 15, color: t.sepia),
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: t.card,
@@ -194,7 +203,7 @@ class AppTheme {
         ),
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => GoogleFonts.cairo(
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: states.contains(WidgetState.selected)
                 ? FontWeight.w600
                 : FontWeight.w400,
@@ -209,7 +218,7 @@ class AppTheme {
       dividerTheme: DividerThemeData(color: t.hairline, thickness: 1),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: t.ink,
-        contentTextStyle: GoogleFonts.cairo(fontSize: 14, color: t.page),
+        contentTextStyle: GoogleFonts.cairo(fontSize: 15, color: t.page),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimens.radiusControl),
@@ -223,12 +232,12 @@ class AppTheme {
           fontWeight: FontWeight.bold,
           color: t.ink,
         ),
-        contentTextStyle: GoogleFonts.cairo(fontSize: 14, color: t.ink),
+        contentTextStyle: GoogleFonts.cairo(fontSize: 16, color: t.ink),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: t.surfaceVariant,
         selectedColor: t.primaryContainer,
-        labelStyle: GoogleFonts.cairo(fontSize: 13, color: t.ink),
+        labelStyle: GoogleFonts.cairo(fontSize: 14, color: t.ink),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );

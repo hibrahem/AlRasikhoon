@@ -105,7 +105,7 @@ class SessionRecordRow extends StatelessWidget {
             child: Text(
               isTalqeen ? 'تلقين' : (passed ? 'نجح' : 'رسب'),
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: passColor,
               ),
@@ -150,7 +150,7 @@ class _DurationDisplay extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-          fontSize: 12,
+          fontSize: 13,
           fontWeight: FontWeight.bold,
           color: color,
         ),

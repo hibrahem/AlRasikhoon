@@ -305,7 +305,7 @@ class _RecitationScreenState extends ConsumerState<RecitationScreen> {
           // read as a juz counter right above a memorization passage.
           Text(
             'المقطع $position من ${presentParts.length}',
-            style: GoogleFonts.cairo(fontSize: 13, color: tokens.onHeroMuted),
+            style: GoogleFonts.cairo(fontSize: 14, color: tokens.onHeroMuted),
           ),
           Text(
             recitationPartTitleAr(widget.part),

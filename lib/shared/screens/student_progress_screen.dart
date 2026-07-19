@@ -298,7 +298,7 @@ class _StudentHeaderCard extends StatelessWidget {
               ),
               child: Text(
                 'المحاولة ${student.currentAttempt}',
-                style: TextStyle(fontSize: 12, color: tokens.gold),
+                style: TextStyle(fontSize: 13, color: tokens.gold),
               ),
             ),
         ],
@@ -641,7 +641,7 @@ class _SessionHistoryList extends StatelessWidget {
                 child: Text(
                   isTalqeen ? 'تلقين' : (entry.passed ? 'نجح' : 'رسب'),
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: badgeColor,
                   ),
