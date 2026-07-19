@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:al_rasikhoon/l10n/app_localizations.dart';
 import 'package:al_rasikhoon/core/theme/app_theme.dart';
 import 'package:al_rasikhoon/routing/app_router.dart';
+import 'package:al_rasikhoon/shared/providers/connectivity_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:al_rasikhoon/data/repositories/auth_repository.dart';
@@ -131,7 +132,15 @@ class TestApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
-      overrides: overrides.cast(),
+      overrides: [
+        // E2E tests run "online". The connectivity plugin has no test
+        // implementation, and repositories now consult connectivity per
+        // read (al_rasikhoon-gy4) — without this override the plugin
+        // stream would mount and fail the test with a mid-run
+        // MissingPluginException.
+        isConnectedProvider.overrideWithValue(true),
+        ...overrides.cast(),
+      ],
       child: child ?? const _TestAppContent(),
     );
   }
