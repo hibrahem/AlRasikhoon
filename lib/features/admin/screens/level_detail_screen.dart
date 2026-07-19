@@ -5,6 +5,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
@@ -25,47 +26,71 @@ class LevelDetailScreen extends ConsumerWidget {
     final levelAsync = ref.watch(levelProvider(levelNumber));
     final sessionsAsync = ref.watch(levelSessionsProvider(levelNumber));
 
+    // AppLargeTopBar.title is a plain String, so the dynamic level name is
+    // resolved here — same fallback as the old AppBar title.
+    final title = levelAsync.maybeWhen(
+      data: (level) => level?.nameAr ?? 'المستوى $levelNumber',
+      orElse: () => 'المستوى $levelNumber',
+    );
+
     return Scaffold(
-      appBar: AppBar(
-        title: levelAsync.maybeWhen(
-          data: (level) => Text(level?.nameAr ?? 'المستوى $levelNumber'),
-          orElse: () => Text('المستوى $levelNumber'),
-        ),
-      ),
-      body: sessionsAsync.when(
-        loading: () => const LoadingState(),
-        error: (e, _) {
-          debugPrint('levelSessionsProvider failed: $e');
-          return ErrorState(
-            message: 'تعذر تحميل الحلقات',
-            onRetry: () => ref.invalidate(levelSessionsProvider(levelNumber)),
-          );
-        },
-        data: (sessions) {
-          if (sessions.isEmpty) {
-            return _EmptyState(levelNumber: levelNumber);
-          }
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              levelAsync.maybeWhen(
-                data: (level) => level == null
-                    ? const SizedBox.shrink()
-                    : _LevelHeader(
-                        levelNumber: levelNumber,
-                        nameAr: level.nameAr,
-                        juzRangeAr: level.juzRangeAr,
-                        sessionCount: sessions.length,
-                      ),
-                orElse: () => const SizedBox.shrink(),
-              ),
-              const SizedBox(height: 16),
-              Text('الحلقات', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 12),
-              ...sessions.map((session) => _SessionCard(session: session)),
-            ],
-          );
-        },
+      body: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          AppLargeTopBar(title: title),
+          sessionsAsync.when(
+            loading: () => const SliverFillRemaining(
+              hasScrollBody: false,
+              child: LoadingState(),
+            ),
+            error: (e, _) {
+              debugPrint('levelSessionsProvider failed: $e');
+              return SliverFillRemaining(
+                hasScrollBody: false,
+                child: ErrorState(
+                  message: 'تعذر تحميل الحلقات',
+                  onRetry: () =>
+                      ref.invalidate(levelSessionsProvider(levelNumber)),
+                ),
+              );
+            },
+            data: (sessions) {
+              if (sessions.isEmpty) {
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _EmptyState(levelNumber: levelNumber),
+                );
+              }
+              return SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    levelAsync.maybeWhen(
+                      data: (level) => level == null
+                          ? const SizedBox.shrink()
+                          : _LevelHeader(
+                              levelNumber: levelNumber,
+                              nameAr: level.nameAr,
+                              juzRangeAr: level.juzRangeAr,
+                              sessionCount: sessions.length,
+                            ),
+                      orElse: () => const SizedBox.shrink(),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'الحلقات',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 12),
+                    ...sessions.map(
+                      (session) => _SessionCard(session: session),
+                    ),
+                  ]),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -270,7 +295,7 @@ class _SessionKindChip extends StatelessWidget {
       child: Text(
         kind.nameAr,
         style: TextStyle(
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
           color: color,
         ),

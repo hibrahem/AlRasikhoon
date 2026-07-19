@@ -9,6 +9,7 @@ import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/edit_profile_dialog.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
@@ -77,310 +78,346 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
     final studentsAsync = ref.watch(studentsForTeacherAdminProvider(teacherId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('تفاصيل المعلم'),
-        actions: [
-          // Account-level actions on the teacher, so they belong with the
-          // screen chrome — not buried inside the institutes section.
-          if (teacherAsync.asData?.value != null) ...[
-            IconButton(
-              icon: const Icon(Icons.edit_outlined),
-              tooltip: 'تعديل الملف الشخصي',
-              onPressed: () =>
-                  _showEditProfileDialog(context, teacherAsync.asData!.value!),
-            ),
-            IconButton(
-              icon: const Icon(Icons.lock_reset),
-              tooltip: 'إعادة تعيين كلمة المرور',
-              onPressed: () {
-                final teacher = teacherAsync.asData!.value!;
-                showDialog<void>(
-                  context: context,
-                  builder: (_) => ResetPasswordDialog(
-                    userId: teacher.id,
-                    userDisplayName: teacher.name,
-                  ),
-                );
-              },
-            ),
-          ],
-        ],
-      ),
-      body: teacherAsync.when(
-        data: (teacher) {
-          if (teacher == null) {
-            return const Center(child: Text('المعلم غير موجود'));
-          }
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Teacher header
-                AppCard(
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 32,
-                        backgroundColor: tokens.green.withValues(alpha: 0.1),
-                        child: Text(
-                          teacher.name.isNotEmpty ? teacher.name[0] : '?',
-                          style: TextStyle(
-                            color: tokens.green,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 24,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              teacher.name,
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(
-                                  teacher.phone != null
-                                      ? Icons.phone
-                                      : Icons.email,
-                                  size: 16,
-                                  color: tokens.sepia,
-                                ),
-                                const SizedBox(width: 4),
-                                // Falls back to the login username when no
-                                // phone was given — it must shrink rather
-                                // than overflow the row.
-                                Expanded(
-                                  child: Text(
-                                    teacher.phone ?? teacher.displayUsername,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(color: tokens.sepia),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                // "success"/"error" reused as green/maroon,
-                                // same as the teacher list's status badge.
-                                color: teacher.isActive
-                                    ? tokens.green.withValues(alpha: 0.1)
-                                    : tokens.maroon.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                teacher.isActive ? 'نشط' : 'غير نشط',
-                                style: Theme.of(context).textTheme.labelSmall
-                                    ?.copyWith(
-                                      color: teacher.isActive
-                                          ? tokens.green
-                                          : tokens.maroon,
-                                    ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+      body: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          AppLargeTopBar(
+            title: 'تفاصيل المعلم',
+            actions: [
+              // Account-level actions on the teacher, so they belong with the
+              // screen chrome — not buried inside the institutes section.
+              if (teacherAsync.asData?.value != null) ...[
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  tooltip: 'تعديل الملف الشخصي',
+                  onPressed: () => _showEditProfileDialog(
+                    context,
+                    teacherAsync.asData!.value!,
                   ),
                 ),
-
-                const SizedBox(height: 24),
-
-                // Assigned institutes
-                Text(
-                  'المعاهد المعين بها',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 12),
-
-                institutesAsync.when(
-                  data: (institutes) {
-                    if (institutes.isEmpty) {
-                      return const EmptyState(
-                        icon: Icons.account_balance_outlined,
-                        title: 'غير معين لأي معهد',
-                      );
-                    }
-
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: institutes.length,
-                      itemBuilder: (context, index) {
-                        final institute = institutes[index];
-                        return AppCard(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          child: Row(
-                            children: [
-                              IconMedallion(
-                                icon: Icons.account_balance,
-                                accent: tokens.green,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      institute.name,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.titleSmall,
-                                    ),
-                                    Text(
-                                      institute.location,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(color: tokens.sepia),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  loading: () => const LoadingState(),
-                  error: (e, _) {
-                    debugPrint('institutesForTeacherProvider failed: $e');
-                    return ErrorState(
-                      message: 'تعذر تحميل المعاهد',
-                      onRetry: () => ref.invalidate(
-                        institutesForTeacherProvider(teacherId),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 24),
-
-                Text('الطلاب', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 12),
-
-                studentsAsync.when(
-                  data: (students) {
-                    // Institute name lookup, built from the teacher's institutes.
-                    final institutes =
-                        institutesAsync.asData?.value ??
-                        const <InstituteModel>[];
-                    final instituteNameById = <String, String>{
-                      for (final institute in institutes)
-                        institute.id: institute.name,
-                    };
-
-                    if (students.isEmpty) {
-                      return const EmptyState(
-                        icon: Icons.school_outlined,
-                        title: 'لا يوجد طلاب لهذا المعلم',
-                      );
-                    }
-
-                    // Empty selection = "All". Otherwise keep only the students
-                    // whose institute is in the selected set.
-                    final filtered = _selectedInstituteIds.isEmpty
-                        ? students
-                        : students
-                              .where(
-                                (s) => _selectedInstituteIds.contains(
-                                  s.student.instituteId,
-                                ),
-                              )
-                              .toList();
-
-                    // Whether the *visible* list spans more than one institute.
-                    // The per-card badge is only useful then — when a single
-                    // institute is shown the chip already names it.
-                    final visibleInstituteIds = filtered
-                        .map((s) => s.student.instituteId)
-                        .toSet();
-                    final showBadges = visibleInstituteIds.length > 1;
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _InstituteFilterBar(
-                          institutes: institutes,
-                          selectedInstituteIds: _selectedInstituteIds,
-                          onToggle: _toggleInstitute,
-                          onClear: _clearFilter,
-                        ),
-                        const SizedBox(height: 12),
-                        if (filtered.isEmpty)
-                          const EmptyState(
-                            icon: Icons.filter_alt_off_outlined,
-                            title: 'لا يوجد طلاب في المعهد المحدد',
-                          )
-                        else
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: filtered.length,
-                            itemBuilder: (context, index) {
-                              final studentWithUser = filtered[index];
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: StudentCard(
-                                  studentWithUser: studentWithUser,
-                                  instituteName: showBadges
-                                      ? instituteNameById[studentWithUser
-                                            .student
-                                            .instituteId]
-                                      : null,
-                                  onTap: () => context.push(
-                                    AppRoutes.adminStudentProgress.replaceFirst(
-                                      ':id',
-                                      studentWithUser.student.id,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                      ],
-                    );
-                  },
-                  loading: () => const LoadingState(),
-                  error: (e, _) {
-                    debugPrint('studentsForTeacherAdminProvider failed: $e');
-                    return ErrorState(
-                      message: 'تعذر تحميل الطلاب',
-                      onRetry: () => ref.invalidate(
-                        studentsForTeacherAdminProvider(teacherId),
+                IconButton(
+                  icon: const Icon(Icons.lock_reset),
+                  tooltip: 'إعادة تعيين كلمة المرور',
+                  onPressed: () {
+                    final teacher = teacherAsync.asData!.value!;
+                    showDialog<void>(
+                      context: context,
+                      builder: (_) => ResetPasswordDialog(
+                        userId: teacher.id,
+                        userDisplayName: teacher.name,
                       ),
                     );
                   },
                 ),
               ],
+            ],
+          ),
+          teacherAsync.when(
+            data: (teacher) {
+              if (teacher == null) {
+                return const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: Text('المعلم غير موجود')),
+                );
+              }
+
+              return SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Teacher header
+                      AppCard(
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 32,
+                              backgroundColor: tokens.green.withValues(
+                                alpha: 0.1,
+                              ),
+                              child: Text(
+                                teacher.name.isNotEmpty ? teacher.name[0] : '?',
+                                style: TextStyle(
+                                  color: tokens.green,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 24,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    teacher.name,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleLarge,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        teacher.phone != null
+                                            ? Icons.phone
+                                            : Icons.email,
+                                        size: 16,
+                                        color: tokens.sepia,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      // Falls back to the login username when no
+                                      // phone was given — it must shrink rather
+                                      // than overflow the row.
+                                      Expanded(
+                                        child: Text(
+                                          teacher.phone ??
+                                              teacher.displayUsername,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(color: tokens.sepia),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      // "success"/"error" reused as green/maroon,
+                                      // same as the teacher list's status badge.
+                                      color: teacher.isActive
+                                          ? tokens.green.withValues(alpha: 0.1)
+                                          : tokens.maroon.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      teacher.isActive ? 'نشط' : 'غير نشط',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall
+                                          ?.copyWith(
+                                            color: teacher.isActive
+                                                ? tokens.green
+                                                : tokens.maroon,
+                                          ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Assigned institutes
+                      Text(
+                        'المعاهد المعين بها',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 12),
+
+                      institutesAsync.when(
+                        data: (institutes) {
+                          if (institutes.isEmpty) {
+                            return const EmptyState(
+                              icon: Icons.account_balance_outlined,
+                              title: 'غير معين لأي معهد',
+                            );
+                          }
+
+                          return ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: institutes.length,
+                            itemBuilder: (context, index) {
+                              final institute = institutes[index];
+                              return AppCard(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                child: Row(
+                                  children: [
+                                    IconMedallion(
+                                      icon: Icons.account_balance,
+                                      accent: tokens.green,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            institute.name,
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.titleSmall,
+                                          ),
+                                          Text(
+                                            institute.location,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(color: tokens.sepia),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        loading: () => const LoadingState(),
+                        error: (e, _) {
+                          debugPrint('institutesForTeacherProvider failed: $e');
+                          return ErrorState(
+                            message: 'تعذر تحميل المعاهد',
+                            onRetry: () => ref.invalidate(
+                              institutesForTeacherProvider(teacherId),
+                            ),
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      Text(
+                        'الطلاب',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 12),
+
+                      studentsAsync.when(
+                        data: (students) {
+                          // Institute name lookup, built from the teacher's institutes.
+                          final institutes =
+                              institutesAsync.asData?.value ??
+                              const <InstituteModel>[];
+                          final instituteNameById = <String, String>{
+                            for (final institute in institutes)
+                              institute.id: institute.name,
+                          };
+
+                          if (students.isEmpty) {
+                            return const EmptyState(
+                              icon: Icons.school_outlined,
+                              title: 'لا يوجد طلاب لهذا المعلم',
+                            );
+                          }
+
+                          // Empty selection = "All". Otherwise keep only the students
+                          // whose institute is in the selected set.
+                          final filtered = _selectedInstituteIds.isEmpty
+                              ? students
+                              : students
+                                    .where(
+                                      (s) => _selectedInstituteIds.contains(
+                                        s.student.instituteId,
+                                      ),
+                                    )
+                                    .toList();
+
+                          // Whether the *visible* list spans more than one institute.
+                          // The per-card badge is only useful then — when a single
+                          // institute is shown the chip already names it.
+                          final visibleInstituteIds = filtered
+                              .map((s) => s.student.instituteId)
+                              .toSet();
+                          final showBadges = visibleInstituteIds.length > 1;
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _InstituteFilterBar(
+                                institutes: institutes,
+                                selectedInstituteIds: _selectedInstituteIds,
+                                onToggle: _toggleInstitute,
+                                onClear: _clearFilter,
+                              ),
+                              const SizedBox(height: 12),
+                              if (filtered.isEmpty)
+                                const EmptyState(
+                                  icon: Icons.filter_alt_off_outlined,
+                                  title: 'لا يوجد طلاب في المعهد المحدد',
+                                )
+                              else
+                                ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: filtered.length,
+                                  itemBuilder: (context, index) {
+                                    final studentWithUser = filtered[index];
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 12,
+                                      ),
+                                      child: StudentCard(
+                                        studentWithUser: studentWithUser,
+                                        instituteName: showBadges
+                                            ? instituteNameById[studentWithUser
+                                                  .student
+                                                  .instituteId]
+                                            : null,
+                                        onTap: () => context.push(
+                                          AppRoutes.adminStudentProgress
+                                              .replaceFirst(
+                                                ':id',
+                                                studentWithUser.student.id,
+                                              ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                            ],
+                          );
+                        },
+                        loading: () => const LoadingState(),
+                        error: (e, _) {
+                          debugPrint(
+                            'studentsForTeacherAdminProvider failed: $e',
+                          );
+                          return ErrorState(
+                            message: 'تعذر تحميل الطلاب',
+                            onRetry: () => ref.invalidate(
+                              studentsForTeacherAdminProvider(teacherId),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+            loading: () => const SliverFillRemaining(
+              hasScrollBody: false,
+              child: LoadingState(),
             ),
-          );
-        },
-        loading: () => const LoadingState(),
-        error: (e, _) {
-          debugPrint('teacherProvider failed: $e');
-          return ErrorState(
-            message: 'تعذر تحميل المعلم',
-            onRetry: () => ref.invalidate(teacherProvider(teacherId)),
-          );
-        },
+            error: (e, _) {
+              debugPrint('teacherProvider failed: $e');
+              return SliverFillRemaining(
+                hasScrollBody: false,
+                child: ErrorState(
+                  message: 'تعذر تحميل المعلم',
+                  onRetry: () => ref.invalidate(teacherProvider(teacherId)),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

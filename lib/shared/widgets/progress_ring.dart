@@ -82,7 +82,7 @@ class ProgressRing extends StatelessWidget {
               Text(
                 caption,
                 style: GoogleFonts.cairo(
-                  fontSize: 13,
+                  fontSize: 14,
                   color: captionColor ?? tokens.onHeroMuted,
                 ),
               ),

@@ -5,6 +5,7 @@ import '../../../data/models/user_model.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/edit_profile_dialog.dart';
 import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
@@ -84,30 +85,30 @@ class AllStudentsScreen extends ConsumerWidget {
     final studentsAsync = ref.watch(allStudentsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الطلاب')),
-      body: studentsAsync.when(
-        data: (students) {
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(allStudentsProvider);
-            },
-            // The empty state sits INSIDE the refresh scroll view so
-            // pull-to-refresh keeps working when the list is empty.
-            child: students.isEmpty
-                ? const CustomScrollView(
-                    physics: AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: EmptyState(
-                          icon: Icons.school_outlined,
-                          title: 'لا يوجد طلاب',
-                        ),
-                      ),
-                    ],
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+      // Large-title sliver bar; the refresh indicator wraps the whole scroll
+      // view so pull-to-refresh works from the loading/error/empty states too.
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(allStudentsProvider);
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            const AppLargeTopBar(title: 'الطلاب'),
+            studentsAsync.when(
+              data: (students) {
+                if (students.isEmpty) {
+                  return const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: EmptyState(
+                      icon: Icons.school_outlined,
+                      title: 'لا يوجد طلاب',
+                    ),
+                  );
+                }
+                return SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList.builder(
                     itemCount: students.length,
                     itemBuilder: (context, index) {
                       final studentWithUser = students[index];
@@ -134,16 +135,25 @@ class AllStudentsScreen extends ConsumerWidget {
                       );
                     },
                   ),
-          );
-        },
-        loading: () => const LoadingState(),
-        error: (e, _) {
-          debugPrint('allStudentsProvider failed: $e');
-          return ErrorState(
-            message: 'تعذر تحميل الطلاب',
-            onRetry: () => ref.invalidate(allStudentsProvider),
-          );
-        },
+                );
+              },
+              loading: () => const SliverFillRemaining(
+                hasScrollBody: false,
+                child: LoadingState(),
+              ),
+              error: (e, _) {
+                debugPrint('allStudentsProvider failed: $e');
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: ErrorState(
+                    message: 'تعذر تحميل الطلاب',
+                    onRetry: () => ref.invalidate(allStudentsProvider),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

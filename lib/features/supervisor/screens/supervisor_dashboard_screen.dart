@@ -113,7 +113,7 @@ class _SupervisorDashboardScreenState
                 Text(
                   'السلام عليكم',
                   style: GoogleFonts.cairo(
-                    fontSize: 13,
+                    fontSize: 14,
                     color: tokens.onHeroMuted,
                   ),
                 ),
@@ -160,13 +160,19 @@ class _SupervisorDashboardScreenState
 
   Widget _buildStats(SupervisorStats stats) {
     final tokens = context.tokens;
-    return GridView.count(
-      crossAxisCount: 2,
+    // Max-extent + fixed tile height instead of crossAxisCount+aspectRatio:
+    // aspect-ratio tiles balloon into squares on tablets, while a fixed
+    // extent keeps the bento tile compact at any width (spec: stat tiles
+    // take natural heights, never grow with the screen).
+    return GridView(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 1.3,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 220,
+        mainAxisExtent: 132,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+      ),
       children: [
         StatCard(
           title: 'اختبارات معلقة',

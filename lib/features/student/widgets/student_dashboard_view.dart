@@ -159,7 +159,7 @@ class StudentDashboardView extends StatelessWidget {
                     Text(
                       'السلام عليكم',
                       style: GoogleFonts.cairo(
-                        fontSize: 13,
+                        fontSize: 14,
                         color: tokens.onHeroMuted,
                       ),
                     ),

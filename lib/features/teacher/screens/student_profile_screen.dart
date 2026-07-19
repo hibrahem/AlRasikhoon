@@ -13,6 +13,7 @@ import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/session_record_row.dart';
 import '../../../shared/widgets/student_pace_control.dart';
@@ -42,162 +43,189 @@ class StudentProfileScreen extends ConsumerWidget {
     final meetingAsync = ref.watch(studentCurrentMeetingProvider(studentId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('ملف الطالب')),
-      body: studentAsync.when(
-        data: (studentWithUser) {
-          if (studentWithUser == null) {
-            return const Center(child: Text('الطالب غير موجود'));
-          }
+      // Large-title sliver bar; the refresh indicator wraps the whole scroll
+      // view so pull-to-refresh works from the loading/error states too.
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(studentProvider(studentId));
+          ref.invalidate(studentCurrentMeetingProvider(studentId));
+          ref.invalidate(teacherStudentSessionHistoryProvider(studentId));
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            const AppLargeTopBar(title: 'ملف الطالب'),
+            studentAsync.when(
+              data: (studentWithUser) {
+                if (studentWithUser == null) {
+                  return const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(child: Text('الطالب غير موجود')),
+                  );
+                }
 
-          final student = studentWithUser.student;
-          final user = studentWithUser.user;
+                final student = studentWithUser.student;
+                final user = studentWithUser.user;
 
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(studentProvider(studentId));
-              ref.invalidate(studentCurrentMeetingProvider(studentId));
-              ref.invalidate(teacherStudentSessionHistoryProvider(studentId));
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Identity: name, username, level/juz.
-                  _StudentHeaderCard(user: user, student: student),
+                return SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Identity: name, username, level/juz.
+                        _StudentHeaderCard(user: user, student: student),
 
-                  const SizedBox(height: 24),
+                        const SizedBox(height: 24),
 
-                  // Pace control — either a teacher or a supervisor may set it,
-                  // and it may change mid-level; there is no approval workflow.
-                  // The same control the supervisor sees, invalidating the
-                  // teacher's own caches on a change (see _onPaceChanged).
-                  // Dials and forecast in ONE card: the متى الختم؟ line inside
-                  // recomputes from the dials as they move, so the teacher
-                  // sees the consequence of a pace change before releasing it.
-                  StudentPaceControl(
-                    student: student,
-                    onPlanChanged: (ref) => _onPaceChanged(ref, student.id),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Current session info
-                  Text(
-                    'الحلقة الحالية',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-
-                  meetingAsync.when(
-                    data: (meeting) {
-                      if (meeting == null) {
-                        return const AppCard(
-                          child: Center(child: Text('لا توجد بيانات للحلقة')),
-                        );
-                      }
-
-                      // The meeting's KIND is the kind of the session it
-                      // starts on — a batch is all lessons, so they agree. What
-                      // this session IS comes from the curriculum's own `kind`,
-                      // never from its number: session 35 of juz 30 is an
-                      // ordinary lesson, and the juz-30 اختبار is session 68.
-                      //
-                      // The تلقين branch MUST come before isExam/isSard and the
-                      // regular-lesson fallthrough: a تلقين is neither an
-                      // assessment nor a graded lesson, and falling through would
-                      // start it as one.
-                      final session = meeting.first;
-
-                      if (session.isTalqeen) {
-                        return _buildTalqeenCard(
-                          context,
-                          meeting,
-                          studentId,
-                          ref,
-                        );
-                      }
-
-                      if (session.isExam) {
-                        return _buildExamCard(context, session);
-                      }
-
-                      if (session.isSard) {
-                        // سرد is conducted by the TEACHER (al_rasikhoon-801), and
-                        // only a teacher reaches this screen.
-                        return _buildSardCard(context, session, studentId);
-                      }
-
-                      return _buildRegularSessionCard(
-                        context,
-                        meeting,
-                        student,
-                        studentId,
-                        ref,
-                      );
-                    },
-                    loading: () => const LoadingState(),
-                    error: (e, _) {
-                      // The raw exception goes to the log, never on screen.
-                      debugPrint('studentCurrentMeetingProvider failed: $e');
-                      return ErrorState(
-                        message: 'تعذر تحميل الحلقة',
-                        onRetry: () => ref.invalidate(
-                          studentCurrentMeetingProvider(studentId),
+                        // Pace control — either a teacher or a supervisor may set it,
+                        // and it may change mid-level; there is no approval workflow.
+                        // The same control the supervisor sees, invalidating the
+                        // teacher's own caches on a change (see _onPaceChanged).
+                        // Dials and forecast in ONE card: the متى الختم؟ line inside
+                        // recomputes from the dials as they move, so the teacher
+                        // sees the consequence of a pace change before releasing it.
+                        StudentPaceControl(
+                          student: student,
+                          onPlanChanged: (ref) =>
+                              _onPaceChanged(ref, student.id),
                         ),
-                      );
-                    },
-                  ),
 
-                  const SizedBox(height: 24),
+                        const SizedBox(height: 24),
 
-                  // Progress section — measured against the level's real
-                  // session count, from the levels catalog.
-                  Text(
-                    'التقدم في المستوى',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  AppCard(
-                    child: StudentLevelProgress(
-                      level: student.currentLevel,
-                      orderInLevel: student.currentOrderInLevel,
+                        // Current session info
+                        Text(
+                          'الحلقة الحالية',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 12),
+
+                        meetingAsync.when(
+                          data: (meeting) {
+                            if (meeting == null) {
+                              return const AppCard(
+                                child: Center(
+                                  child: Text('لا توجد بيانات للحلقة'),
+                                ),
+                              );
+                            }
+
+                            // The meeting's KIND is the kind of the session it
+                            // starts on — a batch is all lessons, so they agree. What
+                            // this session IS comes from the curriculum's own `kind`,
+                            // never from its number: session 35 of juz 30 is an
+                            // ordinary lesson, and the juz-30 اختبار is session 68.
+                            //
+                            // The تلقين branch MUST come before isExam/isSard and the
+                            // regular-lesson fallthrough: a تلقين is neither an
+                            // assessment nor a graded lesson, and falling through would
+                            // start it as one.
+                            final session = meeting.first;
+
+                            if (session.isTalqeen) {
+                              return _buildTalqeenCard(
+                                context,
+                                meeting,
+                                studentId,
+                                ref,
+                              );
+                            }
+
+                            if (session.isExam) {
+                              return _buildExamCard(context, session);
+                            }
+
+                            if (session.isSard) {
+                              // سرد is conducted by the TEACHER (al_rasikhoon-801), and
+                              // only a teacher reaches this screen.
+                              return _buildSardCard(
+                                context,
+                                session,
+                                studentId,
+                              );
+                            }
+
+                            return _buildRegularSessionCard(
+                              context,
+                              meeting,
+                              student,
+                              studentId,
+                              ref,
+                            );
+                          },
+                          loading: () => const LoadingState(),
+                          error: (e, _) {
+                            // The raw exception goes to the log, never on screen.
+                            debugPrint(
+                              'studentCurrentMeetingProvider failed: $e',
+                            );
+                            return ErrorState(
+                              message: 'تعذر تحميل الحلقة',
+                              onRetry: () => ref.invalidate(
+                                studentCurrentMeetingProvider(studentId),
+                              ),
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Progress section — measured against the level's real
+                        // session count, from the levels catalog.
+                        Text(
+                          'التقدم في المستوى',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        AppCard(
+                          child: StudentLevelProgress(
+                            level: student.currentLevel,
+                            orderInLevel: student.currentOrderInLevel,
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Session history — this student's past sessions, embedded
+                        // (al_rasikhoon-pb7). Moved here from the teacher-wide history
+                        // tab so the teacher sees a student's record in context, and
+                        // tapping a row opens that record's detail within the same
+                        // (Students) shell branch.
+                        Text(
+                          'سجل الحلقات',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        _SessionHistorySection(studentId: studentId),
+                      ],
                     ),
                   ),
-
-                  const SizedBox(height: 24),
-
-                  // Session history — this student's past sessions, embedded
-                  // (al_rasikhoon-pb7). Moved here from the teacher-wide history
-                  // tab so the teacher sees a student's record in context, and
-                  // tapping a row opens that record's detail within the same
-                  // (Students) shell branch.
-                  Text(
-                    'سجل الحلقات',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  _SessionHistorySection(studentId: studentId),
-                ],
+                );
+              },
+              loading: () => const SliverFillRemaining(
+                hasScrollBody: false,
+                child: LoadingState(),
               ),
+              error: (e, _) {
+                // The raw exception goes to the log, never onto the screen.
+                debugPrint('studentProvider failed: $e');
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: ErrorState(
+                    message: 'تعذر تحميل الطالب',
+                    // studentProvider is derived from the teacher's cached
+                    // roster, so the source list must be invalidated too
+                    // (see _onPaceChanged).
+                    onRetry: () {
+                      ref.invalidate(teacherStudentsProvider);
+                      ref.invalidate(studentProvider(studentId));
+                    },
+                  ),
+                );
+              },
             ),
-          );
-        },
-        loading: () => const LoadingState(),
-        error: (e, _) {
-          // The raw exception goes to the log, never onto the screen.
-          debugPrint('studentProvider failed: $e');
-          return ErrorState(
-            message: 'تعذر تحميل الطالب',
-            // studentProvider is derived from the teacher's cached roster, so
-            // the source list must be invalidated too (see _onPaceChanged).
-            onRetry: () {
-              ref.invalidate(teacherStudentsProvider);
-              ref.invalidate(studentProvider(studentId));
-            },
-          );
-        },
+          ],
+        ),
       ),
     );
   }
@@ -693,7 +721,7 @@ class _StudentHeaderCard extends StatelessWidget {
               ),
               child: Text(
                 'المحاولة ${student.currentAttempt}',
-                style: TextStyle(fontSize: 12, color: tokens.maroon),
+                style: TextStyle(fontSize: 13, color: tokens.maroon),
               ),
             ),
         ],

@@ -76,8 +76,11 @@ class StudentCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header: Name and level
+                // Header: Name and level. Top-aligned so the kind chip and
+                // actions hug the name line instead of floating in the
+                // vertical middle of a three-line column (dead-space bug).
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Avatar
                     CircleAvatar(
@@ -149,7 +152,7 @@ class StudentCard extends ConsumerWidget {
                             student.currentSession,
                           ),
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: _kindColor(
                               student.currentSessionKind,
@@ -163,7 +166,7 @@ class StudentCard extends ConsumerWidget {
                 ),
 
                 if (showProgress) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   // Progress info. `currentHizb` is never shown here: it is the
                   // denormalized STRUCTURAL value, which can disagree with the
                   // student's own assessment's verbatim label (level 2's source
@@ -194,7 +197,7 @@ class StudentCard extends ConsumerWidget {
                       Expanded(
                         child: ProgressBar(
                           progress: progress,
-                          height: 4,
+                          height: 6,
                           showPercentage: false,
                         ),
                       ),
@@ -297,9 +300,9 @@ class _InfoChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: tokens.sepia),
+          Icon(icon, size: 15, color: tokens.sepia),
           const SizedBox(width: 4),
-          Text(label, style: TextStyle(fontSize: 12, color: tokens.sepia)),
+          Text(label, style: TextStyle(fontSize: 13, color: tokens.sepia)),
         ],
       ),
     );

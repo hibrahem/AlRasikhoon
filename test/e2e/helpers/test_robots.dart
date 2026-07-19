@@ -202,9 +202,12 @@ class AuthRobot extends TestRobot {
   /// `pumpAndSettle()` (see [_settleBounded]). Assertions are unchanged —
   /// both texts must resolve to exactly one widget.
   Future<void> verifyLoginScreen() async {
-    await _pumpUntilFound(find.text('الراسخون'));
+    // The brand renders as the official logo image; its semantics label is
+    // what identifies the login screen now that the wordmark text is part
+    // of the asset itself.
+    await _pumpUntilFound(find.bySemanticsLabel('الراسخون'));
     await _settleBounded();
-    expect(find.text('الراسخون'), findsOneWidget);
+    expect(find.bySemanticsLabel('الراسخون'), findsOneWidget);
     expect(find.text('تسجيل الدخول'), findsOneWidget);
   }
 

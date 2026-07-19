@@ -6,6 +6,7 @@ import '../../../data/models/student_model.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
@@ -29,36 +30,36 @@ class SupervisorStudentsScreen extends ConsumerWidget {
     ref.watch(authRepositoryProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        // Sign-out is not offered here: it lives, confirmed, in الإعدادات
-        // (the shared SettingsScreen) so a destructive action never fires on a
-        // single unconfirmed tap next to routine navigation.
-        title: const Text('طلاب المعهد'),
-      ),
-      body: studentsAsync.when(
-        data: (students) {
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(supervisorStudentsProvider);
-            },
-            // The empty state sits INSIDE the refresh scroll view so
-            // pull-to-refresh keeps working when the list is empty.
-            child: students.isEmpty
-                ? const CustomScrollView(
-                    physics: AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: EmptyState(
-                          icon: Icons.school_outlined,
-                          title: 'لا يوجد طلاب',
-                          message: 'اضغط على + لإضافة طالب جديد',
-                        ),
-                      ),
-                    ],
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+      // Sign-out is not offered here: it lives, confirmed, in الإعدادات
+      // (the shared SettingsScreen) so a destructive action never fires on a
+      // single unconfirmed tap next to routine navigation.
+      //
+      // Large-title sliver bar; the refresh indicator wraps the whole scroll
+      // view so pull-to-refresh also works from the loading/error states —
+      // and when the list is empty.
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(supervisorStudentsProvider);
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            const AppLargeTopBar(title: 'طلاب المعهد'),
+            studentsAsync.when(
+              data: (students) {
+                if (students.isEmpty) {
+                  return const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: EmptyState(
+                      icon: Icons.school_outlined,
+                      title: 'لا يوجد طلاب',
+                      message: 'اضغط على + لإضافة طالب جديد',
+                    ),
+                  );
+                }
+                return SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList.builder(
                     itemCount: students.length,
                     itemBuilder: (context, index) {
                       final studentWithUser = students[index];
@@ -104,16 +105,25 @@ class SupervisorStudentsScreen extends ConsumerWidget {
                       );
                     },
                   ),
-          );
-        },
-        loading: () => const LoadingState(),
-        error: (e, _) {
-          debugPrint('supervisorStudentsProvider failed: $e');
-          return ErrorState(
-            message: 'تعذر تحميل الطلاب',
-            onRetry: () => ref.invalidate(supervisorStudentsProvider),
-          );
-        },
+                );
+              },
+              loading: () => const SliverFillRemaining(
+                hasScrollBody: false,
+                child: LoadingState(),
+              ),
+              error: (e, _) {
+                debugPrint('supervisorStudentsProvider failed: $e');
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: ErrorState(
+                    message: 'تعذر تحميل الطلاب',
+                    onRetry: () => ref.invalidate(supervisorStudentsProvider),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.supervisorAddStudent),

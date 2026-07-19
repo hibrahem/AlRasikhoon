@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
@@ -24,31 +25,31 @@ class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
     final institutesAsync = ref.watch(institutesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('المعاهد')),
-      body: institutesAsync.when(
-        data: (institutes) {
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(institutesProvider);
-            },
-            // The empty state sits INSIDE the refresh scroll view so
-            // pull-to-refresh keeps working when the list is empty.
-            child: institutes.isEmpty
-                ? const CustomScrollView(
-                    physics: AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: EmptyState(
-                          icon: Icons.account_balance_outlined,
-                          title: 'لا يوجد معاهد',
-                          message: 'اضغط على + لإضافة معهد جديد',
-                        ),
-                      ),
-                    ],
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+      // Large-title sliver bar; the refresh indicator wraps the whole scroll
+      // view so pull-to-refresh works from the loading/error/empty states too.
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(institutesProvider);
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            const AppLargeTopBar(title: 'المعاهد'),
+            institutesAsync.when(
+              data: (institutes) {
+                if (institutes.isEmpty) {
+                  return const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: EmptyState(
+                      icon: Icons.account_balance_outlined,
+                      title: 'لا يوجد معاهد',
+                      message: 'اضغط على + لإضافة معهد جديد',
+                    ),
+                  );
+                }
+                return SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList.builder(
                     itemCount: institutes.length,
                     itemBuilder: (context, index) {
                       final institute = institutes[index];
@@ -105,16 +106,25 @@ class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
                       );
                     },
                   ),
-          );
-        },
-        loading: () => const LoadingState(),
-        error: (e, _) {
-          debugPrint('institutesProvider failed: $e');
-          return ErrorState(
-            message: 'تعذر تحميل المعاهد',
-            onRetry: () => ref.invalidate(institutesProvider),
-          );
-        },
+                );
+              },
+              loading: () => const SliverFillRemaining(
+                hasScrollBody: false,
+                child: LoadingState(),
+              ),
+              error: (e, _) {
+                debugPrint('institutesProvider failed: $e');
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: ErrorState(
+                    message: 'تعذر تحميل المعاهد',
+                    onRetry: () => ref.invalidate(institutesProvider),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.createInstitute),

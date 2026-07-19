@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/repositories/auth_repository.dart';
@@ -73,40 +72,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 32),
-                Column(
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: tokens.green.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.menu_book,
-                        size: 50,
-                        color: tokens.green,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    // The wordmark reads in the manuscript face (Amiri), the
-                    // same treatment Quranic titles get across the app.
-                    Text(
-                      'الراسخون',
-                      style: GoogleFonts.amiri(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: tokens.green,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'تطبيق حفظ القرآن الكريم',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyLarge?.copyWith(color: tokens.sepia),
-                    ),
-                  ],
+                // The official gold calligraphy mark — the same brand asset
+                // as the app icon and splash. It carries its own wordmark
+                // ("الراسخون في حفظ كتاب الله"), so no separate title text.
+                Image.asset(
+                  'assets/images/logo_gold.png',
+                  height: 180,
+                  fit: BoxFit.contain,
+                  semanticLabel: 'الراسخون',
                 ),
                 const SizedBox(height: 48),
 

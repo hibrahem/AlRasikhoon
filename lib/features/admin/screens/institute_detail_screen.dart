@@ -7,6 +7,7 @@ import '../../../data/repositories/institute_repository.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
@@ -400,309 +401,337 @@ class InstituteDetailScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('تفاصيل المعهد'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              context.push(
-                AppRoutes.editInstitute.replaceFirst(':id', instituteId),
-              );
-            },
+      body: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          AppLargeTopBar(
+            title: 'تفاصيل المعهد',
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () {
+                  context.push(
+                    AppRoutes.editInstitute.replaceFirst(':id', instituteId),
+                  );
+                },
+              ),
+            ],
           ),
-        ],
-      ),
-      body: instituteAsync.when(
-        data: (institute) {
-          if (institute == null) {
-            return const Center(child: Text('المعهد غير موجود'));
-          }
+          instituteAsync.when(
+            data: (institute) {
+              if (institute == null) {
+                return const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: Text('المعهد غير موجود')),
+                );
+              }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Institute header
-                AppCard(
-                  child: Row(
+              return SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      IconMedallion(
-                        icon: Icons.account_balance,
-                        accent: tokens.green,
-                        size: 56,
-                        iconSize: 26,
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      // Institute header
+                      AppCard(
+                        child: Row(
                           children: [
-                            Text(
-                              institute.name,
-                              style: Theme.of(context).textTheme.titleLarge,
+                            IconMedallion(
+                              icon: Icons.account_balance,
+                              accent: tokens.green,
+                              size: 56,
+                              iconSize: 26,
                             ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.location_on,
-                                  size: 16,
-                                  color: tokens.sepia,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  institute.location,
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(color: tokens.sepia),
-                                ),
-                              ],
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    institute.name,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleLarge,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.location_on,
+                                        size: 16,
+                                        color: tokens.sepia,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        institute.location,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(color: tokens.sepia),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
                       ),
+
+                      const SizedBox(height: 24),
+
+                      // Teachers section
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'المعلمون',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          TextButton.icon(
+                            onPressed: () => _showAddTeacherSheet(context, ref),
+                            icon: const Icon(Icons.add, size: 18),
+                            label: const Text('إضافة'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      teachersAsync.when(
+                        data: (teachers) {
+                          if (teachers.isEmpty) {
+                            return EmptyState(
+                              icon: Icons.people_outline,
+                              title: 'لا يوجد معلمون',
+                              action: AppButton(
+                                text: 'إضافة معلم',
+                                onPressed: () =>
+                                    _showAddTeacherSheet(context, ref),
+                                type: AppButtonType.outline,
+                                size: AppButtonSize.small,
+                              ),
+                            );
+                          }
+
+                          return ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: teachers.length,
+                            itemBuilder: (context, index) {
+                              final teacher = teachers[index];
+                              return AppCard(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                onTap: () => context.push(
+                                  AppRoutes.teacherDetail.replaceFirst(
+                                    ':id',
+                                    teacher.id,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: tokens.green.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      child: Text(
+                                        teacher.name.isNotEmpty
+                                            ? teacher.name[0]
+                                            : '?',
+                                        style: TextStyle(
+                                          color: tokens.green,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            teacher.name,
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.titleSmall,
+                                          ),
+                                          Text(
+                                            teacher.phone ??
+                                                teacher.displayUsername,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(color: tokens.sepia),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.remove_circle_outline,
+                                        color: tokens.maroon,
+                                      ),
+                                      onPressed: () => _showRemoveTeacherDialog(
+                                        context,
+                                        ref,
+                                        teacher,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        loading: () => const LoadingState(),
+                        error: (e, _) {
+                          debugPrint('teachersForInstituteProvider failed: $e');
+                          return ErrorState(
+                            message: 'تعذر تحميل المعلمين',
+                            onRetry: () => ref.invalidate(
+                              teachersForInstituteProvider(instituteId),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      // Supervisors section — mirrors the teachers section above.
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'المشرفون',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          TextButton.icon(
+                            onPressed: () =>
+                                _showAddSupervisorSheet(context, ref),
+                            icon: const Icon(Icons.add, size: 18),
+                            label: const Text('إضافة'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      supervisorsAsync.when(
+                        data: (supervisors) {
+                          if (supervisors.isEmpty) {
+                            return EmptyState(
+                              icon: Icons.admin_panel_settings_outlined,
+                              title: 'لا يوجد مشرفون',
+                              action: AppButton(
+                                text: 'إضافة مشرف',
+                                onPressed: () =>
+                                    _showAddSupervisorSheet(context, ref),
+                                type: AppButtonType.outline,
+                                size: AppButtonSize.small,
+                              ),
+                            );
+                          }
+                          return ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: supervisors.length,
+                            itemBuilder: (context, index) {
+                              final supervisor = supervisors[index];
+                              return AppCard(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                onTap: () => context.push(
+                                  AppRoutes.supervisorDetail.replaceFirst(
+                                    ':id',
+                                    supervisor.id,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: tokens.gold.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      child: Text(
+                                        supervisor.name.isNotEmpty
+                                            ? supervisor.name[0]
+                                            : '?',
+                                        style: TextStyle(
+                                          color: tokens.gold,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            supervisor.name,
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.titleSmall,
+                                          ),
+                                          Text(
+                                            supervisor.phone ??
+                                                supervisor.displayUsername,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(color: tokens.sepia),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.remove_circle_outline,
+                                        color: tokens.maroon,
+                                      ),
+                                      onPressed: () =>
+                                          _showRemoveSupervisorDialog(
+                                            context,
+                                            ref,
+                                            supervisor,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        loading: () => const LoadingState(),
+                        error: (e, _) {
+                          debugPrint(
+                            'supervisorsForInstituteProvider failed: $e',
+                          );
+                          return ErrorState(
+                            message: 'تعذر تحميل المشرفين',
+                            onRetry: () => ref.invalidate(
+                              supervisorsForInstituteProvider(instituteId),
+                            ),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),
-
-                const SizedBox(height: 24),
-
-                // Teachers section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'المعلمون',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    TextButton.icon(
-                      onPressed: () => _showAddTeacherSheet(context, ref),
-                      icon: const Icon(Icons.add, size: 18),
-                      label: const Text('إضافة'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                teachersAsync.when(
-                  data: (teachers) {
-                    if (teachers.isEmpty) {
-                      return EmptyState(
-                        icon: Icons.people_outline,
-                        title: 'لا يوجد معلمون',
-                        action: AppButton(
-                          text: 'إضافة معلم',
-                          onPressed: () => _showAddTeacherSheet(context, ref),
-                          type: AppButtonType.outline,
-                          size: AppButtonSize.small,
-                        ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: teachers.length,
-                      itemBuilder: (context, index) {
-                        final teacher = teachers[index];
-                        return AppCard(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          onTap: () => context.push(
-                            AppRoutes.teacherDetail.replaceFirst(
-                              ':id',
-                              teacher.id,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                backgroundColor: tokens.green.withValues(
-                                  alpha: 0.1,
-                                ),
-                                child: Text(
-                                  teacher.name.isNotEmpty
-                                      ? teacher.name[0]
-                                      : '?',
-                                  style: TextStyle(
-                                    color: tokens.green,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      teacher.name,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.titleSmall,
-                                    ),
-                                    Text(
-                                      teacher.phone ?? teacher.displayUsername,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(color: tokens.sepia),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.remove_circle_outline,
-                                  color: tokens.maroon,
-                                ),
-                                onPressed: () => _showRemoveTeacherDialog(
-                                  context,
-                                  ref,
-                                  teacher,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  loading: () => const LoadingState(),
-                  error: (e, _) {
-                    debugPrint('teachersForInstituteProvider failed: $e');
-                    return ErrorState(
-                      message: 'تعذر تحميل المعلمين',
-                      onRetry: () => ref.invalidate(
-                        teachersForInstituteProvider(instituteId),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 24),
-                // Supervisors section — mirrors the teachers section above.
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'المشرفون',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    TextButton.icon(
-                      onPressed: () => _showAddSupervisorSheet(context, ref),
-                      icon: const Icon(Icons.add, size: 18),
-                      label: const Text('إضافة'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                supervisorsAsync.when(
-                  data: (supervisors) {
-                    if (supervisors.isEmpty) {
-                      return EmptyState(
-                        icon: Icons.admin_panel_settings_outlined,
-                        title: 'لا يوجد مشرفون',
-                        action: AppButton(
-                          text: 'إضافة مشرف',
-                          onPressed: () =>
-                              _showAddSupervisorSheet(context, ref),
-                          type: AppButtonType.outline,
-                          size: AppButtonSize.small,
-                        ),
-                      );
-                    }
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: supervisors.length,
-                      itemBuilder: (context, index) {
-                        final supervisor = supervisors[index];
-                        return AppCard(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          onTap: () => context.push(
-                            AppRoutes.supervisorDetail.replaceFirst(
-                              ':id',
-                              supervisor.id,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                backgroundColor: tokens.gold.withValues(
-                                  alpha: 0.1,
-                                ),
-                                child: Text(
-                                  supervisor.name.isNotEmpty
-                                      ? supervisor.name[0]
-                                      : '?',
-                                  style: TextStyle(
-                                    color: tokens.gold,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      supervisor.name,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.titleSmall,
-                                    ),
-                                    Text(
-                                      supervisor.phone ??
-                                          supervisor.displayUsername,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(color: tokens.sepia),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.remove_circle_outline,
-                                  color: tokens.maroon,
-                                ),
-                                onPressed: () => _showRemoveSupervisorDialog(
-                                  context,
-                                  ref,
-                                  supervisor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  loading: () => const LoadingState(),
-                  error: (e, _) {
-                    debugPrint('supervisorsForInstituteProvider failed: $e');
-                    return ErrorState(
-                      message: 'تعذر تحميل المشرفين',
-                      onRetry: () => ref.invalidate(
-                        supervisorsForInstituteProvider(instituteId),
-                      ),
-                    );
-                  },
-                ),
-              ],
+              );
+            },
+            loading: () => const SliverFillRemaining(
+              hasScrollBody: false,
+              child: LoadingState(),
             ),
-          );
-        },
-        loading: () => const LoadingState(),
-        error: (e, _) {
-          debugPrint('instituteProvider failed: $e');
-          return ErrorState(
-            message: 'تعذر تحميل المعهد',
-            onRetry: () => ref.invalidate(instituteProvider(instituteId)),
-          );
-        },
+            error: (e, _) {
+              debugPrint('instituteProvider failed: $e');
+              return SliverFillRemaining(
+                hasScrollBody: false,
+                child: ErrorState(
+                  message: 'تعذر تحميل المعهد',
+                  onRetry: () => ref.invalidate(instituteProvider(instituteId)),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

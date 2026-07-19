@@ -57,7 +57,7 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
                         data: (students) => Text(
                           _studentCountAr(students.length),
                           style: GoogleFonts.cairo(
-                            fontSize: 13,
+                            fontSize: 14,
                             color: context.tokens.onHeroMuted,
                           ),
                         ),

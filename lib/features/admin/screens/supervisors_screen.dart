@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
@@ -18,31 +19,31 @@ class SupervisorsScreen extends ConsumerWidget {
     final supervisorsAsync = ref.watch(allSupervisorsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('المشرفون')),
-      body: supervisorsAsync.when(
-        data: (supervisors) {
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(allSupervisorsProvider);
-            },
-            // The empty state sits INSIDE the refresh scroll view so
-            // pull-to-refresh keeps working when the list is empty.
-            child: supervisors.isEmpty
-                ? const CustomScrollView(
-                    physics: AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: EmptyState(
-                          icon: Icons.admin_panel_settings_outlined,
-                          title: 'لا يوجد مشرفون',
-                          message: 'اضغط على + لإضافة مشرف جديد',
-                        ),
-                      ),
-                    ],
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+      // Large-title sliver bar; the refresh indicator wraps the whole scroll
+      // view so pull-to-refresh works from the loading/error/empty states too.
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(allSupervisorsProvider);
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            const AppLargeTopBar(title: 'المشرفون'),
+            supervisorsAsync.when(
+              data: (supervisors) {
+                if (supervisors.isEmpty) {
+                  return const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: EmptyState(
+                      icon: Icons.admin_panel_settings_outlined,
+                      title: 'لا يوجد مشرفون',
+                      message: 'اضغط على + لإضافة مشرف جديد',
+                    ),
+                  );
+                }
+                return SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList.builder(
                     itemCount: supervisors.length,
                     itemBuilder: (context, index) {
                       final supervisor = supervisors[index];
@@ -140,16 +141,25 @@ class SupervisorsScreen extends ConsumerWidget {
                       );
                     },
                   ),
-          );
-        },
-        loading: () => const LoadingState(),
-        error: (e, _) {
-          debugPrint('allSupervisorsProvider failed: $e');
-          return ErrorState(
-            message: 'تعذر تحميل المشرفين',
-            onRetry: () => ref.invalidate(allSupervisorsProvider),
-          );
-        },
+                );
+              },
+              loading: () => const SliverFillRemaining(
+                hasScrollBody: false,
+                child: LoadingState(),
+              ),
+              error: (e, _) {
+                debugPrint('allSupervisorsProvider failed: $e');
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: ErrorState(
+                    message: 'تعذر تحميل المشرفين',
+                    onRetry: () => ref.invalidate(allSupervisorsProvider),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.addSupervisor),

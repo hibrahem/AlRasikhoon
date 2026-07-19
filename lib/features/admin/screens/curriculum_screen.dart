@@ -6,6 +6,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/icon_medallion.dart';
@@ -19,158 +20,182 @@ class CurriculumScreen extends ConsumerWidget {
     final levelsAsync = ref.watch(levelsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('المنهج')),
-      body: levelsAsync.when(
-        data: (levels) {
-          // The curriculum's size is the sum of what the catalog actually
-          // holds — never a number typed into the UI.
-          final totalSessions = levels.fold<int>(
-            0,
-            (sum, level) => sum + level.sessionCount,
-          );
+      // Large-title sliver bar over the levels catalog.
+      body: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          const AppLargeTopBar(title: 'المنهج'),
+          levelsAsync.when(
+            data: (levels) {
+              // The curriculum's size is the sum of what the catalog actually
+              // holds — never a number typed into the UI.
+              final totalSessions = levels.fold<int>(
+                0,
+                (sum, level) => sum + level.sessionCount,
+              );
 
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              // Overview card
-              AppCard(
-                backgroundColor: tokens.green.withValues(alpha: 0.05),
-                child: Row(
-                  children: [
-                    IconMedallion(
-                      icon: Icons.menu_book,
-                      accent: tokens.green,
-                      size: 56,
-                      iconSize: 28,
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+              return SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    // Overview card
+                    AppCard(
+                      backgroundColor: tokens.green.withValues(alpha: 0.05),
+                      child: Row(
                         children: [
-                          Text(
-                            'منهج الراسخون',
-                            style: Theme.of(context).textTheme.titleMedium,
+                          IconMedallion(
+                            icon: Icons.menu_book,
+                            accent: tokens.green,
+                            size: 56,
+                            iconSize: 28,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${levels.length} مستويات • $totalSessions حلقة',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: tokens.sepia),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Levels header
-              Text('المستويات', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 12),
-
-              // Levels list
-              ...levels.map((level) {
-                return AppCard(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  onTap: () => context.push(
-                    '${AppRoutes.curriculum}/${level.levelNumber}',
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          // Level-number badge in the medallion shape
-                          // (circular tinted disc), matching the header badge
-                          // on level_detail_screen.dart — numeral in Cairo
-                          // bold tabular like every data numeral.
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: _getLevelColor(
-                                tokens,
-                                level.levelNumber,
-                              ).withValues(alpha: 0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: Text(
-                                '${level.levelNumber}',
-                                style: GoogleFonts.cairo(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: _getLevelColor(
-                                    tokens,
-                                    level.levelNumber,
-                                  ),
-                                  fontFeatures: const [
-                                    FontFeature.tabularFigures(),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 16),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  level.nameAr,
-                                  style: Theme.of(context).textTheme.titleSmall,
+                                  'منهج الراسخون',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
                                 ),
+                                const SizedBox(height: 4),
                                 Text(
-                                  level.juzRangeAr,
+                                  '${levels.length} مستويات • $totalSessions حلقة',
                                   style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(color: tokens.sepia),
                                 ),
                               ],
                             ),
                           ),
-                          Icon(Icons.chevron_left, color: tokens.sepia),
                         ],
                       ),
-                      const SizedBox(height: 12),
-                      const Divider(),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _StatItem(
-                            label: 'الأجزاء',
-                            value: '${level.juzNumbers.length}',
-                            icon: Icons.menu_book,
-                          ),
-                          // The session count is DATA, per level (210 in level
-                          // 1, 49 in level 10). A level has no fixed number of
-                          // "hizbs" — levels 3-10 have none at all — so the
-                          // catalog's own count is what is shown.
-                          _StatItem(
-                            label: 'الحلقات',
-                            value: '${level.sessionCount}',
-                            icon: Icons.school,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ],
-          );
-        },
-        loading: () => const LoadingState(),
-        error: (e, _) {
-          debugPrint('levelsProvider failed: $e');
-          return ErrorState(
-            message: 'تعذر تحميل المنهج',
-            onRetry: () => ref.invalidate(levelsProvider),
-          );
-        },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Levels header
+                    Text(
+                      'المستويات',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Levels list
+                    ...levels.map((level) {
+                      return AppCard(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        onTap: () => context.push(
+                          '${AppRoutes.curriculum}/${level.levelNumber}',
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                // Level-number badge in the medallion shape
+                                // (circular tinted disc), matching the header badge
+                                // on level_detail_screen.dart — numeral in Cairo
+                                // bold tabular like every data numeral.
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: _getLevelColor(
+                                      tokens,
+                                      level.levelNumber,
+                                    ).withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '${level.levelNumber}',
+                                      style: GoogleFonts.cairo(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: _getLevelColor(
+                                          tokens,
+                                          level.levelNumber,
+                                        ),
+                                        fontFeatures: const [
+                                          FontFeature.tabularFigures(),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        level.nameAr,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.titleSmall,
+                                      ),
+                                      Text(
+                                        level.juzRangeAr,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(color: tokens.sepia),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(Icons.chevron_left, color: tokens.sepia),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            const Divider(),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                _StatItem(
+                                  label: 'الأجزاء',
+                                  value: '${level.juzNumbers.length}',
+                                  icon: Icons.menu_book,
+                                ),
+                                // The session count is DATA, per level (210 in level
+                                // 1, 49 in level 10). A level has no fixed number of
+                                // "hizbs" — levels 3-10 have none at all — so the
+                                // catalog's own count is what is shown.
+                                _StatItem(
+                                  label: 'الحلقات',
+                                  value: '${level.sessionCount}',
+                                  icon: Icons.school,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ]),
+                ),
+              );
+            },
+            loading: () => const SliverFillRemaining(
+              hasScrollBody: false,
+              child: LoadingState(),
+            ),
+            error: (e, _) {
+              debugPrint('levelsProvider failed: $e');
+              return SliverFillRemaining(
+                hasScrollBody: false,
+                child: ErrorState(
+                  message: 'تعذر تحميل المنهج',
+                  onRetry: () => ref.invalidate(levelsProvider),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

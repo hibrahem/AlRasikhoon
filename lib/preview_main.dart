@@ -22,6 +22,7 @@ import 'domain/curriculum/curriculum_pace.dart';
 import 'domain/curriculum/paced_session.dart';
 import 'features/admin/providers/admin_provider.dart';
 import 'features/admin/screens/admin_dashboard_screen.dart';
+import 'features/auth/screens/login_screen.dart';
 import 'features/student/widgets/home_practice_card.dart';
 import 'features/student/widgets/home_practice_view.dart';
 import 'features/student/widgets/student_dashboard_view.dart';
@@ -87,6 +88,7 @@ class _PreviewShellState extends State<_PreviewShell> {
     'مشرف',
     'مدير',
     'شاشة البداية',
+    'دخول',
   ];
 
   @override
@@ -102,7 +104,8 @@ class _PreviewShellState extends State<_PreviewShell> {
         6 => const _RecitationPreview(part: 3),
         7 => const _SupervisorPreview(),
         8 => const _AdminPreview(),
-        _ => const _SplashPreview(),
+        9 => const _SplashPreview(),
+        _ => const _LoginPreview(),
       },
       bottomNavigationBar: SafeArea(
         child: SizedBox(
@@ -515,6 +518,18 @@ class _SplashPreviewState extends State<_SplashPreview> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _LoginPreview extends StatelessWidget {
+  const _LoginPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return ProviderScope(
+      overrides: [authRepositoryProvider.overrideWith(_FakeAuthRepository.new)],
+      child: const LoginScreen(),
     );
   }
 }
