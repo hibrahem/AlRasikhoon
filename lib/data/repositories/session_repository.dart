@@ -28,6 +28,11 @@ class SessionRepository {
   CollectionReference<Map<String, dynamic>> get _examRecordsCollection =>
       _firestore.collection(AppConstants.collectionExamRecords);
 
+  /// A fresh [WriteBatch] for an atomic save. Handed out here — rather than
+  /// callers reaching for a Firestore instance — so the batch is guaranteed
+  /// to come from the same instance the repositories write through.
+  WriteBatch newWriteBatch() => _firestore.batch();
+
   /// Counts [query]'s results via [primary] (an aggregation `.count()`, which
   /// is SERVER-ONLY and throws with no connectivity), falling back to the
   /// size of the cached result set when the server is unreachable. The cache

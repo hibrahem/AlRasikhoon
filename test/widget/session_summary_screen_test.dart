@@ -97,6 +97,7 @@ void main() {
         () => mockStudentRepository.advanceStudentSession(
           'student-1',
           fromOrderInLevel: 7,
+          batch: any(named: 'batch'),
         ),
       ).thenAnswer((_) async => StudentAdvanceOutcome.advanced);
 
@@ -192,6 +193,11 @@ void main() {
       // run to completion without waiting on the SnackBar's auto-dismiss.
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
+      // The batch commit is fire-and-forget (offline support): let the real
+      // async queue drain so the staged writes land before reading them back.
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 1)),
+      );
 
       // Not the returned value — a real document, fetched back through the
       // (real, fake-Firestore-backed) repository, proving the wiring actually

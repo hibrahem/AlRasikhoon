@@ -460,6 +460,9 @@ void main() {
       notifier.setPartErrors(3, 0);
 
       final record = await notifier.completeSession();
+      // The batch commit is fire-and-forget (offline support): drain the
+      // event queue so the staged writes land before asserting on them.
+      await pumpEventQueue();
 
       expect(record, isNotNull);
       expect(record!.passed, isTrue);
@@ -490,6 +493,9 @@ void main() {
       notifier.setPartErrors(3, 0);
 
       final record = await notifier.completeSession();
+      // The batch commit is fire-and-forget (offline support): drain the
+      // event queue so the staged writes land before asserting on them.
+      await pumpEventQueue();
 
       expect(record, isNotNull);
       expect(record!.duration, isNotNull);
@@ -517,6 +523,9 @@ void main() {
         notifier.setPartErrors(3, 0);
 
         final record = await notifier.completeSession();
+        // The batch commit is fire-and-forget (offline support): drain the
+        // event queue so the staged writes land before asserting on them.
+        await pumpEventQueue();
 
         // The record itself still reports a pass — the session was graded
         // correctly and saved. Only the progress update failed.
@@ -544,6 +553,9 @@ void main() {
       notifier.setPartErrors(1, 5);
 
       final record = await notifier.completeSession();
+      // The batch commit is fire-and-forget (offline support): drain the
+      // event queue so the staged writes land before asserting on them.
+      await pumpEventQueue();
 
       expect(record, isNotNull);
       expect(record!.passed, isFalse);
@@ -562,6 +574,9 @@ void main() {
       final notifier = container.read(activeSessionProvider.notifier);
 
       final record = await notifier.completeSession();
+      // The batch commit is fire-and-forget (offline support): drain the
+      // event queue so the staged writes land before asserting on them.
+      await pumpEventQueue();
 
       expect(record, isNull);
     });
@@ -574,6 +589,9 @@ void main() {
       notifier.startSession('student-1');
 
       final record = await notifier.completeSession();
+      // The batch commit is fire-and-forget (offline support): drain the
+      // event queue so the staged writes land before asserting on them.
+      await pumpEventQueue();
 
       expect(record, isNull);
       final student = await studentRepository.getStudentById('student-1');
@@ -757,6 +775,9 @@ void main() {
       notifier.setPartErrors(3, 0);
 
       final record = await notifier.completeSession();
+      // The batch commit is fire-and-forget (offline support): drain the
+      // event queue so the staged writes land before asserting on them.
+      await pumpEventQueue();
 
       expect(record!.coversSessionIds, ['L1_J30_S5', 'L1_J30_S6']);
       expect(record.fromOrderInLevel, 5);
@@ -780,6 +801,9 @@ void main() {
         notifier.setPartErrors(1, 5);
 
         final record = await notifier.completeSession();
+        // The batch commit is fire-and-forget (offline support): drain the
+        // event queue so the staged writes land before asserting on them.
+        await pumpEventQueue();
 
         expect(record!.passed, isFalse);
         final student = await studentRepository.getStudentById('student-1');
@@ -803,6 +827,9 @@ void main() {
       notifier.setPartErrors(3, 0);
 
       final record = await notifier.completeSession();
+      // The batch commit is fire-and-forget (offline support): drain the
+      // event queue so the staged writes land before asserting on them.
+      await pumpEventQueue();
 
       expect(record!.coversSessionIds, ['L1_J30_S5']);
       expect(record.fromOrderInLevel, 5);
@@ -825,6 +852,9 @@ void main() {
       notifier.setPartErrors(3, 0);
 
       final record = await notifier.completeSession();
+      // The batch commit is fire-and-forget (offline support): drain the
+      // event queue so the staged writes land before asserting on them.
+      await pumpEventQueue();
 
       expect(record!.coversSessionIds, ['L1_J30_S6']);
       final student = await studentRepository.getStudentById('student-1');
