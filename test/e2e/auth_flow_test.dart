@@ -34,7 +34,6 @@ void main() {
       // The brand is the official logo image (its wordmark is part of the
       // asset); the semantics label keeps it announced to screen readers.
       expect(find.bySemanticsLabel('الراسخون'), findsOneWidget);
-      expect(find.text('تطبيق حفظ القرآن الكريم'), findsOneWidget);
       expect(find.text('اسم المستخدم'), findsOneWidget);
       expect(find.text('كلمة المرور'), findsOneWidget);
       expect(find.text('تسجيل الدخول'), findsOneWidget);

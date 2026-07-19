@@ -81,14 +81,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   fit: BoxFit.contain,
                   semanticLabel: 'الراسخون',
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'تطبيق حفظ القرآن الكريم',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyLarge?.copyWith(color: tokens.sepia),
-                ),
                 const SizedBox(height: 48),
 
                 AppTextField(
