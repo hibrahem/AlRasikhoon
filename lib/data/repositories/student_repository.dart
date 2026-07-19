@@ -698,9 +698,26 @@ class StudentRepository {
   /// - [_CurriculumDataMissing]: the walk ran out of *seeded* sessions before it
   ///   could tell whether the student had truly finished — leave the student
   ///   exactly as they are and write nothing.
+  /// Applies a `students/{id}` update directly, or stages it into [batch] so
+  /// it lands atomically with the session record the caller is saving —
+  /// under offline sync, either both reach the server or neither does.
+  Future<void> _updateStudent(
+    String studentId,
+    Map<String, dynamic> data,
+    WriteBatch? batch,
+  ) async {
+    final doc = _studentsCollection.doc(studentId);
+    if (batch != null) {
+      batch.update(doc, data);
+    } else {
+      await doc.update(data);
+    }
+  }
+
   Future<StudentAdvanceOutcome> advanceStudentSession(
     String studentId, {
     int? fromOrderInLevel,
+    WriteBatch? batch,
   }) async {
     final student = await getStudentById(studentId);
     if (student == null) return StudentAdvanceOutcome.studentNotFound;
@@ -723,7 +740,7 @@ class StudentRepository {
           student.unlockedLevels,
           upToAndIncluding: CurriculumPosition.totalLevels,
         );
-        await _studentsCollection.doc(studentId).update({
+        await _updateStudent(studentId, {
           'current_attempt': 1,
           'completed_levels': completedLevels,
           'unlocked_levels': unlockedLevels,
@@ -736,7 +753,7 @@ class StudentRepository {
           'curriculum_completed': true,
           'curriculum_completed_at': FieldValue.serverTimestamp(),
           'updated_at': FieldValue.serverTimestamp(),
-        });
+        }, batch);
         return StudentAdvanceOutcome.curriculumCompleted;
 
       case _Advanced(:final session):
@@ -757,12 +774,12 @@ class StudentRepository {
           );
         }
 
-        await _studentsCollection.doc(studentId).update({
+        await _updateStudent(studentId, {
           ..._writePosition(session),
           'completed_levels': completedLevels,
           'unlocked_levels': unlockedLevels,
           'updated_at': FieldValue.serverTimestamp(),
-        });
+        }, batch);
         return StudentAdvanceOutcome.advanced;
     }
   }
@@ -859,11 +876,14 @@ class StudentRepository {
   }
 
   /// Increment attempt for failed session
-  Future<void> incrementStudentAttempt(String studentId) async {
-    await _studentsCollection.doc(studentId).update({
+  Future<void> incrementStudentAttempt(
+    String studentId, {
+    WriteBatch? batch,
+  }) async {
+    await _updateStudent(studentId, {
       'current_attempt': FieldValue.increment(1),
       'updated_at': FieldValue.serverTimestamp(),
-    });
+    }, batch);
   }
 
   /// Reset attempt on new session
