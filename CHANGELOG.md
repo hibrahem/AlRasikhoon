@@ -13,6 +13,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## Unreleased
 
+- Text across the whole app is now noticeably larger and easier to read,
+  and screen titles are bigger and more prominent at the top of every page.
+- Student cards in lists are tidier — the details sit closer together with
+  a clearer progress bar, so more students fit on screen.
 - The opening screen now shows the الراسخون logo on its own — the caption
   underneath it was removed for a cleaner look.
 - The app now wears the official الراسخون logo: the gold calligraphy mark is
