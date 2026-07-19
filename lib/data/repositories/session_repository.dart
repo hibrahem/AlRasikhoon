@@ -621,6 +621,7 @@ class SessionRepository {
           duration: SessionDuration.fromRecord(r),
           // Lessons and تلقين both resolve in SessionDetailScreen.
           detailRecordId: r.id,
+          isPendingSync: r.isPendingSync,
         ),
       for (final r in sardRecords)
         StudentHistoryEntry(
@@ -634,6 +635,7 @@ class SessionRepository {
               ? null
               : SessionDuration(elapsed: r.duration!),
           detailRecordId: r.id,
+          isPendingSync: r.isPendingSync,
         ),
       for (final r in examRecords)
         StudentHistoryEntry(
@@ -647,6 +649,7 @@ class SessionRepository {
               ? null
               : SessionDuration(elapsed: r.duration!),
           detailRecordId: r.id,
+          isPendingSync: r.isPendingSync,
         ),
     ]..sort((a, b) => b.date.compareTo(a.date));
 
