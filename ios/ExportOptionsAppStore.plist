@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Export options for the TestFlight CI pipeline (distribute-ios.yml):
+  `xcodebuild -exportArchive -exportOptionsPlist ios/ExportOptionsAppStore.plist`.
+
+  method "app-store-connect" produces an App Store / TestFlight IPA.
+  signingStyle "automatic" + the workflow's -allowProvisioningUpdates and
+  App Store Connect API key flags = Xcode cloud signing: certificates and
+  profiles are created and managed by Apple, nothing is stored in secrets.
+
+  ExportOptions.plist (ad-hoc / release-testing) remains for local use.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>method</key>
+    <string>app-store-connect</string>
+    <key>teamID</key>
+    <string>327MX655VL</string>
+    <key>signingStyle</key>
+    <string>automatic</string>
+    <key>destination</key>
+    <string>export</string>
+    <key>stripSwiftSymbols</key>
+    <true/>
+    <key>uploadSymbols</key>
+    <true/>
+</dict>
+</plist>
