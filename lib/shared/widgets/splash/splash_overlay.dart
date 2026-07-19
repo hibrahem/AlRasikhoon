@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../khatam_lattice.dart';
 
@@ -12,7 +11,7 @@ const _brandGold = Color(0xFFE0A63B);
 const _brandLogo = AssetImage('assets/images/logo_gold.png');
 
 /// The splash composition: the brand-black field, a faint gold khatam
-/// lattice, the official gold lockup breathing in, and the caption.
+/// lattice, and the official gold lockup breathing in.
 /// Pure presentation — [progress] 0→1 drives the whole choreography, so the
 /// preview harness can render any frame of it.
 class BrandSplashView extends StatelessWidget {
@@ -28,7 +27,6 @@ class BrandSplashView extends StatelessWidget {
   Widget build(BuildContext context) {
     final latticeIn = _stage(0.0, 0.35, Curves.easeOut);
     final logoIn = _stage(0.08, 0.65);
-    final captionIn = _stage(0.72, 1.0);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
@@ -44,33 +42,16 @@ class BrandSplashView extends StatelessWidget {
                 color: _brandGold.withValues(alpha: 0.05 * latticeIn),
               ),
               child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Opacity(
-                      opacity: logoIn,
-                      child: Transform.scale(
-                        scale: 0.94 + 0.06 * logoIn,
-                        child: const Image(
-                          image: _brandLogo,
-                          width: 264,
-                          filterQuality: FilterQuality.medium,
-                        ),
-                      ),
+                child: Opacity(
+                  opacity: logoIn,
+                  child: Transform.scale(
+                    scale: 0.94 + 0.06 * logoIn,
+                    child: const Image(
+                      image: _brandLogo,
+                      width: 264,
+                      filterQuality: FilterQuality.medium,
                     ),
-                    const SizedBox(height: 28),
-                    Opacity(
-                      opacity: captionIn,
-                      child: Text(
-                        'تطبيق حفظ القرآن الكريم',
-                        style: GoogleFonts.cairo(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

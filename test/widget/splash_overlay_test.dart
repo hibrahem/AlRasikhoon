@@ -24,12 +24,11 @@ void main() {
     await _pumpApp(tester);
 
     expect(find.byType(BrandSplashView), findsOneWidget);
-    // The official الراسخون gold lockup and the app caption.
+    // The official الراسخون gold lockup.
     expect(
       find.image(const AssetImage('assets/images/logo_gold.png')),
       findsOneWidget,
     );
-    expect(find.text('تطبيق حفظ القرآن الكريم'), findsOneWidget);
   });
 
   testWidgets('splash dismisses itself and reveals the app', (tester) async {
