@@ -1,0 +1,54 @@
+# Require green CI — Al-Rasikhoon
+#
+# Fails unless the checked-out commit already has a successful run of the CI
+# workflow. Distribution workflows use this instead of re-running the full
+# analyze+test gates (~5s instead of ~6-8 min). Rationale: main has no branch
+# protection and the distribution `ref` input can target any commit, so
+# dropping verification entirely would let a broken commit ship. See
+# docs/superpowers/specs/2026-07-19-ios-testflight-distribution-design.md.
+#
+# Requirements for callers:
+#   - runs AFTER actions/checkout (inspects the checked-out HEAD)
+#   - workflow grants `permissions: actions: read` (for gh run list)
+
+name: Require green CI
+description: Fail unless the checked-out commit has a successful CI run.
+
+inputs:
+  force:
+    description: "\"true\" skips the check (emergencies only)"
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Check CI conclusion for HEAD
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        FORCE: ${{ inputs.force }}
+      run: |
+        set -euo pipefail
+        SHA="$(git rev-parse HEAD)"
+        if [[ "$FORCE" == "true" ]]; then
+          echo "::warning::force=true — skipping the green-CI check for $SHA."
+          exit 0
+        fi
+        runs_json="$(gh run list --commit "$SHA" --workflow CI --json status,conclusion --limit 50)"
+        success="$(jq '[.[] | select(.conclusion == "success")] | length' <<<"$runs_json")"
+        running="$(jq '[.[] | select(.status != "completed")] | length' <<<"$runs_json")"
+        total="$(jq 'length' <<<"$runs_json")"
+        if (( success > 0 )); then
+          echo "CI is green for $SHA ($success successful run(s) of $total)."
+        elif (( running > 0 )); then
+          echo "::error::CI is still running for $SHA — retry when it finishes green."
+          exit 1
+        elif (( total > 0 )); then
+          echo "::error::CI is red for $SHA — fix it or pick another commit."
+          exit 1
+        else
+          echo "::error::No CI run found for $SHA — push it through CI first, or re-run with force=true."
+          exit 1
+        fi
