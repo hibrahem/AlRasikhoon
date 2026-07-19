@@ -122,7 +122,7 @@ jobs:
                 '{key_id: $key_id, issuer_id: $issuer_id, key: $key, in_house: false}' \
                 > "$RUNNER_TEMP/asc_api_key.json"
 
-      # BUILD_NUMBER=run_number gives every distribution a unique, increasing
+      # --build-number=run_number gives every distribution a unique, increasing
       # CFBundleVersion so TestFlight treats each as a new build. Compilation
       # happens here unsigned; signing happens in the archive step below.
       - name: Build Flutter iOS (no codesign)

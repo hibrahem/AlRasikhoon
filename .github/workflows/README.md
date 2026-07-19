@@ -93,6 +93,9 @@ sign-in credentials, since the app requires login.
 
 Design: `docs/superpowers/specs/2026-07-19-ios-testflight-distribution-design.md`
 
+**How to release:** Actions tab → **Distribute iOS** → **Run workflow** →
+(optionally set inputs) → **Run workflow**.
+
 ## Secrets
 
 `ci.yml` (`flutter` and `functions`) requires no secrets. Both
@@ -113,8 +116,8 @@ Also ensure the `beta-testers` group exists in Firebase App Distribution.
 
 ### iOS (TestFlight)
 
-| secret | how to produce it |
-| --- | --- |
+| Secret | How to produce it |
+|--------|-------------------|
 | `ASC_API_KEY_ID` | App Store Connect → Users and Access → Integrations → App Store Connect API → generate key with **App Manager** role; the Key ID shown in the list |
 | `ASC_API_ISSUER_ID` | same page — the team-wide Issuer ID above the key list |
 | `ASC_API_KEY_P8_BASE64` | download the key's `.p8` (possible **once**), then `base64 -i AuthKey_<KEYID>.p8 \| gh secret set ASC_API_KEY_P8_BASE64` |
