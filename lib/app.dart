@@ -5,6 +5,7 @@ import 'l10n/app_localizations.dart';
 import 'core/theme/app_theme.dart';
 import 'routing/app_router.dart';
 import 'features/settings/providers/theme_mode_provider.dart';
+import 'shared/widgets/offline_banner.dart';
 import 'shared/widgets/splash/splash_overlay.dart';
 
 class AlRasikhoonApp extends ConsumerWidget {
@@ -35,7 +36,7 @@ class AlRasikhoonApp extends ConsumerWidget {
           textDirection: TextDirection.rtl,
           // The animated brand splash plays once over the first frame while
           // routing/auth resolve beneath it, then removes itself.
-          child: SplashOverlay(child: child!),
+          child: SplashOverlay(child: OfflineBannerHost(child: child!)),
         );
       },
     );
