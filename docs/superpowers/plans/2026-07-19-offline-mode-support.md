@@ -28,7 +28,7 @@
 - Consumes: nothing new.
 - Produces: guaranteed disk persistence + unlimited cache for every repository.
 
-- [ ] **Step 1: Add settings assignment**
+- [x] **Step 1: Add settings assignment**
 
 In `lib/main.dart` add import `package:cloud_firestore/cloud_firestore.dart`, then after `await FirebaseEmulatorConfig.configureEmulators();`:
 
@@ -47,11 +47,11 @@ In `lib/main.dart` add import `package:cloud_firestore/cloud_firestore.dart`, th
 
 `copyWith` (not a fresh `Settings(...)`) so emulator host/port settings applied by `configureEmulators()` survive. Check `lib/core/config/firebase_emulator_config.dart` first: if it assigns `.settings` itself, ensure this runs AFTER it and still preserves its fields.
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Run: `flutter analyze lib/main.dart` → no issues. Run: `flutter test test/unit` → all pass.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add lib/main.dart
@@ -73,7 +73,7 @@ git commit -m "feat(offline): pin Firestore persistence + unlimited cache"
 **Interfaces:**
 - Produces: `bool isPendingSync` (default `false`) on `SessionRecordModel`, `SardRecordModel`, `ExamRecordModel`, `StudentHistoryEntry`. NOT written by `toFirestore()`/`toJson()` — it is snapshot metadata, not data.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```dart
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -115,12 +115,12 @@ void main() {
 
 Adjust the seeded map to the exact minimum `fromFirestore` needs — copy from an existing test in `test/unit` that seeds `session_records` (grep `session_records` under `test/`). Fix the `date:` placeholder to a real `DateTime`.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `flutter test test/unit/repositories/session_repository_pending_sync_test.dart`
 Expected: FAIL — `isPendingSync` not defined.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Each of the three models: add `final bool isPendingSync;` + constructor param `this.isPendingSync = false,`; in `fromFirestore` add `isPendingSync: doc.metadata.hasPendingWrites,`. If the model has `copyWith`, thread the field through. Do NOT touch `toFirestore`.
 
@@ -128,11 +128,11 @@ Each of the three models: add `final bool isPendingSync;` + constructor param `t
 
 `SessionRepository.getStudentHistory`: add `isPendingSync: r.isPendingSync,` to all three entry mappings.
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `flutter test test/unit` → all pass (new + existing).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/data/models lib/domain/session/student_history_entry.dart lib/data/repositories/session_repository.dart test/unit/repositories/session_repository_pending_sync_test.dart
@@ -150,7 +150,7 @@ git commit -m "feat(offline): expose hasPendingWrites as isPendingSync on record
 **Interfaces:**
 - Signatures unchanged. Behavior: aggregation `.count()` is server-only; on `FirebaseException` fall back to counting the same query from `Source.cache`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 The fake cannot force an aggregation failure, so extract the shared fallback into a visible-for-testing helper and test the helper's fallback arm directly:
 
@@ -190,12 +190,12 @@ void main() {
 
 Note: second test is a normal-path regression — write two sard records, call `repo.getSardAttemptCount(studentId: 's1', curriculumSessionId: 'c1')`, expect 2 (fake_cloud_firestore supports `count()`). Write it properly; the snippet above marks intent, not literal code.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `flutter test test/unit/repositories/session_repository_offline_counts_test.dart`
 Expected: FAIL — `countWithCacheFallback` not defined.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `SessionRepository`:
 
@@ -240,11 +240,11 @@ Rewrite the four count methods to route through it, e.g.:
 
 Same shape for `getAttemptCount`, `getExamAttemptCount`, and `getSessionCountForTeacher` (keep its `startDate` filter on the query it builds). Leave `CurriculumRepository.getTotalSessionCount` alone — it has no callers in `lib/` outside the repo.
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `flutter test test/unit` → all pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/data/repositories/session_repository.dart test/unit/repositories/session_repository_offline_counts_test.dart
@@ -262,7 +262,7 @@ git commit -m "feat(offline): count() aggregations fall back to cached query siz
 **Interfaces:**
 - Produces: every create method gains optional `WriteBatch? batch`. With `batch`, the write is staged synchronously into the batch (nothing hits Firestore until the CALLER commits); without, behavior is unchanged. Return value is always the locally-built record.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```dart
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -293,12 +293,12 @@ void main() {
 
 Add the mirror test for `createSessionRecord` (same pattern, `session_records` collection). Reuse argument sets from existing tests — `PacedSession`/`SardEvaluation` construction already appears in `test/unit`.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `flutter test test/unit/repositories/session_repository_batch_test.dart`
 Expected: FAIL — no `batch` parameter.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `_writeSessionRecord` gains `WriteBatch? batch`:
 
@@ -326,11 +326,11 @@ Expected: FAIL — no `batch` parameter.
 
 `createSardRecord` / `createExamRecord`: add `WriteBatch? batch,`; replace `await docRef.set(record.toFirestore());` with the same `if (batch != null) { batch.set(docRef, record.toFirestore()); } else { await docRef.set(record.toFirestore()); }`.
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `flutter test test/unit` → all pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/data/repositories/session_repository.dart test/unit/repositories/session_repository_batch_test.dart
@@ -348,7 +348,7 @@ git commit -m "feat(offline): session/sard/exam record creation can stage into a
 **Interfaces:**
 - Produces: `advanceStudentSession(String studentId, {int? fromOrderInLevel, WriteBatch? batch})` and `incrementStudentAttempt(String studentId, {WriteBatch? batch})`. Reads (student, curriculum walk) still run inside the method; only the final `update` is staged when `batch` is given. Outcome enum is computed and returned exactly as today.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```dart
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -381,12 +381,12 @@ void main() {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `flutter test test/unit/repositories/student_repository_batch_test.dart`
 Expected: FAIL — no `batch` parameter.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Add a private write helper:
 
@@ -411,11 +411,11 @@ Add a private write helper:
 
 `incrementStudentAttempt(String studentId, {WriteBatch? batch})`: same replacement.
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `flutter test test/unit` → all pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/data/repositories/student_repository.dart test/unit/repositories/student_repository_batch_test.dart
@@ -434,7 +434,7 @@ git commit -m "feat(offline): student progress writes can stage into a caller-ow
 - Consumes: Task 4's `createSessionRecord/createTalqeenRecord(batch:)`, Task 5's `advanceStudentSession/incrementStudentAttempt(batch:)`, `firestoreProvider` from `lib/data/services/firebase_service.dart`.
 - Produces: `completeSession`/`completeTalqeenSession` return the record without awaiting server ack; record + progress land in ONE batch.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Use the existing `teacher_provider_test.dart` harness (ProviderContainer + FakeFirebaseFirestore overrides) as the template:
 
@@ -454,12 +454,12 @@ Use the existing `teacher_provider_test.dart` harness (ProviderContainer + FakeF
 
 The genuinely new assertion: `completeSession` must NOT await `batch.commit()`. Enforce by construction (code review of the diff) + a widget-independent timing test is impractical with the fake (commits are synchronous) — rely on the never-completing-commit repository test pattern only if `fake_cloud_firestore` allows injecting a hanging commit; otherwise the fire-and-forget property is guarded by the `unawaited(...)` lint (`unawaited_futures` is analyzer-enforced when the expression is awaited-typed) and the manual airplane-mode matrix.
 
-- [ ] **Step 2: Run to verify current behavior compiles the test**
+- [x] **Step 2: Run to verify current behavior compiles the test**
 
 Run: `flutter test test/unit/providers/teacher_provider_offline_save_test.dart`
 Expected: PASS already (it tests outcome, not mechanism) — acceptable; it becomes the regression net for the rewrite.
 
-- [ ] **Step 3: Rewrite the save methods**
+- [x] **Step 3: Rewrite the save methods**
 
 In `completeSession`, replace the sequential-await block (record create → advance/increment) with:
 
@@ -499,11 +499,11 @@ Only-if-advance-succeeded subtlety: with a `curriculumDataMissing`/`studentNotFo
 
 Same rewrite in `completeTalqeenSession` (`createTalqeenRecord` + unconditional `advanceStudentSession`).
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `flutter test test/unit` → all pass (including existing provider tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/features/teacher/providers/teacher_provider.dart test/unit/providers/teacher_provider_offline_save_test.dart
@@ -521,7 +521,7 @@ git commit -m "feat(offline): teacher session saves commit one batch, never awai
 **Interfaces:**
 - Consumes: Tasks 3–5 (`getSardAttemptCount`/`getExamAttemptCount` now offline-tolerant; `createSardRecord/createExamRecord(batch:)`; `advanceStudentSession/incrementStudentAttempt(batch:)`), `firestoreProvider`, `isConnectedProvider` from `lib/shared/providers/connectivity_provider.dart`.
 
-- [ ] **Step 1: Rewrite both save handlers**
+- [x] **Step 1: Rewrite both save handlers**
 
 Same batch pattern as Task 6, applied to `_saveSard` and `_saveExam`:
 
@@ -545,11 +545,11 @@ Same batch pattern as Task 6, applied to `_saveSard` and `_saveExam`:
 
 Then adapt the success snackbar copy: read `final isOnline = ref.read(isConnectedProvider);` and when `!isOnline`, append the offline suffix to the chosen message, e.g. `'$message — ستتم المزامنة عند عودة الاتصال'`. Apply to all success branches in both screens (not the failure/`catch` branch).
 
-- [ ] **Step 2: Widget tests still pass**
+- [x] **Step 2: Widget tests still pass**
 
 Run: `flutter test test/widget test/unit` → all pass. (No existing widget test drives these two save paths end-to-end; the repository/provider tests cover the mechanics.)
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add lib/features/teacher/screens/sard_result_screen.dart lib/features/supervisor/screens/exam_result_screen.dart
@@ -569,7 +569,7 @@ git commit -m "feat(offline): sard and exam saves batch atomically and confirm o
 - Consumes: `isConnectedProvider`.
 - Produces: `OfflineBannerHost({required Widget child})` — wraps the app content; shows a slim top banner when offline.
 
-- [ ] **Step 1: Write the failing widget test**
+- [x] **Step 1: Write the failing widget test**
 
 ```dart
 import 'package:flutter/material.dart';
@@ -601,12 +601,12 @@ void main() {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `flutter test test/widget/offline_banner_test.dart`
 Expected: FAIL — `offline_banner.dart` doesn't exist.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```dart
 import 'package:flutter/material.dart';
@@ -668,11 +668,11 @@ Resolve the token color/text style against `lib/core/theme/app_tokens.dart` (mat
       },
 ```
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `flutter test test/widget/offline_banner_test.dart` → PASS. `flutter test test/widget` → all pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/shared/widgets/offline_banner.dart lib/app.dart test/widget/offline_banner_test.dart
@@ -691,23 +691,23 @@ git commit -m "feat(offline): global offline banner for all roles"
 **Interfaces:**
 - Consumes: Task 2's `StudentHistoryEntry.isPendingSync`, `isConnectedProvider`.
 
-- [ ] **Step 1: Write the failing widget test**
+- [x] **Step 1: Write the failing widget test**
 
 Pump the history row widget (extract the row into a small public widget if it is currently inline and untestable — prefer the smallest extraction that lets the test pump one row) with an entry where `isPendingSync: true`; expect `find.text('بانتظار المزامنة')` → one widget; with `false` → none.
 
-- [ ] **Step 2: Run test to verify it fails**, implement the chip
+- [x] **Step 2: Run test to verify it fails**, implement the chip
 
 A small `Chip`/container next to the row's date or status, shown only when `entry.isPendingSync`, styled from tokens (muted/secondary, not alarming). Label: `بانتظار المزامنة`.
 
-- [ ] **Step 3: Session summary confirmation copy**
+- [x] **Step 3: Session summary confirmation copy**
 
 In `session_summary_screen.dart`'s save handler, mirror Task 7: when `!ref.read(isConnectedProvider)`, append ` — ستتم المزامنة عند عودة الاتصال` to the success snackbar/message.
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `flutter test test/widget test/unit` → all pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/shared/screens/student_progress_screen.dart lib/features/teacher/screens/session_summary_screen.dart test/widget/history_pending_chip_test.dart
@@ -728,7 +728,7 @@ git commit -m "feat(offline): pending-sync chip on history rows and offline-awar
 - Consumes: `StudentRepository` (`getStudentsForTeacher`, `getStudentsForInstitutes`, `getStudentsReadyForExam`, `getAllStudents`, `getStudentByUserId`), `CurriculumRepository` (`getLevels`, `getSessionsForLevel`), `SessionRepository` (`getLatestSessionRecord`, `getStudentHistory`, `getExamRecordsForSupervisor`), `InstituteRepository` (`getInstitutes`, `getInstitutesForSupervisor`), `UserRepository` (`getTeachers`, `getSupervisors`), `UserModel.role` (`UserRole` enum: `superAdmin, supervisor, teacher, student, guardian`), `currentUserProvider` (`lib/shared/providers/user_provider.dart`), `isConnectedProvider`.
 - Produces: `OfflineCachePrimer.prime(UserModel user)`; `offlineSyncControllerProvider` (a `Provider<void>` watched once in `app.dart`).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```dart
   test('teacher priming touches students, curriculum, and recent history', () async {
@@ -753,7 +753,7 @@ git commit -m "feat(offline): pending-sync chip on history rows and offline-awar
   });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**, implement
+- [x] **Step 2: Run test to verify it fails**, implement
 
 ```dart
 /// Warms Firestore's disk cache with the data each role needs offline
@@ -890,11 +890,11 @@ final offlineSyncControllerProvider = Provider<void>((ref) {
 
 (Verify each invalidated provider's exact name/import; `supervisorStudentSessionHistoryProvider` lives in `lib/features/supervisor/providers/supervisor_provider.dart`, `studentHistoryProvider` in `lib/features/student/providers/student_provider.dart`.) In `lib/app.dart` `build`, add `ref.watch(offlineSyncControllerProvider);` before constructing the router.
 
-- [ ] **Step 3: Run tests**
+- [x] **Step 3: Run tests**
 
 Run: `flutter test test/unit` → all pass. `flutter analyze` → clean.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add lib/data/services/offline_cache_primer.dart lib/shared/providers/offline_sync_provider.dart lib/app.dart test/unit/services/offline_cache_primer_test.dart
@@ -913,7 +913,7 @@ git commit -m "feat(offline): role-aware cache priming on login and reconnect"
 **Interfaces:**
 - Produces: `bool ensureOnline(BuildContext context, WidgetRef ref)` — `true` when online; otherwise shows the gating snackbar and returns `false`.
 
-- [ ] **Step 1: Implement helper + failing widget test**
+- [x] **Step 1: Implement helper + failing widget test**
 
 ```dart
 import 'package:flutter/material.dart';
@@ -934,15 +934,15 @@ bool ensureOnline(BuildContext context, WidgetRef ref) {
 
 Widget test: a button whose onPressed calls `ensureOnline`; offline override → snackbar text appears and a probe flag stays false; online → flag true, no snackbar.
 
-- [ ] **Step 2: Apply to the five screens**
+- [x] **Step 2: Apply to the five screens**
 
 First line of each screen's save/submit handler: `if (!ensureOnline(context, ref)) return;` (locate each handler — grep `onPressed`/`_save`/`_submit` in each file; they are `ConsumerState` classes so `ref` is available).
 
-- [ ] **Step 3: Run tests, analyze**
+- [x] **Step 3: Run tests, analyze**
 
 Run: `flutter test test/widget test/unit` → all pass. `flutter analyze` → clean.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add lib/shared/utils/connectivity_guard.dart lib/features/teacher/screens/add_student_screen.dart lib/features/admin/screens test/
@@ -956,7 +956,7 @@ git commit -m "feat(offline): gate management actions on connectivity with a cle
 **Files:**
 - Modify: `CHANGELOG.md` (top `## Unreleased` section)
 
-- [ ] **Step 1: Changelog entry**
+- [x] **Step 1: Changelog entry**
 
 Add under `## Unreleased`:
 
@@ -968,15 +968,15 @@ Add under `## Unreleased`:
   marked "بانتظار المزامنة" until they reach the server.
 ```
 
-- [ ] **Step 2: Full quality gates**
+- [x] **Step 2: Full quality gates**
 
 Run: `flutter analyze` → clean. Run: `flutter test` → all pass (unit + widget; skip e2e/rules unless they run locally today — check how CI invokes them).
 
-- [ ] **Step 3: Manual verification matrix (from spec §8)**
+- [x] **Step 3: Manual verification matrix (from spec §8)**
 
 If an emulator/device is available: online open → airplane mode → browse → run memorization + سرد → pending chips → reconnect → records in Firestore, chips cleared. Otherwise record in the beads issue that device verification is pending.
 
-- [ ] **Step 4: Close out**
+- [x] **Step 4: Close out**
 
 ```bash
 bd close al_rasikhoon-15s
