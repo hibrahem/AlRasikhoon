@@ -61,10 +61,18 @@ class SessionRepository {
   Future<SessionRecordModel> _writeSessionRecord(
     SessionRecordModel Function(String id, DateTime writtenAt) build, {
     DateTime? now,
+    WriteBatch? batch,
   }) async {
     final docRef = _sessionRecordsCollection.doc();
     final record = build(docRef.id, now ?? DateTime.now());
-    await docRef.set(record.toFirestore());
+    if (batch != null) {
+      // Staged into the caller's batch: nothing reaches Firestore (local
+      // cache included) until the caller commits, which is what makes the
+      // record + student-progress pair atomic under offline sync.
+      batch.set(docRef, record.toFirestore());
+    } else {
+      await docRef.set(record.toFirestore());
+    }
     return record;
   }
 
@@ -103,6 +111,7 @@ class SessionRepository {
     String? notes,
     DateTime? now,
     DateTime? startedAt,
+    WriteBatch? batch,
   }) {
     final grades = SessionGrades(
       newMemorizationErrors: newMemorizationErrors,
@@ -154,6 +163,7 @@ class SessionRepository {
               ).elapsed,
       ),
       now: now,
+      batch: batch,
     );
   }
 
@@ -191,6 +201,7 @@ class SessionRepository {
     String? notes,
     DateTime? now,
     DateTime? startedAt,
+    WriteBatch? batch,
   }) {
     return _writeSessionRecord(
       (id, writtenAt) => SessionRecordModel(
@@ -230,6 +241,7 @@ class SessionRepository {
               ).elapsed,
       ),
       now: now,
+      batch: batch,
     );
   }
 
@@ -362,6 +374,7 @@ class SessionRepository {
     String? notes,
     DateTime? startedAt,
     DateTime? now,
+    WriteBatch? batch,
   }) async {
     // A سرد is NOT graded on the راسخ..محب lesson scale: the curriculum's
     // sheet tracks the four error types per face and the verdict is binary —
@@ -390,7 +403,12 @@ class SessionRepository {
       duration: startedAt == null ? null : writtenAt.difference(startedAt),
     );
 
-    await docRef.set(record.toFirestore());
+    if (batch != null) {
+      // Staged into the caller's batch — see [_writeSessionRecord].
+      batch.set(docRef, record.toFirestore());
+    } else {
+      await docRef.set(record.toFirestore());
+    }
     return record;
   }
 
@@ -454,6 +472,7 @@ class SessionRepository {
     String? notes,
     DateTime? startedAt,
     DateTime? now,
+    WriteBatch? batch,
   }) async {
     // An اختبار is NOT graded on the راسخ..محب lesson scale: the curriculum's
     // sheet is five questions with the four error types tracked per question,
@@ -483,7 +502,12 @@ class SessionRepository {
       duration: startedAt == null ? null : writtenAt.difference(startedAt),
     );
 
-    await docRef.set(record.toFirestore());
+    if (batch != null) {
+      // Staged into the caller's batch — see [_writeSessionRecord].
+      batch.set(docRef, record.toFirestore());
+    } else {
+      await docRef.set(record.toFirestore());
+    }
     return record;
   }
 
