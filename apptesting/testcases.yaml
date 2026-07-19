@@ -8,7 +8,8 @@
 #     --app 1:276199755113:android:4e857305eac385d32781f8
 #
 # Schema (App Distribution import format — NOT the `apptesting:execute`
-# format): a top-level list of test cases, each with `id`, `displayName`,
+# format): a top-level `tests:` field holding the list of test cases (the
+# CLI rejects a bare top-level list), each with `id`, `displayName`,
 # optional `prerequisiteTestCaseId` (must reference an id that already
 # exists or appears earlier in this file), and `steps` of
 # {goal, hint?, successCriteria?}.
@@ -23,172 +24,173 @@
 # automatic-login credentials passed at run time (--test-username /
 # --test-password), which must belong to a dedicated QA account.
 
-# --------------------------------------------------------------------------
-# Smoke suite — role-agnostic, run on every distribution.
-# --------------------------------------------------------------------------
+tests:
+  # ------------------------------------------------------------------------
+  # Smoke suite — role-agnostic, run on every distribution.
+  # ------------------------------------------------------------------------
 
-- id: login-screen-loads
-  displayName: "Smoke: login screen renders after launch"
-  steps:
-    - goal: >-
-        Launch the app and wait for the splash screen to finish loading.
-        Do not enter any text and do not sign in.
-      successCriteria: >-
-        The login screen is visible, showing the app name "الراسخون", a
-        username field labeled "اسم المستخدم", a password field, and a login
-        button labeled "تسجيل الدخول".
+  - id: login-screen-loads
+    displayName: "Smoke: login screen renders after launch"
+    steps:
+      - goal: >-
+          Launch the app and wait for the splash screen to finish loading.
+          Do not enter any text and do not sign in.
+        successCriteria: >-
+          The login screen is visible, showing the gold الراسخون logo, a
+          username field labeled "اسم المستخدم", a password field, and a login
+          button labeled "تسجيل الدخول".
 
-- id: login-empty-form-blocked
-  displayName: "Smoke: empty login form shows validation errors"
-  steps:
-    - goal: >-
-        On the login screen, tap the "تسجيل الدخول" button without typing
-        anything into the username or password fields.
-      successCriteria: >-
-        The app stays on the login screen and validation error messages
-        appear under the empty username and password fields. No dashboard
-        is shown.
+  - id: login-empty-form-blocked
+    displayName: "Smoke: empty login form shows validation errors"
+    steps:
+      - goal: >-
+          On the login screen, tap the "تسجيل الدخول" button without typing
+          anything into the username or password fields.
+        successCriteria: >-
+          The app stays on the login screen and validation error messages
+          appear under the empty username and password fields. No dashboard
+          is shown.
 
-- id: login-wrong-credentials-rejected
-  displayName: "Smoke: wrong credentials show an error and do not sign in"
-  steps:
-    - goal: >-
-        On the login screen, type "qa.nonexistent.user" into the username
-        field and "WrongPassword123" into the password field, then tap
-        "تسجيل الدخول".
-      successCriteria: >-
-        An error message appears (for example in a snackbar at the bottom
-        of the screen) and the app remains on the login screen without
-        opening any dashboard.
+  - id: login-wrong-credentials-rejected
+    displayName: "Smoke: wrong credentials show an error and do not sign in"
+    steps:
+      - goal: >-
+          On the login screen, type "qa.nonexistent.user" into the username
+          field and "WrongPassword123" into the password field, then tap
+          "تسجيل الدخول".
+        successCriteria: >-
+          An error message appears (for example in a snackbar at the bottom
+          of the screen) and the app remains on the login screen without
+          opening any dashboard.
 
-- id: login-with-test-account
-  displayName: "Smoke: QA account can sign in and reach its dashboard"
-  steps:
-    - goal: >-
-        Log in using the provided test username and password (automatic
-        login credentials), then wait for the app to finish loading.
-      hint: >-
-        Type the username into the "اسم المستخدم" field and the password
-        into the "كلمة المرور" field, then tap "تسجيل الدخول". Loading data
-        after login can take a few seconds.
-      successCriteria: >-
-        A dashboard screen for the signed-in user is visible with a bottom
-        navigation bar that includes a "الملف الشخصي" (profile) tab. The
-        login screen is no longer shown and no error message is visible.
+  - id: login-with-test-account
+    displayName: "Smoke: QA account can sign in and reach its dashboard"
+    steps:
+      - goal: >-
+          Log in using the provided test username and password (automatic
+          login credentials), then wait for the app to finish loading.
+        hint: >-
+          Type the username into the "اسم المستخدم" field and the password
+          into the "كلمة المرور" field, then tap "تسجيل الدخول". Loading data
+          after login can take a few seconds.
+        successCriteria: >-
+          A dashboard screen for the signed-in user is visible with a bottom
+          navigation bar that includes a "الملف الشخصي" (profile) tab. The
+          login screen is no longer shown and no error message is visible.
 
-- id: profile-screen-opens
-  displayName: "Smoke: profile tab shows account details and logout"
-  prerequisiteTestCaseId: login-with-test-account
-  steps:
-    - goal: >-
-        Open the "الملف الشخصي" (profile) tab from the bottom navigation
-        bar. Do not change any profile data.
-      successCriteria: >-
-        The profile screen titled "الملف الشخصي" is visible, showing the
-        signed-in user's name and a logout button labeled "تسجيل الخروج".
+  - id: profile-screen-opens
+    displayName: "Smoke: profile tab shows account details and logout"
+    prerequisiteTestCaseId: login-with-test-account
+    steps:
+      - goal: >-
+          Open the "الملف الشخصي" (profile) tab from the bottom navigation
+          bar. Do not change any profile data.
+        successCriteria: >-
+          The profile screen titled "الملف الشخصي" is visible, showing the
+          signed-in user's name and a logout button labeled "تسجيل الخروج".
 
-- id: logout-returns-to-login
-  displayName: "Smoke: logging out returns to the login screen"
-  prerequisiteTestCaseId: login-with-test-account
-  steps:
-    - goal: >-
-        Open the "الملف الشخصي" (profile) tab, scroll down if needed, and
-        tap the "تسجيل الخروج" (logout) button. If a confirmation dialog
-        appears, confirm the logout.
-      successCriteria: >-
-        The app returns to the login screen showing "الراسخون" and the
-        "تسجيل الدخول" button, and no user dashboard is accessible.
+  - id: logout-returns-to-login
+    displayName: "Smoke: logging out returns to the login screen"
+    prerequisiteTestCaseId: login-with-test-account
+    steps:
+      - goal: >-
+          Open the "الملف الشخصي" (profile) tab, scroll down if needed, and
+          tap the "تسجيل الخروج" (logout) button. If a confirmation dialog
+          appears, confirm the logout.
+        successCriteria: >-
+          The app returns to the login screen showing the gold الراسخون logo
+          and the "تسجيل الدخول" button, and no user dashboard is accessible.
 
-# --------------------------------------------------------------------------
-# Role-specific journeys — run the ones matching the role of the QA account
-# whose credentials are passed at run time. All read-only.
-# --------------------------------------------------------------------------
+  # ------------------------------------------------------------------------
+  # Role-specific journeys — run the ones matching the role of the QA
+  # account whose credentials are passed at run time. All read-only.
+  # ------------------------------------------------------------------------
 
-- id: teacher-students-list
-  displayName: "Teacher: students list opens"
-  prerequisiteTestCaseId: login-with-test-account
-  steps:
-    - goal: >-
-        From the teacher's dashboard, open the "الطلاب" (students) tab in
-        the bottom navigation bar. Do not add or edit any student.
-      successCriteria: >-
-        The students screen titled "طلابي" is visible, showing either a
-        list of student cards or the empty state "لا يوجد طلاب".
+  - id: teacher-students-list
+    displayName: "Teacher: students list opens"
+    prerequisiteTestCaseId: login-with-test-account
+    steps:
+      - goal: >-
+          From the teacher's dashboard, open the "الطلاب" (students) tab in
+          the bottom navigation bar. Do not add or edit any student.
+        successCriteria: >-
+          The students screen titled "طلابي" is visible, showing either a
+          list of student cards or the empty state "لا يوجد طلاب".
 
-- id: teacher-student-profile-read-only
-  displayName: "Teacher: a student profile opens read-only"
-  prerequisiteTestCaseId: teacher-students-list
-  steps:
-    - goal: >-
-        On the "طلابي" students screen, tap the first student card in the
-        list to open that student's profile. Only look — do not start a
-        session, do not record anything, and do not use any edit or delete
-        options.
-      hint: >-
-        If the list is empty ("لا يوجد طلاب"), this test cannot proceed
-        and should fail its assertion.
-      successCriteria: >-
-        A student profile screen is visible showing the student's name and
-        progress details such as the current level, juz ("الجزء") or
-        session ("الحلقة"). No data was created or modified.
+  - id: teacher-student-profile-read-only
+    displayName: "Teacher: a student profile opens read-only"
+    prerequisiteTestCaseId: teacher-students-list
+    steps:
+      - goal: >-
+          On the "طلابي" students screen, tap the first student card in the
+          list to open that student's profile. Only look — do not start a
+          session, do not record anything, and do not use any edit or delete
+          options.
+        hint: >-
+          If the list is empty ("لا يوجد طلاب"), this test cannot proceed
+          and should fail its assertion.
+        successCriteria: >-
+          A student profile screen is visible showing the student's name and
+          progress details such as the current level, juz ("الجزء") or
+          session ("الحلقة"). No data was created or modified.
 
-- id: student-session-history
-  displayName: "Student: session history opens"
-  prerequisiteTestCaseId: login-with-test-account
-  steps:
-    - goal: >-
-        From the student's dashboard, open the "السجل" (history) tab in
-        the bottom navigation bar.
-      successCriteria: >-
-        The session history screen is visible, showing either a list of
-        past sessions with grades or an empty state. The app did not
-        crash.
+  - id: student-session-history
+    displayName: "Student: session history opens"
+    prerequisiteTestCaseId: login-with-test-account
+    steps:
+      - goal: >-
+          From the student's dashboard, open the "السجل" (history) tab in
+          the bottom navigation bar.
+        successCriteria: >-
+          The session history screen is visible, showing either a list of
+          past sessions with grades or an empty state. The app did not
+          crash.
 
-- id: student-home-practice
-  displayName: "Student: home practice screen opens"
-  prerequisiteTestCaseId: login-with-test-account
-  steps:
-    - goal: >-
-        From the student's dashboard, open the "التكرار" (home practice)
-        tab in the bottom navigation bar. Do not record any repetitions.
-      successCriteria: >-
-        The home practice screen is visible showing the assigned practice
-        content. The app did not crash.
+  - id: student-home-practice
+    displayName: "Student: home practice screen opens"
+    prerequisiteTestCaseId: login-with-test-account
+    steps:
+      - goal: >-
+          From the student's dashboard, open the "التكرار" (home practice)
+          tab in the bottom navigation bar. Do not record any repetitions.
+        successCriteria: >-
+          The home practice screen is visible showing the assigned practice
+          content. The app did not crash.
 
-- id: supervisor-exam-queue
-  displayName: "Supervisor: exam queue opens"
-  prerequisiteTestCaseId: login-with-test-account
-  steps:
-    - goal: >-
-        From the supervisor's dashboard, open the "الاختبارات" (exams) tab
-        in the bottom navigation bar. Do not start or grade any exam.
-      successCriteria: >-
-        The exam queue screen is visible, showing either students who are
-        ready for their exam or an empty state. The app did not crash.
+  - id: supervisor-exam-queue
+    displayName: "Supervisor: exam queue opens"
+    prerequisiteTestCaseId: login-with-test-account
+    steps:
+      - goal: >-
+          From the supervisor's dashboard, open the "الاختبارات" (exams) tab
+          in the bottom navigation bar. Do not start or grade any exam.
+        successCriteria: >-
+          The exam queue screen is visible, showing either students who are
+          ready for their exam or an empty state. The app did not crash.
 
-- id: admin-institutes-list
-  displayName: "Admin: institutes list opens"
-  prerequisiteTestCaseId: login-with-test-account
-  steps:
-    - goal: >-
-        From the admin dashboard ("مدير النظام"), open the "المعاهد"
-        (institutes) section. Do not create, edit, or delete anything.
-      successCriteria: >-
-        The institutes screen is visible showing a list of institutes or
-        an empty state. The app did not crash.
+  - id: admin-institutes-list
+    displayName: "Admin: institutes list opens"
+    prerequisiteTestCaseId: login-with-test-account
+    steps:
+      - goal: >-
+          From the admin dashboard ("مدير النظام"), open the "المعاهد"
+          (institutes) section. Do not create, edit, or delete anything.
+        successCriteria: >-
+          The institutes screen is visible showing a list of institutes or
+          an empty state. The app did not crash.
 
-- id: admin-curriculum-level-detail
-  displayName: "Admin: curriculum and level detail open"
-  prerequisiteTestCaseId: login-with-test-account
-  steps:
-    - goal: >-
-        Open the "المنهج" (curriculum) tab from the bottom navigation bar.
-      successCriteria: >-
-        The curriculum screen is visible showing the list of levels
-        ("المستوى").
-    - goal: >-
-        Tap the first level in the curriculum list to open its detail
-        screen. Do not modify anything.
-      successCriteria: >-
-        The level detail screen is visible showing the level's juz range
-        ("الجزء") and its hizb sessions. The app did not crash.
+  - id: admin-curriculum-level-detail
+    displayName: "Admin: curriculum and level detail open"
+    prerequisiteTestCaseId: login-with-test-account
+    steps:
+      - goal: >-
+          Open the "المنهج" (curriculum) tab from the bottom navigation bar.
+        successCriteria: >-
+          The curriculum screen is visible showing the list of levels
+          ("المستوى").
+      - goal: >-
+          Tap the first level in the curriculum list to open its detail
+          screen. Do not modify anything.
+        successCriteria: >-
+          The level detail screen is visible showing the level's juz range
+          ("الجزء") and its hizb sessions. The app did not crash.
