@@ -13,6 +13,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## Unreleased
 
+- The app now works without internet at the institute — everyone can browse
+  the latest data offline, teachers can run memorization sessions, and
+  supervisors can run exams. Everything saved offline syncs automatically
+  when the connection returns: a banner shows while you are offline, saves
+  are confirmed as "saved locally", and unsynced records carry a
+  "بانتظار المزامنة" marker until they reach the server. Actions that truly
+  need the internet (like creating accounts or institutes) now say so
+  clearly instead of failing silently.
 - Browsing screens (student profiles, lists, histories, and details) now
   open with a large elegant title that gracefully shrinks into the top bar
   as you scroll — like the polished apps you know.
