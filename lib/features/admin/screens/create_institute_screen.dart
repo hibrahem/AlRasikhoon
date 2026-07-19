@@ -5,6 +5,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/repositories/institute_repository.dart';
 import '../../../shared/providers/user_provider.dart';
+import '../../../shared/utils/connectivity_guard.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/icon_medallion.dart';
@@ -32,6 +33,9 @@ class _CreateInstituteScreenState extends ConsumerState<CreateInstituteScreen> {
   }
 
   Future<void> _handleCreate() async {
+    // Online-only by policy (offline spec §5): account provisioning runs a
+    // Cloud Function, and management edits are not queued offline.
+    if (!ensureOnline(context, ref)) return;
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);

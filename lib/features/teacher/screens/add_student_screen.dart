@@ -13,6 +13,7 @@ import '../../../data/models/institute_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../domain/curriculum/curriculum_position.dart';
 import '../../../shared/providers/user_provider.dart';
+import '../../../shared/utils/connectivity_guard.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/icon_medallion.dart';
@@ -106,6 +107,9 @@ class _AddStudentScreenState extends ConsumerState<AddStudentScreen> {
   }
 
   Future<void> _handleCreate() async {
+    // Online-only by policy (offline spec §5): account provisioning runs a
+    // Cloud Function, and management edits are not queued offline.
+    if (!ensureOnline(context, ref)) return;
     if (_isLoading) return;
     if (!_formKey.currentState!.validate()) return;
 
