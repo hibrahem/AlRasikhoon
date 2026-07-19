@@ -69,3 +69,8 @@ __pycache__/
 *.pyc
 # Superpowers scratch files (specs/plans are committed; scratch is not)
 .superpowers/
+
+# Android release signing material — must NEVER be committed
+*.jks
+*.keystore
+android/key.properties
