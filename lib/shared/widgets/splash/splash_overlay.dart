@@ -2,36 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../core/theme/app_tokens.dart';
 import '../khatam_lattice.dart';
-import 'rooted_lettermark.dart';
-import 'rooted_mushaf_mark.dart';
 
-/// Which brand mark the splash animates.
-enum SplashVariant {
-  /// The rooted-mushaf pictogram: pages settle, lines write, roots grow.
-  rootedMushaf,
+/// The official الراسخون brand mark: gold calligraphy on black, from the
+/// brand PDF (see assets/images/logo_gold.png). These are brand-asset
+/// colors, fixed by the artwork — not theme tokens.
+const _brandBlack = Color(0xFF110F0E);
+const _brandGold = Color(0xFFE0A63B);
+const _brandLogo = AssetImage('assets/images/logo_gold.png');
 
-  /// The typographic lettermark built from the word itself: الراسخون in
-  /// real Amiri outlines writes itself on, a gold earth line draws along
-  /// its baseline, and the descenders of ر/و/ن below the line come alive
-  /// as roots (see [RootedLettermark]).
-  rootedWord,
-}
-
-/// The splash composition: token hero gradient, faint khatam lattice, the
-/// animated brand mark ([SplashVariant]), and the gold rule + tagline.
+/// The splash composition: the brand-black field, a faint gold khatam
+/// lattice, the official gold lockup breathing in, and the caption.
 /// Pure presentation — [progress] 0→1 drives the whole choreography, so the
 /// preview harness can render any frame of it.
 class BrandSplashView extends StatelessWidget {
   final double progress;
-  final SplashVariant variant;
 
-  const BrandSplashView({
-    super.key,
-    required this.progress,
-    this.variant = SplashVariant.rootedWord,
-  });
+  const BrandSplashView({super.key, required this.progress});
 
   double _stage(double begin, double end, [Curve curve = Curves.easeOutCubic]) {
     return Interval(begin, end, curve: curve).transform(progress.clamp(0, 1));
@@ -39,39 +26,39 @@ class BrandSplashView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = context.tokens;
-
     final latticeIn = _stage(0.0, 0.35, Curves.easeOut);
-    final captionIn = _stage(0.82, 1.0);
+    final logoIn = _stage(0.08, 0.65);
+    final captionIn = _stage(0.72, 1.0);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       // Decorative moment: never a screen-reader stop on the way in.
       child: ExcludeSemantics(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [tokens.heroTop, tokens.heroBottom],
-            ),
-          ),
+        child: ColoredBox(
+          // Matches the native splash color exactly (flutter_native_splash),
+          // so the hand-off from OS splash to this view is invisible.
+          color: _brandBlack,
           child: RepaintBoundary(
             child: CustomPaint(
               painter: KhatamLatticePainter(
-                color: tokens.latticeOnHero.withValues(
-                  alpha: tokens.latticeOnHero.a * latticeIn,
-                ),
+                color: _brandGold.withValues(alpha: 0.05 * latticeIn),
               ),
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ...switch (variant) {
-                      SplashVariant.rootedMushaf => _rootedMushaf(tokens),
-                      SplashVariant.rootedWord => _rootedWord(tokens),
-                    },
-                    const SizedBox(height: 24),
+                    Opacity(
+                      opacity: logoIn,
+                      child: Transform.scale(
+                        scale: 0.94 + 0.06 * logoIn,
+                        child: const Image(
+                          image: _brandLogo,
+                          width: 264,
+                          filterQuality: FilterQuality.medium,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
                     Opacity(
                       opacity: captionIn,
                       child: Text(
@@ -79,7 +66,7 @@ class BrandSplashView extends StatelessWidget {
                         style: GoogleFonts.cairo(
                           fontSize: 15,
                           fontWeight: FontWeight.w500,
-                          color: tokens.onHeroMuted,
+                          color: Colors.white70,
                         ),
                       ),
                     ),
@@ -92,59 +79,6 @@ class BrandSplashView extends StatelessWidget {
       ),
     );
   }
-
-  /// The pictogram variant: animated mushaf mark with the wordmark rising
-  /// beneath it.
-  List<Widget> _rootedMushaf(AppTokens tokens) {
-    final wordmarkIn = _stage(0.72, 0.90);
-    return [
-      RootedMushafMark(progress: progress, size: 176),
-      const SizedBox(height: 28),
-      Opacity(
-        opacity: wordmarkIn,
-        child: Transform.translate(
-          offset: Offset(0, 12 * (1 - wordmarkIn)),
-          child: Text(
-            'الراسخون',
-            style: GoogleFonts.amiri(
-              fontSize: 44,
-              fontWeight: FontWeight.bold,
-              color: tokens.onHero,
-            ),
-          ),
-        ),
-      ),
-      const SizedBox(height: 16),
-      // Gold = achievement: a single quiet rule under the name — no glows,
-      // no halos. (The lettermark variant carries its gold in the earth
-      // line instead.)
-      Opacity(
-        opacity: _stage(0.82, 1.0),
-        child: Container(
-          width: 48,
-          height: 2,
-          decoration: BoxDecoration(
-            color: tokens.gold,
-            borderRadius: BorderRadius.circular(1),
-          ),
-        ),
-      ),
-    ];
-  }
-
-  /// The typographic variant: the الراسخون lettermark — real Amiri
-  /// outlines writing themselves on, the gold earth line, and the
-  /// descenders rooting below it.
-  List<Widget> _rootedWord(AppTokens tokens) {
-    return [
-      RootedLettermark(
-        progress: progress,
-        width: 296,
-        ink: tokens.onHero,
-        earth: tokens.gold,
-      ),
-    ];
-  }
 }
 
 /// Plays the brand splash once over the app's first frame, then fades away
@@ -156,13 +90,8 @@ class BrandSplashView extends StatelessWidget {
 /// immediately) and the splash dismisses after a short hold.
 class SplashOverlay extends StatefulWidget {
   final Widget child;
-  final SplashVariant variant;
 
-  const SplashOverlay({
-    super.key,
-    required this.child,
-    this.variant = SplashVariant.rootedWord,
-  });
+  const SplashOverlay({super.key, required this.child});
 
   @override
   State<SplashOverlay> createState() => _SplashOverlayState();
@@ -194,6 +123,9 @@ class _SplashOverlayState extends State<SplashOverlay>
     super.didChangeDependencies();
     if (_started) return;
     _started = true;
+
+    // Decode the lockup before its first visible frame.
+    precacheImage(_brandLogo, context);
 
     // Reduced motion: present the finished mark, hold briefly, dismiss.
     if (MediaQuery.of(context).disableAnimations) {
@@ -238,10 +170,7 @@ class _SplashOverlayState extends State<SplashOverlay>
               ignoring: fading,
               child: Opacity(
                 opacity: opacity,
-                child: BrandSplashView(
-                  progress: _play.value,
-                  variant: widget.variant,
-                ),
+                child: BrandSplashView(progress: _play.value),
               ),
             );
           },

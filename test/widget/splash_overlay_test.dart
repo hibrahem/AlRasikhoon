@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/core/theme/app_theme.dart';
-import 'package:al_rasikhoon/shared/widgets/splash/rooted_lettermark.dart';
 import 'package:al_rasikhoon/shared/widgets/splash/splash_overlay.dart';
 
 Future<void> _pumpApp(WidgetTester tester) {
@@ -19,34 +18,17 @@ Future<void> _pumpApp(WidgetTester tester) {
 }
 
 void main() {
-  testWidgets('splash covers the first frame with the animated brand mark', (
+  testWidgets('splash covers the first frame with the brand lockup', (
     tester,
   ) async {
     await _pumpApp(tester);
 
     expect(find.byType(BrandSplashView), findsOneWidget);
-    // The default variant paints الراسخون as a vector lettermark.
-    expect(find.byType(RootedLettermark), findsOneWidget);
-    expect(find.text('تطبيق حفظ القرآن الكريم'), findsOneWidget);
-  });
-
-  testWidgets('the rooted-mushaf variant still renders the full composition', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.lightTheme,
-        home: const Directionality(
-          textDirection: TextDirection.rtl,
-          child: SplashOverlay(
-            variant: SplashVariant.rootedMushaf,
-            child: Scaffold(body: Center(child: Text('الشاشة الأولى'))),
-          ),
-        ),
-      ),
+    // The official الراسخون gold lockup and the app caption.
+    expect(
+      find.image(const AssetImage('assets/images/logo_gold.png')),
+      findsOneWidget,
     );
-
-    expect(find.text('الراسخون'), findsOneWidget);
     expect(find.text('تطبيق حفظ القرآن الكريم'), findsOneWidget);
   });
 
