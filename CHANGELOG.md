@@ -13,6 +13,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## Unreleased
 
+- The opening screen now shows the الراسخون logo on its own — the caption
+  underneath it was removed for a cleaner look.
 - The app now wears the official الراسخون logo: the gold calligraphy mark is
   the new app icon on your home screen, and the opening screen shows the full
   gold-on-black logo while the app starts up.
