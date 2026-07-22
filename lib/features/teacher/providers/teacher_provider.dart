@@ -10,6 +10,7 @@ import '../../../data/models/session_record_model.dart';
 import '../../../domain/session/student_history_entry.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../domain/curriculum/paced_session.dart';
+import '../../../shared/providers/search_query_provider.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/providers/meeting_provider.dart'
     show composeMeetingFor, composeNextMeetingAfter;
@@ -37,6 +38,13 @@ class SelectedTeacherInstituteFilter extends Notifier<String?> {
 final selectedTeacherInstituteFilterProvider =
     NotifierProvider<SelectedTeacherInstituteFilter, String?>(
       SelectedTeacherInstituteFilter.new,
+    );
+
+/// Query text for the teacher's students search field. Composes with the
+/// institute dropdown filter — both apply.
+final teacherStudentsSearchQueryProvider =
+    NotifierProvider.autoDispose<SearchQueryNotifier, String>(
+      SearchQueryNotifier.new,
     );
 
 /// Teacher's students filtered by the selected institute filter.
