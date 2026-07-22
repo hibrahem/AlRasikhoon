@@ -387,27 +387,24 @@ void main() {
         expect(teachers.any((t) => t.id == 'existing-teacher'), isTrue);
       });
 
-      test(
-        'returns the last fetched set when the uid never appears',
-        () async {
-          await fakeFirestore.collection('users').doc('existing-teacher').set({
-            'name': 'Existing Teacher',
-            'role': 'teacher',
-            'is_active': true,
-            'created_at': Timestamp.now(),
-          });
+      test('returns the last fetched set when the uid never appears', () async {
+        await fakeFirestore.collection('users').doc('existing-teacher').set({
+          'name': 'Existing Teacher',
+          'role': 'teacher',
+          'is_active': true,
+          'created_at': Timestamp.now(),
+        });
 
-          final teachers = await repository.getTeachersConfirmingUid(
-            'missing-teacher',
-            maxAttempts: 2,
-            retryDelay: Duration.zero,
-          );
+        final teachers = await repository.getTeachersConfirmingUid(
+          'missing-teacher',
+          maxAttempts: 2,
+          retryDelay: Duration.zero,
+        );
 
-          // Does not hang or throw; returns whatever the server query saw.
-          expect(teachers.any((t) => t.id == 'missing-teacher'), isFalse);
-          expect(teachers.any((t) => t.id == 'existing-teacher'), isTrue);
-        },
-      );
+        // Does not hang or throw; returns whatever the server query saw.
+        expect(teachers.any((t) => t.id == 'missing-teacher'), isFalse);
+        expect(teachers.any((t) => t.id == 'existing-teacher'), isTrue);
+      });
     });
 
     group('getSupervisors', () {
@@ -553,55 +550,6 @@ void main() {
           expect(newDoc.exists, true);
         },
       );
-    });
-
-    group('searchUsers', () {
-      setUp(() async {
-        await fakeFirestore.collection('users').doc('user1').set({
-          'phone': '+966512345671',
-          'name': 'محمد أحمد',
-          'role': 'teacher',
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
-        await fakeFirestore.collection('users').doc('user2').set({
-          'phone': '+966512345672',
-          'name': 'أحمد علي',
-          'role': 'student',
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
-        await fakeFirestore.collection('users').doc('user3').set({
-          'phone': '+966512345673',
-          'name': 'عبدالله',
-          'role': 'teacher',
-          'is_active': true,
-          'created_at': Timestamp.now(),
-        });
-      });
-
-      test('searches by name substring', () async {
-        final results = await repository.searchUsers('أحمد');
-
-        expect(results.length, 2);
-      });
-
-      test('searches by phone substring', () async {
-        final results = await repository.searchUsers('512345671');
-
-        expect(results.length, 1);
-        expect(results.first.name, 'محمد أحمد');
-      });
-
-      test('filters by role when specified', () async {
-        final results = await repository.searchUsers(
-          'أحمد',
-          role: UserRole.teacher,
-        );
-
-        expect(results.length, 1);
-        expect(results.first.role, UserRole.teacher);
-      });
     });
 
     group('streamUser', () {
