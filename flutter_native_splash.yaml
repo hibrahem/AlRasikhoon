@@ -1,18 +1,18 @@
 flutter_native_splash:
-  # Native splash per the final brand handoff: the cream drop on the hero
-  # green. The native layer can't gradient, so it uses heroTop flat
-  # (#1E6923 light / #0F3D16 dark) — the animated in-app splash
-  # (splash_overlay.dart) then paints the full heroTop→heroBottom gradient
-  # over it, so the hand-off is a subtle deepen, not a jump.
+  # Color-only native splash: the flat hero green (heroTop token), with NO
+  # logo image. The animated in-app splash (splash_overlay.dart) opens on the
+  # exact same flat color and eases in the heroTop→heroBottom gradient while
+  # the cream drop rises and the Reem Kufi lockup fades up — so the OS→Flutter
+  # hand-off is invisible and the logo appears exactly once. (Showing the drop
+  # here too rendered it centered at a different size than the animated
+  # lockup, causing a visible jump at hand-off.)
+  # Android 12+ still shows the launcher icon briefly — the OS forces it —
+  # which is the same cream drop on green, so it stays coherent.
   color: "#1E6923"
   color_dark: "#0F3D16"
-  image: assets/brand/splash-logo-cream.png
-  image_dark: assets/brand/splash-logo-cream-dark.png
   android_12:
     color: "#1E6923"
     color_dark: "#0F3D16"
-    image: assets/brand/splash-logo-cream.png
-    image_dark: assets/brand/splash-logo-cream-dark.png
   fullscreen: true
   android: true
   ios: true
