@@ -9,6 +9,7 @@ import '../../../data/models/session_model.dart';
 import '../../../domain/session/student_history_entry.dart';
 import '../../../data/models/user_model.dart';
 import '../../../domain/curriculum/paced_session.dart';
+import '../../../shared/providers/search_query_provider.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/providers/meeting_provider.dart' show composeMeetingFor;
 
@@ -49,6 +50,12 @@ final supervisorStudentsProvider = FutureProvider<List<StudentWithUser>>((
   final repo = ref.watch(studentRepositoryProvider);
   return repo.getStudentsForInstitutes(instituteIds);
 });
+
+/// Query text for the supervisor's institute-students search field.
+final supervisorStudentsSearchQueryProvider =
+    NotifierProvider.autoDispose<SearchQueryNotifier, String>(
+      SearchQueryNotifier.new,
+    );
 
 /// Teachers of a GIVEN institute (al_rasikhoon-6bw) — the pool a supervisor
 /// picks from both when creating a student (a teacher is now REQUIRED at

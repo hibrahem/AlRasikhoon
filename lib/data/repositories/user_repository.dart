@@ -252,31 +252,6 @@ class UserRepository {
     }
     return null;
   }
-
-  /// Search users by name or email
-  Future<List<UserModel>> searchUsers(String query, {UserRole? role}) async {
-    Query<Map<String, dynamic>> baseQuery = _usersCollection.where(
-      'is_active',
-      isEqualTo: true,
-    );
-
-    if (role != null) {
-      baseQuery = baseQuery.where('role', isEqualTo: role.value);
-    }
-
-    // Firestore doesn't support full-text search, so we'll get all and filter
-    final result = await _read.getQuery(baseQuery);
-
-    return result.docs
-        .map((doc) => UserModel.fromFirestore(doc))
-        .where(
-          (user) =>
-              user.name.toLowerCase().contains(query.toLowerCase()) ||
-              user.email.toLowerCase().contains(query.toLowerCase()) ||
-              (user.phone?.contains(query) ?? false),
-        )
-        .toList();
-  }
 }
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {

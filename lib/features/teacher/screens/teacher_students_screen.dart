@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/utils/arabic_search.dart';
 import '../../../data/models/institute_model.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/providers/institute_provider.dart';
+import '../../../shared/widgets/app_search_field.dart';
 import '../../../shared/widgets/hero_header.dart';
 import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
@@ -77,6 +79,21 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
             },
             orElse: () => const SizedBox.shrink(),
           ),
+          // Search — hidden while loading/erroring and when the roster is
+          // empty (nothing to search). Composes with the institute filter.
+          studentsAsync.maybeWhen(
+            data: (students) => students.isEmpty
+                ? const SizedBox.shrink()
+                : Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    child: AppSearchField(
+                      onChanged: (value) => ref
+                          .read(teacherStudentsSearchQueryProvider.notifier)
+                          .set(value),
+                    ),
+                  ),
+            orElse: () => const SizedBox.shrink(),
+          ),
           Expanded(
             child: studentsAsync.when(
               data: (students) {
@@ -87,6 +104,22 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
                     message: 'اضغط على + لإضافة طالب جديد',
                   );
                 }
+                final query = ref.watch(teacherStudentsSearchQueryProvider);
+                final filtered = students
+                    .where(
+                      (s) => matchesSearch(query, [
+                        s.user.name,
+                        s.user.phone,
+                        s.user.displayUsername,
+                      ]),
+                    )
+                    .toList(growable: false);
+                if (filtered.isEmpty) {
+                  return const EmptyState(
+                    icon: Icons.search_off,
+                    title: 'لا توجد نتائج مطابقة للبحث',
+                  );
+                }
 
                 return RefreshIndicator(
                   onRefresh: () async {
@@ -95,9 +128,9 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
                   },
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    itemCount: students.length,
+                    itemCount: filtered.length,
                     itemBuilder: (context, index) {
-                      final studentWithUser = students[index];
+                      final studentWithUser = filtered[index];
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: GestureDetector(
