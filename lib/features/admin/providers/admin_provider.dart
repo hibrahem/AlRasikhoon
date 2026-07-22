@@ -8,6 +8,7 @@ import '../../../data/models/user_model.dart';
 import '../../../data/models/institute_model.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/meeting_provider.dart' show composeMeetingFor;
+import '../../../shared/providers/search_query_provider.dart';
 
 class AdminStats {
   final int institutesCount;
@@ -208,3 +209,26 @@ final supervisorsForInstituteProvider =
       }
       return supervisors;
     });
+
+/// Search queries for the admin list screens — one per screen so each list's
+/// search is independent; autoDispose resets the query when the screen is
+/// left.
+final allStudentsSearchQueryProvider =
+    NotifierProvider.autoDispose<SearchQueryNotifier, String>(
+      SearchQueryNotifier.new,
+    );
+
+final allTeachersSearchQueryProvider =
+    NotifierProvider.autoDispose<SearchQueryNotifier, String>(
+      SearchQueryNotifier.new,
+    );
+
+final allSupervisorsSearchQueryProvider =
+    NotifierProvider.autoDispose<SearchQueryNotifier, String>(
+      SearchQueryNotifier.new,
+    );
+
+final institutesSearchQueryProvider =
+    NotifierProvider.autoDispose<SearchQueryNotifier, String>(
+      SearchQueryNotifier.new,
+    );
