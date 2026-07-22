@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/utils/arabic_search.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/app_search_field.dart';
 import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
@@ -47,65 +49,107 @@ class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
                     ),
                   );
                 }
-                return SliverPadding(
-                  padding: const EdgeInsets.all(16),
-                  sliver: SliverList.builder(
-                    itemCount: institutes.length,
-                    itemBuilder: (context, index) {
-                      final institute = institutes[index];
-                      return AppCard(
-                        onTap: () => context.push(
-                          AppRoutes.instituteDetail.replaceFirst(
-                            ':id',
-                            institute.id,
+                final query = ref.watch(institutesSearchQueryProvider);
+                final filtered = institutes
+                    .where(
+                      (institute) => matchesSearch(query, [
+                        institute.name,
+                        institute.location,
+                      ]),
+                    )
+                    .toList(growable: false);
+                final searchField = SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    child: AppSearchField(
+                      hint: 'بحث بالاسم أو الموقع…',
+                      onChanged: (value) => ref
+                          .read(institutesSearchQueryProvider.notifier)
+                          .set(value),
+                    ),
+                  ),
+                );
+                if (filtered.isEmpty) {
+                  return SliverMainAxisGroup(
+                    slivers: [
+                      searchField,
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 32),
+                          child: EmptyState(
+                            icon: Icons.search_off,
+                            title: 'لا توجد نتائج مطابقة للبحث',
                           ),
                         ),
-                        child: Row(
-                          children: [
-                            IconMedallion(
-                              icon: Icons.account_balance,
-                              accent: tokens.green,
-                              size: 52,
-                              iconSize: 26,
+                      ),
+                    ],
+                  );
+                }
+                return SliverMainAxisGroup(
+                  slivers: [
+                    searchField,
+                    SliverPadding(
+                      padding: const EdgeInsets.all(16),
+                      sliver: SliverList.builder(
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final institute = filtered[index];
+                          return AppCard(
+                            onTap: () => context.push(
+                              AppRoutes.instituteDetail.replaceFirst(
+                                ':id',
+                                institute.id,
+                              ),
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    institute.name,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.titleMedium,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
+                            child: Row(
+                              children: [
+                                IconMedallion(
+                                  icon: Icons.account_balance,
+                                  accent: tokens.green,
+                                  size: 52,
+                                  iconSize: 26,
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Icon(
-                                        Icons.location_on,
-                                        size: 14,
-                                        color: tokens.sepia,
-                                      ),
-                                      const SizedBox(width: 4),
                                       Text(
-                                        institute.location,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.copyWith(color: tokens.sepia),
+                                        institute.name,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.titleMedium,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.location_on,
+                                            size: 14,
+                                            color: tokens.sepia,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            institute.location,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(color: tokens.sepia),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
+                                ),
+                                Icon(Icons.chevron_left, color: tokens.sepia),
+                              ],
                             ),
-                            Icon(Icons.chevron_left, color: tokens.sepia),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 );
               },
               loading: () => const SliverFillRemaining(

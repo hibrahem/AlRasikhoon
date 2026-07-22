@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/utils/arabic_search.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_large_top_bar.dart';
+import '../../../shared/widgets/app_search_field.dart';
 import '../../../shared/widgets/edit_profile_dialog.dart';
 import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
@@ -106,35 +108,76 @@ class AllStudentsScreen extends ConsumerWidget {
                     ),
                   );
                 }
-                return SliverPadding(
-                  padding: const EdgeInsets.all(16),
-                  sliver: SliverList.builder(
-                    itemCount: students.length,
-                    itemBuilder: (context, index) {
-                      final studentWithUser = students[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: StudentCard(
-                          studentWithUser: studentWithUser,
-                          trailing: IconButton(
-                            icon: const Icon(Icons.more_vert),
-                            tooltip: 'خيارات الطالب',
-                            onPressed: () => _showStudentActions(
-                              context,
-                              ref,
-                              studentWithUser.user,
-                            ),
-                          ),
-                          onTap: () => context.push(
-                            AppRoutes.adminStudentProgress.replaceFirst(
-                              ':id',
-                              studentWithUser.student.id,
-                            ),
+                final query = ref.watch(allStudentsSearchQueryProvider);
+                final filtered = students
+                    .where(
+                      (s) => matchesSearch(query, [
+                        s.user.name,
+                        s.user.phone,
+                        s.user.displayUsername,
+                      ]),
+                    )
+                    .toList(growable: false);
+                final searchField = SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    child: AppSearchField(
+                      onChanged: (value) => ref
+                          .read(allStudentsSearchQueryProvider.notifier)
+                          .set(value),
+                    ),
+                  ),
+                );
+                if (filtered.isEmpty) {
+                  return SliverMainAxisGroup(
+                    slivers: [
+                      searchField,
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 32),
+                          child: EmptyState(
+                            icon: Icons.search_off,
+                            title: 'لا توجد نتائج مطابقة للبحث',
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    ],
+                  );
+                }
+                return SliverMainAxisGroup(
+                  slivers: [
+                    searchField,
+                    SliverPadding(
+                      padding: const EdgeInsets.all(16),
+                      sliver: SliverList.builder(
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final studentWithUser = filtered[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: StudentCard(
+                              studentWithUser: studentWithUser,
+                              trailing: IconButton(
+                                icon: const Icon(Icons.more_vert),
+                                tooltip: 'خيارات الطالب',
+                                onPressed: () => _showStudentActions(
+                                  context,
+                                  ref,
+                                  studentWithUser.user,
+                                ),
+                              ),
+                              onTap: () => context.push(
+                                AppRoutes.adminStudentProgress.replaceFirst(
+                                  ':id',
+                                  studentWithUser.student.id,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 );
               },
               loading: () => const SliverFillRemaining(
