@@ -123,12 +123,17 @@ class _HeroStat extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 2),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: Theme.of(
-            context,
-          ).textTheme.labelSmall?.copyWith(color: tokens.sepia),
+        // The word shrinks to its third-of-the-card cell rather than
+        // breaking mid-word at large font sizes.
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(color: tokens.sepia),
+          ),
         ),
       ],
     );

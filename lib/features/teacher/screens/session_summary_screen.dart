@@ -315,45 +315,63 @@ class _PartResultCard extends StatelessWidget {
                 child: Icon(recitationPartIcon(part), size: 16, color: accent),
               ),
               const SizedBox(width: 12),
+              // Title and outcome share the leftover width in a Wrap: the
+              // outcome column drops to its own line when a large system font
+              // would otherwise squeeze the part title into a sliver.
               Expanded(
-                child: Text(
-                  recitationPartTitleAr(part),
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: accent),
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '$errors أخطاء',
-                    // Data numeral: Cairo bold with tabular figures so error
-                    // counts align across the part cards.
-                    style: GoogleFonts.cairo(
-                      fontWeight: FontWeight.bold,
-                      fontFeatures: [const FontFeature.tabularFigures()],
-                      color: tokens.colorForGrade(gradeInfo.grade),
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 12,
+                  runSpacing: 4,
+                  children: [
+                    Text(
+                      recitationPartTitleAr(part),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: accent),
                     ),
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        gradeInfo.passed ? Icons.check_circle : Icons.cancel,
-                        size: 14,
-                        color: gradeInfo.passed ? tokens.green : tokens.maroon,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        gradeInfo.nameAr,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: tokens.colorForGrade(gradeInfo.grade),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '$errors أخطاء',
+                          // Data numeral: Cairo bold with tabular figures so
+                          // error counts align across the part cards.
+                          style: GoogleFonts.cairo(
+                            fontWeight: FontWeight.bold,
+                            fontFeatures: [const FontFeature.tabularFigures()],
+                            color: tokens.colorForGrade(gradeInfo.grade),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              gradeInfo.passed
+                                  ? Icons.check_circle
+                                  : Icons.cancel,
+                              size: 14,
+                              color: gradeInfo.passed
+                                  ? tokens.green
+                                  : tokens.maroon,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              gradeInfo.nameAr,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: tokens.colorForGrade(
+                                      gradeInfo.grade,
+                                    ),
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

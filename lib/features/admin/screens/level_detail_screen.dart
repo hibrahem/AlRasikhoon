@@ -235,7 +235,9 @@ class _ContentRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 110,
+            // The label gutter grows with the system font size — at a fixed
+            // 110 a scaled-up 'المراجعة القريبة' broke mid-word inside it.
+            width: MediaQuery.textScalerOf(context).scale(110),
             child: Text(
               label,
               style: Theme.of(

@@ -46,12 +46,16 @@ class StudentLevelProgress extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'الحلقات في المستوى',
-              style: Theme.of(context).textTheme.labelMedium,
+            // Flexed so a large system font wraps the label between words
+            // instead of overflowing the row against the count.
+            Expanded(
+              child: Text(
+                'الحلقات في المستوى',
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
             ),
+            const SizedBox(width: 8),
             Text(
               known ? '$orderInLevel/$sessionCount' : '—',
               style: Theme.of(

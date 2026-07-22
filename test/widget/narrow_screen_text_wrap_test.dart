@@ -11,8 +11,10 @@ import 'package:al_rasikhoon/domain/assessment/assessment_evaluation.dart';
 import 'package:al_rasikhoon/domain/curriculum/paced_session.dart';
 import 'package:al_rasikhoon/features/teacher/providers/teacher_provider.dart';
 import 'package:al_rasikhoon/features/teacher/screens/next_content_talqeen_screen.dart';
+import 'package:al_rasikhoon/features/teacher/widgets/recitation_counts_card.dart';
 import 'package:al_rasikhoon/shared/widgets/assessment_error_counters.dart';
 import 'package:al_rasikhoon/shared/widgets/assessment_outcome_display.dart';
+import 'package:al_rasikhoon/shared/widgets/error_counter.dart';
 import 'package:al_rasikhoon/shared/widgets/stat_card.dart';
 
 /// Arabic labels must survive a narrow phone with the system font size turned
@@ -35,20 +37,23 @@ void main() {
     addTearDown(tester.platformDispatcher.clearAllTestValues);
   }
 
-  /// The height [text] takes when laid out on ONE unconstrained line, using
+  /// The size [text] takes when laid out on ONE unconstrained line, using
   /// the exact resolved style and scale of its rendered paragraph — so the
-  /// assertion self-calibrates to whatever font the test environment serves.
-  double singleLineHeight(WidgetTester tester, Finder finder, String text) {
+  /// assertions self-calibrate to whatever font the test environment serves.
+  Size singleLineSize(WidgetTester tester, Finder finder, String text) {
     final paragraph = tester.renderObject<RenderParagraph>(finder);
     final painter = TextPainter(
       text: TextSpan(text: text, style: paragraph.text.style),
       textDirection: TextDirection.rtl,
       textScaler: paragraph.textScaler,
     )..layout();
-    final height = painter.height;
+    final size = painter.size;
     painter.dispose();
-    return height;
+    return size;
   }
+
+  double singleLineHeight(WidgetTester tester, Finder finder, String text) =>
+      singleLineSize(tester, finder, text).height;
 
   group('assessment breakdown table', () {
     Future<void> pumpTable(WidgetTester tester) async {
@@ -183,6 +188,58 @@ void main() {
       // A truly fixed 132px tile height clipped the numeral off the bottom
       // ("BOTTOM OVERFLOWED") once the text scaled up.
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('lesson counter cards', () {
+    testWidgets('count steppers and the grade pill survive a narrow phone', (
+      tester,
+    ) async {
+      useNarrowLargeFontView(tester, textScale: 2.0);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: Directionality(
+            textDirection: TextDirection.rtl,
+            child: Scaffold(
+              body: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    RecitationCountsCard(
+                      repetitionsWithTeacher: 12,
+                      homeRepetitionsRequired: 25,
+                      onRepetitionsWithTeacherChanged: (_) {},
+                      onHomeRepetitionsRequiredChanged: (_) {},
+                    ),
+                    const SizedBox(height: 16),
+                    ErrorCounter(
+                      errorCount: 2,
+                      onAddError: () {},
+                      onUndoError: () {},
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+
+      // The stepper's two-digit counts render whole — the old fixed 32px box
+      // gave the Text less width than its glyphs need, clipping the scaled
+      // numeral. The box must be at least as wide as the numeral's own
+      // unconstrained width.
+      for (final count in ['12', '25']) {
+        final text = find.text(count);
+        expect(
+          tester.getSize(text).width,
+          greaterThanOrEqualTo(singleLineSize(tester, text, count).width - 1),
+          reason: 'count $count is clipped by its box',
+        );
+      }
     });
   });
 

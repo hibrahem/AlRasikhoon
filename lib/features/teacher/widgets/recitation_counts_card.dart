@@ -78,8 +78,11 @@ class _CountStepper extends StatelessWidget {
           // of times is not a thing a teacher can report.
           onPressed: value > 0 ? () => onChanged(value - 1) : null,
         ),
-        SizedBox(
-          width: 32,
+        Container(
+          // A minimum, not a fixed width: a scaled-up two-digit count is
+          // wider than 32 and was getting clipped.
+          constraints: const BoxConstraints(minWidth: 32),
+          alignment: Alignment.center,
           child: Text(
             '$value',
             textAlign: TextAlign.center,

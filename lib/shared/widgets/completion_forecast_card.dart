@@ -166,14 +166,17 @@ class _CompletionForecastCardState
               children: [
                 Icon(Icons.tune, size: 18, color: tokens.green),
                 const SizedBox(width: 6),
-                Text(
-                  'ماذا لو تغيّرت الخطة؟',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: tokens.green,
-                    fontWeight: FontWeight.w600,
+                // Flexed so a large system font wraps the label between
+                // words instead of overflowing against the chevron.
+                Expanded(
+                  child: Text(
+                    'ماذا لو تغيّرت الخطة؟',
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: tokens.green,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-                const Spacer(),
                 Icon(
                   _simulating ? Icons.expand_less : Icons.expand_more,
                   color: tokens.green,
