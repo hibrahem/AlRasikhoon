@@ -401,10 +401,9 @@ class StudentRepository {
   /// Get student by user ID
   Future<StudentModel?> getStudentByUserId(String userId) async {
     // First try direct lookup by user_id
-    final query = await _read.getQuery(_studentsCollection
-        .where('user_id', isEqualTo: userId)
-        .limit(1)
-        );
+    final query = await _read.getQuery(
+      _studentsCollection.where('user_id', isEqualTo: userId).limit(1),
+    );
 
     if (query.docs.isNotEmpty) {
       return StudentModel.fromFirestore(query.docs.first);
@@ -419,9 +418,9 @@ class StudentRepository {
 
     if (user != null && user.role == UserRole.student) {
       // Find all orphaned students (students whose user document no longer exists)
-      final allStudents = await _read.getQuery(_studentsCollection
-          .where('is_active', isEqualTo: true)
-          );
+      final allStudents = await _read.getQuery(
+        _studentsCollection.where('is_active', isEqualTo: true),
+      );
 
       final orphanedStudents = <DocumentSnapshot>[];
 
@@ -462,10 +461,11 @@ class StudentRepository {
 
   /// Get all active students across every institute.
   Future<List<StudentWithUser>> getAllStudents() async {
-    final query = await _read.getQuery(_studentsCollection
-        .where('is_active', isEqualTo: true)
-        .orderBy('created_at', descending: true)
-        );
+    final query = await _read.getQuery(
+      _studentsCollection
+          .where('is_active', isEqualTo: true)
+          .orderBy('created_at', descending: true),
+    );
 
     final students = query.docs
         .map((doc) => StudentModel.fromFirestore(doc))
@@ -485,11 +485,12 @@ class StudentRepository {
 
   /// Get students for teacher
   Future<List<StudentWithUser>> getStudentsForTeacher(String teacherId) async {
-    final query = await _read.getQuery(_studentsCollection
-        .where('teacher_id', isEqualTo: teacherId)
-        .where('is_active', isEqualTo: true)
-        .orderBy('created_at', descending: true)
-        );
+    final query = await _read.getQuery(
+      _studentsCollection
+          .where('teacher_id', isEqualTo: teacherId)
+          .where('is_active', isEqualTo: true)
+          .orderBy('created_at', descending: true),
+    );
 
     final students = query.docs
         .map((doc) => StudentModel.fromFirestore(doc))
@@ -503,11 +504,12 @@ class StudentRepository {
   Future<List<StudentWithUser>> getStudentsForInstitute(
     String instituteId,
   ) async {
-    final query = await _read.getQuery(_studentsCollection
-        .where('institute_id', isEqualTo: instituteId)
-        .where('is_active', isEqualTo: true)
-        .orderBy('created_at', descending: true)
-        );
+    final query = await _read.getQuery(
+      _studentsCollection
+          .where('institute_id', isEqualTo: instituteId)
+          .where('is_active', isEqualTo: true)
+          .orderBy('created_at', descending: true),
+    );
 
     final students = query.docs
         .map((doc) => StudentModel.fromFirestore(doc))
@@ -546,10 +548,11 @@ class StudentRepository {
             ? uniqueIds.length
             : start + chunkSize,
       );
-      final query = await _read.getQuery(_studentsCollection
-          .where('institute_id', whereIn: chunk)
-          .where('is_active', isEqualTo: true)
-          );
+      final query = await _read.getQuery(
+        _studentsCollection
+            .where('institute_id', whereIn: chunk)
+            .where('is_active', isEqualTo: true),
+      );
       for (final docSnap in query.docs) {
         final student = StudentModel.fromFirestore(docSnap);
         byId[student.id] = student;
@@ -581,11 +584,15 @@ class StudentRepository {
   Future<List<StudentWithUser>> getStudentsReadyForExam(
     String instituteId,
   ) async {
-    final query = await _read.getQuery(_studentsCollection
-        .where('institute_id', isEqualTo: instituteId)
-        .where('current_session_kind', isEqualTo: AppConstants.sessionKindExam)
-        .where('is_active', isEqualTo: true)
-        );
+    final query = await _read.getQuery(
+      _studentsCollection
+          .where('institute_id', isEqualTo: instituteId)
+          .where(
+            'current_session_kind',
+            isEqualTo: AppConstants.sessionKindExam,
+          )
+          .where('is_active', isEqualTo: true),
+    );
 
     final students = query.docs
         .map((doc) => StudentModel.fromFirestore(doc))
@@ -887,6 +894,15 @@ class StudentRepository {
     });
   }
 
+  /// Permanently delete a student and EVERY trace of their data — progress
+  /// records, reposition audit, the student doc, and the linked account.
+  /// Contrast [deleteStudent], the app-wide soft delete. Irreversible;
+  /// super-admin only (enforced by the hardDeleteStudent Cloud Function,
+  /// which owns the whole cascade — see FirebaseService.hardDeleteStudent).
+  Future<void> hardDeleteStudent(String studentId) async {
+    await _firebaseService.hardDeleteStudent(studentId: studentId);
+  }
+
   /// Stream students for teacher
   Stream<List<StudentModel>> streamStudentsForTeacher(String teacherId) {
     return _studentsCollection
@@ -920,10 +936,11 @@ class StudentRepository {
   Future<List<StudentWithUser>> getStudentsByGuardianId(
     String guardianId,
   ) async {
-    final query = await _read.getQuery(_studentsCollection
-        .where('guardian_id', isEqualTo: guardianId)
-        .where('is_active', isEqualTo: true)
-        );
+    final query = await _read.getQuery(
+      _studentsCollection
+          .where('guardian_id', isEqualTo: guardianId)
+          .where('is_active', isEqualTo: true),
+    );
 
     final students = query.docs
         .map((doc) => StudentModel.fromFirestore(doc))
@@ -934,11 +951,12 @@ class StudentRepository {
 
   /// Get first student by guardian ID (for simple case with one child)
   Future<StudentModel?> getFirstStudentByGuardianId(String guardianId) async {
-    final query = await _read.getQuery(_studentsCollection
-        .where('guardian_id', isEqualTo: guardianId)
-        .where('is_active', isEqualTo: true)
-        .limit(1)
-        );
+    final query = await _read.getQuery(
+      _studentsCollection
+          .where('guardian_id', isEqualTo: guardianId)
+          .where('is_active', isEqualTo: true)
+          .limit(1),
+    );
 
     if (query.docs.isNotEmpty) {
       return StudentModel.fromFirestore(query.docs.first);
