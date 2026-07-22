@@ -122,6 +122,15 @@ class StudentCard extends ConsumerWidget {
                             const SizedBox(height: 4),
                             const _TeacherlessBadge(),
                           ],
+                          // A مستبعد student never reaches a teacher's list
+                          // (repository post-filter), so this badge only ever
+                          // renders in supervisor/admin views — where it is
+                          // the signal that this student is not being taught
+                          // (al_rasikhoon-zg1r).
+                          if (student.isExcluded) ...[
+                            const SizedBox(height: 4),
+                            const _ExcludedBadge(),
+                          ],
                         ],
                       ),
                     ),
@@ -336,6 +345,40 @@ class _TeacherlessBadge extends StatelessWidget {
             'بلا معلم',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: tokens.gold,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Marks a مستبعد student (al_rasikhoon-zg1r) in supervisor/admin lists.
+/// Maroon — the palette's attention/needs-review hue — because an excluded
+/// student is actively not being taught. Text-based, not colour-only, for
+/// accessibility.
+class _ExcludedBadge extends StatelessWidget {
+  const _ExcludedBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: tokens.maroon.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.person_off_outlined, size: 12, color: tokens.maroon),
+          const SizedBox(width: 4),
+          Text(
+            'مستبعد',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: tokens.maroon,
               fontWeight: FontWeight.w500,
             ),
           ),
