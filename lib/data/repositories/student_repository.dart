@@ -722,7 +722,7 @@ class StudentRepository {
             .collection(AppConstants.collectionSupervisorInstitutes)
             .doc('${actor.id}_${student.instituteId}'),
       );
-      final membershipData = membership.data() as Map<String, dynamic>?;
+      final membershipData = membership.data();
       final isMember =
           membership.exists && (membershipData?['is_active'] as bool? ?? false);
       if (!isMember) {
