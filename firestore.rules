@@ -295,7 +295,13 @@ service cloud.firestore {
       // status_reason / status_changed_* directly from the admin's device.
       allow update: if isSuperAdmin() ||
         (isTeacherOfStudent(resource.data) &&
-         isTeacherOfStudent(request.resource.data)) ||
+         isTeacherOfStudent(request.resource.data) &&
+         // Teaching-status fields are supervisor/admin-only (al_rasikhoon-zg1r):
+         // a teacher must not be able to un-exclude their own student or
+         // otherwise touch status/status_reason/status_changed_* and bypass
+         // the supervisor/admin audit trail via a crafted client write.
+         !request.resource.data.diff(resource.data).affectedKeys()
+           .hasAny(['status', 'status_reason', 'status_changed_at', 'status_changed_by'])) ||
         (isSupervisorOfStudentInstitute(resource.data) &&
          isSupervisorOfStudentInstitute(request.resource.data)) ||
         (isAuthenticated() &&
