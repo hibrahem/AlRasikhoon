@@ -1,15 +1,18 @@
 flutter_native_splash:
-  # Color-only native splash: the brand-black field from the الراسخون logo
-  # artwork (#110F0E, sampled from the brand PDF), so startup flows straight
-  # into the in-app splash where the gold lockup fades in with no static
-  # logo shown first — and the hand-off between the two is invisible.
-  # Same field in light and dark: the lockup is gold-on-black in both.
-  # Android 12+ still shows the launcher icon briefly — the OS forces it.
-  color: "#110F0E"
-  color_dark: "#110F0E"
+  # Native splash per the final brand handoff: the cream drop on the hero
+  # green. The native layer can't gradient, so it uses heroTop flat
+  # (#1E6923 light / #0F3D16 dark) — the animated in-app splash
+  # (splash_overlay.dart) then paints the full heroTop→heroBottom gradient
+  # over it, so the hand-off is a subtle deepen, not a jump.
+  color: "#1E6923"
+  color_dark: "#0F3D16"
+  image: assets/brand/splash-logo-cream.png
+  image_dark: assets/brand/splash-logo-cream-dark.png
   android_12:
-    color: "#110F0E"
-    color_dark: "#110F0E"
+    color: "#1E6923"
+    color_dark: "#0F3D16"
+    image: assets/brand/splash-logo-cream.png
+    image_dark: assets/brand/splash-logo-cream-dark.png
   fullscreen: true
   android: true
   ios: true

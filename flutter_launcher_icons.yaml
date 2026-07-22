@@ -1,19 +1,22 @@
 flutter_launcher_icons:
-  # Masters are derived from the official الراسخون brand PDF (gold
-  # calligraphy on black): the teardrop mark cropped, background-keyed, and
-  # composed at 1024×1024. Regenerate the platform icons after replacing the
-  # masters with:
+  # Masters come from the final الراسخون brand handoff
+  # (design_handoff_rasikhoon_logo): the Diwani teardrop mark, cream on the
+  # green hero gradient for the opaque icons, with proper Android adaptive
+  # layers (foreground sized for the 66% safe zone) and an Android 13+
+  # monochrome themed icon. Regenerate after replacing the masters with:
   #   dart run flutter_launcher_icons
   android: true
   ios: true
-  image_path: assets/branding/app_icon.png
-  # Android 13+ themed/adaptive icon: the gold mark over the artwork's own
-  # black within the safe zone.
-  adaptive_icon_background: "#110F0E"
-  adaptive_icon_foreground: assets/branding/app_icon_foreground.png
+  # Legacy Android + fallback: the opaque 1024² icon (cream drop on green
+  # gradient #1E6923→#14501B).
+  image_path: assets/brand/AppIcon-1024.png
+  image_path_ios: assets/brand/AppIcon-1024.png
   remove_alpha_ios: true
+  adaptive_icon_foreground: assets/brand/ic_launcher_foreground.png
+  adaptive_icon_background: assets/brand/ic_launcher_background.png
+  adaptive_icon_monochrome: assets/brand/ic_launcher_monochrome.png
   web:
     generate: true
-    image_path: assets/branding/app_icon.png
-    background_color: "#110F0E"
-    theme_color: "#110F0E"
+    image_path: assets/brand/AppIcon-1024.png
+    background_color: "#1E6923"
+    theme_color: "#1E6923"

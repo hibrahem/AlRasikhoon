@@ -24,11 +24,14 @@ void main() {
     await _pumpApp(tester);
 
     expect(find.byType(BrandSplashView), findsOneWidget);
-    // The official الراسخون gold lockup.
+    // The cream drop (same asset as the native splash) and the typed
+    // Reem Kufi lockup.
     expect(
-      find.image(const AssetImage('assets/images/logo_gold.png')),
+      find.image(const AssetImage('assets/brand/splash-logo-cream.png')),
       findsOneWidget,
     );
+    expect(find.text('الراسخون'), findsOneWidget);
+    expect(find.text('في حفظ كتاب الله'), findsOneWidget);
   });
 
   testWidgets('splash dismisses itself and reveals the app', (tester) async {
