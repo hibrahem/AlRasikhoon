@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/utils/arabic_search.dart';
 import '../../../data/models/user_model.dart';
+import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
@@ -13,6 +14,7 @@ import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/student_card.dart';
+import '../../../shared/widgets/student_status_dialog.dart';
 import '../providers/admin_provider.dart';
 
 /// Admin-facing list of every student in the system. Tapping a row opens
@@ -46,8 +48,10 @@ class AllStudentsScreen extends ConsumerWidget {
   void _showStudentActions(
     BuildContext context,
     WidgetRef ref,
-    UserModel user,
+    StudentWithUser studentWithUser,
   ) {
+    final user = studentWithUser.user;
+    final student = studentWithUser.student;
     showModalBottomSheet<void>(
       context: context,
       builder: (sheetContext) => SafeArea(
@@ -72,6 +76,30 @@ class AllStudentsScreen extends ConsumerWidget {
                   builder: (_) => ResetPasswordDialog(
                     userId: user.id,
                     userDisplayName: user.name,
+                  ),
+                );
+              },
+            ),
+            // Toggle the student's teaching status — نشط ⇄ مستبعد
+            // (al_rasikhoon-zg1r). Same dialog the supervisor uses; the
+            // admin refreshes the all-students list.
+            ListTile(
+              leading: Icon(
+                student.isExcluded
+                    ? Icons.how_to_reg
+                    : Icons.person_off_outlined,
+              ),
+              title: Text(
+                student.isExcluded ? 'إلغاء الاستبعاد' : 'استبعاد من التدريس',
+              ),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => StudentStatusDialog(
+                    student: student,
+                    studentDisplayName: user.name,
+                    onChanged: () => ref.invalidate(allStudentsProvider),
                   ),
                 );
               },
@@ -163,7 +191,7 @@ class AllStudentsScreen extends ConsumerWidget {
                                 onPressed: () => _showStudentActions(
                                   context,
                                   ref,
-                                  studentWithUser.user,
+                                  studentWithUser,
                                 ),
                               ),
                               onTap: () => context.push(
