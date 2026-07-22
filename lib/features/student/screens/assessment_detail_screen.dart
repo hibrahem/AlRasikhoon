@@ -314,7 +314,7 @@ class _FactRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
@@ -322,11 +322,18 @@ class _FactRow extends StatelessWidget {
               context,
             ).textTheme.bodyMedium?.copyWith(color: tokens.sepia),
           ),
-          Text(
-            value,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          const SizedBox(width: 12),
+          // Flexed, not intrinsic: a multi-word value ('٥ دقيقة ٣٠ ثانية')
+          // next to a multi-word label overflowed the row on narrow phones
+          // with a large system font — let it wrap at the row's end instead.
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),

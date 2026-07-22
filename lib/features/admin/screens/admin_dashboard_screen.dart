@@ -92,18 +92,13 @@ class AdminDashboardScreen extends ConsumerWidget {
 
   Widget _buildStats(BuildContext context, AdminStats stats) {
     final tokens = context.tokens;
-    // Fixed tile height (see supervisor dashboard): aspect-ratio tiles
-    // balloon on tablets; a max-extent grid keeps bento tiles compact and
-    // reflows to more columns on wide screens.
+    // Shared bento delegate (see statCardGridDelegate): compact fixed-height
+    // tiles that reflow to more columns on wide screens and grow with the
+    // system font size.
     return GridView(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 220,
-        mainAxisExtent: 132,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-      ),
+      gridDelegate: statCardGridDelegate(context),
       children: [
         StatCard(
           title: 'المعاهد',

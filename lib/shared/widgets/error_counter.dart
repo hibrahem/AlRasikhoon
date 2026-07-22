@@ -59,26 +59,33 @@ class ErrorCounter extends StatelessWidget {
                 color: tokens.sepia,
               ),
               const SizedBox(width: 32),
-              // Count display
-              Column(
-                children: [
-                  Text(
-                    '$errorCount',
-                    style: GoogleFonts.cairo(
-                      fontSize: 64,
-                      height: 1.1,
-                      fontWeight: FontWeight.bold,
-                      color: tokens.colorForGrade(gradeInfo.grade),
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
+              // Count display. Flexed and shrink-to-fit: the display numeral
+              // grows past the fixed buttons and gaps at large system font
+              // sizes and was overflowing the card.
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Column(
+                    children: [
+                      Text(
+                        '$errorCount',
+                        style: GoogleFonts.cairo(
+                          fontSize: 64,
+                          height: 1.1,
+                          fontWeight: FontWeight.bold,
+                          color: tokens.colorForGrade(gradeInfo.grade),
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                      Text(
+                        'أخطاء',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.titleMedium?.copyWith(color: tokens.sepia),
+                      ),
+                    ],
                   ),
-                  Text(
-                    'أخطاء',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleMedium?.copyWith(color: tokens.sepia),
-                  ),
-                ],
+                ),
               ),
               const SizedBox(width: 32),
               // Add error button
@@ -111,27 +118,34 @@ class ErrorCounter extends StatelessWidget {
                   }),
                 ),
                 const SizedBox(width: 16),
-                // Grade name
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: tokens
-                        .colorForGrade(gradeInfo.grade)
-                        .withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: tokens.colorForGrade(gradeInfo.grade),
+                // Grade name. Flexed beside the fixed-size star strip, with
+                // the word shrinking inside the pill rather than overflowing
+                // the card at large font sizes.
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
                     ),
-                  ),
-                  child: Text(
-                    gradeInfo.nameAr,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: tokens.colorForGrade(gradeInfo.grade),
+                    decoration: BoxDecoration(
+                      color: tokens
+                          .colorForGrade(gradeInfo.grade)
+                          .withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: tokens.colorForGrade(gradeInfo.grade),
+                      ),
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        gradeInfo.nameAr,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: tokens.colorForGrade(gradeInfo.grade),
+                        ),
+                      ),
                     ),
                   ),
                 ),

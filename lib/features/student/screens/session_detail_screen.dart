@@ -436,62 +436,76 @@ class _PartResultCard extends StatelessWidget {
             child: Icon(recitationPartIcon(part), size: 16, color: accent),
           ),
           const SizedBox(width: 12),
+          // Title/range and outcome share the leftover width in a Wrap: the
+          // outcome column drops to its own line when a large system font
+          // would otherwise squeeze the part title into a sliver.
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 4,
               children: [
-                Text(
-                  recitationPartTitleAr(part),
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: accent),
-                ),
-                if (range.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  // The Qur'an range is a passage name — manuscript face.
-                  Text(
-                    range,
-                    style: GoogleFonts.amiri(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: tokens.sepia,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      recitationPartTitleAr(part),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: accent),
                     ),
-                  ),
-                ],
+                    if (range.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      // The Qur'an range is a passage name — manuscript face.
+                      Text(
+                        range,
+                        style: GoogleFonts.amiri(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: tokens.sepia,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    // Grade numerals in Cairo tabular so error counts line up
+                    // across the stacked part cards.
+                    Text(
+                      '$errors أخطاء',
+                      style: GoogleFonts.cairo(
+                        fontWeight: FontWeight.bold,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                        color: tokens.colorForGrade(gradeInfo.grade),
+                      ),
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          gradeInfo.passed ? Icons.check_circle : Icons.cancel,
+                          size: 14,
+                          color: gradeInfo.passed
+                              ? tokens.green
+                              : tokens.maroon,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          gradeInfo.nameAr,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: tokens.colorForGrade(gradeInfo.grade),
+                              ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              // Grade numerals in Cairo tabular so error counts line up
-              // across the stacked part cards.
-              Text(
-                '$errors أخطاء',
-                style: GoogleFonts.cairo(
-                  fontWeight: FontWeight.bold,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                  color: tokens.colorForGrade(gradeInfo.grade),
-                ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    gradeInfo.passed ? Icons.check_circle : Icons.cancel,
-                    size: 14,
-                    color: gradeInfo.passed ? tokens.green : tokens.maroon,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    gradeInfo.nameAr,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: tokens.colorForGrade(gradeInfo.grade),
-                    ),
-                  ),
-                ],
-              ),
-            ],
           ),
         ],
       ),

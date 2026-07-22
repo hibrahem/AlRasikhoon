@@ -106,10 +106,13 @@ class AssessmentBreakdownTable extends StatelessWidget {
               Expanded(flex: 2, child: Text('', style: headerStyle)),
               for (final type in RecitationErrorType.values)
                 Expanded(
-                  child: Text(
-                    type.nameAr,
-                    style: headerStyle,
-                    textAlign: TextAlign.center,
+                  // A column can be narrower than its one-word heading on a
+                  // narrow phone or at a large system font size, and Arabic
+                  // broken mid-word (التنبيها / ت) reads as cut off — shrink
+                  // the word to the column instead of wrapping it.
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(type.nameAr, style: headerStyle),
                   ),
                 ),
             ],

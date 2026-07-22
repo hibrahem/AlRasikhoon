@@ -252,12 +252,17 @@ class _StudentPaceControlState extends ConsumerState<StudentPaceControl> {
                 Icon(Icons.flag_circle_rounded, size: 20, color: tokens.gold),
                 const SizedBox(width: 6),
                 Text('متى الختم؟', style: textTheme.titleSmall),
-                const Spacer(),
-                Text(
-                  approxDurationAr(forecast.weeks),
-                  style: textTheme.titleMedium?.copyWith(
-                    color: tokens.green,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(width: 12),
+                // Flexed, not intrinsic: the multi-word duration wraps at the
+                // row's end instead of overflowing at large font sizes.
+                Expanded(
+                  child: Text(
+                    approxDurationAr(forecast.weeks),
+                    textAlign: TextAlign.end,
+                    style: textTheme.titleMedium?.copyWith(
+                      color: tokens.green,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],

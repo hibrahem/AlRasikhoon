@@ -286,19 +286,24 @@ class StudentDashboardView extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           // The count must not REPLACE the expand affordance: the chevron
-          // stays beside it so the tile still reads as expandable.
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '${data.completedLevels.length}/10 مكتمل',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-              ),
-              const SizedBox(width: 4),
-              Icon(Icons.expand_more, color: tokens.sepia),
-            ],
+          // stays beside it so the tile still reads as expandable. FittedBox:
+          // the trailing slot shrinks its content when a large system font
+          // would otherwise crowd the tile title.
+          trailing: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${data.completedLevels.length}/10 مكتمل',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
+                ),
+                const SizedBox(width: 4),
+                Icon(Icons.expand_more, color: tokens.sepia),
+              ],
+            ),
           ),
           children: [
             LevelProgressionWidget(

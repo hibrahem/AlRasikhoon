@@ -237,24 +237,42 @@ class _PassageCard extends StatelessWidget {
                 iconSize: 24,
               ),
               const SizedBox(width: 12),
+              // Title and timer share whatever width the medallion leaves. A
+              // plain Row squeezed the title to a sliver on narrow phones —
+              // it wrapped one glyph per line — so the pill instead drops to
+              // its own line whenever the two don't fit side by side.
               Expanded(
-                child: Text(
-                  hasPassage ? 'المقطع القادم للتلقين' : 'لا يوجد حفظ جديد',
-                  style: Theme.of(context).textTheme.titleMedium,
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 12,
+                  runSpacing: 8,
+                  children: [
+                    Text(
+                      hasPassage ? 'المقطع القادم للتلقين' : 'لا يوجد حفظ جديد',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    // The live session timer, shown as a filled status pill in
+                    // the content-card header exactly as on the recitation
+                    // screen (al_rasikhoon-8z6) — same widget, same treatment,
+                    // so the teacher sees elapsed time consistently across
+                    // the flow.
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      decoration: BoxDecoration(
+                        color: tokens.green,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      // At large font sizes the clock line can outgrow even a
+                      // full wrap line of the card — shrink it to fit rather
+                      // than clip the digits.
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: ActiveLessonTimer(studentId: studentId),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 12),
-              // The live session timer, shown as a filled status pill in the
-              // content-card header exactly as on the recitation screen
-              // (al_rasikhoon-8z6) — same widget, same treatment, so the
-              // teacher sees elapsed time consistently across the flow.
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                decoration: BoxDecoration(
-                  color: tokens.green,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: ActiveLessonTimer(studentId: studentId),
               ),
             ],
           ),
