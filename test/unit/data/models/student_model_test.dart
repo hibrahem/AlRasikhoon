@@ -5,6 +5,7 @@ import 'package:al_rasikhoon/data/models/session_model.dart';
 import 'package:al_rasikhoon/data/models/student_model.dart';
 import 'package:al_rasikhoon/domain/curriculum/curriculum_pace.dart';
 import 'package:al_rasikhoon/domain/curriculum/curriculum_position.dart';
+import 'package:al_rasikhoon/domain/student/student_status.dart';
 
 /// Real level-1 rows (see `data/curriculum/sessions_level_1.json`).
 const firstLesson = SessionModel(
@@ -472,6 +473,76 @@ void main() {
 
         expect(a, equals(b));
         expect(a, isNot(equals(c)));
+      });
+    });
+
+    group('teaching status (مستبعد)', () {
+      Map<String, dynamic> baseJson() => {
+        'user_id': 'u1',
+        'institute_id': 'i1',
+        'current_session_kind': 'lesson',
+        'created_at': Timestamp.fromDate(DateTime(2026, 1, 1)),
+      };
+
+      test('a student document without a status field reads as active', () {
+        final student = StudentModel.fromJson('s1', baseJson());
+        expect(student.status, StudentStatus.active);
+        expect(student.isExcluded, isFalse);
+        expect(student.statusReason, isNull);
+        expect(student.statusChangedAt, isNull);
+        expect(student.statusChangedBy, isNull);
+      });
+
+      test('an excluded student round-trips with reason, actor and time', () {
+        final changedAt = DateTime(2026, 7, 23, 10, 30);
+        final student = StudentModel.fromJson('s1', {
+          ...baseJson(),
+          'status': 'excluded',
+          'status_reason': 'غياب متكرر',
+          'status_changed_at': Timestamp.fromDate(changedAt),
+          'status_changed_by': 'sup1',
+        });
+
+        expect(student.status, StudentStatus.excluded);
+        expect(student.isExcluded, isTrue);
+        expect(student.statusReason, 'غياب متكرر');
+        expect(student.statusChangedAt, changedAt);
+        expect(student.statusChangedBy, 'sup1');
+
+        final written = student.toFirestore();
+        expect(written['status'], 'excluded');
+        expect(written['status_reason'], 'غياب متكرر');
+        expect(written['status_changed_at'], Timestamp.fromDate(changedAt));
+        expect(written['status_changed_by'], 'sup1');
+      });
+
+      test('a freshly constructed student is active and writes active', () {
+        final student = StudentModel(
+          id: 's1',
+          userId: 'u1',
+          instituteId: 'i1',
+          createdAt: DateTime(2026, 1, 1),
+        );
+        expect(student.status, StudentStatus.active);
+        expect(student.toFirestore()['status'], 'active');
+      });
+
+      test('copyWith can exclude and restore', () {
+        final student = StudentModel(
+          id: 's1',
+          userId: 'u1',
+          instituteId: 'i1',
+          createdAt: DateTime(2026, 1, 1),
+        );
+        final excluded = student.copyWith(
+          status: StudentStatus.excluded,
+          statusReason: 'سبب',
+          statusChangedBy: 'sup1',
+        );
+        expect(excluded.isExcluded, isTrue);
+        expect(excluded.statusReason, 'سبب');
+        // Unrelated fields survive.
+        expect(excluded.instituteId, 'i1');
       });
     });
   });

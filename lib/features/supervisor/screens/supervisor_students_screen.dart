@@ -14,6 +14,7 @@ import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/student_card.dart';
 import '../../../shared/widgets/student_pace_control.dart';
+import '../../../shared/widgets/student_status_dialog.dart';
 import '../providers/supervisor_provider.dart';
 import '../widgets/assign_teacher_dialog.dart';
 
@@ -109,6 +110,7 @@ class SupervisorStudentsScreen extends ConsumerWidget {
                             child: GestureDetector(
                               onLongPress: () => _showStudentActions(
                                 context,
+                                ref,
                                 studentWithUser.user.id,
                                 studentWithUser.user.name,
                                 studentWithUser.student,
@@ -123,6 +125,7 @@ class SupervisorStudentsScreen extends ConsumerWidget {
                                   tooltip: 'إجراءات الطالب',
                                   onPressed: () => _showStudentActions(
                                     context,
+                                    ref,
                                     studentWithUser.user.id,
                                     studentWithUser.user.name,
                                     studentWithUser.student,
@@ -177,6 +180,7 @@ class SupervisorStudentsScreen extends ConsumerWidget {
 
   void _showStudentActions(
     BuildContext context,
+    WidgetRef ref,
     String userId,
     String userName,
     StudentModel student,
@@ -236,6 +240,32 @@ class SupervisorStudentsScreen extends ConsumerWidget {
                         },
                       ),
                     ),
+                  ),
+                );
+              },
+            ),
+            // Toggle the student's teaching status — نشط ⇄ مستبعد
+            // (al_rasikhoon-zg1r). Maroon: excluding is an attention-heavy
+            // act, matching the مستبعد badge on the card. Authorization is
+            // enforced in StudentRepository.setStudentStatus.
+            ListTile(
+              leading: Icon(
+                student.isExcluded
+                    ? Icons.how_to_reg
+                    : Icons.person_off_outlined,
+                color: tokens.maroon,
+              ),
+              title: Text(
+                student.isExcluded ? 'إلغاء الاستبعاد' : 'استبعاد من التدريس',
+              ),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => StudentStatusDialog(
+                    student: student,
+                    studentDisplayName: userName,
+                    onChanged: () => ref.invalidate(supervisorStudentsProvider),
                   ),
                 );
               },

@@ -3,6 +3,7 @@ import 'package:al_rasikhoon/core/constants/app_constants.dart';
 import '../../domain/curriculum/curriculum_pace.dart';
 import '../../domain/curriculum/curriculum_position.dart';
 import '../../domain/curriculum/meetings_per_week.dart';
+import '../../domain/student/student_status.dart';
 import 'session_model.dart';
 
 class StudentModel {
@@ -89,6 +90,23 @@ class StudentModel {
   /// supervisor alongside the pace. Pure config: it schedules nothing.
   final MeetingsPerWeek meetingsPerWeek;
 
+  /// The student's teaching status (al_rasikhoon-zg1r): نشط or مستبعد.
+  /// Orthogonal to [isActive] (soft-delete). An excluded student is hidden
+  /// from every teacher-facing list but stays visible to supervisors and
+  /// admins. Missing on legacy documents; reads back as [StudentStatus.active].
+  final StudentStatus status;
+
+  /// Why the status was last changed — the optional free-text the supervisor
+  /// or admin typed. The full history lives in the `status_audit`
+  /// subcollection; this is the latest word, denormalized for display.
+  final String? statusReason;
+
+  /// When the status last changed. Null until the first change.
+  final DateTime? statusChangedAt;
+
+  /// Who last changed the status (user id). Null until the first change.
+  final String? statusChangedBy;
+
   StudentModel({
     required this.id,
     required this.userId,
@@ -115,6 +133,10 @@ class StudentModel {
     this.enrollmentPosition = CurriculumPosition.start,
     CurriculumPace? pace,
     MeetingsPerWeek? meetingsPerWeek,
+    this.status = StudentStatus.active,
+    this.statusReason,
+    this.statusChangedAt,
+    this.statusChangedBy,
   }) : pace = pace ?? CurriculumPace.standard,
        meetingsPerWeek = meetingsPerWeek ?? MeetingsPerWeek.standard;
 
@@ -228,6 +250,14 @@ class StudentModel {
             ),
       pace: CurriculumPace.fromJson(data['pace']),
       meetingsPerWeek: MeetingsPerWeek.fromJson(data['meetings_per_week']),
+      // Absent on every document written before the exclusion feature; an
+      // unknown value may be written by a NEWER app version. Both read as
+      // active — hiding a student from their teacher is explicit, never
+      // guessed (same discipline as curriculum_completed above).
+      status: StudentStatusX.fromString(data['status'] as String?),
+      statusReason: data['status_reason'] as String?,
+      statusChangedAt: (data['status_changed_at'] as Timestamp?)?.toDate(),
+      statusChangedBy: data['status_changed_by'] as String?,
     );
   }
 
@@ -256,6 +286,12 @@ class StudentModel {
       'curriculum_completed_at': curriculumCompletedAt != null
           ? Timestamp.fromDate(curriculumCompletedAt!)
           : null,
+      'status': status.value,
+      'status_reason': statusReason,
+      'status_changed_at': statusChangedAt != null
+          ? Timestamp.fromDate(statusChangedAt!)
+          : null,
+      'status_changed_by': statusChangedBy,
       'enrollment_position': enrollmentPosition.toMap(),
       'pace': pace.toJson(),
       'meetings_per_week': meetingsPerWeek.toJson(),
@@ -288,6 +324,10 @@ class StudentModel {
     CurriculumPosition? enrollmentPosition,
     CurriculumPace? pace,
     MeetingsPerWeek? meetingsPerWeek,
+    StudentStatus? status,
+    String? statusReason,
+    DateTime? statusChangedAt,
+    String? statusChangedBy,
   }) {
     return StudentModel(
       id: id ?? this.id,
@@ -317,6 +357,10 @@ class StudentModel {
       enrollmentPosition: enrollmentPosition ?? this.enrollmentPosition,
       pace: pace ?? this.pace,
       meetingsPerWeek: meetingsPerWeek ?? this.meetingsPerWeek,
+      status: status ?? this.status,
+      statusReason: statusReason ?? this.statusReason,
+      statusChangedAt: statusChangedAt ?? this.statusChangedAt,
+      statusChangedBy: statusChangedBy ?? this.statusChangedBy,
     );
   }
 
@@ -344,6 +388,9 @@ class StudentModel {
     juz: currentJuz,
     session: currentSession,
   );
+
+  /// Whether the student is مستبعد — hidden from every teacher-facing list.
+  bool get isExcluded => status == StudentStatus.excluded;
 
   /// Whether the student stands on a سرد, assessed by their teacher.
   bool get canTakeSard => currentSessionKind == SessionKind.sard;

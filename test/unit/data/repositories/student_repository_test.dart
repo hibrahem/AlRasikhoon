@@ -13,6 +13,8 @@ import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/domain/curriculum/curriculum_pace.dart';
 import 'package:al_rasikhoon/domain/curriculum/curriculum_position.dart';
 import 'package:al_rasikhoon/domain/curriculum/reposition_exceptions.dart';
+import 'package:al_rasikhoon/domain/student/student_status.dart';
+import 'package:al_rasikhoon/domain/student/student_status_exceptions.dart';
 
 import 'curriculum_fixtures.dart';
 
@@ -112,10 +114,12 @@ void main() {
       List<int> completedLevels = const [],
       List<int> unlockedLevels = const [1],
       String instituteId = 'i1',
+      String? teacherId,
     }) async {
       await fakeFirestore.collection('students').doc(id).set({
         'user_id': 'u1',
         'institute_id': instituteId,
+        'teacher_id': teacherId,
         'current_level': level,
         'current_juz': juz,
         'current_session': session,
@@ -1719,6 +1723,307 @@ void main() {
           ),
           throwsA(isA<ArgumentError>()),
         );
+      });
+    });
+
+    group('teaching status (مستبعد)', () {
+      final admin = UserModel(
+        id: 'admin1',
+        email: 'admin@example.com',
+        name: 'مدير',
+        role: UserRole.superAdmin,
+        createdAt: DateTime(2026),
+      );
+      final supervisor = UserModel(
+        id: 'sup1',
+        email: 'sup@example.com',
+        name: 'مشرف',
+        role: UserRole.supervisor,
+        createdAt: DateTime(2026),
+      );
+      final teacher = UserModel(
+        id: 't1',
+        email: 'teacher@example.com',
+        name: 'معلم',
+        role: UserRole.teacher,
+        createdAt: DateTime(2026),
+      );
+
+      Future<void> seedSupervisorMembership({
+        String supervisorId = 'sup1',
+        String instituteId = 'i1',
+        bool isActive = true,
+      }) async {
+        await fakeFirestore
+            .collection('supervisor_institutes')
+            .doc('${supervisorId}_$instituteId')
+            .set({
+              'supervisor_id': supervisorId,
+              'institute_id': instituteId,
+              'is_active': isActive,
+              'assigned_at': Timestamp.now(),
+            });
+      }
+
+      Future<List<Map<String, dynamic>>> readAudit([String id = 's1']) async {
+        final snap = await fakeFirestore
+            .collection('students')
+            .doc(id)
+            .collection('status_audit')
+            .get();
+        return snap.docs.map((d) => d.data()).toList();
+      }
+
+      test(
+        'supervisor of the student\'s institute can exclude with a reason',
+        () async {
+          await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+          await seedSupervisorMembership();
+
+          await studentRepository.setStudentStatus(
+            studentId: 's1',
+            status: StudentStatus.excluded,
+            reason: 'غياب متكرر',
+            actor: supervisor,
+          );
+
+          final data = await readStudent();
+          expect(data['status'], 'excluded');
+          expect(data['status_reason'], 'غياب متكرر');
+          expect(data['status_changed_by'], 'sup1');
+          expect(data['status_changed_at'], isNotNull);
+        },
+      );
+
+      test(
+        'excluding writes an immutable audit entry naming the transition',
+        () async {
+          await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+          await seedSupervisorMembership();
+
+          await studentRepository.setStudentStatus(
+            studentId: 's1',
+            status: StudentStatus.excluded,
+            reason: 'غياب متكرر',
+            actor: supervisor,
+          );
+
+          final audit = await readAudit();
+          expect(audit, hasLength(1));
+          expect(audit.single['from_status'], 'active');
+          expect(audit.single['to_status'], 'excluded');
+          expect(audit.single['reason'], 'غياب متكرر');
+          expect(audit.single['changed_by'], 'sup1');
+          expect(audit.single['changed_at'], isNotNull);
+        },
+      );
+
+      test(
+        'admin can exclude a student of any institute without membership',
+        () async {
+          await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+
+          await studentRepository.setStudentStatus(
+            studentId: 's1',
+            status: StudentStatus.excluded,
+            actor: admin,
+          );
+
+          expect((await readStudent())['status'], 'excluded');
+        },
+      );
+
+      test(
+        'the reason is optional — an empty reason is stored as none',
+        () async {
+          await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+
+          await studentRepository.setStudentStatus(
+            studentId: 's1',
+            status: StudentStatus.excluded,
+            reason: '   ',
+            actor: admin,
+          );
+
+          expect((await readStudent())['status_reason'], isNull);
+          expect((await readAudit()).single['reason'], isNull);
+        },
+      );
+
+      test(
+        'supervisor of another institute cannot change the status',
+        () async {
+          await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+          // Membership binds sup1 to i2, but the student is in i1.
+          await seedSupervisorMembership(instituteId: 'i2');
+
+          expect(
+            () => studentRepository.setStudentStatus(
+              studentId: 's1',
+              status: StudentStatus.excluded,
+              actor: supervisor,
+            ),
+            throwsA(isA<StudentStatusChangeNotAuthorizedException>()),
+          );
+        },
+      );
+
+      test('a revoked (inactive) membership does not authorize', () async {
+        await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+        await seedSupervisorMembership(isActive: false);
+
+        expect(
+          () => studentRepository.setStudentStatus(
+            studentId: 's1',
+            status: StudentStatus.excluded,
+            actor: supervisor,
+          ),
+          throwsA(isA<StudentStatusChangeNotAuthorizedException>()),
+        );
+      });
+
+      test('a teacher cannot change a student\'s teaching status', () async {
+        await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+
+        expect(
+          () => studentRepository.setStudentStatus(
+            studentId: 's1',
+            status: StudentStatus.excluded,
+            actor: teacher,
+          ),
+          throwsA(isA<StudentStatusChangeNotAuthorizedException>()),
+        );
+      });
+
+      test(
+        're-requesting the current status is a silent no-op with no audit',
+        () async {
+          await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+
+          await studentRepository.setStudentStatus(
+            studentId: 's1',
+            status: StudentStatus.active,
+            actor: admin,
+          );
+
+          expect((await readStudent()).containsKey('status'), isFalse);
+          expect(await readAudit(), isEmpty);
+        },
+      );
+
+      test(
+        'restoring returns the student and appends a second audit entry',
+        () async {
+          await seedStudent(level: 1, juz: 30, session: 1, order: 1);
+
+          await studentRepository.setStudentStatus(
+            studentId: 's1',
+            status: StudentStatus.excluded,
+            reason: 'غياب',
+            actor: admin,
+          );
+          await studentRepository.setStudentStatus(
+            studentId: 's1',
+            status: StudentStatus.active,
+            reason: 'عاد للانتظام',
+            actor: admin,
+          );
+
+          final data = await readStudent();
+          expect(data['status'], 'active');
+          expect(data['status_reason'], 'عاد للانتظام');
+
+          final audit = await readAudit();
+          expect(audit, hasLength(2));
+          final restore = audit.singleWhere((e) => e['to_status'] == 'active');
+          expect(restore['from_status'], 'excluded');
+        },
+      );
+
+      test('an excluded student disappears from the teacher\'s list '
+          'but stays in the supervisor\'s and admin\'s lists', () async {
+        await seedUser(id: 'u1');
+        await seedStudent(
+          id: 's1',
+          level: 1,
+          juz: 30,
+          session: 1,
+          order: 1,
+          teacherId: 't1',
+        );
+        await seedStudent(
+          id: 's2',
+          level: 1,
+          juz: 30,
+          session: 1,
+          order: 1,
+          teacherId: 't1',
+        );
+
+        await studentRepository.setStudentStatus(
+          studentId: 's1',
+          status: StudentStatus.excluded,
+          actor: admin,
+        );
+
+        final teacherList = await studentRepository.getStudentsForTeacher('t1');
+        expect(teacherList.map((s) => s.student.id), ['s2']);
+
+        final supervisorList = await studentRepository.getStudentsForInstitutes(
+          ['i1'],
+        );
+        expect(supervisorList.map((s) => s.student.id).toSet(), {'s1', 's2'});
+
+        final adminList = await studentRepository.getAllStudents();
+        expect(adminList.map((s) => s.student.id).toSet(), {'s1', 's2'});
+      });
+
+      test(
+        'the admin teacher-roster view can include excluded students',
+        () async {
+          await seedUser(id: 'u1');
+          await seedStudent(
+            id: 's1',
+            level: 1,
+            juz: 30,
+            session: 1,
+            order: 1,
+            teacherId: 't1',
+          );
+
+          await studentRepository.setStudentStatus(
+            studentId: 's1',
+            status: StudentStatus.excluded,
+            actor: admin,
+          );
+
+          final roster = await studentRepository.getStudentsForTeacher(
+            't1',
+            includeExcluded: true,
+          );
+          expect(roster.map((s) => s.student.id), ['s1']);
+        },
+      );
+
+      test('an excluded student leaves the exam-ready queue', () async {
+        await seedUser(id: 'u1');
+        await seedStudent(
+          id: 's1',
+          level: 1,
+          juz: 30,
+          session: 68,
+          order: 68,
+          kind: 'exam',
+        );
+
+        await studentRepository.setStudentStatus(
+          studentId: 's1',
+          status: StudentStatus.excluded,
+          actor: admin,
+        );
+
+        final queue = await studentRepository.getStudentsReadyForExam('i1');
+        expect(queue, isEmpty);
       });
     });
   });

@@ -15,6 +15,7 @@ import '../../../shared/widgets/states/empty_state.dart';
 import '../../../shared/widgets/states/error_state.dart';
 import '../../../shared/widgets/states/loading_state.dart';
 import '../../../shared/widgets/student_card.dart';
+import '../../../shared/widgets/student_status_dialog.dart';
 import '../providers/admin_provider.dart';
 import '../widgets/delete_student_dialog.dart';
 
@@ -52,6 +53,7 @@ class AllStudentsScreen extends ConsumerWidget {
     StudentWithUser studentWithUser,
   ) {
     final user = studentWithUser.user;
+    final student = studentWithUser.student;
     showModalBottomSheet<void>(
       context: context,
       builder: (sheetContext) => SafeArea(
@@ -80,9 +82,34 @@ class AllStudentsScreen extends ConsumerWidget {
                 );
               },
             ),
+            // Toggle the student's teaching status — نشط ⇄ مستبعد
+            // (al_rasikhoon-zg1r). Same dialog the supervisor uses; the
+            // admin refreshes the all-students list.
+            ListTile(
+              leading: Icon(
+                student.isExcluded
+                    ? Icons.how_to_reg
+                    : Icons.person_off_outlined,
+              ),
+              title: Text(
+                student.isExcluded ? 'إلغاء الاستبعاد' : 'استبعاد من التدريس',
+              ),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => StudentStatusDialog(
+                    student: student,
+                    studentDisplayName: user.name,
+                    onChanged: () => ref.invalidate(allStudentsProvider),
+                  ),
+                );
+              },
+            ),
             // Hard delete — the only surface in the app offering it, and this
             // screen is reachable by super admins alone. The Cloud Function
-            // re-checks the role server-side regardless.
+            // re-checks the role server-side regardless. Kept LAST in the
+            // sheet: the irreversible action sits below the reversible ones.
             ListTile(
               leading: Icon(
                 Icons.delete_forever_outlined,
