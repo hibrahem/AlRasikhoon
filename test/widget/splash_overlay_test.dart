@@ -34,6 +34,21 @@ void main() {
     expect(find.text('في حفظ كتاب الله'), findsOneWidget);
   });
 
+  testWidgets('lockup text renders on a Material even above the Navigator', (
+    tester,
+  ) async {
+    // In the app the overlay mounts from MaterialApp.builder, where no
+    // Material exists yet — without its own, the wordmark would render the
+    // no-Material fallback (double amber underlines). This harness has no
+    // Material above SplashOverlay either, so it reproduces that tree.
+    await _pumpApp(tester);
+
+    expect(
+      find.ancestor(of: find.text('الراسخون'), matching: find.byType(Material)),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('splash dismisses itself and reveals the app', (tester) async {
     await _pumpApp(tester);
 

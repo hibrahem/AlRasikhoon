@@ -56,107 +56,115 @@ class BrandSplashView extends StatelessWidget {
       value: SystemUiOverlayStyle.light,
       // Decorative moment: never a screen-reader stop on the way in.
       child: ExcludeSemantics(
-        child: RepaintBoundary(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              // Reference frame: 82px drop on a 250px-wide phone ≈ 33% of
-              // screen width; type sizes keep the mock's ratios to the drop.
-              final dropWidth = (constraints.maxWidth * 0.33).clamp(
-                90.0,
-                150.0,
-              );
-              final titleSize = dropWidth * (20 / 82);
-              final taglineSize = titleSize * 0.525;
+        // The splash mounts from MaterialApp.builder — above the Navigator,
+        // where no Material exists yet. Without one, the lockup Texts render
+        // Flutter's no-Material fallback (double amber underlines).
+        child: Material(
+          type: MaterialType.transparency,
+          child: RepaintBoundary(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Reference frame: 82px drop on a 250px-wide phone ≈ 33% of
+                // screen width; type sizes keep the mock's ratios to the drop.
+                final dropWidth = (constraints.maxWidth * 0.33).clamp(
+                  90.0,
+                  150.0,
+                );
+                final titleSize = dropWidth * (20 / 82);
+                final taglineSize = titleSize * 0.525;
 
-              return DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [tokens.heroTop, tokens.heroBottom],
+                return DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [tokens.heroTop, tokens.heroBottom],
+                    ),
                   ),
-                ),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Radial cream halo at 50%/30%, breathing on a 4s loop.
-                    Opacity(
-                      opacity: 0.55 + 0.45 * breathe,
-                      child: Transform.scale(
-                        scale: 1 + 0.12 * breathe,
-                        alignment: const Alignment(0, -0.4),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: RadialGradient(
-                              center: const Alignment(0, -0.4),
-                              radius: 0.6,
-                              colors: [
-                                tokens.onHero.withValues(alpha: 0.10),
-                                tokens.onHero.withValues(alpha: 0),
-                              ],
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Radial cream halo at 50%/30%, breathing on a 4s loop.
+                      Opacity(
+                        opacity: 0.55 + 0.45 * breathe,
+                        child: Transform.scale(
+                          scale: 1 + 0.12 * breathe,
+                          alignment: const Alignment(0, -0.4),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: RadialGradient(
+                                center: const Alignment(0, -0.4),
+                                radius: 0.6,
+                                colors: [
+                                  tokens.onHero.withValues(alpha: 0.10),
+                                  tokens.onHero.withValues(alpha: 0),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    // Lockup centered at ~45% screen height.
-                    Align(
-                      alignment: const Alignment(0, -0.1),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Opacity(
-                            opacity: dropFade,
-                            child: Transform.translate(
-                              offset: Offset(0, 14 * (1 - dropIn)),
-                              child: Transform.scale(
-                                scale: 0.92 + 0.08 * dropIn,
-                                child: Image(
-                                  image: dark ? _dropDark : _dropLight,
-                                  width: dropWidth,
-                                  filterQuality: FilterQuality.medium,
+                      // Lockup centered at ~45% screen height.
+                      Align(
+                        alignment: const Alignment(0, -0.1),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Opacity(
+                              opacity: dropFade,
+                              child: Transform.translate(
+                                offset: Offset(0, 14 * (1 - dropIn)),
+                                child: Transform.scale(
+                                  scale: 0.92 + 0.08 * dropIn,
+                                  child: Image(
+                                    image: dark ? _dropDark : _dropLight,
+                                    width: dropWidth,
+                                    filterQuality: FilterQuality.medium,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          SizedBox(height: dropWidth * (5 / 82)),
-                          Opacity(
-                            opacity: titleIn,
-                            child: Transform.translate(
-                              offset: Offset(0, 10 * (1 - titleIn)),
-                              child: Text(
-                                'الراسخون',
-                                textDirection: TextDirection.rtl,
-                                style: GoogleFonts.reemKufi(
-                                  fontSize: titleSize,
-                                  fontWeight: FontWeight.w600,
-                                  color: tokens.onHero,
+                            SizedBox(height: dropWidth * (5 / 82)),
+                            Opacity(
+                              opacity: titleIn,
+                              child: Transform.translate(
+                                offset: Offset(0, 10 * (1 - titleIn)),
+                                child: Text(
+                                  'الراسخون',
+                                  textDirection: TextDirection.rtl,
+                                  style: GoogleFonts.reemKufi(
+                                    fontSize: titleSize,
+                                    fontWeight: FontWeight.w600,
+                                    color: tokens.onHero,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          SizedBox(height: dropWidth * (5 / 82)),
-                          Opacity(
-                            opacity: taglineIn,
-                            child: Transform.translate(
-                              offset: Offset(0, 10 * (1 - taglineIn)),
-                              child: Text(
-                                'في حفظ كتاب الله',
-                                textDirection: TextDirection.rtl,
-                                style: GoogleFonts.reemKufi(
-                                  fontSize: taglineSize,
-                                  color: tokens.onHero.withValues(alpha: 0.85),
+                            SizedBox(height: dropWidth * (5 / 82)),
+                            Opacity(
+                              opacity: taglineIn,
+                              child: Transform.translate(
+                                offset: Offset(0, 10 * (1 - taglineIn)),
+                                child: Text(
+                                  'في حفظ كتاب الله',
+                                  textDirection: TextDirection.rtl,
+                                  style: GoogleFonts.reemKufi(
+                                    fontSize: taglineSize,
+                                    color: tokens.onHero.withValues(
+                                      alpha: 0.85,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),
