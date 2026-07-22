@@ -10,6 +10,8 @@ import '../../domain/curriculum/curriculum_pace.dart';
 import '../../domain/curriculum/meetings_per_week.dart';
 import '../../domain/curriculum/curriculum_position.dart';
 import '../../domain/curriculum/reposition_exceptions.dart';
+import '../../domain/student/student_status.dart';
+import '../../domain/student/student_status_exceptions.dart';
 import 'curriculum_repository.dart';
 import 'session_repository.dart';
 import 'user_repository.dart';
@@ -401,10 +403,9 @@ class StudentRepository {
   /// Get student by user ID
   Future<StudentModel?> getStudentByUserId(String userId) async {
     // First try direct lookup by user_id
-    final query = await _read.getQuery(_studentsCollection
-        .where('user_id', isEqualTo: userId)
-        .limit(1)
-        );
+    final query = await _read.getQuery(
+      _studentsCollection.where('user_id', isEqualTo: userId).limit(1),
+    );
 
     if (query.docs.isNotEmpty) {
       return StudentModel.fromFirestore(query.docs.first);
@@ -419,9 +420,9 @@ class StudentRepository {
 
     if (user != null && user.role == UserRole.student) {
       // Find all orphaned students (students whose user document no longer exists)
-      final allStudents = await _read.getQuery(_studentsCollection
-          .where('is_active', isEqualTo: true)
-          );
+      final allStudents = await _read.getQuery(
+        _studentsCollection.where('is_active', isEqualTo: true),
+      );
 
       final orphanedStudents = <DocumentSnapshot>[];
 
@@ -462,10 +463,11 @@ class StudentRepository {
 
   /// Get all active students across every institute.
   Future<List<StudentWithUser>> getAllStudents() async {
-    final query = await _read.getQuery(_studentsCollection
-        .where('is_active', isEqualTo: true)
-        .orderBy('created_at', descending: true)
-        );
+    final query = await _read.getQuery(
+      _studentsCollection
+          .where('is_active', isEqualTo: true)
+          .orderBy('created_at', descending: true),
+    );
 
     final students = query.docs
         .map((doc) => StudentModel.fromFirestore(doc))
@@ -483,16 +485,28 @@ class StudentRepository {
     return StudentWithUser(student: student, user: user);
   }
 
-  /// Get students for teacher
-  Future<List<StudentWithUser>> getStudentsForTeacher(String teacherId) async {
-    final query = await _read.getQuery(_studentsCollection
-        .where('teacher_id', isEqualTo: teacherId)
-        .where('is_active', isEqualTo: true)
-        .orderBy('created_at', descending: true)
-        );
+  /// Get students for teacher.
+  ///
+  /// An excluded (مستبعد) student is dropped by default — the teacher must
+  /// not see them (al_rasikhoon-zg1r). Applied as a POST-filter, not a
+  /// `where` clause, for the same reason as `curriculum_completed` in
+  /// [getStudentsReadyForExam]: legacy documents lack the field entirely, and
+  /// an equality filter would silently drop every one of them. The admin's
+  /// teacher-roster view passes [includeExcluded] to see the full roster.
+  Future<List<StudentWithUser>> getStudentsForTeacher(
+    String teacherId, {
+    bool includeExcluded = false,
+  }) async {
+    final query = await _read.getQuery(
+      _studentsCollection
+          .where('teacher_id', isEqualTo: teacherId)
+          .where('is_active', isEqualTo: true)
+          .orderBy('created_at', descending: true),
+    );
 
     final students = query.docs
         .map((doc) => StudentModel.fromFirestore(doc))
+        .where((student) => includeExcluded || !student.isExcluded)
         .toList();
 
     // Get user data for each student
@@ -503,11 +517,12 @@ class StudentRepository {
   Future<List<StudentWithUser>> getStudentsForInstitute(
     String instituteId,
   ) async {
-    final query = await _read.getQuery(_studentsCollection
-        .where('institute_id', isEqualTo: instituteId)
-        .where('is_active', isEqualTo: true)
-        .orderBy('created_at', descending: true)
-        );
+    final query = await _read.getQuery(
+      _studentsCollection
+          .where('institute_id', isEqualTo: instituteId)
+          .where('is_active', isEqualTo: true)
+          .orderBy('created_at', descending: true),
+    );
 
     final students = query.docs
         .map((doc) => StudentModel.fromFirestore(doc))
@@ -546,10 +561,11 @@ class StudentRepository {
             ? uniqueIds.length
             : start + chunkSize,
       );
-      final query = await _read.getQuery(_studentsCollection
-          .where('institute_id', whereIn: chunk)
-          .where('is_active', isEqualTo: true)
-          );
+      final query = await _read.getQuery(
+        _studentsCollection
+            .where('institute_id', whereIn: chunk)
+            .where('is_active', isEqualTo: true),
+      );
       for (final docSnap in query.docs) {
         final student = StudentModel.fromFirestore(docSnap);
         byId[student.id] = student;
@@ -578,18 +594,25 @@ class StudentRepository {
   /// legacy or in-progress document that pre-dates the field (the field is
   /// absent, not `false`), whereas [StudentModel] reads a missing flag back as
   /// "not graduated". This also keeps the query free of a composite index.
+  ///
+  /// An EXCLUDED (مستبعد) student is dropped the same way: they are not being
+  /// taught, so they have no exam to sit (al_rasikhoon-zg1r).
   Future<List<StudentWithUser>> getStudentsReadyForExam(
     String instituteId,
   ) async {
-    final query = await _read.getQuery(_studentsCollection
-        .where('institute_id', isEqualTo: instituteId)
-        .where('current_session_kind', isEqualTo: AppConstants.sessionKindExam)
-        .where('is_active', isEqualTo: true)
-        );
+    final query = await _read.getQuery(
+      _studentsCollection
+          .where('institute_id', isEqualTo: instituteId)
+          .where(
+            'current_session_kind',
+            isEqualTo: AppConstants.sessionKindExam,
+          )
+          .where('is_active', isEqualTo: true),
+    );
 
     final students = query.docs
         .map((doc) => StudentModel.fromFirestore(doc))
-        .where((student) => !student.curriculumCompleted)
+        .where((student) => !student.curriculumCompleted && !student.isExcluded)
         .toList();
 
     return _withUsers(students);
@@ -654,6 +677,91 @@ class StudentRepository {
       'teacher_id': teacherId,
       'updated_at': FieldValue.serverTimestamp(),
     });
+  }
+
+  /// Sets the student's TEACHING status — نشط ⇄ مستبعد (al_rasikhoon-zg1r) —
+  /// with an optional free-text reason.
+  ///
+  /// Authorization is enforced HERE, on the authoritative path, not in the
+  /// UI: an admin may change any student; a supervisor only a student of an
+  /// institute they hold an ACTIVE `supervisor_institutes` membership for
+  /// (al_rasikhoon-3n6 — the membership docs, not `users.institute_id`, are
+  /// the source of truth). Anyone else is rejected with
+  /// [StudentStatusChangeNotAuthorizedException] — mirroring
+  /// [repositionEnrolledStudent], because a stale UI must not be trusted.
+  ///
+  /// The student update and the append-only `status_audit` entry are written
+  /// in one [WriteBatch] so the change and the record of who made it — and
+  /// why — commit together or not at all. Requesting the status the student
+  /// already holds is a silent no-op: nothing is written, no audit entry is
+  /// appended (the trail records changes, not clicks).
+  Future<void> setStudentStatus({
+    required String studentId,
+    required StudentStatus status,
+    String? reason,
+    required UserModel actor,
+  }) async {
+    final student = await getStudentById(studentId);
+    if (student == null) {
+      throw ArgumentError.value(studentId, 'studentId', 'No such student');
+    }
+    if (!student.isActive) {
+      throw ArgumentError.value(
+        studentId,
+        'studentId',
+        'Cannot change the teaching status of a deleted student',
+      );
+    }
+
+    if (actor.role == UserRole.supervisor) {
+      // Membership doc id is '{supervisorId}_{instituteId}' — written by
+      // InstituteRepository.assignSupervisorToInstitute; one existence check
+      // against the student's own institute.
+      final membership = await _read.getDoc(
+        _firestore
+            .collection(AppConstants.collectionSupervisorInstitutes)
+            .doc('${actor.id}_${student.instituteId}'),
+      );
+      final membershipData = membership.data() as Map<String, dynamic>?;
+      final isMember =
+          membership.exists && (membershipData?['is_active'] as bool? ?? false);
+      if (!isMember) {
+        throw const StudentStatusChangeNotAuthorizedException(
+          'Supervisor is not scoped to this student\'s institute',
+        );
+      }
+    } else if (actor.role != UserRole.superAdmin) {
+      throw const StudentStatusChangeNotAuthorizedException(
+        'Only a supervisor or an admin may change a student\'s '
+        'teaching status',
+      );
+    }
+
+    if (student.status == status) return;
+
+    final trimmed = reason?.trim();
+    final normalizedReason = (trimmed == null || trimmed.isEmpty)
+        ? null
+        : trimmed;
+
+    final studentRef = _studentsCollection.doc(studentId);
+    final auditRef = studentRef.collection('status_audit').doc();
+    final batch = _firestore.batch();
+    batch.update(studentRef, {
+      'status': status.value,
+      'status_reason': normalizedReason,
+      'status_changed_at': FieldValue.serverTimestamp(),
+      'status_changed_by': actor.id,
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+    batch.set(auditRef, {
+      'from_status': student.status.value,
+      'to_status': status.value,
+      'reason': normalizedReason,
+      'changed_by': actor.id,
+      'changed_at': FieldValue.serverTimestamp(),
+    });
+    await batch.commit();
   }
 
   /// Advance the student past the meeting that ends at [fromOrderInLevel].
@@ -896,6 +1004,10 @@ class StudentRepository {
         .map(
           (snapshot) => snapshot.docs
               .map((doc) => StudentModel.fromFirestore(doc))
+              // Excluded students are invisible to their teacher
+              // (al_rasikhoon-zg1r) — same post-filter as
+              // getStudentsForTeacher.
+              .where((student) => !student.isExcluded)
               .toList(),
         );
   }
@@ -920,10 +1032,11 @@ class StudentRepository {
   Future<List<StudentWithUser>> getStudentsByGuardianId(
     String guardianId,
   ) async {
-    final query = await _read.getQuery(_studentsCollection
-        .where('guardian_id', isEqualTo: guardianId)
-        .where('is_active', isEqualTo: true)
-        );
+    final query = await _read.getQuery(
+      _studentsCollection
+          .where('guardian_id', isEqualTo: guardianId)
+          .where('is_active', isEqualTo: true),
+    );
 
     final students = query.docs
         .map((doc) => StudentModel.fromFirestore(doc))
@@ -934,11 +1047,12 @@ class StudentRepository {
 
   /// Get first student by guardian ID (for simple case with one child)
   Future<StudentModel?> getFirstStudentByGuardianId(String guardianId) async {
-    final query = await _read.getQuery(_studentsCollection
-        .where('guardian_id', isEqualTo: guardianId)
-        .where('is_active', isEqualTo: true)
-        .limit(1)
-        );
+    final query = await _read.getQuery(
+      _studentsCollection
+          .where('guardian_id', isEqualTo: guardianId)
+          .where('is_active', isEqualTo: true)
+          .limit(1),
+    );
 
     if (query.docs.isNotEmpty) {
       return StudentModel.fromFirestore(query.docs.first);

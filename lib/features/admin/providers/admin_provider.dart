@@ -125,7 +125,10 @@ final studentsForTeacherAdminProvider =
       teacherId,
     ) async {
       final repo = ref.watch(studentRepositoryProvider);
-      return repo.getStudentsForTeacher(teacherId);
+      // The admin sees the teacher's FULL roster, excluded students included
+      // (badged in the UI) — hiding is a teacher-view concern
+      // (al_rasikhoon-zg1r).
+      return repo.getStudentsForTeacher(teacherId, includeExcluded: true);
     });
 
 /// A single student with its user profile (admin-only read-only view).
