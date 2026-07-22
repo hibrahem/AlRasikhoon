@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/core/theme/app_theme.dart';
+import 'package:al_rasikhoon/core/theme/app_tokens.dart';
 import 'package:al_rasikhoon/shared/widgets/splash/splash_overlay.dart';
 
 Future<void> _pumpApp(WidgetTester tester) {
@@ -47,6 +48,38 @@ void main() {
       find.ancestor(of: find.text('الراسخون'), matching: find.byType(Material)),
       findsOneWidget,
     );
+  });
+
+  testWidgets('first animated frame is the flat native splash color', (
+    tester,
+  ) async {
+    // The native splash (flutter_native_splash) is a flat heroTop field, no
+    // logo. Frame 0 of the animated splash must be that exact flat color so
+    // the OS→Flutter hand-off never jumps — the gradient eases in afterwards.
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: const Directionality(
+          textDirection: TextDirection.rtl,
+          child: BrandSplashView(progress: 0),
+        ),
+      ),
+    );
+
+    final heroTop = AppTokens.light.heroTop;
+    final background = tester
+        .widgetList<DecoratedBox>(
+          find.descendant(
+            of: find.byType(BrandSplashView),
+            matching: find.byType(DecoratedBox),
+          ),
+        )
+        .map((box) => box.decoration)
+        .whereType<BoxDecoration>()
+        .map((decoration) => decoration.gradient)
+        .whereType<LinearGradient>()
+        .single;
+    expect(background.colors, [heroTop, heroTop]);
   });
 
   testWidgets('splash dismisses itself and reveals the app', (tester) async {

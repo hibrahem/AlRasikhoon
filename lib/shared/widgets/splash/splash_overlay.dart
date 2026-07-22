@@ -41,6 +41,11 @@ class BrandSplashView extends StatelessWidget {
     //   drop     0–1000ms  rises 14px, scales .92→1, cubic-bezier(.2,.7,.3,1)
     //   title  550–1250ms  fades up 10px, ease-out
     //   tagline 850–1550ms fades up 10px, ease-out
+    // The native splash is the flat heroTop color (flutter_native_splash,
+    // color-only). Frame 0 here is that same flat field — the heroBottom end
+    // of the gradient eases in over the first ~350ms, so the OS→Flutter
+    // hand-off never jumps.
+    final gradientIn = _stage(0.0, 0.22, Curves.easeOut);
     final dropIn = _stage(0.0, 0.625, const Cubic(.2, .7, .3, 1));
     // The drop is fully opaque at 60% of its own run (mock's 60% keyframe).
     final dropFade = (_stage(0.0, 0.625, Curves.linear) / 0.6).clamp(0.0, 1.0);
@@ -78,15 +83,24 @@ class BrandSplashView extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [tokens.heroTop, tokens.heroBottom],
+                      colors: [
+                        tokens.heroTop,
+                        Color.lerp(
+                          tokens.heroTop,
+                          tokens.heroBottom,
+                          gradientIn,
+                        )!,
+                      ],
                     ),
                   ),
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
                       // Radial cream halo at 50%/30%, breathing on a 4s loop.
+                      // Eased in with the gradient so frame 0 stays a flat
+                      // heroTop field, identical to the native splash.
                       Opacity(
-                        opacity: 0.55 + 0.45 * breathe,
+                        opacity: (0.55 + 0.45 * breathe) * gradientIn,
                         child: Transform.scale(
                           scale: 1 + 0.12 * breathe,
                           alignment: const Alignment(0, -0.4),
