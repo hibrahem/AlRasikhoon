@@ -72,11 +72,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 32),
-                // The official gold calligraphy mark — the same brand asset
-                // as the app icon and splash. It carries its own wordmark
-                // ("الراسخون في حفظ كتاب الله"), so no separate title text.
+                // The official vertical lockup — drop + typed Reem Kufi
+                // wordmark and tagline, same mark as the app icon and splash.
+                // One flat ink per surface (brand rule): green on the
+                // parchment page, cream on the dark page. It carries its own
+                // wordmark ("الراسخون في حفظ كتاب الله"), so no title text.
                 Image.asset(
-                  'assets/images/logo_gold.png',
+                  Theme.of(context).brightness == Brightness.dark
+                      ? 'assets/brand/lockup-cream.png'
+                      : 'assets/brand/lockup-green.png',
                   height: 180,
                   fit: BoxFit.contain,
                   semanticLabel: 'الراسخون',

@@ -1,60 +1,162 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-import '../khatam_lattice.dart';
+import '../../../core/theme/app_tokens.dart';
 
-/// The official الراسخون brand mark: gold calligraphy on black, from the
-/// brand PDF (see assets/images/logo_gold.png). These are brand-asset
-/// colors, fixed by the artwork — not theme tokens.
-const _brandBlack = Color(0xFF110F0E);
-const _brandGold = Color(0xFFE0A63B);
-const _brandLogo = AssetImage('assets/images/logo_gold.png');
+/// The splash drop artwork — the same asset the native splash shows
+/// (flutter_native_splash), so the OS→Flutter hand-off keeps the exact
+/// same mark on screen. One flat ink per surface (brand rule): cream on
+/// the hero green, with the slightly deeper cream for dark mode.
+const _dropLight = AssetImage('assets/brand/splash-logo-cream.png');
+const _dropDark = AssetImage('assets/brand/splash-logo-cream-dark.png');
 
-/// The splash composition: the brand-black field, a faint gold khatam
-/// lattice, and the official gold lockup breathing in.
-/// Pure presentation — [progress] 0→1 drives the whole choreography, so the
+/// The splash composition per the final brand sheet: hero gradient, a
+/// breathing cream halo, the cream drop rising and settling, then the typed
+/// Reem Kufi lockup fading up line by line.
+///
+/// Pure presentation — [progress] 0→1 drives the entrance choreography and
+/// [haloPhase] 0→1 drives one cycle of the halo's 4s breathing loop, so the
 /// preview harness can render any frame of it.
 class BrandSplashView extends StatelessWidget {
   final double progress;
+  final double haloPhase;
 
-  const BrandSplashView({super.key, required this.progress});
+  const BrandSplashView({
+    super.key,
+    required this.progress,
+    this.haloPhase = 0,
+  });
 
-  double _stage(double begin, double end, [Curve curve = Curves.easeOutCubic]) {
+  double _stage(double begin, double end, Curve curve) {
     return Interval(begin, end, curve: curve).transform(progress.clamp(0, 1));
   }
 
   @override
   Widget build(BuildContext context) {
-    final latticeIn = _stage(0.0, 0.35, Curves.easeOut);
-    final logoIn = _stage(0.08, 0.65);
+    final tokens = context.tokens;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+
+    // Entrance timeline, mapped onto the 1600ms choreography:
+    //   drop     0–1000ms  rises 14px, scales .92→1, cubic-bezier(.2,.7,.3,1)
+    //   title  550–1250ms  fades up 10px, ease-out
+    //   tagline 850–1550ms fades up 10px, ease-out
+    final dropIn = _stage(0.0, 0.625, const Cubic(.2, .7, .3, 1));
+    // The drop is fully opaque at 60% of its own run (mock's 60% keyframe).
+    final dropFade = (_stage(0.0, 0.625, Curves.linear) / 0.6).clamp(0.0, 1.0);
+    final titleIn = _stage(0.34375, 0.78125, Curves.easeOut);
+    final taglineIn = _stage(0.53125, 0.96875, Curves.easeOut);
+
+    // Breathing halo: opacity .55→1→.55, scale 1→1.12→1 over one phase.
+    final breathe = Curves.easeInOut.transform(
+      haloPhase <= 0.5 ? haloPhase * 2 : 2 - haloPhase * 2,
+    );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       // Decorative moment: never a screen-reader stop on the way in.
       child: ExcludeSemantics(
-        child: ColoredBox(
-          // Matches the native splash color exactly (flutter_native_splash),
-          // so the hand-off from OS splash to this view is invisible.
-          color: _brandBlack,
-          child: RepaintBoundary(
-            child: CustomPaint(
-              painter: KhatamLatticePainter(
-                color: _brandGold.withValues(alpha: 0.05 * latticeIn),
-              ),
-              child: Center(
-                child: Opacity(
-                  opacity: logoIn,
-                  child: Transform.scale(
-                    scale: 0.94 + 0.06 * logoIn,
-                    child: const Image(
-                      image: _brandLogo,
-                      width: 264,
-                      filterQuality: FilterQuality.medium,
-                    ),
+        child: RepaintBoundary(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Reference frame: 82px drop on a 250px-wide phone ≈ 33% of
+              // screen width; type sizes keep the mock's ratios to the drop.
+              final dropWidth = (constraints.maxWidth * 0.33).clamp(
+                90.0,
+                150.0,
+              );
+              final titleSize = dropWidth * (20 / 82);
+              final taglineSize = titleSize * 0.525;
+
+              return DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [tokens.heroTop, tokens.heroBottom],
                   ),
                 ),
-              ),
-            ),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Radial cream halo at 50%/30%, breathing on a 4s loop.
+                    Opacity(
+                      opacity: 0.55 + 0.45 * breathe,
+                      child: Transform.scale(
+                        scale: 1 + 0.12 * breathe,
+                        alignment: const Alignment(0, -0.4),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: RadialGradient(
+                              center: const Alignment(0, -0.4),
+                              radius: 0.6,
+                              colors: [
+                                tokens.onHero.withValues(alpha: 0.10),
+                                tokens.onHero.withValues(alpha: 0),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Lockup centered at ~45% screen height.
+                    Align(
+                      alignment: const Alignment(0, -0.1),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Opacity(
+                            opacity: dropFade,
+                            child: Transform.translate(
+                              offset: Offset(0, 14 * (1 - dropIn)),
+                              child: Transform.scale(
+                                scale: 0.92 + 0.08 * dropIn,
+                                child: Image(
+                                  image: dark ? _dropDark : _dropLight,
+                                  width: dropWidth,
+                                  filterQuality: FilterQuality.medium,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: dropWidth * (5 / 82)),
+                          Opacity(
+                            opacity: titleIn,
+                            child: Transform.translate(
+                              offset: Offset(0, 10 * (1 - titleIn)),
+                              child: Text(
+                                'الراسخون',
+                                textDirection: TextDirection.rtl,
+                                style: GoogleFonts.reemKufi(
+                                  fontSize: titleSize,
+                                  fontWeight: FontWeight.w600,
+                                  color: tokens.onHero,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: dropWidth * (5 / 82)),
+                          Opacity(
+                            opacity: taglineIn,
+                            child: Transform.translate(
+                              offset: Offset(0, 10 * (1 - taglineIn)),
+                              child: Text(
+                                'في حفظ كتاب الله',
+                                textDirection: TextDirection.rtl,
+                                style: GoogleFonts.reemKufi(
+                                  fontSize: taglineSize,
+                                  color: tokens.onHero.withValues(alpha: 0.85),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -67,8 +169,9 @@ class BrandSplashView extends StatelessWidget {
 /// blocks startup work — routing and auth resolve beneath it, so when the
 /// veil lifts the user is already on their screen.
 ///
-/// Reduced motion: the choreography is skipped (the finished mark shows
-/// immediately) and the splash dismisses after a short hold.
+/// Reduced motion: the choreography is skipped (the finished lockup shows
+/// immediately, the halo holds still) and the splash dismisses after a
+/// short hold.
 class SplashOverlay extends StatefulWidget {
   final Widget child;
 
@@ -82,6 +185,9 @@ class _SplashOverlayState extends State<SplashOverlay>
     with TickerProviderStateMixin {
   static const _choreography = Duration(milliseconds: 1600);
 
+  /// One 4s breath of the halo (mock: `splashHalo 4s ease-in-out infinite`).
+  static const _breath = Duration(seconds: 4);
+
   // One controller for hold + fade-out: opacity stays 1 through the hold
   // interval, then eases to 0 — no wall-clock timers, so tests and
   // fake-clock environments stay deterministic.
@@ -91,6 +197,10 @@ class _SplashOverlayState extends State<SplashOverlay>
   late final AnimationController _play = AnimationController(
     vsync: this,
     duration: _choreography,
+  );
+  late final AnimationController _halo = AnimationController(
+    vsync: this,
+    duration: _breath,
   );
   late final AnimationController _dismiss = AnimationController(
     vsync: this,
@@ -105,17 +215,26 @@ class _SplashOverlayState extends State<SplashOverlay>
     if (_started) return;
     _started = true;
 
-    // Decode the lockup before its first visible frame.
-    precacheImage(_brandLogo, context);
+    // Decode the drop before its first visible frame.
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    precacheImage(dark ? _dropDark : _dropLight, context);
 
-    // Reduced motion: present the finished mark, hold briefly, dismiss.
-    if (MediaQuery.of(context).disableAnimations) {
+    // Reduced motion: present the finished lockup, hold briefly, dismiss —
+    // and never start the breathing loop.
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    if (reduceMotion) {
       _play.value = 1;
+    } else {
+      _halo.repeat();
     }
     _play.forward().whenComplete(() {
       if (!mounted) return;
       _dismiss.forward().whenComplete(() {
-        if (mounted) setState(() => _done = true);
+        if (!mounted) return;
+        // The breathing loop must not outlive the splash: a repeating
+        // ticker would keep scheduling frames forever (pumpAndSettle hangs).
+        _halo.stop();
+        setState(() => _done = true);
       });
     });
   }
@@ -123,6 +242,7 @@ class _SplashOverlayState extends State<SplashOverlay>
   @override
   void dispose() {
     _play.dispose();
+    _halo.dispose();
     _dismiss.dispose();
     super.dispose();
   }
@@ -136,7 +256,7 @@ class _SplashOverlayState extends State<SplashOverlay>
       children: [
         widget.child,
         AnimatedBuilder(
-          animation: Listenable.merge([_play, _dismiss]),
+          animation: Listenable.merge([_play, _halo, _dismiss]),
           builder: (context, _) {
             final fading = _dismiss.value > _fadeStart;
             final opacity =
@@ -151,7 +271,10 @@ class _SplashOverlayState extends State<SplashOverlay>
               ignoring: fading,
               child: Opacity(
                 opacity: opacity,
-                child: BrandSplashView(progress: _play.value),
+                child: BrandSplashView(
+                  progress: _play.value,
+                  haloPhase: _halo.value,
+                ),
               ),
             );
           },

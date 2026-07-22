@@ -66,6 +66,10 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    # Final الراسخون brand bundle (design_handoff_rasikhoon_logo): drop marks
+    # and typed Reem Kufi lockups in the three permitted inks (green/cream/ink),
+    # plus the icon/splash masters the generators below consume.
+    - assets/brand/
     # Cairo, bundled — the app's whole type system (AppTheme) is Cairo, and
     # google_fonts otherwise DOWNLOADS it on first launch. That made the type a
     # cold-start dependency on connectivity (a halaqa may have none), and it
