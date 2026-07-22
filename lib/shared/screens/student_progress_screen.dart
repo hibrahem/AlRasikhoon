@@ -17,6 +17,7 @@ import '../widgets/completion_forecast_card.dart';
 import '../widgets/states/error_state.dart';
 import '../widgets/states/loading_state.dart';
 import '../widgets/icon_medallion.dart';
+import '../widgets/pending_sync_chip.dart';
 import '../widgets/student_level_progress.dart';
 
 /// Read-only student progress view. Mirrors what a teacher sees for their own
@@ -643,38 +644,10 @@ class SessionHistoryList extends StatelessWidget {
                         context,
                       ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
                     ),
-                    // Saved offline on this device and still in Firestore's
-                    // local write queue — clears on its own once synced.
                     if (entry.isPendingSync)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: tokens.gold.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: tokens.gold),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.cloud_upload_outlined,
-                                size: 12,
-                                color: tokens.ink,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'بانتظار المزامنة',
-                                style: Theme.of(context).textTheme.labelSmall
-                                    ?.copyWith(color: tokens.ink),
-                              ),
-                            ],
-                          ),
-                        ),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 4),
+                        child: PendingSyncChip(),
                       ),
                   ],
                 ),
