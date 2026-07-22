@@ -802,6 +802,7 @@ class _SessionHistorySection extends ConsumerWidget {
               passed: entry.passed,
               date: entry.date,
               sessionDuration: entry.duration,
+              isPendingSync: entry.isPendingSync,
               // The entry's kind decides the destination: lessons and تلقين
               // open the session detail view, a سرد / اختبار the assessment
               // detail view (al_rasikhoon-nyp). The enum's own name is the

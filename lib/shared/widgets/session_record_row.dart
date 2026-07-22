@@ -4,6 +4,7 @@ import '../../core/theme/app_tokens.dart';
 import '../../domain/session/session_duration.dart';
 import 'app_card.dart';
 import 'icon_medallion.dart';
+import 'pending_sync_chip.dart';
 
 /// One row of a session-record listing (student history, teacher history).
 ///
@@ -36,6 +37,12 @@ class SessionRecordRow extends StatelessWidget {
   /// verbose label, carries the meaning.
   final SessionDuration? sessionDuration;
 
+  /// Saved offline on this device and still in Firestore's local write queue.
+  /// `hasPendingWrites` is only ever true on the device that queued the write,
+  /// so this row — the teacher's and the student's own history — is the only
+  /// place the chip can actually be seen (al_rasikhoon-q4m).
+  final bool isPendingSync;
+
   const SessionRecordRow({
     super.key,
     required this.title,
@@ -45,6 +52,7 @@ class SessionRecordRow extends StatelessWidget {
     this.onTap,
     this.isTalqeen = false,
     this.sessionDuration,
+    this.isPendingSync = false,
   });
 
   @override
@@ -92,6 +100,11 @@ class SessionRecordRow extends StatelessWidget {
                   const SizedBox(height: 4),
                   _DurationDisplay(duration: sessionDuration!),
                 ],
+                if (isPendingSync)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 4),
+                    child: PendingSyncChip(),
+                  ),
               ],
             ),
           ),
