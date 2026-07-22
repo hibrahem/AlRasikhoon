@@ -104,6 +104,19 @@ class FirebaseService {
     return uid;
   }
 
+  // Permanently delete a student and ALL their data (progress records,
+  // reposition audit, student doc, linked users doc + Auth account) via the
+  // hardDeleteStudent Cloud Function. Server-side because firestore.rules
+  // give clients no delete on the record collections and the client SDK
+  // cannot delete another user's Auth account. Super-admin only — the
+  // function rejects every other caller.
+  Future<void> hardDeleteStudent({required String studentId}) async {
+    final callable = FirebaseFunctions.instance.httpsCallable(
+      'hardDeleteStudent',
+    );
+    await callable.call<Map<Object?, Object?>>({'studentId': studentId});
+  }
+
   // Firestore helpers
   CollectionReference<Map<String, dynamic>> collection(String path) {
     return _firestore.collection(path);

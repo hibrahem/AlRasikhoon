@@ -429,6 +429,141 @@ export const setUserPassword = onCall<SetUserPasswordPayload>(
   },
 );
 
+interface HardDeleteStudentPayload {
+  studentId: string;
+}
+
+/**
+ * Firestore batches cap at 500 writes; stay under it while deleting an
+ * unbounded query result set. Returns the number of documents deleted.
+ */
+const DELETE_CHUNK_SIZE = 400;
+
+async function deleteAllMatching(
+  query: FirebaseFirestore.Query,
+): Promise<number> {
+  let deleted = 0;
+  for (;;) {
+    const snapshot = await query.limit(DELETE_CHUNK_SIZE).get();
+    if (snapshot.empty) return deleted;
+    const batch = admin.firestore().batch();
+    for (const docSnap of snapshot.docs) {
+      batch.delete(docSnap.ref);
+    }
+    await batch.commit();
+    deleted += snapshot.size;
+  }
+}
+
+/**
+ * Permanently delete a student and EVERY trace of their data. Super-admin
+ * only — this is the hard-delete counterpart of the app-wide soft-delete
+ * convention (is_active: false), reserved for the admin "حذف نهائي" flow.
+ *
+ * The cascade must live here, not on the client: firestore.rules give
+ * clients no delete on the progress-record collections, and only the Admin
+ * SDK can delete another user's Firebase Auth account.
+ *
+ * Deletion order is children-first so a mid-run crash leaves the student
+ * doc intact and the whole operation retryable (re-running resumes where it
+ * stopped; nothing is orphaned invisibly):
+ *   1. progress records keyed by student_id (session_records, sard_records,
+ *      exam_records, home_practices),
+ *   2. the reposition_audit SUBcollection (Firestore does not auto-delete
+ *      subcollections with their parent doc),
+ *   3. the students/{id} doc itself,
+ *   4. the linked users/{uid} doc + Auth account — but only when no other
+ *      student doc references the same user_id. The guardian account is a
+ *      reference OUT of the aggregate and is never deleted (a guardian may
+ *      guard other students).
+ *
+ * Deleting users/{uid} also fires syncRoleClaim below, clearing the claim.
+ */
+export const hardDeleteStudent = onCall<HardDeleteStudentPayload>(
+  { region: "us-central1" },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Sign in required");
+    }
+    const callerRole = request.auth.token.role as string | undefined;
+    if (callerRole !== "super_admin") {
+      throw new HttpsError(
+        "permission-denied",
+        "Only super admins can permanently delete students",
+      );
+    }
+
+    const { studentId } = request.data ?? ({} as HardDeleteStudentPayload);
+    if (!studentId || typeof studentId !== "string") {
+      throw new HttpsError("invalid-argument", "studentId is required");
+    }
+
+    const db = admin.firestore();
+    const studentRef = db.collection("students").doc(studentId);
+    const studentSnap = await studentRef.get();
+    if (!studentSnap.exists) {
+      throw new HttpsError("not-found", "student-not-found");
+    }
+    const userId = studentSnap.data()?.user_id as string | undefined;
+
+    const recordCollections = [
+      "session_records",
+      "sard_records",
+      "exam_records",
+      "home_practices",
+    ] as const;
+    const deletedCounts: Record<string, number> = {};
+    for (const collection of recordCollections) {
+      deletedCounts[collection] = await deleteAllMatching(
+        db.collection(collection).where("student_id", "==", studentId),
+      );
+    }
+    deletedCounts.reposition_audit = await deleteAllMatching(
+      studentRef.collection("reposition_audit"),
+    );
+
+    await studentRef.delete();
+
+    let accountDeleted = false;
+    if (userId) {
+      const otherStudentWithSameUser = await db
+        .collection("students")
+        .where("user_id", "==", userId)
+        .limit(1)
+        .get();
+      if (otherStudentWithSameUser.empty) {
+        await db.collection("users").doc(userId).delete();
+        try {
+          await admin.auth().deleteUser(userId);
+        } catch (e) {
+          const code = (e as { code?: string }).code;
+          if (code !== "auth/user-not-found") {
+            // The Firestore data is already gone; surface the auth leftover
+            // rather than failing the whole call and re-reporting not-found
+            // on retry.
+            logger.error("hardDeleteStudent: auth deleteUser failed", {
+              caller: request.auth.uid,
+              studentId,
+              userId,
+              error: String(e),
+            });
+          }
+        }
+        accountDeleted = true;
+      }
+    }
+
+    logger.info("hardDeleteStudent: deleted", {
+      caller: request.auth.uid,
+      studentId,
+      userId: userId ?? null,
+      accountDeleted,
+      deletedCounts,
+    });
+    return { success: true, deletedCounts };
+  },
+);
+
 /**
  * Mirror the user doc's `role` field into a Firebase Auth custom claim
  * so it can be checked cheaply in onCall handlers and Firestore rules.
