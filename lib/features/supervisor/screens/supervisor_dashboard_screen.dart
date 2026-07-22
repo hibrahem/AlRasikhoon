@@ -160,19 +160,14 @@ class _SupervisorDashboardScreenState
 
   Widget _buildStats(SupervisorStats stats) {
     final tokens = context.tokens;
-    // Max-extent + fixed tile height instead of crossAxisCount+aspectRatio:
-    // aspect-ratio tiles balloon into squares on tablets, while a fixed
-    // extent keeps the bento tile compact at any width (spec: stat tiles
-    // take natural heights, never grow with the screen).
+    // Shared bento delegate (see statCardGridDelegate): compact fixed-height
+    // tiles that reflow to more columns on wide screens (spec: stat tiles
+    // never grow with the SCREEN — but they do grow with the system font
+    // size, or the numeral clips off the tile bottom on large-font phones).
     return GridView(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 220,
-        mainAxisExtent: 132,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-      ),
+      gridDelegate: statCardGridDelegate(context),
       children: [
         StatCard(
           title: 'اختبارات معلقة',

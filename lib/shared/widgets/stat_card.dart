@@ -5,6 +5,21 @@ import '../../core/theme/app_dimens.dart';
 import '../../core/theme/app_shadows.dart';
 import '../../core/theme/app_tokens.dart';
 
+/// The bento grid the dashboards lay [StatCard]s in. Max-extent + fixed tile
+/// height instead of crossAxisCount+aspectRatio: aspect-ratio tiles balloon
+/// into squares on tablets, while a fixed extent keeps the tile compact at
+/// any width. The extent tracks the system font size — a truly fixed 132
+/// clipped the numeral off the bottom of every tile on large-font phones.
+SliverGridDelegate statCardGridDelegate(BuildContext context) {
+  final textScale = MediaQuery.textScalerOf(context).scale(14) / 14;
+  return SliverGridDelegateWithMaxCrossAxisExtent(
+    maxCrossAxisExtent: 220,
+    mainAxisExtent: 132 * textScale.clamp(1.0, 2.0),
+    mainAxisSpacing: 12,
+    crossAxisSpacing: 12,
+  );
+}
+
 /// A stat card in the bento language: circular tinted icon medallion, big
 /// Cairo-bold tabular numeral, sepia caption. Warm shadow in light mode,
 /// gold hairline in dark. Tappable cards double as navigation.

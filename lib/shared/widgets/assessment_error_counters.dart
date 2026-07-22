@@ -110,12 +110,27 @@ class _ErrorTypeRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(type.nameAr, style: Theme.of(context).textTheme.titleSmall),
-              Text(
-                'المسموح: $limit',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
+              // The buttons and the count keep their intrinsic width, so on a
+              // narrow phone with a large system font this column can end up
+              // narrower than its own one-word heading — shrink the word to
+              // fit rather than let Arabic break mid-word (التنبيها / ت).
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  type.nameAr,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  'المسموح: $limit',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
+                ),
               ),
             ],
           ),
@@ -127,7 +142,9 @@ class _ErrorTypeRow extends StatelessWidget {
           tooltip: 'تراجع',
         ),
         Container(
-          width: 40,
+          // A minimum, not a fixed width: a scaled-up two-digit count is
+          // wider than 40 and was getting clipped.
+          constraints: const BoxConstraints(minWidth: 40),
           alignment: Alignment.center,
           child: Text(
             '$count',
