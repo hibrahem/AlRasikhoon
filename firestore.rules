@@ -290,7 +290,11 @@ service cloud.firestore {
       // supervisor can neither edit a student outside their institute nor move
       // one in/out of it. OR student claiming their own record (setting user_id
       // to their own UID during migration repair).
-      allow update: if (isTeacherOfStudent(resource.data) &&
+      // isSuperAdmin: the admin console edits any student — including the
+      // teaching-status toggle (al_rasikhoon-zg1r), which writes status /
+      // status_reason / status_changed_* directly from the admin's device.
+      allow update: if isSuperAdmin() ||
+        (isTeacherOfStudent(resource.data) &&
          isTeacherOfStudent(request.resource.data)) ||
         (isSupervisorOfStudentInstitute(resource.data) &&
          isSupervisorOfStudentInstitute(request.resource.data)) ||
@@ -312,6 +316,22 @@ service cloud.firestore {
         }
         allow read: if canReadStudent(parentStudent());
         allow create: if isSupervisorOfStudentInstitute(parentStudent());
+        allow update, delete: if false;
+      }
+
+      // Append-only audit of teaching-status changes — نشط ⇄ مستبعد
+      // (al_rasikhoon-zg1r): who changed whom, from/to which status, and the
+      // optional reason. An admin or a supervisor scoped to the student's
+      // institute may append; the same roles that may read the student may
+      // read its trail. Entries are immutable (no update/delete) so the trail
+      // cannot be rewritten. Mirrors reposition_audit above.
+      match /status_audit/{auditId} {
+        function parentStudentDoc() {
+          return get(/databases/$(database)/documents/students/$(studentId)).data;
+        }
+        allow read: if canReadStudent(parentStudentDoc());
+        allow create: if isSuperAdmin() ||
+          isSupervisorOfStudentInstitute(parentStudentDoc());
         allow update, delete: if false;
       }
     }
