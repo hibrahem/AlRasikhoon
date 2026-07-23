@@ -8,6 +8,7 @@ import 'features/settings/providers/theme_mode_provider.dart';
 import 'shared/providers/offline_sync_provider.dart';
 import 'shared/widgets/offline_banner.dart';
 import 'shared/widgets/splash/splash_overlay.dart';
+import 'shared/widgets/text_scale_clamp.dart';
 
 class AlRasikhoonApp extends ConsumerWidget {
   const AlRasikhoonApp({super.key});
@@ -36,11 +37,13 @@ class AlRasikhoonApp extends ConsumerWidget {
       ],
       routerConfig: router,
       builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          // The animated brand splash plays once over the first frame while
-          // routing/auth resolve beneath it, then removes itself.
-          child: SplashOverlay(child: OfflineBannerHost(child: child!)),
+        return TextScaleClamp(
+          child: Directionality(
+            textDirection: TextDirection.rtl,
+            // The animated brand splash plays once over the first frame while
+            // routing/auth resolve beneath it, then removes itself.
+            child: SplashOverlay(child: OfflineBannerHost(child: child!)),
+          ),
         );
       },
     );

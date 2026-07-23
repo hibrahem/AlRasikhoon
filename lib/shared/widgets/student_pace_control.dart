@@ -251,21 +251,21 @@ class _StudentPaceControlState extends ConsumerState<StudentPaceControl> {
               children: [
                 Icon(Icons.flag_circle_rounded, size: 20, color: tokens.gold),
                 const SizedBox(width: 6),
-                Text('متى الختم؟', style: textTheme.titleSmall),
-                const SizedBox(width: 12),
-                // Flexed, not intrinsic: the multi-word duration wraps at the
-                // row's end instead of overflowing at large font sizes.
                 Expanded(
-                  child: Text(
-                    approxDurationAr(forecast.weeks),
-                    textAlign: TextAlign.end,
-                    style: textTheme.titleMedium?.copyWith(
-                      color: tokens.green,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: Text('متى الختم؟', style: textTheme.titleSmall),
                 ),
               ],
+            ),
+            const SizedBox(height: 4),
+            // On its own line, never beside the label: sharing the row starved
+            // this text at large device font sizes until it broke mid-word.
+            // Same stacked layout as CompletionForecastCard.
+            Text(
+              approxDurationAr(forecast.weeks),
+              style: textTheme.titleMedium?.copyWith(
+                color: tokens.green,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
