@@ -11,8 +11,10 @@ import '../../../domain/curriculum/paced_session.dart';
 import '../../../domain/session/student_history_entry.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/curriculum/assessment_copy.dart';
+import '../../../shared/providers/home_assignment_status_provider.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../../shared/widgets/home_practice_status_card.dart';
 import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/icon_medallion.dart';
 import '../../../shared/widgets/session_record_row.dart';
@@ -50,6 +52,7 @@ class StudentProfileScreen extends ConsumerWidget {
           ref.invalidate(studentProvider(studentId));
           ref.invalidate(studentCurrentMeetingProvider(studentId));
           ref.invalidate(teacherStudentSessionHistoryProvider(studentId));
+          ref.invalidate(homeAssignmentStatusProvider(studentId));
         },
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -167,6 +170,14 @@ class StudentProfileScreen extends ConsumerWidget {
                             );
                           },
                         ),
+
+                        // What the LAST session assigned as home repetition
+                        // and what the student actually logged, dated — so
+                        // the teacher sees, BEFORE pressing بدء الحلقة,
+                        // whether the homework happened. Renders nothing when
+                        // there is no assignment to report on (the card owns
+                        // its own top margin, so absence leaves no gap).
+                        HomePracticeStatusCard(studentId: studentId),
 
                         const SizedBox(height: 24),
 
@@ -803,6 +814,8 @@ class _SessionHistorySection extends ConsumerWidget {
               date: entry.date,
               sessionDuration: entry.duration,
               isPendingSync: entry.isPendingSync,
+              homeRepetitionsRequired: entry.homeRepetitionsRequired,
+              homePractices: entry.homePractices,
               // The entry's kind decides the destination: lessons and تلقين
               // open the session detail view, a سرد / اختبار the assessment
               // detail view (al_rasikhoon-nyp). The enum's own name is the

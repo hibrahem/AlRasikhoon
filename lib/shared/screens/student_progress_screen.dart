@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show FutureProviderFamily;
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../data/models/student_model.dart';
 import '../../data/models/user_model.dart';
@@ -11,13 +10,15 @@ import '../../domain/curriculum/paced_session.dart';
 import '../../domain/session/student_history_entry.dart';
 import '../curriculum/assessment_copy.dart';
 import '../curriculum/recitation_part_copy.dart';
+import '../providers/home_assignment_status_provider.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_large_top_bar.dart';
 import '../widgets/completion_forecast_card.dart';
 import '../widgets/states/error_state.dart';
 import '../widgets/states/loading_state.dart';
+import '../widgets/home_practice_status_card.dart';
 import '../widgets/icon_medallion.dart';
-import '../widgets/pending_sync_chip.dart';
+import '../widgets/session_record_row.dart';
 import '../widgets/student_level_progress.dart';
 
 /// Read-only student progress view. Mirrors what a teacher sees for their own
@@ -100,6 +101,7 @@ class StudentProgressScreen extends ConsumerWidget {
           ref.invalidate(studentProvider(studentId));
           ref.invalidate(currentMeetingProvider(studentId));
           ref.invalidate(sessionHistoryProvider(studentId));
+          ref.invalidate(homeAssignmentStatusProvider(studentId));
         },
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -207,6 +209,13 @@ class _ProgressBody extends ConsumerWidget {
             ),
           ),
         ),
+
+        // What the LAST session assigned as home repetition and what the
+        // student actually logged, dated — the same card the teacher sees
+        // before starting a session, here read-only for the supervisor and
+        // the admin. Renders nothing when there is no assignment to report
+        // on (the card owns its own top margin, so absence leaves no gap).
+        HomePracticeStatusCard(studentId: student.id),
 
         const SizedBox(height: 24),
 
@@ -572,27 +581,29 @@ class SessionHistoryList extends StatelessWidget {
         ),
       );
     }
-    final dateFormat = DateFormat('yyyy/MM/dd', 'ar');
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: entries.length,
       itemBuilder: (context, index) {
         final entry = entries[index];
-        // A تلقين is never graded — no pass/fail, no errors — so it must
-        // never render with a pass/fail badge, even though
-        // `createTalqeenRecord` writes `passed: true` unconditionally (that
-        // flag exists for the stats query, not for display). Listing shows
-        // only a binary pass/fail (نجح / رسب) for a graded record, never an
-        // average of the three component grades (#24). The per-component
-        // breakdown lives in the session detail view. Mirrors
-        // `session_history_screen.dart`'s student-facing list.
-        final isTalqeen = entry.isTalqeen;
-        final badgeColor = isTalqeen
-            ? tokens.green
-            : (entry.passed ? tokens.green : tokens.maroon);
-        return AppCard(
-          margin: const EdgeInsets.only(bottom: 8),
+        // The shared row owns the display rules this list used to duplicate
+        // inline: a تلقين never renders a pass/fail badge (that flag exists
+        // for the stats query, not for display), a graded record shows only
+        // the binary نجح / رسب (#24) with the per-component breakdown left to
+        // the detail view, and the homework line shows what the student
+        // logged at home — with each submission's date — against this
+        // session's assignment.
+        return SessionRecordRow(
+          isTalqeen: entry.isTalqeen,
+          title: entry.titleAr,
+          subtitleLines: entry.subtitleLines,
+          passed: entry.passed,
+          date: entry.date,
+          sessionDuration: entry.duration,
+          isPendingSync: entry.isPendingSync,
+          homeRepetitionsRequired: entry.homeRepetitionsRequired,
+          homePractices: entry.homePractices,
           // The entry's kind decides the destination: lessons and تلقين open
           // the session detail view, a سرد / اختبار the assessment detail
           // view (al_rasikhoon-nyp). The enum's own name is the `:kind` path
@@ -612,67 +623,6 @@ class SessionHistoryList extends StatelessWidget {
                   );
                 }
               : null,
-          child: Row(
-            children: [
-              IconMedallion(
-                icon: isTalqeen
-                    ? Icons.record_voice_over
-                    : (entry.passed ? Icons.check_circle : Icons.cancel),
-                accent: badgeColor,
-                size: 48,
-                iconSize: 24,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      entry.titleAr,
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    for (final line in entry.subtitleLines)
-                      Text(
-                        line,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-                      ),
-                    Text(
-                      dateFormat.format(entry.date),
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: tokens.sepia),
-                    ),
-                    if (entry.isPendingSync)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 4),
-                        child: PendingSyncChip(),
-                      ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: badgeColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: badgeColor),
-                ),
-                child: Text(
-                  isTalqeen ? 'تلقين' : (entry.passed ? 'نجح' : 'رسب'),
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: badgeColor,
-                  ),
-                ),
-              ),
-            ],
-          ),
         );
       },
     );

@@ -1,3 +1,4 @@
+import 'home_practice_log.dart';
 import 'session_duration.dart';
 
 /// One row of a student's recitation history, independent of which collection
@@ -45,6 +46,17 @@ class StudentHistoryEntry {
   /// "بانتظار المزامنة" chip; clears on its own once sync completes.
   final bool isPendingSync;
 
+  /// How many home repetitions the teacher assigned when closing this
+  /// session. Carried only by lessons and تلقين (the kinds that assign
+  /// homework); 0 for the rest and for records with no assignment.
+  final int homeRepetitionsRequired;
+
+  /// The home-practice submissions the student logged against THIS record's
+  /// assignment, newest first — each with its own date and count, so the row
+  /// can show when the student practised, not just a total. Attribution
+  /// happens in the repository (see `SessionRepository.getStudentHistory`).
+  final List<HomePracticeLog> homePractices;
+
   const StudentHistoryEntry({
     required this.id,
     required this.kind,
@@ -56,9 +68,21 @@ class StudentHistoryEntry {
     this.duration,
     this.detailRecordId,
     this.isPendingSync = false,
+    this.homeRepetitionsRequired = 0,
+    this.homePractices = const [],
   });
 
   bool get isTalqeen => kind == StudentHistoryKind.talqeen;
+
+  /// Sum of the repetitions the student actually logged at home against this
+  /// record's assignment.
+  int get homeRepetitionsDone =>
+      homePractices.fold(0, (total, p) => total + p.repetitions);
+
+  /// Whether the row has any homework story to tell — an assignment, logged
+  /// practice, or both. Old records with neither stay exactly as before.
+  bool get hasHomePracticeInfo =>
+      homeRepetitionsRequired > 0 || homePractices.isNotEmpty;
 
   bool get isNavigable => detailRecordId != null;
 

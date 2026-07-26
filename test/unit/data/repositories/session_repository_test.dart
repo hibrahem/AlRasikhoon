@@ -812,6 +812,150 @@ void main() {
       });
     });
 
+    // The homework join (student home repetition visible in history): every
+    // lesson/تلقين entry carries what its session assigned
+    // (`home_repetitions_required`) and the `home_practices` the student
+    // logged against that assignment — each with its own date. Retries share
+    // a curriculum_session_id, so the DATE decides which attempt owns a
+    // practice: the latest matching record written on or before the practice
+    // date.
+    group('getStudentHistory — home practice join', () {
+      setUp(() async {
+        Future<void> writeLesson(
+          String id,
+          String sessionId,
+          DateTime date,
+          int required,
+        ) {
+          return fakeFirestore.collection('session_records').doc(id).set({
+            'student_id': 'student1',
+            'teacher_id': 'teacher1',
+            'curriculum_session_id': sessionId,
+            'level_id': 1,
+            'session_number': 5,
+            'date': Timestamp.fromDate(date),
+            'attempt_number': 1,
+            'grades': {
+              'new_memorization_errors': 0,
+              'recent_review_errors': 0,
+              'distant_review_errors': 0,
+            },
+            'passed': true,
+            'home_repetitions_required': required,
+            'created_at': Timestamp.now(),
+          });
+        }
+
+        Future<void> writePractice(
+          String id,
+          String sessionId,
+          DateTime date,
+          int repetitions, {
+          String studentId = 'student1',
+        }) {
+          return fakeFirestore.collection('home_practices').doc(id).set({
+            'student_id': studentId,
+            'curriculum_session_id': sessionId,
+            'level_id': 1,
+            'juz_number': 30,
+            'session_number': 5,
+            'repetitions': repetitions,
+            'practice_date': Timestamp.fromDate(date),
+            'created_at': Timestamp.now(),
+          });
+        }
+
+        // Attempt 1 and its RETRY name the same curriculum session.
+        await writeLesson('attempt1', 'L1_J30_S5', DateTime(2024, 1, 10), 10);
+        await writeLesson('attempt2', 'L1_J30_S5', DateTime(2024, 1, 20), 8);
+        // A later session that assigned nothing.
+        await writeLesson('noHomework', 'L1_J30_S6', DateTime(2024, 1, 25), 0);
+
+        // Between the attempts → answers attempt 1's assignment.
+        await writePractice('p-between', 'L1_J30_S5', DateTime(2024, 1, 12), 3);
+        // After the retry → answers the retry's assignment.
+        await writePractice('p-after', 'L1_J30_S5', DateTime(2024, 1, 22), 4);
+        // BEFORE every matching record — the no-record fallback filed it
+        // against the session the student anticipated → earliest attempt.
+        await writePractice('p-early', 'L1_J30_S5', DateTime(2024, 1, 5), 2);
+        // No record ever names this session — must attach nowhere.
+        await writePractice('p-orphan', 'L1_J30_S9', DateTime(2024, 1, 15), 9);
+        // Another student's practice — must never leak.
+        await writePractice(
+          'p-other',
+          'L1_J30_S5',
+          DateTime(2024, 1, 13),
+          100,
+          studentId: 'student2',
+        );
+      });
+
+      test('every lesson entry carries its own home_repetitions_required',
+          () async {
+        final history = await sessionRepository.getStudentHistory('student1');
+
+        StudentHistoryEntry byId(String id) =>
+            history.firstWhere((e) => e.id == id);
+        expect(byId('attempt1').homeRepetitionsRequired, 10);
+        expect(byId('attempt2').homeRepetitionsRequired, 8);
+        expect(byId('noHomework').homeRepetitionsRequired, 0);
+        expect(byId('noHomework').hasHomePracticeInfo, isFalse);
+      });
+
+      test('attributes each practice to the latest matching record not after '
+          'its date; a practice older than every attempt attaches to the '
+          'earliest', () async {
+        final history = await sessionRepository.getStudentHistory('student1');
+
+        final attempt1 = history.firstWhere((e) => e.id == 'attempt1');
+        final attempt2 = history.firstWhere((e) => e.id == 'attempt2');
+
+        // Attempt 1 owns the between-attempts practice AND the early
+        // fallback one: 3 + 2. The 100-rep practice of student2 and the
+        // orphaned-session practice must appear nowhere.
+        expect(attempt1.homeRepetitionsDone, 5);
+        expect(
+          attempt1.homePractices.map((p) => p.date),
+          // Newest first, like the practices query itself.
+          [DateTime(2024, 1, 12), DateTime(2024, 1, 5)],
+        );
+
+        expect(attempt2.homeRepetitionsDone, 4);
+        expect(attempt2.homePractices.single.date, DateTime(2024, 1, 22));
+
+        final allAttached = history.expand((e) => e.homePractices);
+        expect(allAttached.map((p) => p.repetitions), isNot(contains(9)));
+        expect(allAttached.map((p) => p.repetitions), isNot(contains(100)));
+      });
+
+      test('a سرد or اختبار entry never carries homework info', () async {
+        await fakeFirestore.collection('sard_records').doc('sard-hp').set({
+          'student_id': 'student1',
+          'teacher_id': 'teacher1',
+          'curriculum_session_id': 'L1_J30_S30',
+          'tier': 'juz',
+          'juz_numbers': [30],
+          'scope_label_ar': 'سرد الجزء رقم 30 كاملًا',
+          'level_id': 1,
+          'date': Timestamp.fromDate(DateTime(2024, 2, 1)),
+          'error_count': 0,
+          'grade': 'راسخ',
+          'passed': true,
+          'attempt_number': 1,
+          'created_at': Timestamp.now(),
+        });
+
+        final history = await sessionRepository.getStudentHistory('student1');
+        final sard = history.firstWhere(
+          (e) => e.kind == StudentHistoryKind.sard,
+        );
+
+        expect(sard.homeRepetitionsRequired, 0);
+        expect(sard.homePractices, isEmpty);
+        expect(sard.hasHomePracticeInfo, isFalse);
+      });
+    });
+
     group('createSardRecord', () {
       test('a سرد whose every face stays within the per-face allowance is '
           'recorded موفق', () async {

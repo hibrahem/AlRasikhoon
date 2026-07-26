@@ -5,12 +5,14 @@ import '../models/session_model.dart';
 import '../models/session_record_model.dart';
 import '../models/sard_record_model.dart';
 import '../models/exam_record_model.dart';
+import '../models/home_practice_model.dart';
 import '../services/firebase_service.dart';
 import '../services/firestore_read_source.dart';
 import '../../core/constants/app_constants.dart';
 import '../../domain/assessment/assessment_evaluation.dart';
 import '../../domain/curriculum/curriculum_pace.dart';
 import '../../domain/curriculum/paced_session.dart';
+import '../../domain/session/home_practice_log.dart';
 import '../../domain/session/session_duration.dart';
 import '../../domain/session/student_history_entry.dart';
 
@@ -668,6 +670,10 @@ class SessionRepository {
     final sessionRecords = await getSessionRecordsForStudent(studentId);
     final sardRecords = await getSardRecordsForStudent(studentId);
     final examRecords = await getExamRecordsForStudent(studentId);
+    final practicesByRecord = await _homePracticesByRecord(
+      studentId,
+      sessionRecords,
+    );
 
     final entries = <StudentHistoryEntry>[
       for (final r in sessionRecords)
@@ -684,6 +690,8 @@ class SessionRepository {
           // Lessons and تلقين both resolve in SessionDetailScreen.
           detailRecordId: r.id,
           isPendingSync: r.isPendingSync,
+          homeRepetitionsRequired: r.homeRepetitionsRequired,
+          homePractices: practicesByRecord[r.id] ?? const [],
         ),
       for (final r in sardRecords)
         StudentHistoryEntry(
@@ -719,6 +727,74 @@ class SessionRepository {
       return entries.sublist(0, limit);
     }
     return entries;
+  }
+
+  /// The student's `home_practices`, attributed to the session record whose
+  /// assignment each practice answers — keyed by record id.
+  ///
+  /// A practice stores the `curriculum_session_id` it was ASSIGNED in (see
+  /// [HomePracticeModel.curriculumSessionId]), not a record id, and RETRIES
+  /// mean several records can share that curriculum session id. The date
+  /// breaks the tie: a practice belongs to the LATEST matching record written
+  /// on or before the practice date — homework is assigned when a session
+  /// closes, so practice logged between attempt 1 and attempt 2 answers
+  /// attempt 1's assignment. A practice older than every matching record can
+  /// only be the no-record fallback (`addPractice` files against the
+  /// student's own current session before any record exists), so it attaches
+  /// to the earliest matching record — the session it anticipated.
+  ///
+  /// Same collection the student's own `HomePracticeRepository` writes;
+  /// teacher/supervisor/admin reads are authorised by firestore.rules
+  /// (al_rasikhoon-c6e) and served by the existing
+  /// `student_id + practice_date` composite index.
+  Future<Map<String, List<HomePracticeLog>>> _homePracticesByRecord(
+    String studentId,
+    List<SessionRecordModel> sessionRecords,
+  ) async {
+    if (sessionRecords.isEmpty) return const {};
+
+    final snapshot = await _read.getQuery(
+      _firestore
+          .collection('home_practices')
+          .where('student_id', isEqualTo: studentId)
+          .orderBy('practice_date', descending: true)
+          .limit(500),
+    );
+    if (snapshot.docs.isEmpty) return const {};
+
+    // Records that can own a practice, grouped by the curriculum session
+    // they name, oldest-first within each group so the date walk below is a
+    // simple "last one not after the practice".
+    final candidatesBySessionId = <String, List<SessionRecordModel>>{};
+    for (final r in sessionRecords) {
+      candidatesBySessionId.putIfAbsent(r.curriculumSessionId, () => []).add(r);
+    }
+    for (final group in candidatesBySessionId.values) {
+      group.sort((a, b) => a.date.compareTo(b.date));
+    }
+
+    final byRecord = <String, List<HomePracticeLog>>{};
+    for (final doc in snapshot.docs) {
+      final practice = HomePracticeModel.fromFirestore(doc);
+      final candidates = candidatesBySessionId[practice.curriculumSessionId];
+      if (candidates == null) continue;
+
+      final owner = candidates.lastWhere(
+        (r) => !r.date.isAfter(practice.practiceDate),
+        orElse: () => candidates.first,
+      );
+      // Practices arrive newest-first, so each record's list stays
+      // newest-first without another sort.
+      byRecord
+          .putIfAbsent(owner.id, () => [])
+          .add(
+            HomePracticeLog(
+              date: practice.practiceDate,
+              repetitions: practice.repetitions,
+            ),
+          );
+    }
+    return byRecord;
   }
 
   /// Get student statistics

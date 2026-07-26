@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../domain/session/home_practice_log.dart';
 import '../../domain/session/session_duration.dart';
 import 'app_card.dart';
 import 'icon_medallion.dart';
@@ -43,6 +44,18 @@ class SessionRecordRow extends StatelessWidget {
   /// place the chip can actually be seen (al_rasikhoon-q4m).
   final bool isPendingSync;
 
+  /// The home repetitions this session assigned. Together with
+  /// [homePractices] it renders the homework line («التكرار في المنزل:
+  /// المنجز من المطلوب») plus one dated line per logged practice, so a
+  /// teacher/supervisor/admin sees at a glance whether — and when — the
+  /// student did the assigned repetition. Nothing renders when the session
+  /// assigned nothing and the student logged nothing.
+  final int homeRepetitionsRequired;
+
+  /// The practice submissions logged against this session's assignment,
+  /// newest first, each carrying its own date and count.
+  final List<HomePracticeLog> homePractices;
+
   const SessionRecordRow({
     super.key,
     required this.title,
@@ -53,6 +66,8 @@ class SessionRecordRow extends StatelessWidget {
     this.isTalqeen = false,
     this.sessionDuration,
     this.isPendingSync = false,
+    this.homeRepetitionsRequired = 0,
+    this.homePractices = const [],
   });
 
   @override
@@ -100,6 +115,12 @@ class SessionRecordRow extends StatelessWidget {
                   const SizedBox(height: 4),
                   _DurationDisplay(duration: sessionDuration!),
                 ],
+                if (homeRepetitionsRequired > 0 || homePractices.isNotEmpty)
+                  _HomePracticeDisplay(
+                    required: homeRepetitionsRequired,
+                    practices: homePractices,
+                    dateFormat: dateFormat,
+                  ),
                 if (isPendingSync)
                   const Padding(
                     padding: EdgeInsets.only(top: 4),
@@ -126,6 +147,67 @@ class SessionRecordRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The homework story of one session: how much home repetition was assigned,
+/// how much the student actually logged, and WHEN — one dated line per
+/// submission, so «سجّل 3 مرات لكن متى؟» never needs the student's word.
+///
+/// The summary line is color-coded the way the duration chip is: green once
+/// the assignment is met, gold while partially done, maroon when nothing was
+/// logged against an assignment. Practice logged with NO assignment (the
+/// teacher required 0) shows plainly in sepia — voluntary work has no target
+/// to fail.
+class _HomePracticeDisplay extends StatelessWidget {
+  final int required;
+  final List<HomePracticeLog> practices;
+  final DateFormat dateFormat;
+
+  const _HomePracticeDisplay({
+    required this.required,
+    required this.practices,
+    required this.dateFormat,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    final done = practices.fold<int>(0, (total, p) => total + p.repetitions);
+    final small = Theme.of(context).textTheme.bodySmall;
+
+    final Color summaryColor;
+    if (required <= 0) {
+      summaryColor = tokens.sepia;
+    } else if (done >= required) {
+      summaryColor = tokens.green;
+    } else if (done > 0) {
+      summaryColor = tokens.gold;
+    } else {
+      summaryColor = tokens.maroon;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 4),
+        Text(
+          required > 0
+              ? 'التكرار في المنزل: $done من $required'
+              : 'التكرار في المنزل: $done',
+          style: small?.copyWith(
+            color: summaryColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        for (final p in practices)
+          Text(
+            '${repetitionCountAr(p.repetitions)} — '
+            '${dateFormat.format(p.date)}',
+            style: small?.copyWith(color: tokens.sepia),
+          ),
+      ],
     );
   }
 }

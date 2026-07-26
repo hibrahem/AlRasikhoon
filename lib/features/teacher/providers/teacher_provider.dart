@@ -10,6 +10,7 @@ import '../../../data/models/session_record_model.dart';
 import '../../../domain/session/student_history_entry.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../domain/curriculum/paced_session.dart';
+import '../../../shared/providers/home_assignment_status_provider.dart';
 import '../../../shared/providers/search_query_provider.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/providers/meeting_provider.dart'
@@ -468,9 +469,12 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
 
     // Invalidate providers — including the profile's cached سجل الحلقات, or
     // the new record won't appear until a manual refresh (al_rasikhoon-5ri).
+    // The just-written record is now the LATEST, so the profile's home
+    // assignment status must recompute against it too.
     ref.invalidate(teacherStudentsProvider);
     ref.invalidate(studentProvider(studentId));
     ref.invalidate(teacherStudentSessionHistoryProvider(studentId));
+    ref.invalidate(homeAssignmentStatusProvider(studentId));
 
     return record;
   }
@@ -540,10 +544,12 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
 
     state = state!.copyWith(isComplete: true, advanceOutcome: advanceOutcome);
 
-    // Including the profile's cached سجل الحلقات (al_rasikhoon-5ri).
+    // Including the profile's cached سجل الحلقات (al_rasikhoon-5ri), and the
+    // home assignment status, which now keys off the just-written record.
     ref.invalidate(teacherStudentsProvider);
     ref.invalidate(studentProvider(studentId));
     ref.invalidate(teacherStudentSessionHistoryProvider(studentId));
+    ref.invalidate(homeAssignmentStatusProvider(studentId));
 
     return record;
   }
