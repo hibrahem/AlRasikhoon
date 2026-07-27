@@ -9,9 +9,20 @@ Firebase App Distribution. Before merging a change to `main`, add a bullet here
 describing it for a non-technical reader. See the changelog rule in
 `CLAUDE.md` / `AGENTS.md`.
 
-Format follows [Keep a Changelog](https://keepachangelog.com/).
+After a distribution ships, its section is retitled with the date and the
+commit it shipped, and a fresh empty `## Unreleased` is left on top. That
+section stays EMPTY until real work lands — `scripts/extract_release_notes.sh`
+reads the topmost section whatever it is called, so a placeholder line such as
+"nothing yet" would be sent to testers as the release notes. Empty is what
+makes the next distribution fail loudly instead.
+
+Format follows [Keep a Changelog](https://keepachangelog.com/). Sections are
+dated rather than versioned: `pubspec.yaml` stays at 1.0.0 and each build is
+identified by its App Distribution run, so a version number would collide.
 
 ## Unreleased
+
+## [2026-07-27] — shipped to beta-testers (ea269ff, Distribute Android run 30260512185)
 
 - إصلاح مشكلة كانت تُبقي لوحة المفاتيح مفتوحة ولا سبيل لإغلاقها: كانت اللوحة
   تغطّي شريط التنقّل السفلي فلا يستطيع المستخدم الانتقال إلى شاشة أخرى. الآن
