@@ -366,3 +366,4 @@ Task 17: complete (commits 0be09fa impl + e39c5dd fix, review clean) — FINAL T
   REMAINING before the plan's Definition of Done is fully met: manual verification on a phone viewport in
   light+dark+Arabic RTL (explicitly deferred to the controller during Task 17, not attempted by any subagent).
 CI green for b3026aa; Distribute Android run 29966414664 SUCCESS — APK shipped to beta-testers via Firebase App Distribution.
+CI green for ea269ff; Distribute Android run 30260512185 SUCCESS — APK shipped to beta-testers via Firebase App Distribution.
