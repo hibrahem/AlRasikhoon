@@ -28,11 +28,16 @@ name: Distribute Android
 # Manual trigger only. The "Use workflow from" dropdown in the Actions UI picks
 # the branch/tag; the optional `ref` input below lets you target a specific
 # commit SHA instead (e.g. an earlier merge on main).
+#
+# That SHA must be the FULL 40 characters. actions/checkout resolves a short
+# SHA as a ref NAME pattern (refs/heads/ea269ff*), which matches nothing and
+# fails the Checkout step outright — copy from `git rev-parse`, not from
+# `git log --oneline`.
 "on":
   workflow_dispatch:
     inputs:
       ref:
-        description: "Commit SHA or branch/tag to ship (blank = the ref selected in the UI, normally main)"
+        description: "Branch/tag, or a FULL 40-char commit SHA (a short SHA fails checkout), to ship (blank = the ref selected in the UI, normally main)"
         required: false
         type: string
       groups:

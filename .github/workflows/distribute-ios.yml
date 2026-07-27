@@ -27,11 +27,16 @@
 name: Distribute iOS
 
 # Quoted for the YAML-1.1 Norway problem — see ci.yml.
+#
+# A `ref` given as a commit SHA must be the FULL 40 characters. actions/checkout
+# resolves a short SHA as a ref NAME pattern (refs/heads/ea269ff*), which
+# matches nothing and fails the Checkout step outright — copy from
+# `git rev-parse`, not from `git log --oneline`.
 "on":
   workflow_dispatch:
     inputs:
       ref:
-        description: "Commit SHA or branch/tag to ship (blank = the ref selected in the UI, normally main)"
+        description: "Branch/tag, or a FULL 40-char commit SHA (a short SHA fails checkout), to ship (blank = the ref selected in the UI, normally main)"
         required: false
         type: string
       external_groups:
