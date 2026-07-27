@@ -181,13 +181,18 @@ class StudentCard extends ConsumerWidget {
                   // student's own assessment's verbatim label (level 2's source
                   // workbooks contradict themselves on which hizb is which). The
                   // juz is always consistent with the data.
-                  Row(
+                  // A Wrap, not a Row: on a narrow phone with the device font
+                  // size turned up the two chips together outgrow the card,
+                  // and a Row clips the second one instead of flowing it onto
+                  // the next line.
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
                       _InfoChip(
                         icon: Icons.menu_book,
                         label: 'الجزء ${student.currentJuz}',
                       ),
-                      const SizedBox(width: 8),
                       _InfoChip(
                         icon: Icons.school,
                         label: 'الحلقة ${student.currentSession}',
@@ -341,11 +346,18 @@ class _TeacherlessBadge extends StatelessWidget {
         children: [
           Icon(Icons.warning_amber_rounded, size: 12, color: tokens.gold),
           const SizedBox(width: 4),
-          Text(
-            'بلا معلم',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: tokens.gold,
-              fontWeight: FontWeight.w500,
+          // Flexible: the name column can get very narrow on a small phone
+          // with a large device font — the label then ellipsizes instead of
+          // overflowing the card.
+          Flexible(
+            child: Text(
+              'بلا معلم',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: tokens.gold,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
@@ -375,11 +387,16 @@ class _ExcludedBadge extends StatelessWidget {
         children: [
           Icon(Icons.person_off_outlined, size: 12, color: tokens.maroon),
           const SizedBox(width: 4),
-          Text(
-            'مستبعد',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: tokens.maroon,
-              fontWeight: FontWeight.w500,
+          // Flexible: same narrow-column squeeze as _TeacherlessBadge.
+          Flexible(
+            child: Text(
+              'مستبعد',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: tokens.maroon,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],

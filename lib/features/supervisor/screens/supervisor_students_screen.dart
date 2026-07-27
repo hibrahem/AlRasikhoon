@@ -227,6 +227,9 @@ class SupervisorStudentsScreen extends ConsumerWidget {
                 showDialog<void>(
                   context: context,
                   builder: (dialogContext) => AlertDialog(
+                    // The plan card outgrows a small large-font phone; without
+                    // this the forecast clips off the dialog's bottom edge.
+                    scrollable: true,
                     content: SizedBox(
                       width: double.maxFinite,
                       // The dialog stays open on a change — the card holds TWO
