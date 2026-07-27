@@ -22,17 +22,25 @@ class AppNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final destinations = destinationsFor(role);
 
-    return NavigationBar(
-      selectedIndex: currentIndex,
-      onDestinationSelected: onTap,
-      destinations: [
-        for (final destination in destinations)
-          NavigationDestination(
-            icon: Icon(destination.icon),
-            selectedIcon: Icon(destination.activeIcon),
-            label: destination.label,
-          ),
-      ],
+    // The bar is chrome with fixed short labels sized to fit one line per
+    // tab. NavigationBar renders labels with no maxLines, so any device font
+    // scaling can wrap الملف الشخصي onto two lines that spill below the
+    // themed 72px bar — labels therefore keep their designed size, the same
+    // convention as iOS tab bars.
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: 1.0,
+      child: NavigationBar(
+        selectedIndex: currentIndex,
+        onDestinationSelected: onTap,
+        destinations: [
+          for (final destination in destinations)
+            NavigationDestination(
+              icon: Icon(destination.icon),
+              selectedIcon: Icon(destination.activeIcon),
+              label: destination.label,
+            ),
+        ],
+      ),
     );
   }
 }
