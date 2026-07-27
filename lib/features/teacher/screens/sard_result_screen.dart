@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/utils/keyboard_dismissal.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/student_repository.dart';
@@ -282,6 +283,7 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
               ),
               const SizedBox(height: 12),
               TextField(
+                onTapOutside: dismissKeyboardOnTapOutside,
                 controller: _notesController,
                 maxLines: 3,
                 decoration: InputDecoration(

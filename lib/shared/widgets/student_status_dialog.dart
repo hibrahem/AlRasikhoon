@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/keyboard_dismissal.dart';
 import '../../data/models/student_model.dart';
 import '../../data/repositories/student_repository.dart';
 import '../../domain/student/student_status.dart';
@@ -137,6 +138,7 @@ class _StudentStatusDialogState extends ConsumerState<StudentStatusDialog> {
           ],
           const SizedBox(height: 16),
           TextField(
+            onTapOutside: dismissKeyboardOnTapOutside,
             controller: _reasonController,
             minLines: 1,
             maxLines: 3,

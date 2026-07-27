@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/utils/keyboard_dismissal.dart';
 
 /// Search box for list screens. Owns its text state; reports every change
 /// (including clearing) through [onChanged]. No debounce — filtering is
@@ -39,16 +40,10 @@ class _AppSearchFieldState extends State<AppSearchField> {
       controller: _controller,
       onChanged: widget.onChanged,
       textInputAction: TextInputAction.search,
-      // Releasing focus on a tap anywhere else is the only thing that closes
-      // the keyboard here, and without it the user is stuck: Scaffold anchors
-      // the bottom nav bar to the viewport bottom (only the body avoids
-      // `viewInsets`), so the soft keyboard covers the nav bar and its
-      // destinations cannot be tapped. Flutter's default `onTapOutside` drops
-      // focus on desktop and web only — for touch on Android/iOS it does
-      // nothing, which left the IME's own search key as the sole exit.
-      // Taps on the field's own chrome (the clear button) are inside the
-      // TextFieldTapRegion and so never reach this handler.
-      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+      // Without this the user is stuck behind the keyboard — see
+      // dismissKeyboardOnTapOutside. The clear button is inside the field's
+      // own TapRegion, so tapping it keeps focus for continued typing.
+      onTapOutside: dismissKeyboardOnTapOutside,
       style: Theme.of(context).textTheme.bodyLarge,
       decoration: InputDecoration(
         hintText: widget.hint,

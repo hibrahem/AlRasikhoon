@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/constants/countries.dart';
+import '../../core/utils/keyboard_dismissal.dart';
 
 class AppTextField extends StatelessWidget {
   final String? label;
@@ -59,6 +60,7 @@ class AppTextField extends StatelessWidget {
           const SizedBox(height: 8),
         ],
         TextFormField(
+          onTapOutside: dismissKeyboardOnTapOutside,
           controller: controller,
           keyboardType: keyboardType,
           obscureText: obscureText,
@@ -124,6 +126,7 @@ class AppEmailField extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextFormField(
+          onTapOutside: dismissKeyboardOnTapOutside,
           controller: controller,
           keyboardType: TextInputType.emailAddress,
           enabled: enabled,
@@ -195,6 +198,7 @@ class _AppPasswordFieldState extends State<AppPasswordField> {
         ),
         const SizedBox(height: 8),
         TextFormField(
+          onTapOutside: dismissKeyboardOnTapOutside,
           controller: widget.controller,
           obscureText: _obscureText,
           enabled: widget.enabled,
@@ -299,6 +303,7 @@ class _AppPhoneFieldState extends State<AppPhoneField> {
         Text(displayLabel, style: Theme.of(context).textTheme.labelLarge),
         const SizedBox(height: 8),
         TextFormField(
+          onTapOutside: dismissKeyboardOnTapOutside,
           controller: widget.controller,
           keyboardType: TextInputType.phone,
           enabled: widget.enabled,
@@ -492,6 +497,7 @@ class _AppOtpFieldState extends State<AppOtpField> {
               focusNode: FocusNode(),
               onKey: (event) => _onKeyPressed(index, event),
               child: TextField(
+                onTapOutside: dismissKeyboardOnTapOutside,
                 controller: _controllers[index],
                 focusNode: _focusNodes[index],
                 textAlign: TextAlign.center,

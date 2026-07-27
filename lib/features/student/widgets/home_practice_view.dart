@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/theme/app_shadows.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/utils/keyboard_dismissal.dart';
 import '../../../shared/widgets/day_beads.dart';
 import '../../../shared/widgets/progress_bar.dart';
 import '../../../shared/widgets/stat_tile.dart';
@@ -254,6 +255,7 @@ class _HomePracticeViewState extends State<HomePracticeView> {
               _StepperButton(icon: Icons.remove, onTap: () => _step(-1)),
               Expanded(
                 child: TextField(
+                  onTapOutside: dismissKeyboardOnTapOutside,
                   controller: _repetitionsController,
                   keyboardType: TextInputType.number,
                   // A count — never letters or signs, even from a hardware
@@ -287,6 +289,7 @@ class _HomePracticeViewState extends State<HomePracticeView> {
           ),
           const SizedBox(height: AppDimens.space8),
           TextField(
+            onTapOutside: dismissKeyboardOnTapOutside,
             controller: _notesController,
             maxLines: 2,
             decoration: const InputDecoration(hintText: 'أضف ملاحظات...'),

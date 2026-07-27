@@ -6,6 +6,7 @@ import '../../../core/theme/app_dimens.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/grade_color_tokens.dart';
 import '../../../core/utils/grade_calculator.dart';
+import '../../../core/utils/keyboard_dismissal.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
@@ -179,6 +180,7 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
             ),
             const SizedBox(height: 12),
             TextField(
+              onTapOutside: dismissKeyboardOnTapOutside,
               controller: _notesController,
               maxLines: 3,
               decoration: InputDecoration(
