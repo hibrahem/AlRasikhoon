@@ -118,9 +118,24 @@ Also ensure the `beta-testers` group exists in Firebase App Distribution.
 
 | Secret | How to produce it |
 |--------|-------------------|
-| `ASC_API_KEY_ID` | App Store Connect → Users and Access → Integrations → App Store Connect API → generate key with **App Manager** role; the Key ID shown in the list |
+| `ASC_API_KEY_ID` | App Store Connect → Users and Access → Integrations → App Store Connect API → generate key with **Admin** role; the Key ID shown in the list |
 | `ASC_API_ISSUER_ID` | same page — the team-wide Issuer ID above the key list |
 | `ASC_API_KEY_P8_BASE64` | download the key's `.p8` (possible **once**), then `base64 -i AuthKey_<KEYID>.p8 \| gh secret set ASC_API_KEY_P8_BASE64` |
+
+> **The key must be Admin, not App Manager.** Cloud signing (`-allowProvisioningUpdates`)
+> asks Apple to create and manage the Apple Distribution certificate, and the
+> certificate endpoints require Admin. An App Manager key authenticates fine and
+> can upload builds, so the failure surfaces late — `xcodebuild -exportArchive`
+> dies with `Cloud signing permission error` / `No signing certificate "iOS
+> Distribution" found`. A key's role cannot be changed after creation; generate a
+> new one. Verified 2026-08-25 against team USVB42947P.
+>
+> The team must also have **at least one registered device**
+> (Certificates, Identifiers & Profiles → Devices). Automatic signing builds the
+> archive against a development profile before the export re-signs it for
+> distribution, and Apple will not issue a development profile to a team with no
+> devices — `archive` fails with `Your team has no devices from which to generate
+> a provisioning profile`.
 
 ## Removed workflows
 
