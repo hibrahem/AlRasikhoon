@@ -68,7 +68,7 @@ env:
   # Keep in sync with .github/workflows/ci.yml.
   FLUTTER_VERSION: "3.35.7"
   BUNDLE_ID: com.alrasikhoon.alRasikhoon
-  TEAM_ID: 327MX655VL
+  TEAM_ID: USVB42947P
 
 jobs:
   distribute:
