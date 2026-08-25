@@ -74,7 +74,14 @@ jobs:
   distribute:
     name: Build & upload to TestFlight
     # macOS runner required for xcodebuild; free on public repos.
-    runs-on: macos-15
+    #
+    # macos-26, NOT macos-15: Apple rejects any upload built with an SDK older
+    # than iOS 26, and the macos-15 image's default Xcode carries the iOS 18.5
+    # SDK. The rejection arrives from App Store Connect at the very last step,
+    # after a full build+archive+export has already run (~33 min wasted on run
+    # 32906384987). The "Verify iOS SDK" step below turns that into a ~1 min
+    # failure if the image ever regresses.
+    runs-on: macos-26
     # Apple-side IPA processing alone can take 10-30 min; leave headroom.
     timeout-minutes: 90
 
@@ -88,6 +95,27 @@ jobs:
         uses: ./.github/actions/require-green-ci
         with:
           force: ${{ inputs.force }}
+
+      # Fail in the first minute rather than after a 30+ minute build. Apple
+      # requires the iOS 26 SDK or later; altool rejects anything older with a
+      # 409 at upload time, which is the most expensive possible place to learn.
+      - name: Verify iOS SDK is new enough to upload
+        run: |
+          set -euo pipefail
+          echo "Xcode: $(xcodebuild -version | head -n1)"
+          sdk="$(xcodebuild -showsdks 2>/dev/null \
+                 | sed -n 's/.*-sdk iphoneos\([0-9][0-9]*\).*/\1/p' \
+                 | sort -n | tail -n1)"
+          if [[ -z "$sdk" ]]; then
+            echo "::error::Could not determine the installed iOS SDK version." >&2
+            exit 1
+          fi
+          echo "Highest iOS SDK: $sdk"
+          if (( sdk < 26 )); then
+            echo "::error::iOS SDK $sdk is too old — App Store Connect requires 26+. \
+          The runner image's default Xcode is stale; select a newer Xcode or bump runs-on." >&2
+            exit 1
+          fi
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2

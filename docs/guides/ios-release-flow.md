@@ -192,6 +192,7 @@ are not obvious from the message text.
 | `No profiles for 'com.alrasikhoon.alRasikhoon' were found` | Same root cause as above; appears alongside it | Same |
 | `Cloud signing permission error` + `No signing certificate "iOS Distribution" found` | The API key lacks certificate-management permission. **App Manager is not enough** — cloud signing creates the distribution certificate, and those endpoints require **Admin**. The key authenticates and can upload, so this surfaces only at export. | Generate a new **Admin** key; roles cannot be changed after creation |
 | `Runner has conflicting provisioning settings ... manually specified` | A `CODE_SIGN_IDENTITY` pinned in the project conflicts with automatic signing | Leave `CODE_SIGN_IDENTITY` unset and let automatic signing choose |
+| `Validation failed (409) SDK version issue ... built with the iOS 18.5 SDK` | The build machine's Xcode is too old. Apple requires the **iOS 26 SDK or later**. Arrives from App Store Connect at the *upload* step, so a full build and archive are wasted first (~33 min on run 32906384987). The `macos-15` runner image's default Xcode carries the iOS 18.5 SDK. | Build on `macos-26` or select a newer Xcode. `distribute-ios.yml` now verifies the SDK in its first minute. |
 | Upload rejected as a duplicate build | `CFBundleVersion` reused | Bump the build number; CI does this automatically |
 
 A note on verifying build settings: `xcodebuild -showBuildSettings` reports
