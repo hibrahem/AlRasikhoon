@@ -29,6 +29,16 @@ final throwingProvider = Provider<int>(
   name: 'throwingProvider',
 );
 
+final failingFutureProvider = FutureProvider<int>(
+  (ref) async => throw StateError('async halaqa unreachable'),
+  name: 'failingFutureProvider',
+);
+
+final failingStreamProvider = StreamProvider<int>(
+  (ref) => Stream<int>.error(StateError('stream halaqa unreachable')),
+  name: 'failingStreamProvider',
+);
+
 void main() {
   test('a failing provider is reported to the error reporter', () {
     final reporter = _RecordingReporter();
@@ -67,6 +77,57 @@ void main() {
     addTearDown(container.dispose);
 
     expect(() => container.read(throwingProvider), throwsException);
+  });
+
+  test('a failing FutureProvider is reported to the error reporter', () async {
+    final reporter = _RecordingReporter();
+    final container = ProviderContainer(
+      observers: [TelemetryProviderObserver(reporter)],
+    );
+    addTearDown(container.dispose);
+
+    // container.read(provider.future) rethrows a ProviderException wrapper
+    // around the original error, so catch broadly here and rely on the
+    // reporter assertions below to verify the raw error was captured.
+    try {
+      await container.read(failingFutureProvider.future);
+      fail('expected failingFutureProvider to complete with an error');
+    } catch (_) {
+      // expected: the wrapped ProviderException (or, depending on timing,
+      // the raw error) propagates here.
+    }
+
+    expect(reporter.recorded, hasLength(1));
+    expect(reporter.recorded.single.error, isA<StateError>());
+    expect(reporter.recorded.single.reason, contains('failingFutureProvider'));
+  });
+
+  test('a failing StreamProvider is reported to the error reporter', () async {
+    final reporter = _RecordingReporter();
+    final container = ProviderContainer(
+      observers: [TelemetryProviderObserver(reporter)],
+    );
+    addTearDown(container.dispose);
+
+    // Unlike FutureProvider, a bare `container.read(streamProvider.future)`
+    // races the underlying stream subscription: without something keeping
+    // the provider alive, the ephemeral read can be torn down before the
+    // stream's error (delivered on a microtask) arrives, and the future
+    // then never resolves on its own. An explicit listener keeps the
+    // subscription alive for the error to reach the observer.
+    final subscription = container.listen(failingStreamProvider, (_, _) {});
+    addTearDown(subscription.close);
+
+    try {
+      await container.read(failingStreamProvider.future);
+      fail('expected failingStreamProvider to complete with an error');
+    } catch (_) {
+      // expected: see comment above.
+    }
+
+    expect(reporter.recorded, hasLength(1));
+    expect(reporter.recorded.single.error, isA<StateError>());
+    expect(reporter.recorded.single.reason, contains('failingStreamProvider'));
   });
 }
 
