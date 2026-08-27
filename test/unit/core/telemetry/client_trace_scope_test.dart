@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/core/telemetry/client_trace_scope.dart';
 import 'package:al_rasikhoon/core/telemetry/telemetry_context.dart';
@@ -86,6 +88,71 @@ void main() {
     await holder.scope.run((traceId) async => seen.add(traceId));
 
     expect(seen.first, isNot(seen.last));
+  });
+
+  test(
+    'a finishing call does not strip an overlapping call of its id',
+    () async {
+      final holder = _Holder();
+      final releaseA = Completer<void>();
+      final releaseB = Completer<void>();
+      String? idB;
+
+      // A starts and parks mid-flight.
+      final a = holder.scope.run((_) async {
+        await releaseA.future;
+        return 'a';
+      });
+
+      // B starts while A is still in flight and takes over the live tag.
+      final b = holder.scope.run((traceId) async {
+        idB = traceId;
+        await releaseB.future;
+        return 'b';
+      });
+
+      // A finishes FIRST. Its clear must be a no-op: the live id is B's now.
+      // Stripping it would leave a later report for B untagged, and the mirror
+      // case would MIS-tag A's own report with B's id.
+      releaseA.complete();
+      await a;
+
+      expect(holder.tagsNow()['clientTraceId'], idB);
+
+      // B then finishes and does own the id, so it clears normally.
+      releaseB.complete();
+      await b;
+
+      expect(holder.tagsNow().containsKey('clientTraceId'), isFalse);
+    },
+  );
+
+  test('a failing call does not strip an overlapping call of its id', () async {
+    final holder = _Holder();
+    final releaseA = Completer<void>();
+    final releaseB = Completer<void>();
+    String? idB;
+
+    final a = holder.scope.run((_) async {
+      await releaseA.future;
+      throw StateError('callable failed');
+    });
+
+    final b = holder.scope.run((traceId) async {
+      idB = traceId;
+      await releaseB.future;
+      return 'b';
+    });
+
+    releaseA.complete();
+    await expectLater(a, throwsStateError);
+    // Past the deferred-clear turn that A schedules on failure.
+    await Future<void>.delayed(Duration.zero);
+
+    expect(holder.tagsNow()['clientTraceId'], idB);
+
+    releaseB.complete();
+    await b;
   });
 
   test(

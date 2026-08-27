@@ -37,19 +37,61 @@ void main() {
     () async {
       reporter = await _bootstrap();
     },
-    (error, stack) {
-      final live = reporter;
-      if (live != null) {
-        live.recordError(
-          error,
-          stack,
-          reason: 'uncaught zone error',
-          fatal: true,
-        );
-        return;
-      }
-      unawaited(_reportStartupFailure(error, stack));
-    },
+    (error, stack) => handleUncaughtZoneError(
+      error,
+      stack,
+      reporter: reporter,
+      isDebug: kDebugMode,
+      onReporterMissing: (e, s) => unawaited(_reportStartupFailure(e, s)),
+    ),
+  );
+}
+
+/// Handles an error that escaped to the guarded zone installed by `main()`.
+///
+/// [reporter] is null only in the window before startup has built one, in
+/// which case [onReporterMissing] stands a minimal one up instead.
+///
+/// The console dump is not decoration. **A zone's uncaught-error handler takes
+/// precedence over `PlatformDispatcher.onError`**: an async error raised
+/// inside the zone is delivered here and NEVER reaches that callback, so the
+/// deliberate `return !kDebugMode` carve-out on it (see `_bootstrap`) cannot
+/// run for such an error. That carve-out exists precisely so uncaught async
+/// errors do not vanish silently for developers — and in a debug build the
+/// reporter is the no-op adapter, so without the dump below nothing would be
+/// printed at all. This is that carve-out, restored for the zone path.
+///
+/// [FlutterError.presentError] is the framework's default console dumper and
+/// does NOT re-enter `FlutterError.onError`, so it can neither loop nor
+/// double-report. Release builds are untouched: the error is reported and
+/// nothing is printed, exactly as `return !kDebugMode` arranged.
+@visibleForTesting
+void handleUncaughtZoneError(
+  Object error,
+  StackTrace stack, {
+  required ErrorReporter? reporter,
+  required bool isDebug,
+  required void Function(Object, StackTrace) onReporterMissing,
+}) {
+  if (reporter != null) {
+    reporter.recordError(
+      error,
+      stack,
+      reason: 'uncaught zone error',
+      fatal: true,
+    );
+  } else {
+    onReporterMissing(error, stack);
+  }
+
+  if (!isDebug) return;
+  FlutterError.presentError(
+    FlutterErrorDetails(
+      exception: error,
+      stack: stack,
+      library: 'al_rasikhoon',
+      context: ErrorDescription('uncaught async error in the guarded zone'),
+    ),
   );
 }
 
@@ -60,6 +102,13 @@ void main() {
 /// invisible. Everything needed to report it — the stored preference and
 /// Sentry — is independent of Firebase, so a minimal reporter can be stood up
 /// here. Never throws: failing to report a failure is dropped.
+///
+/// Known and accepted: this builds a fresh runtime, so a zone error in the
+/// narrow window after `_bootstrap` has already called `setEnabled(true)` but
+/// before it returns the reporter would run `SentryFlutter.init` a second
+/// time. Reusing the started instance would mean publishing it through
+/// top-level mutable state, which is a worse trade than a redundant init on a
+/// path that only opens when startup is already failing.
 Future<void> _reportStartupFailure(Object error, StackTrace stack) async {
   try {
     final prefs = await SharedPreferences.getInstance();
@@ -200,6 +249,13 @@ Future<ErrorReporter> _bootstrap() async {
     // silently for developers; returning `false` there lets the engine's
     // fallback print run as it always has. Release builds keep suppressing
     // it — there is no console there to print to.
+    //
+    // NOTE: this callback is NOT the main path any more. `main()` runs the
+    // app inside a guarded zone, and a zone's uncaught-error handler takes
+    // precedence — in-zone async errors go to [handleUncaughtZoneError] and
+    // never arrive here. This stays for anything raised outside that zone,
+    // and [handleUncaughtZoneError] carries the same debug carve-out so the
+    // two paths behave alike.
     return !kDebugMode;
   };
 

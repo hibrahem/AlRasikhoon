@@ -47,7 +47,7 @@ class ClientTraceScope {
       // Success: nothing further will be reported for this call, so the id
       // goes immediately. Anything reported after this point belongs to some
       // other piece of work and must not inherit the tag.
-      _set(null);
+      _clearIfOwned(traceId);
       return result;
     } catch (_) {
       // Failure is the case the whole feature exists for, and clearing here
@@ -64,10 +64,26 @@ class ClientTraceScope {
       // long as the failure it belongs to. (A caller that awaits something
       // else *before* reporting loses the tag; that is the deliberate trade
       // against leaking a stale id, and no such caller exists today.)
-      Timer.run(() => _set(null));
+      Timer.run(() => _clearIfOwned(traceId));
       rethrow;
     }
   }
 
   void _set(String? traceId) => _write(_read().withClientTraceId(traceId));
+
+  /// Clears the trace id only if it is still the one THIS scope set.
+  ///
+  /// No two callables overlap today — `provisionUserAccount` runs
+  /// sequentially and the three UI entry points sit behind `_isLoading` /
+  /// `_isSaving` gates — so this is a guard against a future call pattern, not
+  /// a live bug. It is worth having because the failure modes are nasty: a
+  /// finishing call would strip an overlapping call's still-live id, and
+  /// worse, could leave call A's report carrying call B's id. A MIS-tag is
+  /// strictly worse than a missing one — on-call searching A's id finds
+  /// nothing, while B's id surfaces A's event and points the investigation at
+  /// the wrong request.
+  void _clearIfOwned(String traceId) {
+    if (_read().clientTraceId != traceId) return;
+    _set(null);
+  }
 }
