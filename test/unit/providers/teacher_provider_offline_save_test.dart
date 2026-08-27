@@ -74,7 +74,7 @@ class _CommitFailingWriteBatch implements WriteBatch {
       _delegate.set(document, data, options);
 
   @override
-  void update(DocumentReference<Object?> document, Map<String, dynamic> data) =>
+  void update(DocumentReference<Object?> document, Map<Object, Object?> data) =>
       _delegate.update(document, data);
 }
 

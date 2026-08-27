@@ -98,6 +98,10 @@ void main() async {
     gate: telemetryGate,
     dsn: kSentryDsn,
   );
+  final usageAnalytics = createUsageAnalytics(
+    gate: telemetryGate,
+    dsn: kSentryDsn,
+  );
 
   // Widget build/layout errors. presentError keeps the normal red-screen and
   // console behaviour intact for developers.
@@ -130,6 +134,7 @@ void main() async {
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
         sessionBoxProvider.overrideWithValue(sessionBox),
         errorReporterProvider.overrideWithValue(errorReporter),
+        usageAnalyticsProvider.overrideWithValue(usageAnalytics),
         telemetryGateProvider.overrideWithValue(telemetryGate),
       ],
       child: const AlRasikhoonApp(),

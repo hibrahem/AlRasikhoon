@@ -6,6 +6,7 @@ import '../../../core/config/firebase_emulator_config.dart';
 import '../../../core/telemetry/error_reporter.dart';
 import '../../../core/telemetry/telemetry_gate.dart';
 import '../../../core/telemetry/usage_analytics.dart';
+import 'firebase_usage_analytics.dart';
 import 'noop_telemetry.dart';
 import 'sentry_error_reporter.dart';
 
@@ -69,7 +70,26 @@ final errorReporterProvider = Provider<ErrorReporter>(
   (ref) => const NoopErrorReporter(),
 );
 
-/// Overridden in `main()`. Replaced with the live adapter in Task 11.
+/// Analytics has no separate initialisation and no DSN; it rides the same
+/// permission predicate as the error reporter.
+UsageAnalytics createUsageAnalytics({
+  required TelemetryGate gate,
+  required String dsn,
+}) {
+  final permitted = telemetryIsPermitted(
+    isDebug: kDebugMode,
+    isEmulator: FirebaseEmulatorConfig.isEmulatorMode,
+    dsn: dsn,
+  );
+  if (!permitted) return const NoopUsageAnalytics();
+  return FirebaseUsageAnalytics(gate: gate, sink: const LiveAnalyticsSink());
+}
+
+/// Overridden in `main()` with the instance created before `runApp`. Defaults
+/// to the no-op adapter — the same fallback `createUsageAnalytics` itself
+/// returns on every degraded path — so code that reads this provider without
+/// an override (a widget-test harness with no Firebase) degrades safely
+/// instead of taking the app down with it.
 final usageAnalyticsProvider = Provider<UsageAnalytics>(
   (ref) => const NoopUsageAnalytics(),
 );

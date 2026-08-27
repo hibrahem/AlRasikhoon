@@ -16,7 +16,12 @@ dependencies:
   # Firebase
   firebase_core: ^4.4.0
   firebase_auth: ^6.1.4
-  cloud_firestore: ^6.1.2
+  # Capped below 6.4.0: at 6.4.0 cloud_firestore_platform_interface jumps to
+  # 8.x, which makes WriteBatch.update generic — a change fake_cloud_firestore
+  # (pinned to ^4.0.1 by the Flutter SDK's own meta pin, see below) has not
+  # shipped a fix for. Bumping past this cap breaks the whole fake-Firestore
+  # test suite at compile time, not just this package.
+  cloud_firestore: ">=6.1.2 <6.4.0"
   firebase_storage: ^13.0.6
 
   # State Management
@@ -45,6 +50,10 @@ dependencies:
   # Icons
   cupertino_icons: ^1.0.8
   sentry_flutter: ^9.27.0
+  # ^12.1.1, not the newest 12.5.0: newer firebase_analytics releases need a
+  # firebase_core_platform_interface that only ships with cloud_firestore
+  # >=6.4.0 — see the cap on cloud_firestore above for why that can't move.
+  firebase_analytics: ^12.1.1
 
 dev_dependencies:
   flutter_test:
