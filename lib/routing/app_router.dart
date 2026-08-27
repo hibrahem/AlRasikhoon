@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../core/telemetry/pii_scrubber.dart';
 import '../data/models/user_model.dart';
 import '../domain/assessment/assessment_evaluation.dart';
 import '../shared/providers/telemetry_context_provider.dart';
@@ -717,26 +716,18 @@ final routerProvider = Provider<GoRouter>((ref) {
   // breadcrumbs come from the delegate rather than a NavigatorObserver.
   // `state.fullPath` is the route PATTERN (e.g. `/family/:fid`), not the
   // resolved location, so a document id never enters this process in the
-  // first place; `templateRoute` is still applied as a second line of
-  // defence, and as the fallback when no route has matched yet.
-  //
-  // `telemetryRouteReporterProvider` reads `errorReporterProvider`, which is
-  // only overridden once `main()` has built the live reporter; a widget-test
-  // harness that builds this router directly never does that. Telemetry must
-  // never take routing down with it, so both obtaining the reporter and
-  // every subsequent navigation report are defensive.
-  try {
-    final routeReporter = ref.read(telemetryRouteReporterProvider);
-    router.routerDelegate.addListener(() {
-      try {
-        final pattern = router.state.fullPath;
-        final location = (pattern == null || pattern.isEmpty)
-            ? router.state.matchedLocation
-            : pattern;
-        routeReporter.reportRoute(templateRoute(location));
-      } catch (_) {}
-    });
-  } catch (_) {}
+  // first place; `matchedLocation` is only the fallback for when no route
+  // has matched yet. `TelemetryRouteReporter.reportRoute` templates the
+  // route itself (via `TelemetryContext.copyWith`), so it is not templated
+  // again here.
+  final routeReporter = ref.read(telemetryRouteReporterProvider);
+  router.routerDelegate.addListener(() {
+    final pattern = router.state.fullPath;
+    final location = (pattern == null || pattern.isEmpty)
+        ? router.state.matchedLocation
+        : pattern;
+    routeReporter.reportRoute(location);
+  });
 
   return router;
 });

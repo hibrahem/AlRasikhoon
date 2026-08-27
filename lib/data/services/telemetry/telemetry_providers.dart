@@ -60,9 +60,13 @@ Future<ErrorReporter> createErrorReporter({
   }
 }
 
-/// Overridden in `main()` with the instance created before `runApp`.
+/// Overridden in `main()` with the instance created before `runApp`. Defaults
+/// to the no-op adapter — the same fallback `createErrorReporter` itself
+/// returns on every degraded path — so code that reads this provider without
+/// an override (a widget-test harness with no Firebase) degrades safely
+/// instead of taking the app down with it.
 final errorReporterProvider = Provider<ErrorReporter>(
-  (ref) => throw UnimplementedError('errorReporterProvider must be overridden'),
+  (ref) => const NoopErrorReporter(),
 );
 
 /// Overridden in `main()`. Replaced with the live adapter in Task 11.
@@ -70,7 +74,8 @@ final usageAnalyticsProvider = Provider<UsageAnalytics>(
   (ref) => const NoopUsageAnalytics(),
 );
 
-/// Overridden in `main()` with the single shared gate.
+/// Overridden in `main()` with the single shared gate. Defaults CLOSED: an
+/// unoverridden gate must never permit telemetry to leave the device.
 final telemetryGateProvider = Provider<TelemetryGate>(
-  (ref) => throw UnimplementedError('telemetryGateProvider must be overridden'),
+  (ref) => TelemetryGate(isOpen: false),
 );

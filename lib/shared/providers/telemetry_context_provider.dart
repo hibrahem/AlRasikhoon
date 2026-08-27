@@ -49,17 +49,7 @@ final telemetryRouteReporterProvider = Provider<TelemetryRouteReporter>((ref) {
 
 /// Watched once from the app root, mirroring [offlineSyncControllerProvider].
 final telemetryContextControllerProvider = Provider<void>((ref) {
-  final ErrorReporter reporter;
-  try {
-    // `errorReporterProvider` is only overridden once `main()` has built the
-    // live reporter (see telemetry_providers.dart); a widget-test harness
-    // that renders `AlRasikhoonApp` directly never does that. Telemetry must
-    // never take the app root down with it — same defensive spirit as
-    // [offlineSyncControllerProvider]'s try/catch around Firebase access.
-    reporter = ref.watch(errorReporterProvider);
-  } catch (_) {
-    return;
-  }
+  final reporter = ref.watch(errorReporterProvider);
   final holder = ref.watch(_contextHolderProvider);
 
   void push(TelemetryContext updated) {
