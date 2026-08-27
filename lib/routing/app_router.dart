@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../core/telemetry/pii_scrubber.dart';
 import '../data/models/user_model.dart';
 import '../domain/assessment/assessment_evaluation.dart';
+import '../shared/providers/telemetry_context_provider.dart';
 import '../shared/providers/user_provider.dart';
 import '../shared/widgets/role_shell.dart';
 import '../shared/widgets/student_pace_control.dart';
@@ -213,7 +215,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final isAuthenticated = ref.watch(isAuthenticatedProvider);
   final userRole = ref.watch(currentUserRoleProvider);
 
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: AppRoutes.login,
     debugLogDiagnostics: true,
     redirect: (context, state) => guardRedirect(
@@ -710,6 +712,33 @@ final routerProvider = Provider<GoRouter>((ref) {
       body: Center(child: Text('Page not found: ${state.matchedLocation}')),
     ),
   );
+
+  // go_router does not reliably populate Route.settings.name, so route
+  // breadcrumbs come from the delegate rather than a NavigatorObserver.
+  // `state.fullPath` is the route PATTERN (e.g. `/family/:fid`), not the
+  // resolved location, so a document id never enters this process in the
+  // first place; `templateRoute` is still applied as a second line of
+  // defence, and as the fallback when no route has matched yet.
+  //
+  // `telemetryRouteReporterProvider` reads `errorReporterProvider`, which is
+  // only overridden once `main()` has built the live reporter; a widget-test
+  // harness that builds this router directly never does that. Telemetry must
+  // never take routing down with it, so both obtaining the reporter and
+  // every subsequent navigation report are defensive.
+  try {
+    final routeReporter = ref.read(telemetryRouteReporterProvider);
+    router.routerDelegate.addListener(() {
+      try {
+        final pattern = router.state.fullPath;
+        final location = (pattern == null || pattern.isEmpty)
+            ? router.state.matchedLocation
+            : pattern;
+        routeReporter.reportRoute(templateRoute(location));
+      } catch (_) {}
+    });
+  } catch (_) {}
+
+  return router;
 });
 
 String _getDashboardRoute(UserRole? role) {

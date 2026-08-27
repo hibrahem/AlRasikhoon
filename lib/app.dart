@@ -6,6 +6,7 @@ import 'core/theme/app_theme.dart';
 import 'routing/app_router.dart';
 import 'features/settings/providers/theme_mode_provider.dart';
 import 'shared/providers/offline_sync_provider.dart';
+import 'shared/providers/telemetry_context_provider.dart';
 import 'shared/widgets/offline_banner.dart';
 import 'shared/widgets/splash/splash_overlay.dart';
 import 'shared/widgets/text_scale_clamp.dart';
@@ -18,6 +19,8 @@ class AlRasikhoonApp extends ConsumerWidget {
     // Keeps the offline cache primed and clears pending-sync state on
     // reconnect — activated here so it lives for the whole app session.
     ref.watch(offlineSyncControllerProvider);
+    // Keeps role, institute, route and connectivity attached to every report.
+    ref.watch(telemetryContextControllerProvider);
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);
 
