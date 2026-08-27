@@ -97,8 +97,6 @@ class SessionHistoryScreen extends ConsumerWidget {
                 child: LoadingState(),
               ),
               error: (e, _) {
-                // The raw exception goes to the log, never onto the screen.
-                debugPrint('studentHistoryProvider failed: $e');
                 return SliverFillRemaining(
                   hasScrollBody: false,
                   child: ErrorState(

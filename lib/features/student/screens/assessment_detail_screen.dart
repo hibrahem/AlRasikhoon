@@ -123,8 +123,6 @@ class AssessmentDetailScreen extends ConsumerWidget {
               child: LoadingState(),
             ),
             error: (e, _) {
-              // The raw exception goes to the log, never onto the screen.
-              debugPrint('assessment record $recordId failed to load: $e');
               return SliverFillRemaining(
                 hasScrollBody: false,
                 child: ErrorState(

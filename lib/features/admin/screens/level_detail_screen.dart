@@ -44,7 +44,6 @@ class LevelDetailScreen extends ConsumerWidget {
               child: LoadingState(),
             ),
             error: (e, _) {
-              debugPrint('levelSessionsProvider failed: $e');
               return SliverFillRemaining(
                 hasScrollBody: false,
                 child: ErrorState(

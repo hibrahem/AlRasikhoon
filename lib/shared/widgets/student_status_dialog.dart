@@ -97,7 +97,6 @@ class _StudentStatusDialogState extends ConsumerState<StudentStatusDialog> {
         ),
       );
     } catch (e) {
-      debugPrint('setStudentStatus failed: $e');
       if (!context.mounted) return;
       setState(() => _error = 'حدث خطأ، يرجى المحاولة مرة أخرى');
     } finally {

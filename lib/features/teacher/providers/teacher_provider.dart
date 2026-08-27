@@ -458,11 +458,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     // Commit fire-and-forget: Firestore applies the batch to the local cache
     // immediately and queues it for sync. Awaiting would hang the save UI
     // forever offline — the commit Future only completes on server ack.
-    unawaited(
-      batch.commit().catchError((Object e, StackTrace s) {
-        debugPrint('session save sync failed: $e');
-      }),
-    );
+    unawaited(batch.commit().catchError((Object e, StackTrace s) {}));
 
     // Clear state
     state = state!.copyWith(isComplete: true, advanceOutcome: advanceOutcome);
@@ -536,11 +532,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
       batch: batch,
     );
 
-    unawaited(
-      batch.commit().catchError((Object e, StackTrace s) {
-        debugPrint('talqeen save sync failed: $e');
-      }),
-    );
+    unawaited(batch.commit().catchError((Object e, StackTrace s) {}));
 
     state = state!.copyWith(isComplete: true, advanceOutcome: advanceOutcome);
 

@@ -36,10 +36,7 @@ class HomePracticeStatusCard extends ConsumerWidget {
       // there yet — the screen's primary content must not gain a spinner or
       // an error banner for it. Pull-to-refresh re-reads it.
       loading: () => const SizedBox.shrink(),
-      error: (e, _) {
-        debugPrint('homeAssignmentStatusProvider failed: $e');
-        return const SizedBox.shrink();
-      },
+      error: (e, _) => const SizedBox.shrink(),
     );
   }
 }

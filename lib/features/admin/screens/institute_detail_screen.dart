@@ -61,7 +61,6 @@ class InstituteDetailScreen extends ConsumerWidget {
                   child: allTeachersAsync.when(
                     loading: () => const LoadingState(),
                     error: (e, _) {
-                      debugPrint('allTeachersProvider failed: $e');
                       return ErrorState(
                         message: 'تعذر تحميل المعلمين',
                         onRetry: () => ref.invalidate(allTeachersProvider),
@@ -70,7 +69,6 @@ class InstituteDetailScreen extends ConsumerWidget {
                     data: (allTeachers) => assignedTeachersAsync.when(
                       loading: () => const LoadingState(),
                       error: (e, _) {
-                        debugPrint('teachersForInstituteProvider failed: $e');
                         return ErrorState(
                           message: 'تعذر تحميل معلمي المعهد',
                           onRetry: () => ref.invalidate(
@@ -137,7 +135,6 @@ class InstituteDetailScreen extends ConsumerWidget {
         SnackBar(content: Text('تم إضافة ${teacher.name} بنجاح')),
       );
     } catch (e) {
-      debugPrint('assignTeacherToInstitute failed: $e');
       messenger.showSnackBar(
         SnackBar(
           content: const Text('فشل في إضافة المعلم، حاول مرة أخرى'),
@@ -193,7 +190,6 @@ class InstituteDetailScreen extends ConsumerWidget {
         SnackBar(content: Text('تم إزالة ${teacher.name} بنجاح')),
       );
     } catch (e) {
-      debugPrint('removeTeacherFromInstitute failed: $e');
       messenger.showSnackBar(
         SnackBar(
           content: const Text('فشل في إزالة المعلم، حاول مرة أخرى'),
@@ -245,7 +241,6 @@ class InstituteDetailScreen extends ConsumerWidget {
                   child: allSupervisorsAsync.when(
                     loading: () => const LoadingState(),
                     error: (e, _) {
-                      debugPrint('allSupervisorsProvider failed: $e');
                       return ErrorState(
                         message: 'تعذر تحميل المشرفين',
                         onRetry: () => ref.invalidate(allSupervisorsProvider),
@@ -254,9 +249,6 @@ class InstituteDetailScreen extends ConsumerWidget {
                     data: (allSupervisors) => assignedSupervisorsAsync.when(
                       loading: () => const LoadingState(),
                       error: (e, _) {
-                        debugPrint(
-                          'supervisorsForInstituteProvider failed: $e',
-                        );
                         return ErrorState(
                           message: 'تعذر تحميل مشرفي المعهد',
                           onRetry: () => ref.invalidate(
@@ -323,7 +315,6 @@ class InstituteDetailScreen extends ConsumerWidget {
         SnackBar(content: Text('تم إضافة ${supervisor.name} بنجاح')),
       );
     } catch (e) {
-      debugPrint('assignSupervisorToInstitute failed: $e');
       messenger.showSnackBar(
         SnackBar(
           content: const Text('فشل في إضافة المشرف، حاول مرة أخرى'),
@@ -381,7 +372,6 @@ class InstituteDetailScreen extends ConsumerWidget {
         SnackBar(content: Text('تم إزالة ${supervisor.name} بنجاح')),
       );
     } catch (e) {
-      debugPrint('removeSupervisorFromInstitute failed: $e');
       messenger.showSnackBar(
         SnackBar(
           content: const Text('فشل في إزالة المشرف، حاول مرة أخرى'),
@@ -585,7 +575,6 @@ class InstituteDetailScreen extends ConsumerWidget {
                         },
                         loading: () => const LoadingState(),
                         error: (e, _) {
-                          debugPrint('teachersForInstituteProvider failed: $e');
                           return ErrorState(
                             message: 'تعذر تحميل المعلمين',
                             onRetry: () => ref.invalidate(
@@ -700,9 +689,6 @@ class InstituteDetailScreen extends ConsumerWidget {
                         },
                         loading: () => const LoadingState(),
                         error: (e, _) {
-                          debugPrint(
-                            'supervisorsForInstituteProvider failed: $e',
-                          );
                           return ErrorState(
                             message: 'تعذر تحميل المشرفين',
                             onRetry: () => ref.invalidate(
@@ -721,7 +707,6 @@ class InstituteDetailScreen extends ConsumerWidget {
               child: LoadingState(),
             ),
             error: (e, _) {
-              debugPrint('instituteProvider failed: $e');
               return SliverFillRemaining(
                 hasScrollBody: false,
                 child: ErrorState(

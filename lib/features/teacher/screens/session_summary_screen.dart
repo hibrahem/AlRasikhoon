@@ -157,8 +157,6 @@ class _SessionSummaryScreenState extends ConsumerState<SessionSummaryScreen> {
               },
               loading: () => const LoadingState(lines: 1),
               error: (e, _) {
-                // The raw exception goes to the log, never onto the screen.
-                debugPrint('studentProvider failed: $e');
                 return ErrorState(
                   message: 'تعذّر تحميل النتيجة',
                   // studentProvider is derived from the teacher's cached

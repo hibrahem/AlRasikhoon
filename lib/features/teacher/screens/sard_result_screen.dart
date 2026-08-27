@@ -125,7 +125,6 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
 
       unawaited(
         batch.commit().catchError((Object e, StackTrace s) {
-          debugPrint('sard save sync failed: $e');
         }),
       );
 

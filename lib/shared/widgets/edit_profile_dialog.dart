@@ -88,7 +88,6 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
       navigator.pop();
       messenger.showSnackBar(const SnackBar(content: Text('تم حفظ التعديلات')));
     } catch (e) {
-      debugPrint('EditProfileDialog onSave failed: $e');
       if (!context.mounted) return;
       messenger.showSnackBar(
         SnackBar(

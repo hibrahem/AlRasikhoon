@@ -75,7 +75,6 @@ class _AssignTeacherDialogState extends ConsumerState<AssignTeacherDialog> {
         ),
       );
     } catch (e) {
-      debugPrint('assignTeacher failed: $e');
       if (!context.mounted) return;
       setState(() => _error = 'حدث خطأ، يرجى المحاولة مرة أخرى');
     } finally {

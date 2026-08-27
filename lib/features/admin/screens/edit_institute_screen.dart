@@ -83,7 +83,6 @@ class _EditInstituteScreenState extends ConsumerState<EditInstituteScreen> {
         context.pop();
       }
     } catch (e) {
-      debugPrint('updateInstitute failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -109,7 +108,6 @@ class _EditInstituteScreenState extends ConsumerState<EditInstituteScreen> {
       body: instituteAsync.when(
         loading: () => const LoadingState(),
         error: (e, _) {
-          debugPrint('instituteProvider failed: $e');
           return ErrorState(
             message: 'تعذر تحميل المعهد',
             onRetry: () =>

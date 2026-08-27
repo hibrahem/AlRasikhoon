@@ -145,7 +145,6 @@ class ExamQueueScreen extends ConsumerWidget {
                 child: LoadingState(),
               ),
               error: (e, _) {
-                debugPrint('examQueueProvider failed: $e');
                 return SliverFillRemaining(
                   hasScrollBody: false,
                   child: ErrorState(

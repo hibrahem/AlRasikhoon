@@ -47,7 +47,6 @@ class AdminDashboardScreen extends ConsumerWidget {
                         data: (stats) => _buildStats(context, stats),
                         loading: () => const LoadingState(),
                         error: (e, _) {
-                          debugPrint('adminStatsProvider failed: $e');
                           return ErrorState(
                             message: 'تعذر تحميل الإحصائيات',
                             onRetry: () => ref.invalidate(adminStatsProvider),

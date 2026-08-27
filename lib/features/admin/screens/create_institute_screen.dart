@@ -63,7 +63,6 @@ class _CreateInstituteScreenState extends ConsumerState<CreateInstituteScreen> {
         context.pop();
       }
     } catch (e) {
-      debugPrint('createInstitute failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

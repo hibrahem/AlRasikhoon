@@ -134,7 +134,6 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
         );
       }
     } catch (e) {
-      debugPrint('provisionUserAccount (supervisor) failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -300,7 +299,6 @@ class _AddSupervisorScreenState extends ConsumerState<AddSupervisorScreen> {
                     // — the shared ErrorState's icon+retry chrome is built for
                     // full-section failures and would not fit naturally here.
                     error: (e, _) {
-                      debugPrint('institutesProvider failed: $e');
                       return Text(
                         'تعذر تحميل المعاهد',
                         style: TextStyle(color: tokens.maroon),

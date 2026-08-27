@@ -61,8 +61,6 @@ class _StudentDashboardScreenState
         child: statsAsync.when(
           loading: () => const _ScrollableState(child: LoadingState()),
           error: (e, _) {
-            // The raw exception goes to the log, never onto the screen.
-            debugPrint('studentStatsProvider failed: $e');
             return _ScrollableState(
               child: ErrorState(
                 message: 'تعذر تحميل التقدم',

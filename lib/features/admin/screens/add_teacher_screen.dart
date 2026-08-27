@@ -123,7 +123,6 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
         );
       }
     } catch (e) {
-      debugPrint('provisionUserAccount (teacher) failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

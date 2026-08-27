@@ -76,7 +76,6 @@ class SupervisorDetailScreen extends ConsumerWidget {
                   child: allInstitutesAsync.when(
                     loading: () => const LoadingState(),
                     error: (e, _) {
-                      debugPrint('institutesProvider failed: $e');
                       return ErrorState(
                         message: 'تعذر تحميل المعاهد',
                         onRetry: () => ref.invalidate(institutesProvider),
@@ -85,9 +84,6 @@ class SupervisorDetailScreen extends ConsumerWidget {
                     data: (allInstitutes) => assignedAsync.when(
                       loading: () => const LoadingState(),
                       error: (e, _) {
-                        debugPrint(
-                          'institutesForSupervisorProvider failed: $e',
-                        );
                         return ErrorState(
                           message: 'تعذر تحميل المعاهد المسندة',
                           onRetry: () => ref.invalidate(
@@ -150,7 +146,6 @@ class SupervisorDetailScreen extends ConsumerWidget {
         SnackBar(content: Text('تم إسناد ${institute.name} بنجاح')),
       );
     } catch (e) {
-      debugPrint('assignSupervisorToInstitute failed: $e');
       messenger.showSnackBar(
         SnackBar(
           content: const Text('فشل في إسناد المعهد، حاول مرة أخرى'),
@@ -204,7 +199,6 @@ class SupervisorDetailScreen extends ConsumerWidget {
         SnackBar(content: Text('تم إزالة إسناد ${institute.name}')),
       );
     } catch (e) {
-      debugPrint('removeSupervisorFromInstitute failed: $e');
       messenger.showSnackBar(
         SnackBar(
           content: const Text('فشل في إزالة الإسناد، حاول مرة أخرى'),
@@ -438,9 +432,6 @@ class SupervisorDetailScreen extends ConsumerWidget {
                         },
                         loading: () => const LoadingState(),
                         error: (e, _) {
-                          debugPrint(
-                            'institutesForSupervisorProvider failed: $e',
-                          );
                           return ErrorState(
                             message: 'تعذر تحميل المعاهد',
                             onRetry: () => ref.invalidate(
@@ -459,7 +450,6 @@ class SupervisorDetailScreen extends ConsumerWidget {
               child: LoadingState(),
             ),
             error: (e, _) {
-              debugPrint('supervisorProvider failed: $e');
               return SliverFillRemaining(
                 hasScrollBody: false,
                 child: ErrorState(

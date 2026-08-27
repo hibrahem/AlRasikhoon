@@ -144,7 +144,6 @@ class _RepositionDialogState extends ConsumerState<_RepositionDialog> {
     } on RepositionNotAuthorizedException {
       _showError('غير مصرح لك بتعديل نقطة البداية لهذا الطالب.');
     } catch (e) {
-      debugPrint('repositionEnrolledStudent failed: $e');
       _showError('تعذر تحديث نقطة البداية، حاول مرة أخرى');
     } finally {
       if (mounted) setState(() => _isSaving = false);

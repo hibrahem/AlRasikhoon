@@ -239,7 +239,6 @@ class AllStudentsScreen extends ConsumerWidget {
                 child: LoadingState(),
               ),
               error: (e, _) {
-                debugPrint('allStudentsProvider failed: $e');
                 return SliverFillRemaining(
                   hasScrollBody: false,
                   child: ErrorState(

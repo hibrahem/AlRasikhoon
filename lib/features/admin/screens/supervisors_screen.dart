@@ -196,7 +196,6 @@ class SupervisorsScreen extends ConsumerWidget {
                 child: LoadingState(),
               ),
               error: (e, _) {
-                debugPrint('allSupervisorsProvider failed: $e');
                 return SliverFillRemaining(
                   hasScrollBody: false,
                   child: ErrorState(

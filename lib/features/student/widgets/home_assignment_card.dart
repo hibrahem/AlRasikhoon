@@ -92,18 +92,8 @@ class HomeAssignmentCard extends ConsumerWidget {
       loading: () => const SizedBox.shrink(),
       // This is a secondary card — a provider failure here should not block
       // the rest of the home-practice screen, so it stays visually silent.
-      // But the codebase has no existing convention for a non-fatal provider
-      // error in a silent branch (every other `error: (_, _) =>
-      // SizedBox.shrink()`/`SizedBox()` in this app — e.g.
-      // home_practice_screen.dart, student_dashboard_screen.dart,
-      // session_summary_screen.dart — swallows without a trace, and the
-      // rest use a visible `Text('Error: $e')` instead). Rather than repeat
-      // that silent swallow, leave a debug trace so the failure is at least
-      // discoverable in logs.
-      error: (error, stackTrace) {
-        debugPrint('homeAssignmentProvider failed: $error\n$stackTrace');
-        return const SizedBox.shrink();
-      },
+      // TelemetryProviderObserver reports the failure app-wide.
+      error: (error, stackTrace) => const SizedBox.shrink(),
     );
   }
 }

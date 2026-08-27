@@ -4,8 +4,8 @@ import '../../core/telemetry/error_reporter.dart';
 
 /// Routes every provider failure in the app to the [ErrorReporter].
 ///
-/// This replaces the 62 per-screen `debugPrint('xProvider failed: $e')` calls
-/// that preceded it. Those were both invisible in release builds and
+/// This replaces the 62 per-screen debug-print-based error logs that
+/// preceded it. Those were both invisible in release builds and
 /// incomplete — a provider with no `.when(error:)` branch reported nothing at
 /// all. One observer covers every provider, including future ones.
 ///

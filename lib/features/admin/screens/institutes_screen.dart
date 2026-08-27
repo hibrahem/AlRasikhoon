@@ -157,7 +157,6 @@ class _InstitutesScreenState extends ConsumerState<InstitutesScreen> {
                 child: LoadingState(),
               ),
               error: (e, _) {
-                debugPrint('institutesProvider failed: $e');
                 return SliverFillRemaining(
                   hasScrollBody: false,
                   child: ErrorState(

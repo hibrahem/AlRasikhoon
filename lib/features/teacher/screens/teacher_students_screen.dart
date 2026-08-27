@@ -169,8 +169,6 @@ class _TeacherStudentsScreenState extends ConsumerState<TeacherStudentsScreen> {
               },
               loading: () => const LoadingState(),
               error: (e, _) {
-                // The raw exception goes to the log, never onto the screen.
-                debugPrint('filteredTeacherStudentsProvider failed: $e');
                 return ErrorState(
                   message: 'تعذر تحميل الطلاب',
                   onRetry: () => ref.invalidate(teacherStudentsProvider),

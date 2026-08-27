@@ -129,11 +129,7 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
         await studentRepo.incrementStudentAttempt(student.id, batch: batch);
       }
 
-      unawaited(
-        batch.commit().catchError((Object e, StackTrace s) {
-          debugPrint('exam save sync failed: $e');
-        }),
-      );
+      unawaited(batch.commit().catchError((Object e, StackTrace s) {}));
 
       // The four outcomes are four different things, and the supervisor is told
       // which: a pass that MOVED the student, a pass that FINISHED the
@@ -198,7 +194,6 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
         context.go(AppRoutes.examQueue);
       }
     } catch (e) {
-      debugPrint('saving exam result failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

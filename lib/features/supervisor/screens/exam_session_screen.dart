@@ -301,12 +301,8 @@ class _ExamSessionScreenState extends ConsumerState<ExamSessionScreen> {
         // exactly what exam_session_timer_test.dart and
         // exam_session_overflow_test.dart hit, since neither test mocks
         // Firebase. A bare Text in Center has no such column to overflow, so
-        // the original bespoke widget is kept — with a short Arabic message;
-        // the raw exception goes to the debug log only.
-        error: (e, _) {
-          debugPrint('examStudentProvider failed: $e');
-          return const Center(child: Text('تعذر تحميل بيانات الطالب'));
-        },
+        // the original bespoke widget is kept — with a short Arabic message.
+        error: (e, _) => const Center(child: Text('تعذر تحميل بيانات الطالب')),
       ),
     );
   }

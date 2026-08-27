@@ -158,10 +158,6 @@ class StudentProfileScreen extends ConsumerWidget {
                           },
                           loading: () => const LoadingState(),
                           error: (e, _) {
-                            // The raw exception goes to the log, never on screen.
-                            debugPrint(
-                              'studentCurrentMeetingProvider failed: $e',
-                            );
                             return ErrorState(
                               message: 'تعذر تحميل الحلقة',
                               onRetry: () => ref.invalidate(
@@ -218,8 +214,6 @@ class StudentProfileScreen extends ConsumerWidget {
                 child: LoadingState(),
               ),
               error: (e, _) {
-                // The raw exception goes to the log, never onto the screen.
-                debugPrint('studentProvider failed: $e');
                 return SliverFillRemaining(
                   hasScrollBody: false,
                   child: ErrorState(
@@ -844,8 +838,6 @@ class _SessionHistorySection extends ConsumerWidget {
       },
       loading: () => const LoadingState(),
       error: (e, _) {
-        // The raw exception goes to the log, never onto the screen.
-        debugPrint('teacherStudentSessionHistoryProvider failed: $e');
         return ErrorState(
           message: 'تعذر تحميل سجل الحلقات',
           onRetry: () =>

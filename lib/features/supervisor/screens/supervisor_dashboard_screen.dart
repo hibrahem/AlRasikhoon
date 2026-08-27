@@ -55,7 +55,6 @@ class _SupervisorDashboardScreenState
                         data: (stats) => _buildStats(stats),
                         loading: () => const LoadingState(lines: 2),
                         error: (e, _) {
-                          debugPrint('supervisorStatsProvider failed: $e');
                           return ErrorState(
                             message: 'تعذر تحميل الإحصائيات',
                             onRetry: () =>

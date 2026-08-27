@@ -281,7 +281,6 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                         },
                         loading: () => const LoadingState(),
                         error: (e, _) {
-                          debugPrint('institutesForTeacherProvider failed: $e');
                           return ErrorState(
                             message: 'تعذر تحميل المعاهد',
                             onRetry: () => ref.invalidate(
@@ -386,9 +385,6 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
                         },
                         loading: () => const LoadingState(),
                         error: (e, _) {
-                          debugPrint(
-                            'studentsForTeacherAdminProvider failed: $e',
-                          );
                           return ErrorState(
                             message: 'تعذر تحميل الطلاب',
                             onRetry: () => ref.invalidate(
@@ -407,7 +403,6 @@ class _TeacherDetailScreenState extends ConsumerState<TeacherDetailScreen> {
               child: LoadingState(),
             ),
             error: (e, _) {
-              debugPrint('teacherProvider failed: $e');
               return SliverFillRemaining(
                 hasScrollBody: false,
                 child: ErrorState(
