@@ -8,10 +8,13 @@ import 'package:flutter_test/flutter_test.dart';
 /// `.superpowers/sdd/2026-08-27-production-observability/uncovered-catch-sites.md`):
 /// `reason` at these sites MUST be a fixed, hand-written string naming the
 /// class and method — never a string interpolation of a model, a user's
-/// name/username, or the exception's own text. `UserModel.toString()` in
-/// this codebase embeds a username AND a real name, so an interpolated
-/// `reason` (`'$user'`, `'${student.name}'`, `'reason: $e'`, ...) would leak
-/// personal data into telemetry.
+/// name/username, or the exception's own text — for example
+/// `'reason: $e'`, or interpolating a field directly, e.g. `'user:
+/// ${user.name}'`. This guard bans interpolation outright rather than
+/// trusting any given model's `toString()` to stay non-identifying:
+/// `UserModel.toString()` is hardened to carry only its id and role (see
+/// its own comment), but a call site could still interpolate a raw field
+/// straight out of the model, bypassing `toString()` entirely.
 ///
 /// Scoped to this task's touched files rather than all of `lib/`: two
 /// earlier, separately-reviewed call sites

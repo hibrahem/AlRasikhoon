@@ -77,8 +77,10 @@ class SentryErrorReporter implements ErrorReporter {
     if (!_gate.isOpen) return;
     try {
       // The error object itself is stringified and scrubbed rather than passed
-      // through: a FirebaseException's message routinely embeds document paths,
-      // and UserModel.toString() embeds a username and a name.
+      // through: a FirebaseException's message routinely embeds document
+      // paths. (UserModel.toString() is deliberately non-identifying — see
+      // its own comment — but this scrub stays as defense in depth for any
+      // other object that ends up stringified here.)
       final scrubbed = scrubMessage(error.toString());
       final scrubbedReason = reason == null ? null : scrubMessage(reason);
       _sink.captureException(

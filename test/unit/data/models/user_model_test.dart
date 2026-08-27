@@ -840,7 +840,7 @@ void main() {
     });
 
     group('toString', () {
-      test('returns formatted string', () {
+      test('a user\'s string form carries no identifying details', () {
         final user = UserModel(
           id: 'user123',
           username: 'test_user',
@@ -853,10 +853,14 @@ void main() {
 
         final str = user.toString();
 
+        // This string can reach an error reporter, and diagnostics reports
+        // are promised to carry no name or username — see the comment on
+        // UserModel.toString().
         expect(str, contains('user123'));
-        expect(str, contains('test_user'));
-        expect(str, contains('Test User'));
         expect(str, contains('teacher'));
+        expect(str, isNot(contains('test_user')));
+        expect(str, isNot(contains('Test User')));
+        expect(str, isNot(contains('+966512345678')));
       });
     });
   });

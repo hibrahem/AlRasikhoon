@@ -237,9 +237,14 @@ class UserModel {
     return email;
   }
 
+  // This toString() can reach an error reporter (a raw error object gets
+  // stringified before PII scrubbing, and scrubbing free-form names is not
+  // reliable). The settings screen promises diagnostics reports carry no
+  // name or username, so this method must stay non-identifying — do NOT
+  // restore `username`/`name`/`phone` here for debugging convenience.
   @override
   String toString() {
-    return 'UserModel(id: $id, username: $username, name: $name, role: ${role.value})';
+    return 'UserModel(id: $id, role: ${role.value})';
   }
 
   @override
