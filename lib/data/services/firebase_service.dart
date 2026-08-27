@@ -3,6 +3,8 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/telemetry/client_trace_id.dart';
+
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
 });
@@ -87,6 +89,10 @@ class FirebaseService {
     final callable = FirebaseFunctions.instance.httpsCallable(
       'createUserAccount',
     );
+    // Captured first so the same value could also be attached to an error
+    // report in a surrounding catch, joining a client-side failure to the
+    // function's structured log.
+    final traceId = newClientTraceId();
     final result = await callable.call<Map<Object?, Object?>>({
       'email': email,
       'password': password,
@@ -96,6 +102,7 @@ class FirebaseService {
       'phone': phone,
       // Required by the Cloud Function when role == 'supervisor'.
       'instituteId': instituteId,
+      'clientTraceId': traceId,
     });
     final uid = result.data['uid'];
     if (uid is! String || uid.isEmpty) {
@@ -114,7 +121,14 @@ class FirebaseService {
     final callable = FirebaseFunctions.instance.httpsCallable(
       'hardDeleteStudent',
     );
-    await callable.call<Map<Object?, Object?>>({'studentId': studentId});
+    // Captured first so the same value could also be attached to an error
+    // report in a surrounding catch, joining a client-side failure to the
+    // function's structured log.
+    final traceId = newClientTraceId();
+    await callable.call<Map<Object?, Object?>>({
+      'studentId': studentId,
+      'clientTraceId': traceId,
+    });
   }
 
   // Firestore helpers

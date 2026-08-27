@@ -8,6 +8,11 @@ admin.initializeApp();
 interface SetUserPasswordPayload {
   userId: string;
   newPassword: string;
+  // Correlation id set by the client so a Sentry error report can be joined
+  // to this function's structured log. Optional and backwards-compatible: an
+  // older client that omits it keeps working exactly as before. Never
+  // validated or used for authorization.
+  clientTraceId?: string | null;
 }
 
 type ProvisionableRole =
@@ -29,6 +34,11 @@ interface CreateUserAccountPayload {
   // supervisor_institutes membership docs (al_rasikhoon-3n6). Ignored for other
   // roles.
   instituteId?: string | null;
+  // Correlation id set by the client so a Sentry error report can be joined
+  // to this function's structured log. Optional and backwards-compatible: an
+  // older client that omits it keeps working exactly as before. Never
+  // validated or used for authorization.
+  clientTraceId?: string | null;
 }
 
 const MIN_PASSWORD_LENGTH = 6;
@@ -118,8 +128,16 @@ export const createUserAccount = onCall<CreateUserAccountPayload>(
       );
     }
 
-    const { email, password, role, name, username, phone, instituteId } =
-      request.data ?? ({} as CreateUserAccountPayload);
+    const {
+      email,
+      password,
+      role,
+      name,
+      username,
+      phone,
+      instituteId,
+      clientTraceId,
+    } = request.data ?? ({} as CreateUserAccountPayload);
 
     if (!email || typeof email !== "string") {
       throw new HttpsError("invalid-argument", "email is required");
@@ -216,6 +234,7 @@ export const createUserAccount = onCall<CreateUserAccountPayload>(
       logger.error("createUserAccount: auth.createUser failed", {
         caller: request.auth.uid,
         error: String(e),
+        clientTraceId: clientTraceId ?? null,
       });
       throw new HttpsError("internal", "Account creation failed");
     }
@@ -265,6 +284,7 @@ export const createUserAccount = onCall<CreateUserAccountPayload>(
         caller: request.auth.uid,
         uid,
         error: String(e),
+        clientTraceId: clientTraceId ?? null,
       });
       try {
         await admin.auth().deleteUser(uid);
@@ -272,6 +292,7 @@ export const createUserAccount = onCall<CreateUserAccountPayload>(
         logger.error("createUserAccount: rollback deleteUser also failed", {
           uid,
           error: String(rollbackErr),
+          clientTraceId: clientTraceId ?? null,
         });
       }
       throw new HttpsError("internal", "Account creation failed");
@@ -283,6 +304,7 @@ export const createUserAccount = onCall<CreateUserAccountPayload>(
       uid,
       role,
       instituteId: normalizedInstituteId,
+      clientTraceId: clientTraceId ?? null,
     });
     return { uid };
   },
@@ -305,7 +327,7 @@ export const setUserPassword = onCall<SetUserPasswordPayload>(
       throw new HttpsError("unauthenticated", "Sign in required");
     }
 
-    const { userId, newPassword } = request.data ?? {};
+    const { userId, newPassword, clientTraceId } = request.data ?? {};
     if (!userId || typeof userId !== "string") {
       throw new HttpsError("invalid-argument", "userId is required");
     }
@@ -424,6 +446,7 @@ export const setUserPassword = onCall<SetUserPasswordPayload>(
     logger.info("setUserPassword: reset", {
       caller: request.auth.uid,
       target: userId,
+      clientTraceId: clientTraceId ?? null,
     });
     return { success: true };
   },
@@ -431,6 +454,11 @@ export const setUserPassword = onCall<SetUserPasswordPayload>(
 
 interface HardDeleteStudentPayload {
   studentId: string;
+  // Correlation id set by the client so a Sentry error report can be joined
+  // to this function's structured log. Optional and backwards-compatible: an
+  // older client that omits it keeps working exactly as before. Never
+  // validated or used for authorization.
+  clientTraceId?: string | null;
 }
 
 /**
@@ -493,7 +521,8 @@ export const hardDeleteStudent = onCall<HardDeleteStudentPayload>(
       );
     }
 
-    const { studentId } = request.data ?? ({} as HardDeleteStudentPayload);
+    const { studentId, clientTraceId } =
+      request.data ?? ({} as HardDeleteStudentPayload);
     if (!studentId || typeof studentId !== "string") {
       throw new HttpsError("invalid-argument", "studentId is required");
     }
@@ -546,6 +575,7 @@ export const hardDeleteStudent = onCall<HardDeleteStudentPayload>(
               studentId,
               userId,
               error: String(e),
+              clientTraceId: clientTraceId ?? null,
             });
           }
         }
@@ -559,6 +589,7 @@ export const hardDeleteStudent = onCall<HardDeleteStudentPayload>(
       userId: userId ?? null,
       accountDeleted,
       deletedCounts,
+      clientTraceId: clientTraceId ?? null,
     });
     return { success: true, deletedCounts };
   },

@@ -6,6 +6,7 @@ import '../services/session_cache.dart';
 import '../services/telemetry/telemetry_providers.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/telemetry/analytics_event.dart';
+import '../../core/telemetry/client_trace_id.dart';
 import 'user_repository.dart';
 import '../models/user_model.dart';
 
@@ -177,9 +178,14 @@ class AuthRepository extends Notifier<AuthState> {
     final callable = FirebaseFunctions.instance.httpsCallable(
       'setUserPassword',
     );
+    // Captured first so the same value could also be attached to an error
+    // report in a surrounding catch, joining a client-side failure to the
+    // function's structured log.
+    final traceId = newClientTraceId();
     await callable.call<dynamic>({
       'userId': userId,
       'newPassword': newPassword,
+      'clientTraceId': traceId,
     });
   }
 
