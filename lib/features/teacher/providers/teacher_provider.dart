@@ -5,10 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/session_repository.dart';
+import '../../../data/services/firestore_read_source.dart';
 import '../../../data/services/telemetry/telemetry_providers.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
 import '../../../domain/session/student_history_entry.dart';
+import '../../../core/telemetry/analytics_event.dart';
 import '../../../core/utils/grade_calculator.dart';
 import '../../../domain/curriculum/paced_session.dart';
 import '../../../shared/providers/home_assignment_status_provider.dart';
@@ -421,6 +423,12 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     // sessions the meeting batched together. Record and student progress are
     // STAGED into one WriteBatch so they land atomically: an offline save
     // must never sync the record without the advancement, or vice versa.
+    //
+    // Connectivity is captured HERE, at record-creation time — not at commit
+    // time, which may be much later once an offline batch finally syncs. A
+    // session created offline and synced later must still report itself as
+    // having been created offline; that is the fact worth knowing.
+    final wasOffline = !ref.read(firestoreReadSourceProvider).isOnline;
     final batch = sessionRepo.newWriteBatch();
     final record = await sessionRepo.createSessionRecord(
       studentId: student.id,
@@ -460,17 +468,37 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     // immediately and queues it for sync. Awaiting would hang the save UI
     // forever offline — the commit Future only completes on server ack. A
     // rejected sync is otherwise invisible: the teacher already saw success.
+    //
+    // The analytics event fires ONLY from the success continuation
+    // (`.then`), never from `.catchError` — a session whose commit never
+    // reaches the server must not be counted as a completed one. `.then`
+    // runs only when `commit()` resolves; on rejection it is skipped and
+    // `.catchError` alone runs, so the two outcomes cannot both fire.
     unawaited(
-      batch.commit().catchError((Object e, StackTrace s) {
-        ref
-            .read(errorReporterProvider)
-            .recordError(
-              e,
-              s,
-              reason:
-                  'ActiveSessionNotifier.completeSession batch commit failed',
-            );
-      }),
+      batch
+          .commit()
+          .then((_) {
+            ref
+                .read(usageAnalyticsProvider)
+                .record(
+                  SessionRecorded(
+                    sessionType: 'hifz',
+                    errorCount: record.grades.totalErrors,
+                    duration: record.duration ?? Duration.zero,
+                    wasOffline: wasOffline,
+                  ),
+                );
+          })
+          .catchError((Object e, StackTrace s) {
+            ref
+                .read(errorReporterProvider)
+                .recordError(
+                  e,
+                  s,
+                  reason:
+                      'ActiveSessionNotifier.completeSession batch commit failed',
+                );
+          }),
     );
 
     // Clear state
@@ -523,7 +551,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     state = state!.copyWith(meeting: meeting);
 
     // Record and advancement staged into one batch, committed without
-    // awaiting server ack — see completeSession for why.
+    // awaiting server ack — see completeSession for why. Connectivity is
+    // likewise captured HERE, at record-creation time — see completeSession.
+    final wasOffline = !ref.read(firestoreReadSourceProvider).isOnline;
     final batch = sessionRepo.newWriteBatch();
     final record = await sessionRepo.createTalqeenRecord(
       studentId: student.id,
@@ -545,17 +575,33 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
       batch: batch,
     );
 
+    // See completeSession for why the analytics event fires only from the
+    // success continuation and never alongside the error path.
     unawaited(
-      batch.commit().catchError((Object e, StackTrace s) {
-        ref
-            .read(errorReporterProvider)
-            .recordError(
-              e,
-              s,
-              reason:
-                  'ActiveSessionNotifier.completeTalqeenSession batch commit failed',
-            );
-      }),
+      batch
+          .commit()
+          .then((_) {
+            ref
+                .read(usageAnalyticsProvider)
+                .record(
+                  SessionRecorded(
+                    sessionType: 'talqeen',
+                    errorCount: record.grades.totalErrors,
+                    duration: record.duration ?? Duration.zero,
+                    wasOffline: wasOffline,
+                  ),
+                );
+          })
+          .catchError((Object e, StackTrace s) {
+            ref
+                .read(errorReporterProvider)
+                .recordError(
+                  e,
+                  s,
+                  reason:
+                      'ActiveSessionNotifier.completeTalqeenSession batch commit failed',
+                );
+          }),
     );
 
     state = state!.copyWith(isComplete: true, advanceOutcome: advanceOutcome);

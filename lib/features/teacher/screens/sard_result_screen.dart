@@ -5,9 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/keyboard_dismissal.dart';
+import '../../../core/telemetry/analytics_event.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/student_repository.dart';
+import '../../../data/services/firestore_read_source.dart';
 import '../../../data/services/telemetry/telemetry_providers.dart';
 import '../../../domain/assessment/assessment_evaluation.dart';
 import '../../../routing/app_router.dart';
@@ -94,6 +96,12 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
       // committed without awaiting server ack: offline, the save must return
       // instantly (the commit Future only completes on server ack) and the
       // pair must sync atomically.
+      //
+      // Connectivity is captured HERE, at record-creation time — not at
+      // commit time, which may be much later once an offline batch finally
+      // syncs — see ActiveSessionNotifier.completeSession for the same
+      // reasoning.
+      final wasOffline = !ref.read(firestoreReadSourceProvider).isOnline;
       final batch = sessionRepo.newWriteBatch();
       final record = await sessionRepo.createSardRecord(
         studentId: student.id,
@@ -124,16 +132,34 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
         await studentRepo.incrementStudentAttempt(student.id, batch: batch);
       }
 
+      // The analytics event fires ONLY from the success continuation
+      // (`.then`) — see ActiveSessionNotifier.completeSession for why it must
+      // never fire alongside `.catchError`.
       unawaited(
-        batch.commit().catchError((Object e, StackTrace s) {
-          ref
-              .read(errorReporterProvider)
-              .recordError(
-                e,
-                s,
-                reason: '_SardResultScreenState._saveSard batch commit failed',
-              );
-        }),
+        batch
+            .commit()
+            .then((_) {
+              ref
+                  .read(usageAnalyticsProvider)
+                  .record(
+                    SessionRecorded(
+                      sessionType: 'sard',
+                      errorCount: record.errorCount,
+                      duration: record.duration ?? Duration.zero,
+                      wasOffline: wasOffline,
+                    ),
+                  );
+            })
+            .catchError((Object e, StackTrace s) {
+              ref
+                  .read(errorReporterProvider)
+                  .recordError(
+                    e,
+                    s,
+                    reason:
+                        '_SardResultScreenState._saveSard batch commit failed',
+                  );
+            }),
       );
 
       // The four outcomes are four different things, and the teacher is told

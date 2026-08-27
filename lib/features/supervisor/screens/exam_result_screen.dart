@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/keyboard_dismissal.dart';
+import '../../../core/telemetry/analytics_event.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/student_repository.dart';
@@ -130,16 +131,29 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
         await studentRepo.incrementStudentAttempt(student.id, batch: batch);
       }
 
+      // The analytics event fires ONLY from the success continuation
+      // (`.then`) — see ActiveSessionNotifier.completeSession for why it must
+      // never fire alongside `.catchError`.
       unawaited(
-        batch.commit().catchError((Object e, StackTrace s) {
-          ref
-              .read(errorReporterProvider)
-              .recordError(
-                e,
-                s,
-                reason: '_ExamResultScreenState._saveExam batch commit failed',
-              );
-        }),
+        batch
+            .commit()
+            .then((_) {
+              ref
+                  .read(usageAnalyticsProvider)
+                  .record(
+                    AssessmentCompleted(result: _evaluation.outcome.name),
+                  );
+            })
+            .catchError((Object e, StackTrace s) {
+              ref
+                  .read(errorReporterProvider)
+                  .recordError(
+                    e,
+                    s,
+                    reason:
+                        '_ExamResultScreenState._saveExam batch commit failed',
+                  );
+            }),
       );
 
       // The four outcomes are four different things, and the supervisor is told
