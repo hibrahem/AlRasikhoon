@@ -19,9 +19,15 @@ class TelemetryToggle extends ConsumerWidget {
         onChanged: (value) =>
             ref.read(telemetryEnabledProvider.notifier).setEnabled(value),
         title: const Text('إرسال تقارير الأعطال والاستخدام'),
+        // Describes what the code actually does, not what we wish it did:
+        // switching off stops both SDKs on the spot, while switching back on
+        // re-initialises them and is only guaranteed complete after the app
+        // is reopened. See web/privacy.html §2.د.
         subtitle: const Text(
           'تساعدنا هذه التقارير على اكتشاف الأعطال وإصلاحها. '
-          'لا تتضمن اسمك ولا بيانات حفظك.',
+          'لا تتضمن اسمك ولا بيانات حفظك. '
+          'وعند إيقاف الخيار يتوقف الإرسال فورًا، '
+          'أما إعادة تشغيله فقد تحتاج إلى إعادة فتح التطبيق ليعمل بالكامل.',
         ),
       ),
     );

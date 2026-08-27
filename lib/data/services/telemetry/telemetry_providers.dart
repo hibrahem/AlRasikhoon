@@ -1,13 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../../core/config/firebase_emulator_config.dart';
 import '../../../core/telemetry/error_reporter.dart';
 import '../../../core/telemetry/telemetry_gate.dart';
+import '../../../core/telemetry/telemetry_runtime.dart';
 import '../../../core/telemetry/usage_analytics.dart';
 import 'firebase_usage_analytics.dart';
 import 'noop_telemetry.dart';
+import 'platform_telemetry_runtime.dart';
 import 'sentry_error_reporter.dart';
 
 /// Supplied at build time: `--dart-define=SENTRY_DSN=...`. Empty by default so
@@ -26,39 +27,43 @@ bool telemetryIsPermitted({
   return true;
 }
 
-/// Initialises Sentry and returns the live reporter, or returns the no-op
-/// reporter when telemetry is not permitted. Never throws: an initialisation
-/// failure degrades to no-op rather than blocking startup.
-Future<ErrorReporter> createErrorReporter({
+/// Builds the object that owns the vendor SDKs' collection switches.
+///
+/// Always a live runtime on a real device, even when telemetry is not
+/// permitted: Firebase Analytics auto-collection has to be switched OFF in
+/// exactly those builds, and only a live sink can do that.
+TelemetryRuntime createTelemetryRuntime({
   required TelemetryGate gate,
   required String dsn,
-}) async {
+}) {
+  return PlatformTelemetryRuntime(
+    sink: LiveTelemetryPlatformSink(dsn: dsn, gate: gate),
+    permitted: telemetryIsPermitted(
+      isDebug: kDebugMode,
+      isEmulator: FirebaseEmulatorConfig.isEmulatorMode,
+      dsn: dsn,
+    ),
+  );
+}
+
+/// Returns the live reporter, or the no-op reporter when telemetry is not
+/// permitted.
+///
+/// Deliberately does NOT initialise Sentry — [TelemetryRuntime] owns that, so
+/// that an opted-out user never has the SDK started in the first place. The
+/// reporter is safe to hold either way: it checks the gate before emitting,
+/// and its sink is a no-op while the SDK is down.
+ErrorReporter createErrorReporter({
+  required TelemetryGate gate,
+  required String dsn,
+}) {
   final permitted = telemetryIsPermitted(
     isDebug: kDebugMode,
     isEmulator: FirebaseEmulatorConfig.isEmulatorMode,
     dsn: dsn,
   );
   if (!permitted) return const NoopErrorReporter();
-
-  try {
-    // Halaqas frequently have no connectivity. SentryFlutter.init reaches out
-    // to the network, so an unbounded await here could hang startup forever;
-    // a timeout guarantees the app still launches, degraded to no-op.
-    await SentryFlutter.init((options) {
-      options.dsn = dsn;
-      // Student names appear on screen in nearly every view.
-      options.attachScreenshot = false;
-      options.attachViewHierarchy = false;
-      options.sendDefaultPii = false;
-      // A closed gate must suppress SDK-captured native events too, not just
-      // the ones this app reports explicitly.
-      options.beforeSend = (event, hint) => gate.isOpen ? event : null;
-    }).timeout(const Duration(seconds: 5));
-    return SentryErrorReporter(gate: gate, sink: const LiveSentrySink());
-  } catch (_) {
-    // Catches both a thrown init failure and a TimeoutException.
-    return const NoopErrorReporter();
-  }
+  return SentryErrorReporter(gate: gate, sink: const LiveSentrySink());
 }
 
 /// Overridden in `main()` with the instance created before `runApp`. Defaults
@@ -92,6 +97,13 @@ UsageAnalytics createUsageAnalytics({
 /// instead of taking the app down with it.
 final usageAnalyticsProvider = Provider<UsageAnalytics>(
   (ref) => const NoopUsageAnalytics(),
+);
+
+/// Overridden in `main()` with the instance created before `runApp`. Defaults
+/// to the no-op runtime so a test container never reaches for a Firebase app
+/// or a Sentry SDK that isn't there.
+final telemetryRuntimeProvider = Provider<TelemetryRuntime>(
+  (ref) => const NoopTelemetryRuntime(),
 );
 
 /// Overridden in `main()` with the single shared gate. Defaults CLOSED: an

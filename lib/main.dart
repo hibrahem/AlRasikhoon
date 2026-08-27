@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'firebase_options.dart';
 import 'app.dart';
+import 'core/telemetry/error_reporter.dart';
 import 'core/telemetry/telemetry_gate.dart';
 import 'data/services/shared_preferences_provider.dart';
 import 'data/services/session_cache.dart';
@@ -17,7 +20,66 @@ import 'core/config/firebase_emulator_config.dart';
 import 'core/constants/app_constants.dart';
 import 'shared/providers/telemetry_provider_observer.dart';
 
-void main() async {
+void main() {
+  // Firebase init, emulator config, Firestore settings, Hive and
+  // SharedPreferences all run before the reporter can exist, and "the app
+  // won't launch" is the worst production failure there is — it used to
+  // report nothing at all. The guarded zone catches a throw from any of them
+  // without changing a single step's behaviour or order.
+  //
+  // `reporter` is assigned as soon as the real one is built; until then the
+  // handler falls back to [_reportStartupFailure], which pays the cost of
+  // standing a minimal reporter up ON THE FAILURE PATH ONLY. The healthy
+  // pre-first-frame path is untouched.
+  ErrorReporter? reporter;
+
+  runZonedGuarded(
+    () async {
+      reporter = await _bootstrap();
+    },
+    (error, stack) {
+      final live = reporter;
+      if (live != null) {
+        live.recordError(
+          error,
+          stack,
+          reason: 'uncaught zone error',
+          fatal: true,
+        );
+        return;
+      }
+      unawaited(_reportStartupFailure(error, stack));
+    },
+  );
+}
+
+/// Reports a startup failure that happened before the real reporter existed.
+///
+/// The normal reporter depends on SharedPreferences (for the opt-out) and is
+/// built after Firebase, so a failure earlier than that would otherwise be
+/// invisible. Everything needed to report it — the stored preference and
+/// Sentry — is independent of Firebase, so a minimal reporter can be stood up
+/// here. Never throws: failing to report a failure is dropped.
+Future<void> _reportStartupFailure(Object error, StackTrace stack) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final gate = TelemetryGate(
+      isOpen: prefs.getBool(kTelemetryEnabledKey) ?? true,
+    );
+    await createTelemetryRuntime(
+      gate: gate,
+      dsn: kSentryDsn,
+    ).setEnabled(gate.isOpen);
+    createErrorReporter(gate: gate, dsn: kSentryDsn).recordError(
+      error,
+      stack,
+      reason: 'startup failed before telemetry was ready',
+      fatal: true,
+    );
+  } catch (_) {}
+}
+
+Future<ErrorReporter> _bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Cairo is BUNDLED (pubspec `google_fonts/`), never downloaded. Without this
@@ -94,7 +156,16 @@ void main() async {
   final telemetryGate = TelemetryGate(
     isOpen: sharedPreferences.getBool(kTelemetryEnabledKey) ?? true,
   );
-  final errorReporter = await createErrorReporter(
+  // The gate only guards the Dart layer. Firebase Analytics starts native
+  // auto-collection at launch and Sentry's native crash handler and session
+  // tracking send on their own, so the SDKs themselves are switched here — and
+  // Sentry is not initialised at all for a user who is opted out.
+  final telemetryRuntime = createTelemetryRuntime(
+    gate: telemetryGate,
+    dsn: kSentryDsn,
+  );
+  await telemetryRuntime.setEnabled(telemetryGate.isOpen);
+  final errorReporter = createErrorReporter(
     gate: telemetryGate,
     dsn: kSentryDsn,
   );
@@ -107,6 +178,11 @@ void main() async {
   // console behaviour intact for developers.
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
+    // Honour `silent` the way sentry_flutter's own integration does. This app
+    // is RTL Arabic with a history of text overflows, and a single recurring
+    // RenderFlex overflow would otherwise become a release-build Sentry event
+    // on every frame, burning the quota and burying real crashes.
+    if (details.silent) return;
     errorReporter.recordError(
       details.exception,
       details.stack,
@@ -136,8 +212,11 @@ void main() async {
         errorReporterProvider.overrideWithValue(errorReporter),
         usageAnalyticsProvider.overrideWithValue(usageAnalytics),
         telemetryGateProvider.overrideWithValue(telemetryGate),
+        telemetryRuntimeProvider.overrideWithValue(telemetryRuntime),
       ],
       child: const AlRasikhoonApp(),
     ),
   );
+
+  return errorReporter;
 }
