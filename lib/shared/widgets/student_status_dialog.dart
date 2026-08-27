@@ -75,6 +75,10 @@ class _StudentStatusDialogState extends ConsumerState<StudentStatusDialog> {
     // AssignTeacherDialog's hardening).
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
+    // Same reasoning for the reporter: reading it inside the catch, after the
+    // await, throws if the dialog was dismissed mid-flight and turns a handled
+    // failure into an unhandled one.
+    final errorReporter = ref.read(errorReporterProvider);
     try {
       await ref
           .read(studentRepositoryProvider)
@@ -98,13 +102,11 @@ class _StudentStatusDialogState extends ConsumerState<StudentStatusDialog> {
         ),
       );
     } catch (e, stackTrace) {
-      ref
-          .read(errorReporterProvider)
-          .recordError(
-            e,
-            stackTrace,
-            reason: '_StudentStatusDialogState._handleConfirm failed',
-          );
+      errorReporter.recordError(
+        e,
+        stackTrace,
+        reason: '_StudentStatusDialogState._handleConfirm failed',
+      );
       if (!context.mounted) return;
       setState(() => _error = 'حدث خطأ، يرجى المحاولة مرة أخرى');
     } finally {

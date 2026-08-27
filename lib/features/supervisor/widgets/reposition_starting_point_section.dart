@@ -112,6 +112,10 @@ class _RepositionDialogState extends ConsumerState<_RepositionDialog> {
     }
 
     setState(() => _isSaving = true);
+    // Captured before the async gap: reading it inside the catch would throw if
+    // the dialog was dismissed mid-await, turning a handled failure into an
+    // unhandled one (EditProfileDialog convention).
+    final errorReporter = ref.read(errorReporterProvider);
     try {
       await ref
           .read(studentRepositoryProvider)
@@ -145,13 +149,11 @@ class _RepositionDialogState extends ConsumerState<_RepositionDialog> {
     } on RepositionNotAuthorizedException {
       _showError('غير مصرح لك بتعديل نقطة البداية لهذا الطالب.');
     } catch (e, stackTrace) {
-      ref
-          .read(errorReporterProvider)
-          .recordError(
-            e,
-            stackTrace,
-            reason: '_RepositionDialogState._save failed',
-          );
+      errorReporter.recordError(
+        e,
+        stackTrace,
+        reason: '_RepositionDialogState._save failed',
+      );
       _showError('تعذر تحديث نقطة البداية، حاول مرة أخرى');
     } finally {
       if (mounted) setState(() => _isSaving = false);

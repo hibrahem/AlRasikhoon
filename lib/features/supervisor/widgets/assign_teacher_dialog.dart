@@ -58,6 +58,10 @@ class _AssignTeacherDialogState extends ConsumerState<AssignTeacherDialog> {
     // ResetPasswordDialog's hardening, #18).
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
+    // Captured before the async gap: reading it inside the catch would throw
+    // if the widget was disposed mid-await, turning a handled failure into an
+    // unhandled one (EditProfileDialog convention).
+    final errorReporter = ref.read(errorReporterProvider);
     try {
       final studentRepo = ref.read(studentRepositoryProvider);
       await studentRepo.assignTeacher(
@@ -76,13 +80,11 @@ class _AssignTeacherDialogState extends ConsumerState<AssignTeacherDialog> {
         ),
       );
     } catch (e, stackTrace) {
-      ref
-          .read(errorReporterProvider)
-          .recordError(
-            e,
-            stackTrace,
-            reason: '_AssignTeacherDialogState._handleAssign failed',
-          );
+      errorReporter.recordError(
+        e,
+        stackTrace,
+        reason: '_AssignTeacherDialogState._handleAssign failed',
+      );
       if (!context.mounted) return;
       setState(() => _error = 'حدث خطأ، يرجى المحاولة مرة أخرى');
     } finally {
