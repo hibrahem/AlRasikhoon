@@ -272,6 +272,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // The telemetry toggle card pushes the stats card out of the initially
+    // built sliver range; scroll it into view like _tapSignOut does below.
+    await tester.scrollUntilVisible(
+      find.text('إجمالي الجلسات'),
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+
     expect(find.text('إجمالي الجلسات'), findsOneWidget);
     expect(find.text('42'), findsOneWidget);
     expect(find.text('جلسات هذا الشهر'), findsOneWidget);
@@ -294,6 +302,14 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+
+    // The telemetry toggle card pushes the stats card out of the initially
+    // built sliver range; scroll it into view like _tapSignOut does below.
+    await tester.scrollUntilVisible(
+      find.text('إجمالي الجلسات'),
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
 
     expect(find.text('إجمالي الجلسات'), findsOneWidget);
     expect(find.text('20'), findsOneWidget);

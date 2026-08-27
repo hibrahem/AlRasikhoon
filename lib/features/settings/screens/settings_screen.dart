@@ -13,6 +13,7 @@ import '../../../shared/widgets/app_large_top_bar.dart';
 import '../../../shared/widgets/confirm_sign_out.dart';
 import '../../../shared/widgets/edit_profile_dialog.dart';
 import '../../../shared/widgets/icon_medallion.dart';
+import '../widgets/telemetry_toggle.dart';
 import '../widgets/theme_mode_selector.dart';
 
 /// Account screen for the teacher, supervisor and student shells.
@@ -45,6 +46,8 @@ class SettingsScreen extends ConsumerWidget {
                 const _AccountCard(),
                 const SizedBox(height: 16),
                 const ThemeModeSelector(),
+                const SizedBox(height: 16),
+                const TelemetryToggle(),
                 if (user.role == UserRole.teacher) ...[
                   const SizedBox(height: 16),
                   const _TeacherStatsCard(),
