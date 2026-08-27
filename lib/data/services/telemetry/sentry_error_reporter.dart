@@ -14,6 +14,7 @@ abstract interface class SentrySink {
     String? reason,
     Map<String, String> tags,
     String? userId,
+    bool fatal,
   );
   void breadcrumb(String message, String? category);
 }
@@ -28,11 +29,13 @@ class LiveSentrySink implements SentrySink {
     String? reason,
     Map<String, String> tags,
     String? userId,
+    bool fatal,
   ) {
     Sentry.captureException(
       error,
       stackTrace: stackTrace,
       withScope: (scope) {
+        scope.level = fatal ? SentryLevel.fatal : SentryLevel.error;
         if (userId != null) {
           scope.setUser(SentryUser(id: userId));
         }
@@ -84,6 +87,7 @@ class SentryErrorReporter implements ErrorReporter {
         scrubbedReason,
         _context.toTags(),
         _context.userId,
+        fatal,
       );
     } catch (_) {}
   }

@@ -8,6 +8,7 @@ class _FakeSink implements SentrySink {
   final List<String> breadcrumbs = [];
   Map<String, String> lastTags = const {};
   String? lastUserId;
+  bool? lastFatal;
 
   @override
   void captureException(
@@ -16,10 +17,12 @@ class _FakeSink implements SentrySink {
     String? reason,
     Map<String, String> tags,
     String? userId,
+    bool fatal,
   ) {
     captured.add('$error|$reason');
     lastTags = tags;
     lastUserId = userId;
+    lastFatal = fatal;
   }
 
   @override
@@ -102,6 +105,42 @@ void main() {
     expect(sink.lastUserId, 'uid123');
   });
 
+  test('a fatal report reaches the sink marked fatal', () {
+    final sink = _FakeSink();
+    final reporter = SentryErrorReporter(
+      gate: TelemetryGate(isOpen: true),
+      sink: sink,
+    );
+
+    reporter.recordError(Exception('boom'), null, fatal: true);
+
+    expect(sink.lastFatal, isTrue);
+  });
+
+  test('a non-fatal report reaches the sink marked not fatal', () {
+    final sink = _FakeSink();
+    final reporter = SentryErrorReporter(
+      gate: TelemetryGate(isOpen: true),
+      sink: sink,
+    );
+
+    reporter.recordError(Exception('boom'), null, fatal: false);
+
+    expect(sink.lastFatal, isFalse);
+  });
+
+  test('the default is not fatal when the caller omits the flag', () {
+    final sink = _FakeSink();
+    final reporter = SentryErrorReporter(
+      gate: TelemetryGate(isOpen: true),
+      sink: sink,
+    );
+
+    reporter.recordError(Exception('boom'), null);
+
+    expect(sink.lastFatal, isFalse);
+  });
+
   test('a sink failure is swallowed rather than propagated', () {
     final reporter = SentryErrorReporter(
       gate: TelemetryGate(isOpen: true),
@@ -123,6 +162,7 @@ class _ThrowingSink implements SentrySink {
     String? reason,
     Map<String, String> tags,
     String? userId,
+    bool fatal,
   ) {
     throw Exception('sink is broken');
   }
