@@ -92,7 +92,7 @@ void main() async {
   // already covered. SharedPreferences is already loaded above, so the user's
   // opt-out is known without a second async hop.
   final telemetryGate = TelemetryGate(
-    isOpen: sharedPreferences.getBool('telemetry_enabled') ?? true,
+    isOpen: sharedPreferences.getBool(kTelemetryEnabledKey) ?? true,
   );
   final errorReporter = await createErrorReporter(
     gate: telemetryGate,
@@ -114,7 +114,13 @@ void main() async {
   // Uncaught async errors that escape to the platform.
   PlatformDispatcher.instance.onError = (error, stack) {
     errorReporter.recordError(error, stack, fatal: true);
-    return true;
+    // `true` tells the engine the error was handled and suppresses its
+    // stderr fallback. In debug builds the reporter is the no-op adapter, so
+    // returning `true` unconditionally would make async errors vanish
+    // silently for developers; returning `false` there lets the engine's
+    // fallback print run as it always has. Release builds keep suppressing
+    // it — there is no console there to print to.
+    return !kDebugMode;
   };
 
   runApp(

@@ -14,4 +14,9 @@ void main() {
     gate.close();
     expect(gate.isOpen, isFalse);
   });
+
+  test('the telemetry opt-out preference key is pinned so a rename cannot '
+      'silently orphan existing users\' opt-outs', () {
+    expect(kTelemetryEnabledKey, 'telemetry_enabled');
+  });
 }

@@ -40,6 +40,9 @@ Future<ErrorReporter> createErrorReporter({
   if (!permitted) return const NoopErrorReporter();
 
   try {
+    // Halaqas frequently have no connectivity. SentryFlutter.init reaches out
+    // to the network, so an unbounded await here could hang startup forever;
+    // a timeout guarantees the app still launches, degraded to no-op.
     await SentryFlutter.init((options) {
       options.dsn = dsn;
       // Student names appear on screen in nearly every view.
@@ -49,9 +52,10 @@ Future<ErrorReporter> createErrorReporter({
       // A closed gate must suppress SDK-captured native events too, not just
       // the ones this app reports explicitly.
       options.beforeSend = (event, hint) => gate.isOpen ? event : null;
-    });
+    }).timeout(const Duration(seconds: 5));
     return SentryErrorReporter(gate: gate, sink: const LiveSentrySink());
   } catch (_) {
+    // Catches both a thrown init failure and a TimeoutException.
     return const NoopErrorReporter();
   }
 }

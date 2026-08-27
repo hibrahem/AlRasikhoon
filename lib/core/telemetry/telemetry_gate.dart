@@ -1,3 +1,8 @@
+/// The SharedPreferences key backing the user's diagnostics opt-out. Declared
+/// once here because `main()` reads it before `runApp` and the settings toggle
+/// writes it later; two independent literals would let the opt-out fail open.
+const String kTelemetryEnabledKey = 'telemetry_enabled';
+
 /// A mutable on/off switch consulted by every adapter before it emits.
 ///
 /// Held as a single instance created in `main()` and shared by the adapters,
