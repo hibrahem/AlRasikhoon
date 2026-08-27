@@ -4,11 +4,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:al_rasikhoon/core/telemetry/error_reporter.dart';
+import 'package:al_rasikhoon/core/telemetry/telemetry_context.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/auth_repository.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
 import 'package:al_rasikhoon/data/services/firebase_service.dart';
 import 'package:al_rasikhoon/data/services/session_cache.dart';
+import 'package:al_rasikhoon/data/services/telemetry/telemetry_providers.dart';
 
 class MockFirebaseService extends Mock implements FirebaseService {}
 
@@ -28,6 +31,26 @@ class FakeFirebaseAuthException extends Fake implements FirebaseAuthException {
   final String? message;
 
   FakeFirebaseAuthException({required this.code, this.message});
+}
+
+class _RecordingReporter implements ErrorReporter {
+  final List<({Object error, String? reason})> recorded = [];
+
+  @override
+  void recordError(
+    Object error,
+    StackTrace? stackTrace, {
+    String? reason,
+    bool fatal = false,
+  }) {
+    recorded.add((error: error, reason: reason));
+  }
+
+  @override
+  void addBreadcrumb(String message, {String? category}) {}
+
+  @override
+  void updateContext(TelemetryContext context) {}
 }
 
 void main() {
@@ -464,6 +487,99 @@ void main() {
         final state = container.read(authRepositoryProvider);
         expect(state.firebaseUser, isNull);
         expect(state.appUser, isNull);
+      });
+    });
+
+    group('_refreshAppUser (background reconcile)', () {
+      test(
+        'reports a swallowed refresh failure and keeps the cached optimistic '
+        'profile intact instead of throwing',
+        () async {
+          final cachedUser = buildUser(id: 'uid-1', name: 'اسم سري للمستخدم');
+          final mockUser = MockUser();
+          when(() => mockUser.uid).thenReturn('uid-1');
+          final authController = StreamController<User?>();
+          addTearDown(authController.close);
+
+          when(
+            () => mockFirebaseService.authStateChanges,
+          ).thenAnswer((_) => authController.stream);
+          when(() => mockSessionCache.readUser()).thenReturn(cachedUser);
+          when(
+            () => mockUserRepository.getUserById('uid-1'),
+          ).thenThrow(Exception('offline: getUserById unreachable'));
+
+          final reporter = _RecordingReporter();
+          final scopedContainer = ProviderContainer(
+            overrides: [
+              firebaseServiceProvider.overrideWithValue(mockFirebaseService),
+              userRepositoryProvider.overrideWithValue(mockUserRepository),
+              sessionCacheProvider.overrideWithValue(mockSessionCache),
+              errorReporterProvider.overrideWithValue(reporter),
+            ],
+          );
+          addTearDown(scopedContainer.dispose);
+
+          // Seeds AuthState from the cached optimistic profile and starts
+          // the authStateChanges listener that drives _refreshAppUser.
+          scopedContainer.read(authRepositoryProvider);
+          authController.add(mockUser);
+          await pumpEventQueue();
+
+          expect(reporter.recorded, hasLength(1));
+          expect(reporter.recorded.single.reason, isNotNull);
+          // The reason must be a fixed, hand-written string — never the
+          // exception text and never anything derived from the user model.
+          expect(
+            reporter.recorded.single.reason,
+            isNot(contains('اسم سري للمستخدم')),
+          );
+          expect(
+            reporter.recorded.single.reason,
+            isNot(contains('offline: getUserById unreachable')),
+          );
+
+          // The catch's existing fallback behaviour is unchanged: the
+          // reconcile failure is swallowed and the cached optimistic user
+          // stays in state rather than the method throwing or clearing it.
+          final state = scopedContainer.read(authRepositoryProvider);
+          expect(state.appUser?.id, 'uid-1');
+        },
+      );
+
+      test('a repository built without overriding errorReporterProvider still '
+          'reconciles safely (proves the default no-op fallback)', () async {
+        final cachedUser = buildUser(id: 'uid-2');
+        final mockUser = MockUser();
+        when(() => mockUser.uid).thenReturn('uid-2');
+        final authController = StreamController<User?>();
+        addTearDown(authController.close);
+
+        when(
+          () => mockFirebaseService.authStateChanges,
+        ).thenAnswer((_) => authController.stream);
+        when(() => mockSessionCache.readUser()).thenReturn(cachedUser);
+        when(
+          () => mockUserRepository.getUserById('uid-2'),
+        ).thenThrow(Exception('offline'));
+
+        final scopedContainer = ProviderContainer(
+          overrides: [
+            firebaseServiceProvider.overrideWithValue(mockFirebaseService),
+            userRepositoryProvider.overrideWithValue(mockUserRepository),
+            sessionCacheProvider.overrideWithValue(mockSessionCache),
+            // errorReporterProvider is deliberately left un-overridden —
+            // it must default to NoopErrorReporter and never throw.
+          ],
+        );
+        addTearDown(scopedContainer.dispose);
+
+        scopedContainer.read(authRepositoryProvider);
+        authController.add(mockUser);
+        await pumpEventQueue();
+
+        final state = scopedContainer.read(authRepositoryProvider);
+        expect(state.appUser?.id, 'uid-2');
       });
     });
   });

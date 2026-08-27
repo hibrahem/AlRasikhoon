@@ -6,6 +6,7 @@ import '../../../data/models/institute_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/institute_repository.dart';
 import '../../../data/repositories/user_repository.dart';
+import '../../../data/services/telemetry/telemetry_providers.dart';
 import '../../../features/auth/widgets/reset_password_dialog.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/edit_profile_dialog.dart';
@@ -145,7 +146,14 @@ class SupervisorDetailScreen extends ConsumerWidget {
       messenger.showSnackBar(
         SnackBar(content: Text('تم إسناد ${institute.name} بنجاح')),
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      ref
+          .read(errorReporterProvider)
+          .recordError(
+            e,
+            stackTrace,
+            reason: 'SupervisorDetailScreen._assignInstitute failed',
+          );
       messenger.showSnackBar(
         SnackBar(
           content: const Text('فشل في إسناد المعهد، حاول مرة أخرى'),
@@ -198,7 +206,14 @@ class SupervisorDetailScreen extends ConsumerWidget {
       messenger.showSnackBar(
         SnackBar(content: Text('تم إزالة إسناد ${institute.name}')),
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      ref
+          .read(errorReporterProvider)
+          .recordError(
+            e,
+            stackTrace,
+            reason: 'SupervisorDetailScreen._removeInstitute failed',
+          );
       messenger.showSnackBar(
         SnackBar(
           content: const Text('فشل في إزالة الإسناد، حاول مرة أخرى'),

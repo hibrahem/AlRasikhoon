@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/student_repository.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/session_repository.dart';
+import '../../../data/services/telemetry/telemetry_providers.dart';
 import '../../../data/models/session_model.dart';
 import '../../../data/models/session_record_model.dart';
 import '../../../domain/session/student_history_entry.dart';
@@ -457,8 +458,20 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
 
     // Commit fire-and-forget: Firestore applies the batch to the local cache
     // immediately and queues it for sync. Awaiting would hang the save UI
-    // forever offline — the commit Future only completes on server ack.
-    unawaited(batch.commit().catchError((Object e, StackTrace s) {}));
+    // forever offline — the commit Future only completes on server ack. A
+    // rejected sync is otherwise invisible: the teacher already saw success.
+    unawaited(
+      batch.commit().catchError((Object e, StackTrace s) {
+        ref
+            .read(errorReporterProvider)
+            .recordError(
+              e,
+              s,
+              reason:
+                  'ActiveSessionNotifier.completeSession batch commit failed',
+            );
+      }),
+    );
 
     // Clear state
     state = state!.copyWith(isComplete: true, advanceOutcome: advanceOutcome);
@@ -532,7 +545,18 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
       batch: batch,
     );
 
-    unawaited(batch.commit().catchError((Object e, StackTrace s) {}));
+    unawaited(
+      batch.commit().catchError((Object e, StackTrace s) {
+        ref
+            .read(errorReporterProvider)
+            .recordError(
+              e,
+              s,
+              reason:
+                  'ActiveSessionNotifier.completeTalqeenSession batch commit failed',
+            );
+      }),
+    );
 
     state = state!.copyWith(isComplete: true, advanceOutcome: advanceOutcome);
 

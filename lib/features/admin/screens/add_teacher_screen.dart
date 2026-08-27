@@ -8,6 +8,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/services/firebase_service.dart';
+import '../../../data/services/telemetry/telemetry_providers.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/utils/connectivity_guard.dart';
 import '../../../shared/widgets/app_text_field.dart';
@@ -122,7 +123,14 @@ class _AddTeacherScreenState extends ConsumerState<AddTeacherScreen> {
           SnackBar(content: Text(msg), backgroundColor: context.tokens.maroon),
         );
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      ref
+          .read(errorReporterProvider)
+          .recordError(
+            e,
+            stackTrace,
+            reason: '_AddTeacherScreenState._handleCreate failed',
+          );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

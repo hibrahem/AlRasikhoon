@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/institute_repository.dart';
+import '../../../data/services/telemetry/telemetry_providers.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/app_card.dart';
@@ -134,7 +135,14 @@ class InstituteDetailScreen extends ConsumerWidget {
       messenger.showSnackBar(
         SnackBar(content: Text('تم إضافة ${teacher.name} بنجاح')),
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      ref
+          .read(errorReporterProvider)
+          .recordError(
+            e,
+            stackTrace,
+            reason: 'InstituteDetailScreen._assignTeacher failed',
+          );
       messenger.showSnackBar(
         SnackBar(
           content: const Text('فشل في إضافة المعلم، حاول مرة أخرى'),
@@ -189,7 +197,14 @@ class InstituteDetailScreen extends ConsumerWidget {
       messenger.showSnackBar(
         SnackBar(content: Text('تم إزالة ${teacher.name} بنجاح')),
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      ref
+          .read(errorReporterProvider)
+          .recordError(
+            e,
+            stackTrace,
+            reason: 'InstituteDetailScreen._removeTeacher failed',
+          );
       messenger.showSnackBar(
         SnackBar(
           content: const Text('فشل في إزالة المعلم، حاول مرة أخرى'),
@@ -314,7 +329,14 @@ class InstituteDetailScreen extends ConsumerWidget {
       messenger.showSnackBar(
         SnackBar(content: Text('تم إضافة ${supervisor.name} بنجاح')),
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      ref
+          .read(errorReporterProvider)
+          .recordError(
+            e,
+            stackTrace,
+            reason: 'InstituteDetailScreen._assignSupervisor failed',
+          );
       messenger.showSnackBar(
         SnackBar(
           content: const Text('فشل في إضافة المشرف، حاول مرة أخرى'),
@@ -371,7 +393,14 @@ class InstituteDetailScreen extends ConsumerWidget {
       messenger.showSnackBar(
         SnackBar(content: Text('تم إزالة ${supervisor.name} بنجاح')),
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      ref
+          .read(errorReporterProvider)
+          .recordError(
+            e,
+            stackTrace,
+            reason: 'InstituteDetailScreen._removeSupervisor failed',
+          );
       messenger.showSnackBar(
         SnackBar(
           content: const Text('فشل في إزالة المشرف، حاول مرة أخرى'),

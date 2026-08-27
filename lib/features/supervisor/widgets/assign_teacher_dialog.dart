@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/student_repository.dart';
+import '../../../data/services/telemetry/telemetry_providers.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../providers/supervisor_provider.dart';
 
@@ -74,7 +75,14 @@ class _AssignTeacherDialogState extends ConsumerState<AssignTeacherDialog> {
           backgroundColor: AppColors.success,
         ),
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      ref
+          .read(errorReporterProvider)
+          .recordError(
+            e,
+            stackTrace,
+            reason: '_AssignTeacherDialogState._handleAssign failed',
+          );
       if (!context.mounted) return;
       setState(() => _error = 'حدث خطأ، يرجى المحاولة مرة أخرى');
     } finally {

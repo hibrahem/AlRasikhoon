@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/firebase_service.dart';
 import '../services/session_cache.dart';
+import '../services/telemetry/telemetry_providers.dart';
 import '../../core/constants/app_constants.dart';
 import 'user_repository.dart';
 import '../models/user_model.dart';
@@ -89,12 +90,19 @@ class AuthRepository extends Notifier<AuthState> {
       }
       state = state.copyWith(appUser: appUser);
       await _sessionCache.cacheUser(appUser);
-    } catch (_) {
+    } catch (e, stackTrace) {
       // Expected path: an offline / transient getUserById failure — keep
       // showing the cached optimistic profile. This bare catch also swallows
       // programming errors and any throw from signOut(), which is a known
       // trade-off: this reconcile step is not a provider, so
-      // TelemetryProviderObserver never sees it either.
+      // TelemetryProviderObserver never sees it either — report explicitly.
+      ref
+          .read(errorReporterProvider)
+          .recordError(
+            e,
+            stackTrace,
+            reason: 'AuthRepository._refreshAppUser failed',
+          );
     }
   }
 

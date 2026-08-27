@@ -4,6 +4,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/utils/keyboard_dismissal.dart';
 import '../../data/models/student_model.dart';
 import '../../data/repositories/student_repository.dart';
+import '../../data/services/telemetry/telemetry_providers.dart';
 import '../../domain/student/student_status.dart';
 import '../providers/user_provider.dart';
 import 'app_button.dart';
@@ -96,7 +97,14 @@ class _StudentStatusDialogState extends ConsumerState<StudentStatusDialog> {
           backgroundColor: AppColors.success,
         ),
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      ref
+          .read(errorReporterProvider)
+          .recordError(
+            e,
+            stackTrace,
+            reason: '_StudentStatusDialogState._handleConfirm failed',
+          );
       if (!context.mounted) return;
       setState(() => _error = 'حدث خطأ، يرجى المحاولة مرة أخرى');
     } finally {

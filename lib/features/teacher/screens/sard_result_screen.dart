@@ -8,6 +8,7 @@ import '../../../core/utils/keyboard_dismissal.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/student_repository.dart';
+import '../../../data/services/telemetry/telemetry_providers.dart';
 import '../../../domain/assessment/assessment_evaluation.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/providers/connectivity_provider.dart';
@@ -125,6 +126,13 @@ class _SardResultScreenState extends ConsumerState<SardResultScreen> {
 
       unawaited(
         batch.commit().catchError((Object e, StackTrace s) {
+          ref
+              .read(errorReporterProvider)
+              .recordError(
+                e,
+                s,
+                reason: '_SardResultScreenState._saveSard batch commit failed',
+              );
         }),
       );
 

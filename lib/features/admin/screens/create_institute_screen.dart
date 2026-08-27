@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/repositories/institute_repository.dart';
+import '../../../data/services/telemetry/telemetry_providers.dart';
 import '../../../shared/providers/user_provider.dart';
 import '../../../shared/utils/connectivity_guard.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -62,7 +63,14 @@ class _CreateInstituteScreenState extends ConsumerState<CreateInstituteScreen> {
         );
         context.pop();
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      ref
+          .read(errorReporterProvider)
+          .recordError(
+            e,
+            stackTrace,
+            reason: '_CreateInstituteScreenState._handleCreate failed',
+          );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

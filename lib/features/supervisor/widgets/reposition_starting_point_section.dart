@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/student_model.dart';
 import '../../../data/repositories/student_repository.dart';
+import '../../../data/services/telemetry/telemetry_providers.dart';
 import '../../../domain/curriculum/curriculum_position.dart';
 import '../../../domain/curriculum/reposition_exceptions.dart';
 import '../../../shared/providers/user_provider.dart';
@@ -143,7 +144,14 @@ class _RepositionDialogState extends ConsumerState<_RepositionDialog> {
       _showError('لا يمكن التعديل: الطالب بدأ المنهج بالفعل.');
     } on RepositionNotAuthorizedException {
       _showError('غير مصرح لك بتعديل نقطة البداية لهذا الطالب.');
-    } catch (e) {
+    } catch (e, stackTrace) {
+      ref
+          .read(errorReporterProvider)
+          .recordError(
+            e,
+            stackTrace,
+            reason: '_RepositionDialogState._save failed',
+          );
       _showError('تعذر تحديث نقطة البداية، حاول مرة أخرى');
     } finally {
       if (mounted) setState(() => _isSaving = false);

@@ -8,6 +8,7 @@ import '../../../core/utils/keyboard_dismissal.dart';
 import '../../../data/repositories/curriculum_repository.dart';
 import '../../../data/repositories/session_repository.dart';
 import '../../../data/repositories/student_repository.dart';
+import '../../../data/services/telemetry/telemetry_providers.dart';
 import '../../../domain/assessment/assessment_evaluation.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/providers/connectivity_provider.dart';
@@ -129,7 +130,17 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
         await studentRepo.incrementStudentAttempt(student.id, batch: batch);
       }
 
-      unawaited(batch.commit().catchError((Object e, StackTrace s) {}));
+      unawaited(
+        batch.commit().catchError((Object e, StackTrace s) {
+          ref
+              .read(errorReporterProvider)
+              .recordError(
+                e,
+                s,
+                reason: '_ExamResultScreenState._saveExam batch commit failed',
+              );
+        }),
+      );
 
       // The four outcomes are four different things, and the supervisor is told
       // which: a pass that MOVED the student, a pass that FINISHED the
@@ -193,7 +204,14 @@ class _ExamResultScreenState extends ConsumerState<ExamResultScreen> {
         // Navigate back to exam queue
         context.go(AppRoutes.examQueue);
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      ref
+          .read(errorReporterProvider)
+          .recordError(
+            e,
+            stackTrace,
+            reason: '_ExamResultScreenState._saveExam failed',
+          );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

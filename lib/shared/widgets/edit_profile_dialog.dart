@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/countries.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/utils/validators.dart';
+import '../../data/services/telemetry/telemetry_providers.dart';
 import 'app_button.dart';
 import 'app_text_field.dart';
 
@@ -72,6 +74,13 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
     final messenger = ScaffoldMessenger.of(context);
     final errorColor = context.tokens.maroon;
     final navigator = Navigator.of(context);
+    // This is a plain State<...>, not a ConsumerState — it has no `ref` of
+    // its own, so the reporter is read off the container directly (same
+    // "capture before the async gap" reasoning as above).
+    final errorReporter = ProviderScope.containerOf(
+      context,
+      listen: false,
+    ).read(errorReporterProvider);
 
     final name = _nameController.text.trim();
     final phoneText = _phoneController.text.trim();
@@ -87,7 +96,12 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
       if (!context.mounted) return;
       navigator.pop();
       messenger.showSnackBar(const SnackBar(content: Text('تم حفظ التعديلات')));
-    } catch (e) {
+    } catch (e, stackTrace) {
+      errorReporter.recordError(
+        e,
+        stackTrace,
+        reason: '_EditProfileDialogState._handleSubmit failed',
+      );
       if (!context.mounted) return;
       messenger.showSnackBar(
         SnackBar(
