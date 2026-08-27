@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/telemetry/error_reporter.dart';
 import '../../core/telemetry/telemetry_context.dart';
+import '../../core/telemetry/usage_analytics.dart';
 import '../../data/services/telemetry/telemetry_providers.dart';
 import 'connectivity_provider.dart';
 import 'user_provider.dart';
@@ -13,9 +14,15 @@ import 'user_provider.dart';
 /// different bugs. Recording transitions as breadcrumbs makes the difference
 /// visible in every subsequent report.
 class TelemetryRouteReporter {
-  TelemetryRouteReporter(this._reporter, this._read, this._write);
+  TelemetryRouteReporter(
+    this._reporter,
+    this._analytics,
+    this._read,
+    this._write,
+  );
 
   final ErrorReporter _reporter;
+  final UsageAnalytics _analytics;
   final TelemetryContext Function() _read;
   final void Function(TelemetryContext) _write;
 
@@ -27,6 +34,7 @@ class TelemetryRouteReporter {
       'navigated to ${updated.route}',
       category: 'navigation',
     );
+    _analytics.recordScreenView(updated.route ?? '/');
   }
 }
 
@@ -42,6 +50,7 @@ final telemetryRouteReporterProvider = Provider<TelemetryRouteReporter>((ref) {
   final holder = ref.watch(_contextHolderProvider);
   return TelemetryRouteReporter(
     ref.watch(errorReporterProvider),
+    ref.watch(usageAnalyticsProvider),
     () => holder.value,
     (updated) => holder.value = updated,
   );
@@ -50,6 +59,7 @@ final telemetryRouteReporterProvider = Provider<TelemetryRouteReporter>((ref) {
 /// Watched once from the app root, mirroring [offlineSyncControllerProvider].
 final telemetryContextControllerProvider = Provider<void>((ref) {
   final reporter = ref.watch(errorReporterProvider);
+  final analytics = ref.watch(usageAnalyticsProvider);
   final holder = ref.watch(_contextHolderProvider);
 
   void push(TelemetryContext updated) {
@@ -74,6 +84,10 @@ final telemetryContextControllerProvider = Provider<void>((ref) {
         role: next.role.name,
         instituteId: next.instituteId,
       ),
+    );
+    analytics.setUserProperties(
+      role: next.role.name,
+      instituteId: next.instituteId ?? 'none',
     );
   }, fireImmediately: true);
 

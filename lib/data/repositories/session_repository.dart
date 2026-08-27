@@ -8,7 +8,11 @@ import '../models/exam_record_model.dart';
 import '../models/home_practice_model.dart';
 import '../services/firebase_service.dart';
 import '../services/firestore_read_source.dart';
+import '../services/telemetry/noop_telemetry.dart';
+import '../services/telemetry/telemetry_providers.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/telemetry/analytics_event.dart';
+import '../../core/telemetry/usage_analytics.dart';
 import '../../domain/assessment/assessment_evaluation.dart';
 import '../../domain/curriculum/curriculum_pace.dart';
 import '../../domain/curriculum/paced_session.dart';
@@ -23,9 +27,17 @@ class SessionRepository {
   /// of waiting out a doomed server attempt (al_rasikhoon-gy4).
   final FirestoreReadSource _read;
 
-  SessionRepository({FirebaseFirestore? firestore, FirestoreReadSource? readSource})
-    : _firestore = firestore ?? FirebaseFirestore.instance,
-      _read = readSource ?? const FirestoreReadSource.alwaysOnline();
+  /// Optional with a no-op default so every existing test constructing this
+  /// repository keeps working untouched.
+  final UsageAnalytics _analytics;
+
+  SessionRepository({
+    FirebaseFirestore? firestore,
+    FirestoreReadSource? readSource,
+    UsageAnalytics? analytics,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _read = readSource ?? const FirestoreReadSource.alwaysOnline(),
+       _analytics = analytics ?? const NoopUsageAnalytics();
 
   CollectionReference<Map<String, dynamic>> get _sessionRecordsCollection =>
       _firestore.collection(AppConstants.collectionSessionRecords);
@@ -131,7 +143,7 @@ class SessionRepository {
     DateTime? now,
     DateTime? startedAt,
     WriteBatch? batch,
-  }) {
+  }) async {
     final grades = SessionGrades(
       newMemorizationErrors: newMemorizationErrors,
       recentReviewErrors: recentReviewErrors,
@@ -142,7 +154,7 @@ class SessionRepository {
     // (hibrahem/AlRasikhoon#24) — no averaging, no level-agnostic threshold.
     final passed = grades.passesForLevel(levelId);
 
-    return _writeSessionRecord(
+    final record = await _writeSessionRecord(
       (id, writtenAt) => SessionRecordModel(
         id: id,
         studentId: studentId,
@@ -184,6 +196,15 @@ class SessionRepository {
       now: now,
       batch: batch,
     );
+    _analytics.record(
+      SessionRecorded(
+        sessionType: 'hifz',
+        errorCount: record.grades.totalErrors,
+        duration: record.duration ?? Duration.zero,
+        wasOffline: !_read.isOnline,
+      ),
+    );
+    return record;
   }
 
   /// Records that a تلقين happened.
@@ -221,8 +242,8 @@ class SessionRepository {
     DateTime? now,
     DateTime? startedAt,
     WriteBatch? batch,
-  }) {
-    return _writeSessionRecord(
+  }) async {
+    final record = await _writeSessionRecord(
       (id, writtenAt) => SessionRecordModel(
         id: id,
         studentId: studentId,
@@ -262,6 +283,15 @@ class SessionRepository {
       now: now,
       batch: batch,
     );
+    _analytics.record(
+      SessionRecorded(
+        sessionType: 'talqeen',
+        errorCount: record.grades.totalErrors,
+        duration: record.duration ?? Duration.zero,
+        wasOffline: !_read.isOnline,
+      ),
+    );
+    return record;
   }
 
   /// The student's most recent session record — the one carrying the home
@@ -285,12 +315,13 @@ class SessionRepository {
   /// query and its composite index (`student_id`, `date`, `order_in_level` in
   /// `firestore.indexes.json`) need no change.
   Future<SessionRecordModel?> getLatestSessionRecord(String studentId) async {
-    final query = await _read.getQuery(_sessionRecordsCollection
-        .where('student_id', isEqualTo: studentId)
-        .orderBy('date', descending: true)
-        .orderBy('order_in_level', descending: true)
-        .limit(1)
-        );
+    final query = await _read.getQuery(
+      _sessionRecordsCollection
+          .where('student_id', isEqualTo: studentId)
+          .orderBy('date', descending: true)
+          .orderBy('order_in_level', descending: true)
+          .limit(1),
+    );
 
     if (query.docs.isEmpty) return null;
     return SessionRecordModel.fromFirestore(query.docs.first);
@@ -428,6 +459,14 @@ class SessionRepository {
     } else {
       await docRef.set(record.toFirestore());
     }
+    _analytics.record(
+      SessionRecorded(
+        sessionType: 'sard',
+        errorCount: record.errorCount,
+        duration: record.duration ?? Duration.zero,
+        wasOffline: !_read.isOnline,
+      ),
+    );
     return record;
   }
 
@@ -444,10 +483,11 @@ class SessionRepository {
   Future<List<SardRecordModel>> getSardRecordsForStudent(
     String studentId,
   ) async {
-    final result = await _read.getQuery(_sardRecordsCollection
-        .where('student_id', isEqualTo: studentId)
-        .orderBy('date', descending: true)
-        );
+    final result = await _read.getQuery(
+      _sardRecordsCollection
+          .where('student_id', isEqualTo: studentId)
+          .orderBy('date', descending: true),
+    );
 
     return result.docs
         .map((doc) => SardRecordModel.fromFirestore(doc))
@@ -527,6 +567,7 @@ class SessionRepository {
     } else {
       await docRef.set(record.toFirestore());
     }
+    _analytics.record(AssessmentCompleted(result: evaluation.outcome.name));
     return record;
   }
 
@@ -543,10 +584,11 @@ class SessionRepository {
   Future<List<ExamRecordModel>> getExamRecordsForStudent(
     String studentId,
   ) async {
-    final result = await _read.getQuery(_examRecordsCollection
-        .where('student_id', isEqualTo: studentId)
-        .orderBy('date', descending: true)
-        );
+    final result = await _read.getQuery(
+      _examRecordsCollection
+          .where('student_id', isEqualTo: studentId)
+          .orderBy('date', descending: true),
+    );
 
     return result.docs
         .map((doc) => ExamRecordModel.fromFirestore(doc))
@@ -834,5 +876,6 @@ final sessionRepositoryProvider = Provider<SessionRepository>((ref) {
   return SessionRepository(
     firestore: ref.watch(firestoreProvider),
     readSource: ref.watch(firestoreReadSourceProvider),
+    analytics: ref.watch(usageAnalyticsProvider),
   );
 });

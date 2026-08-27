@@ -4,8 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:al_rasikhoon/core/telemetry/analytics_event.dart';
 import 'package:al_rasikhoon/core/telemetry/error_reporter.dart';
 import 'package:al_rasikhoon/core/telemetry/telemetry_context.dart';
+import 'package:al_rasikhoon/core/telemetry/usage_analytics.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/repositories/auth_repository.dart';
 import 'package:al_rasikhoon/data/repositories/user_repository.dart';
@@ -51,6 +53,19 @@ class _RecordingReporter implements ErrorReporter {
 
   @override
   void updateContext(TelemetryContext context) {}
+}
+
+class _RecordingAnalytics implements UsageAnalytics {
+  final List<AnalyticsEvent> events = [];
+
+  @override
+  void record(AnalyticsEvent event) => events.add(event);
+
+  @override
+  void setUserProperties({required String role, required String instituteId}) {}
+
+  @override
+  void recordScreenView(String templatedRoute) {}
 }
 
 void main() {
@@ -148,6 +163,99 @@ void main() {
         expect(result?.id, uid);
         expect(result?.username, username);
         verify(() => mockSessionCache.cacheUser(appUser)).called(1);
+      });
+
+      test(
+        'a successful sign-in records LoginSucceeded with the role',
+        () async {
+          const username = 'mohammed.a';
+          const password = 'pass123';
+          const synthesized = 'mohammed.a@alrasikhoon.local';
+          const uid = 'firebase-uid';
+          final mockUserCredential = MockUserCredential();
+          final mockUser = MockUser();
+          final appUser = buildUser(
+            id: uid,
+            username: username,
+            role: UserRole.teacher,
+          );
+          final analytics = _RecordingAnalytics();
+
+          when(
+            () => mockFirebaseService.signInWithEmailPassword(
+              email: synthesized,
+              password: password,
+            ),
+          ).thenAnswer((_) async => mockUserCredential);
+          when(() => mockUserCredential.user).thenReturn(mockUser);
+          when(() => mockUser.uid).thenReturn(uid);
+          when(
+            () => mockUserRepository.getUserByUsername(username),
+          ).thenAnswer((_) async => appUser);
+
+          final scopedContainer = ProviderContainer(
+            overrides: [
+              firebaseServiceProvider.overrideWithValue(mockFirebaseService),
+              userRepositoryProvider.overrideWithValue(mockUserRepository),
+              sessionCacheProvider.overrideWithValue(mockSessionCache),
+              usageAnalyticsProvider.overrideWithValue(analytics),
+            ],
+          );
+          addTearDown(scopedContainer.dispose);
+
+          final authRepo = scopedContainer.read(
+            authRepositoryProvider.notifier,
+          );
+          await authRepo.signInWithUsernameAndPassword(
+            username: username,
+            password: password,
+          );
+
+          expect(analytics.events.whereType<LoginSucceeded>(), hasLength(1));
+          expect(
+            analytics.events.whereType<LoginSucceeded>().single.role,
+            'teacher',
+          );
+        },
+      );
+
+      test('a failed login records a stable reason code, never the username '
+          'or an email address', () async {
+        final analytics = _RecordingAnalytics();
+
+        when(
+          () => mockFirebaseService.signInWithEmailPassword(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenThrow(FakeFirebaseAuthException(code: 'wrong-password'));
+
+        final scopedContainer = ProviderContainer(
+          overrides: [
+            firebaseServiceProvider.overrideWithValue(mockFirebaseService),
+            userRepositoryProvider.overrideWithValue(mockUserRepository),
+            sessionCacheProvider.overrideWithValue(mockSessionCache),
+            usageAnalyticsProvider.overrideWithValue(analytics),
+          ],
+        );
+        addTearDown(scopedContainer.dispose);
+
+        final authRepo = scopedContainer.read(authRepositoryProvider.notifier);
+        final result = await authRepo.signInWithUsernameAndPassword(
+          username: 'mohammed.a',
+          password: 'wrong',
+        );
+
+        expect(result, isNull);
+        expect(analytics.events.whereType<LoginFailed>(), hasLength(1));
+        final event = analytics.events.whereType<LoginFailed>().single;
+        expect(event.reasonCode, 'wrong-password');
+
+        final parameterValues = event.parameters.values
+            .map((v) => v.toString())
+            .join(' ');
+        expect(parameterValues.contains('@'), isFalse);
+        expect(parameterValues.contains('mohammed.a'), isFalse);
       });
 
       test('lowercases and trims the username before sign-in', () async {

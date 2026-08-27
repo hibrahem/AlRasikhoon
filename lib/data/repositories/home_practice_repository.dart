@@ -3,12 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/home_practice_model.dart';
 import '../services/firebase_service.dart';
 import '../services/firestore_read_source.dart';
+import '../services/telemetry/noop_telemetry.dart';
+import '../services/telemetry/telemetry_providers.dart';
+import '../../core/telemetry/analytics_event.dart';
+import '../../core/telemetry/usage_analytics.dart';
 
 final homePracticeRepositoryProvider = Provider<HomePracticeRepository>((ref) {
   final firestore = ref.watch(firestoreProvider);
   return HomePracticeRepository(
     firestore: firestore,
     readSource: ref.watch(firestoreReadSourceProvider),
+    analytics: ref.watch(usageAnalyticsProvider),
   );
 });
 
@@ -19,11 +24,17 @@ class HomePracticeRepository {
   /// of waiting out a doomed server attempt (al_rasikhoon-gy4).
   final FirestoreReadSource _read;
 
+  /// Optional with a no-op default so every existing test constructing this
+  /// repository keeps working untouched.
+  final UsageAnalytics _analytics;
+
   HomePracticeRepository({
     FirebaseFirestore? firestore,
     FirestoreReadSource? readSource,
+    UsageAnalytics? analytics,
   }) : _firestore = firestore ?? FirebaseFirestore.instance,
-       _read = readSource ?? const FirestoreReadSource.alwaysOnline();
+       _read = readSource ?? const FirestoreReadSource.alwaysOnline(),
+       _analytics = analytics ?? const NoopUsageAnalytics();
 
   CollectionReference<Map<String, dynamic>> get _collection =>
       _firestore.collection('home_practices');
@@ -55,6 +66,7 @@ class HomePracticeRepository {
       'practice_date': Timestamp.fromDate(practiceDate ?? DateTime.now()),
       'created_at': FieldValue.serverTimestamp(),
     });
+    _analytics.record(const HomePracticeLogged());
     return docRef.id;
   }
 

@@ -5,6 +5,7 @@ import '../services/firebase_service.dart';
 import '../services/session_cache.dart';
 import '../services/telemetry/telemetry_providers.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/telemetry/analytics_event.dart';
 import 'user_repository.dart';
 import '../models/user_model.dart';
 
@@ -145,12 +146,23 @@ class AuthRepository extends Notifier<AuthState> {
 
       state = state.copyWith(isLoading: false, appUser: appUser);
       await _sessionCache.cacheUser(appUser);
+      ref
+          .read(usageAnalyticsProvider)
+          .record(LoginSucceeded(role: appUser.role.name));
       return appUser;
     } on FirebaseAuthException catch (e) {
       state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      ref.read(usageAnalyticsProvider).record(LoginFailed(reasonCode: e.code));
       return null;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
+      ref
+          .read(usageAnalyticsProvider)
+          .record(
+            LoginFailed(
+              reasonCode: e is FirebaseAuthException ? e.code : 'unknown_error',
+            ),
+          );
       return null;
     }
   }
