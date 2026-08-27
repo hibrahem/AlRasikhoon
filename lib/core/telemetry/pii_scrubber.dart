@@ -19,15 +19,18 @@ final RegExp _uuid = RegExp(
   r'[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
 );
 
-final RegExp _containsDigit = RegExp(r'\d');
+final RegExp _alphanumericOnly = RegExp(r'^[A-Za-z0-9]+$');
 
 /// A path segment is treated as an identifier when it is a UUID, or when it is
-/// long AND contains a digit. The digit test is what keeps legitimate route
-/// names intact: `/account-not-found` is 17 characters but has no digit, while
-/// a Firestore auto-id is 20 mixed-case alphanumerics and always has one.
+/// long AND made up of letters and digits only. Purely-alphanumeric is what
+/// keeps legitimate route names intact: route names are hyphenated words
+/// (`/account-not-found` is 17 characters but contains a hyphen), while a
+/// Firestore auto-id is a 20-character unbroken base62 token with no
+/// separators — and, roughly 3% of the time, no digit either, so a digit
+/// requirement alone is not a reliable discriminator.
 bool _looksLikeIdentifier(String segment) {
   if (_uuid.hasMatch(segment)) return true;
-  return segment.length >= 16 && _containsDigit.hasMatch(segment);
+  return segment.length >= 16 && _alphanumericOnly.hasMatch(segment);
 }
 
 /// Replaces identifier-looking segments in a `/`-delimited path with `:id`.

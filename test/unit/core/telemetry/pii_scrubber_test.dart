@@ -21,6 +21,13 @@ void main() {
       const input = 'Network request failed after 3 retries';
       expect(scrubMessage(input), input);
     });
+
+    test('redacts a digit-free firestore id embedded in a path', () {
+      const input =
+          'PERMISSION_DENIED on students/qRstUVwXYZabcdefghij/sessions';
+      expect(scrubMessage(input), contains('students/:id/sessions'));
+      expect(scrubMessage(input), isNot(contains('qRstUVwXYZabcdefghij')));
+    });
   });
 
   group('templateRoute', () {
@@ -41,6 +48,14 @@ void main() {
 
     test('preserves a nested static route', () {
       expect(templateRoute('/admin/institutes'), '/admin/institutes');
+    });
+
+    test('templates a digit-free firestore-style student id', () {
+      expect(templateRoute('/students/qRstUVwXYZabcdefghij'), '/students/:id');
+    });
+
+    test('preserves a hyphenated segment of 16 or more characters', () {
+      expect(templateRoute('/account-not-found'), '/account-not-found');
     });
   });
 
