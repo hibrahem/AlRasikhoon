@@ -3,7 +3,8 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/telemetry/client_trace_id.dart';
+import '../../core/telemetry/client_trace_scope.dart';
+import '../../shared/providers/telemetry_context_provider.dart';
 
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
@@ -21,9 +22,15 @@ class FirebaseService {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
-  FirebaseService({FirebaseAuth? auth, FirebaseFirestore? firestore})
-    : _auth = auth ?? FirebaseAuth.instance,
-      _firestore = firestore ?? FirebaseFirestore.instance;
+  FirebaseService({
+    FirebaseAuth? auth,
+    FirebaseFirestore? firestore,
+    ClientTraceScope? traceScope,
+  }) : _auth = auth ?? FirebaseAuth.instance,
+       _firestore = firestore ?? FirebaseFirestore.instance,
+       _traceScope = traceScope ?? ClientTraceScope.inert();
+
+  final ClientTraceScope _traceScope;
 
   FirebaseAuth get auth => _auth;
   FirebaseFirestore get firestore => _firestore;
@@ -89,26 +96,27 @@ class FirebaseService {
     final callable = FirebaseFunctions.instance.httpsCallable(
       'createUserAccount',
     );
-    // Captured first so the same value could also be attached to an error
-    // report in a surrounding catch, joining a client-side failure to the
-    // function's structured log.
-    final traceId = newClientTraceId();
-    final result = await callable.call<Map<Object?, Object?>>({
-      'email': email,
-      'password': password,
-      'role': role,
-      'name': name,
-      'username': username,
-      'phone': phone,
-      // Required by the Cloud Function when role == 'supervisor'.
-      'instituteId': instituteId,
-      'clientTraceId': traceId,
+    // The scope mints the id, sends it with the request AND puts it on the
+    // telemetry context, so a client-side error report filed for this attempt
+    // carries the same id the function writes to Cloud Logging.
+    return _traceScope.run((traceId) async {
+      final result = await callable.call<Map<Object?, Object?>>({
+        'email': email,
+        'password': password,
+        'role': role,
+        'name': name,
+        'username': username,
+        'phone': phone,
+        // Required by the Cloud Function when role == 'supervisor'.
+        'instituteId': instituteId,
+        'clientTraceId': traceId,
+      });
+      final uid = result.data['uid'];
+      if (uid is! String || uid.isEmpty) {
+        throw StateError('createUserAccount returned no uid');
+      }
+      return uid;
     });
-    final uid = result.data['uid'];
-    if (uid is! String || uid.isEmpty) {
-      throw StateError('createUserAccount returned no uid');
-    }
-    return uid;
   }
 
   // Permanently delete a student and ALL their data (progress records,
@@ -121,13 +129,13 @@ class FirebaseService {
     final callable = FirebaseFunctions.instance.httpsCallable(
       'hardDeleteStudent',
     );
-    // Captured first so the same value could also be attached to an error
-    // report in a surrounding catch, joining a client-side failure to the
-    // function's structured log.
-    final traceId = newClientTraceId();
-    await callable.call<Map<Object?, Object?>>({
-      'studentId': studentId,
-      'clientTraceId': traceId,
+    // See provisionUserAccount: the scope keeps the id on the telemetry
+    // context for the duration of the call.
+    await _traceScope.run((traceId) async {
+      await callable.call<Map<Object?, Object?>>({
+        'studentId': studentId,
+        'clientTraceId': traceId,
+      });
     });
   }
 
@@ -146,5 +154,5 @@ class FirebaseService {
 }
 
 final firebaseServiceProvider = Provider<FirebaseService>((ref) {
-  return FirebaseService();
+  return FirebaseService(traceScope: ref.watch(clientTraceScopeProvider));
 });

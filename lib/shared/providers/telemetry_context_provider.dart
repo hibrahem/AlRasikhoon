@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/telemetry/client_trace_scope.dart';
 import '../../core/telemetry/error_reporter.dart';
 import '../../core/telemetry/telemetry_context.dart';
 import '../../core/telemetry/usage_analytics.dart';
@@ -45,6 +46,22 @@ final _contextHolderProvider = Provider<_ContextHolder>(
 class _ContextHolder {
   TelemetryContext value = TelemetryContext.empty;
 }
+
+/// Hands out the scope that keeps a callable's `clientTraceId` on the context
+/// while that callable is in flight. It writes through the same holder the
+/// route reporter uses, so the id joins the existing tags rather than
+/// replacing them.
+final clientTraceScopeProvider = Provider<ClientTraceScope>((ref) {
+  final holder = ref.watch(_contextHolderProvider);
+  final reporter = ref.watch(errorReporterProvider);
+  return ClientTraceScope(
+    read: () => holder.value,
+    write: (updated) {
+      holder.value = updated;
+      reporter.updateContext(updated);
+    },
+  );
+});
 
 final telemetryRouteReporterProvider = Provider<TelemetryRouteReporter>((ref) {
   final holder = ref.watch(_contextHolderProvider);

@@ -25,6 +25,27 @@ void main() {
     });
   });
 
+  test('an in-flight callable trace id is emitted as a tag', () {
+    const context = TelemetryContext(role: 'teacher', clientTraceId: 'trace-1');
+
+    expect(context.toTags(), {'role': 'teacher', 'clientTraceId': 'trace-1'});
+  });
+
+  test('withClientTraceId can clear the id copyWith cannot', () {
+    const context = TelemetryContext(role: 'teacher', clientTraceId: 'trace-1');
+
+    final cleared = context.withClientTraceId(null);
+
+    expect(cleared.toTags().containsKey('clientTraceId'), isFalse);
+    expect(cleared.role, 'teacher');
+  });
+
+  test('copyWith preserves an in-flight trace id', () {
+    const context = TelemetryContext(clientTraceId: 'trace-1');
+
+    expect(context.copyWith(connectivity: 'offline').clientTraceId, 'trace-1');
+  });
+
   test('user id is not exposed as a tag', () {
     const context = TelemetryContext(userId: 'uid123');
     expect(context.toTags().values, isNot(contains('uid123')));
