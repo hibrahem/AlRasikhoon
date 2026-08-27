@@ -115,7 +115,10 @@ void main() {
 
         await repository.updateInstitute(institute);
 
-        final doc = await fakeFirestore.collection('institutes').doc('i1').get();
+        final doc = await fakeFirestore
+            .collection('institutes')
+            .doc('i1')
+            .get();
         expect(doc.data()?['name'], 'الاسم الجديد');
         expect(doc.data()?['location'], 'جدة');
       });
@@ -133,7 +136,10 @@ void main() {
 
         await repository.deleteInstitute('i1');
 
-        final doc = await fakeFirestore.collection('institutes').doc('i1').get();
+        final doc = await fakeFirestore
+            .collection('institutes')
+            .doc('i1')
+            .get();
         expect(doc.data()?['is_active'], false);
       });
     });
@@ -162,10 +168,10 @@ void main() {
             .collection('teacher_institutes')
             .doc('teacher1_institute1')
             .set({
-          'teacher_id': 'teacher1',
-          'institute_id': 'institute1',
-          'is_active': true,
-        });
+              'teacher_id': 'teacher1',
+              'institute_id': 'institute1',
+              'is_active': true,
+            });
 
         await repository.removeTeacherFromInstitute(
           teacherId: 'teacher1',
@@ -197,18 +203,12 @@ void main() {
           'created_at': Timestamp.now(),
         });
 
-        await fakeFirestore
-            .collection('teacher_institutes')
-            .doc('t1_i1')
-            .set({
+        await fakeFirestore.collection('teacher_institutes').doc('t1_i1').set({
           'teacher_id': 'teacher1',
           'institute_id': 'i1',
           'is_active': true,
         });
-        await fakeFirestore
-            .collection('teacher_institutes')
-            .doc('t1_i2')
-            .set({
+        await fakeFirestore.collection('teacher_institutes').doc('t1_i2').set({
           'teacher_id': 'teacher1',
           'institute_id': 'i2',
           'is_active': true,
@@ -228,10 +228,7 @@ void main() {
           'created_at': Timestamp.now(),
         });
 
-        await fakeFirestore
-            .collection('teacher_institutes')
-            .doc('t1_i1')
-            .set({
+        await fakeFirestore.collection('teacher_institutes').doc('t1_i1').set({
           'teacher_id': 'teacher1',
           'institute_id': 'i1',
           'is_active': false,
@@ -243,8 +240,9 @@ void main() {
       });
 
       test('returns empty when teacher has no assignments', () async {
-        final institutes =
-            await repository.getInstitutesForTeacher('unassigned');
+        final institutes = await repository.getInstitutesForTeacher(
+          'unassigned',
+        );
 
         expect(institutes, isEmpty);
       });
@@ -252,42 +250,35 @@ void main() {
 
     group('getTeacherIdsForInstitute', () {
       test('returns teacher IDs for institute', () async {
-        await fakeFirestore
-            .collection('teacher_institutes')
-            .doc('t1_i1')
-            .set({
+        await fakeFirestore.collection('teacher_institutes').doc('t1_i1').set({
           'teacher_id': 'teacher1',
           'institute_id': 'institute1',
           'is_active': true,
         });
-        await fakeFirestore
-            .collection('teacher_institutes')
-            .doc('t2_i1')
-            .set({
+        await fakeFirestore.collection('teacher_institutes').doc('t2_i1').set({
           'teacher_id': 'teacher2',
           'institute_id': 'institute1',
           'is_active': true,
         });
 
-        final teacherIds =
-            await repository.getTeacherIdsForInstitute('institute1');
+        final teacherIds = await repository.getTeacherIdsForInstitute(
+          'institute1',
+        );
 
         expect(teacherIds.length, 2);
         expect(teacherIds, containsAll(['teacher1', 'teacher2']));
       });
 
       test('excludes inactive teachers', () async {
-        await fakeFirestore
-            .collection('teacher_institutes')
-            .doc('t1_i1')
-            .set({
+        await fakeFirestore.collection('teacher_institutes').doc('t1_i1').set({
           'teacher_id': 'teacher1',
           'institute_id': 'institute1',
           'is_active': false,
         });
 
-        final teacherIds =
-            await repository.getTeacherIdsForInstitute('institute1');
+        final teacherIds = await repository.getTeacherIdsForInstitute(
+          'institute1',
+        );
 
         expect(teacherIds, isEmpty);
       });
@@ -308,12 +299,14 @@ void main() {
           instituteId: 'i1',
         );
 
-        final institutes =
-            await repository.getInstitutesForSupervisor('supervisor1');
+        final institutes = await repository.getInstitutesForSupervisor(
+          'supervisor1',
+        );
         expect(institutes.length, 1);
 
-        final supervisorIds =
-            await repository.getSupervisorIdsForInstitute('i1');
+        final supervisorIds = await repository.getSupervisorIdsForInstitute(
+          'i1',
+        );
         expect(supervisorIds, contains('supervisor1'));
       });
 
@@ -322,10 +315,10 @@ void main() {
             .collection('supervisor_institutes')
             .doc('supervisor1_i1')
             .set({
-          'supervisor_id': 'supervisor1',
-          'institute_id': 'i1',
-          'is_active': true,
-        });
+              'supervisor_id': 'supervisor1',
+              'institute_id': 'i1',
+              'is_active': true,
+            });
 
         await repository.removeSupervisorFromInstitute(
           supervisorId: 'supervisor1',

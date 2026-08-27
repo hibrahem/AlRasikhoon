@@ -63,9 +63,15 @@ class InstituteModel {
     );
   }
 
+  // Mirrors UserModel.toString(): this can reach an error reporter (a raw
+  // error object is stringified before PII scrubbing, and scrubbing free-form
+  // names is not reliable). web/privacy.html states the app collects no
+  // geographic-location data, so `location` in particular must never travel
+  // with a crash report — do NOT restore `name`/`location` here for debugging
+  // convenience.
   @override
   String toString() {
-    return 'InstituteModel(id: $id, name: $name, location: $location)';
+    return 'InstituteModel(id: $id)';
   }
 
   @override

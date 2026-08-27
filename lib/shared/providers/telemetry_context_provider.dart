@@ -93,6 +93,11 @@ final telemetryContextControllerProvider = Provider<void>((ref) {
       // instead, carrying over only connectivity, which is a property of the
       // device/network, not of who is signed in.
       push(TelemetryContext(connectivity: holder.value.connectivity));
+      // Same reasoning for the Analytics side: `role` and `institute_id` are
+      // sticky user properties that survive a sign-out, so on a shared halaqa
+      // device they would attribute the next user's events to the previous
+      // one's role and institute.
+      analytics.clearUserProperties();
       return;
     }
     push(

@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:al_rasikhoon/core/telemetry/error_reporter.dart';
+import 'package:al_rasikhoon/core/telemetry/analytics_event.dart';
 import 'package:al_rasikhoon/core/telemetry/telemetry_context.dart';
+import 'package:al_rasikhoon/core/telemetry/usage_analytics.dart';
 import 'package:al_rasikhoon/data/models/user_model.dart';
 import 'package:al_rasikhoon/data/services/telemetry/telemetry_providers.dart';
 import 'package:al_rasikhoon/shared/providers/connectivity_provider.dart';
@@ -30,6 +32,25 @@ class _RecordingReporter implements ErrorReporter {
   void updateContext(TelemetryContext context) {
     contexts.add(context);
   }
+}
+
+class _RecordingAnalytics implements UsageAnalytics {
+  final List<({String role, String instituteId})> setCalls = [];
+  int clearCalls = 0;
+
+  @override
+  void record(AnalyticsEvent event) {}
+
+  @override
+  void setUserProperties({required String role, required String instituteId}) {
+    setCalls.add((role: role, instituteId: instituteId));
+  }
+
+  @override
+  void clearUserProperties() => clearCalls++;
+
+  @override
+  void recordScreenView(String templatedRoute) {}
 }
 
 UserModel _teacher({required String id, String instituteId = 'inst-1'}) {
@@ -141,6 +162,40 @@ void main() {
       expect(afterSignOut.instituteId, isNull);
       // Connectivity is unrelated to who is signed in and must survive.
       expect(afterSignOut.connectivity, 'offline');
+    },
+  );
+
+  test(
+    'signing out clears the analytics role and institute properties',
+    () async {
+      final analytics = _RecordingAnalytics();
+      final currentUser = StateProvider<UserModel?>(
+        (ref) => _teacher(id: 'teacher-uid-1'),
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          errorReporterProvider.overrideWithValue(_RecordingReporter()),
+          usageAnalyticsProvider.overrideWithValue(analytics),
+          currentUserProvider.overrideWith((ref) => ref.watch(currentUser)),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final controllerSub = container.listen(
+        telemetryContextControllerProvider,
+        (_, _) {},
+      );
+      addTearDown(controllerSub.close);
+
+      expect(analytics.setCalls.single.role, 'teacher');
+
+      container.read(currentUser.notifier).state = null;
+      await container.pump();
+
+      // Analytics user properties are sticky across a sign-out, so on a shared
+      // halaqa device the next user would inherit them.
+      expect(analytics.clearCalls, 1);
     },
   );
 }

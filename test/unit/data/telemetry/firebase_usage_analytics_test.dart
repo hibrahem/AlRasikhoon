@@ -5,7 +5,7 @@ import 'package:al_rasikhoon/data/services/telemetry/firebase_usage_analytics.da
 
 class _FakeSink implements AnalyticsSink {
   final List<({String name, Map<String, Object> parameters})> events = [];
-  final Map<String, String> properties = {};
+  final Map<String, String?> properties = {};
 
   @override
   void logEvent(String name, Map<String, Object> parameters) {
@@ -13,7 +13,7 @@ class _FakeSink implements AnalyticsSink {
   }
 
   @override
-  void setUserProperty(String name, String value) {
+  void setUserProperty(String name, String? value) {
     properties[name] = value;
   }
 }
@@ -39,6 +39,31 @@ void main() {
 
     expect(sink.properties, {'role': 'teacher', 'institute_id': 'inst456'});
     expect(sink.properties.keys, isNot(contains('user_id')));
+  });
+
+  test('signing out clears the role and institute user properties', () {
+    final sink = _FakeSink();
+    final analytics = FirebaseUsageAnalytics(
+      gate: TelemetryGate(isOpen: true),
+      sink: sink,
+    )..setUserProperties(role: 'teacher', instituteId: 'inst456');
+
+    analytics.clearUserProperties();
+
+    // Halaqa devices are shared: a null value is how Firebase removes a
+    // property, so the next user's events carry neither.
+    expect(sink.properties, {'role': null, 'institute_id': null});
+  });
+
+  test('clearing user properties is not blocked by a closed gate', () {
+    final sink = _FakeSink();
+    // The user opted out mid-session, after the properties were already set.
+    FirebaseUsageAnalytics(
+      gate: TelemetryGate(isOpen: false),
+      sink: sink,
+    ).clearUserProperties();
+
+    expect(sink.properties, {'role': null, 'institute_id': null});
   });
 
   test('a closed gate suppresses every event', () {
@@ -78,7 +103,7 @@ class _ThrowingSink implements AnalyticsSink {
   }
 
   @override
-  void setUserProperty(String name, String value) {
+  void setUserProperty(String name, String? value) {
     throw Exception('sink is broken');
   }
 }

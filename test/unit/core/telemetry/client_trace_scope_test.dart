@@ -53,7 +53,7 @@ void main() {
       tagsInCatch = holder.tagsNow();
     }
 
-    expect(tagsInCatch!['clientTraceId'], mintedTraceId);
+    expect(tagsInCatch['clientTraceId'], mintedTraceId);
   });
 
   test(
@@ -94,7 +94,7 @@ void main() {
       final scope = ClientTraceScope.inert();
       String? traceId;
       await scope.run((id) async => traceId = id);
-      expect(traceId, isNotEmpty);
+      expect(traceId, isNotNull);
     },
   );
 }

@@ -131,5 +131,21 @@ void main() {
       expect(inst.updatedAt, isNull);
       expect(inst.isActive, isTrue);
     });
+
+    test('toString carries no institute name or location', () {
+      final inst = InstituteModel(
+        id: 'inst-1',
+        name: 'معهد الراسخون',
+        location: 'الرياض',
+        createdBy: 'admin',
+        createdAt: DateTime(2026, 1, 1),
+      );
+
+      // A raw model can be stringified into an error report, and
+      // web/privacy.html states the app collects no geographic-location data.
+      expect(inst.toString(), 'InstituteModel(id: inst-1)');
+      expect(inst.toString(), isNot(contains('الرياض')));
+      expect(inst.toString(), isNot(contains('معهد')));
+    });
   });
 }

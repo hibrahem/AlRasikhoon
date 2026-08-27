@@ -890,17 +890,19 @@ void main() {
         );
       });
 
-      test('every lesson entry carries its own home_repetitions_required',
-          () async {
-        final history = await sessionRepository.getStudentHistory('student1');
+      test(
+        'every lesson entry carries its own home_repetitions_required',
+        () async {
+          final history = await sessionRepository.getStudentHistory('student1');
 
-        StudentHistoryEntry byId(String id) =>
-            history.firstWhere((e) => e.id == id);
-        expect(byId('attempt1').homeRepetitionsRequired, 10);
-        expect(byId('attempt2').homeRepetitionsRequired, 8);
-        expect(byId('noHomework').homeRepetitionsRequired, 0);
-        expect(byId('noHomework').hasHomePracticeInfo, isFalse);
-      });
+          StudentHistoryEntry byId(String id) =>
+              history.firstWhere((e) => e.id == id);
+          expect(byId('attempt1').homeRepetitionsRequired, 10);
+          expect(byId('attempt2').homeRepetitionsRequired, 8);
+          expect(byId('noHomework').homeRepetitionsRequired, 0);
+          expect(byId('noHomework').hasHomePracticeInfo, isFalse);
+        },
+      );
 
       test('attributes each practice to the latest matching record not after '
           'its date; a practice older than every attempt attaches to the '

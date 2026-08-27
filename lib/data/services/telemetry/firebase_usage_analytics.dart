@@ -9,7 +9,10 @@ import '../../../core/telemetry/usage_analytics.dart';
 /// are testable without a Firebase app.
 abstract interface class AnalyticsSink {
   void logEvent(String name, Map<String, Object> parameters);
-  void setUserProperty(String name, String value);
+
+  /// A `null` [value] removes the property, which is how Firebase Analytics
+  /// clears one.
+  void setUserProperty(String name, String? value);
 }
 
 class LiveAnalyticsSink implements AnalyticsSink {
@@ -21,7 +24,7 @@ class LiveAnalyticsSink implements AnalyticsSink {
   }
 
   @override
-  void setUserProperty(String name, String value) {
+  void setUserProperty(String name, String? value) {
     FirebaseAnalytics.instance.setUserProperty(name: name, value: value);
   }
 }
@@ -55,6 +58,17 @@ class FirebaseUsageAnalytics implements UsageAnalytics {
     try {
       _sink.setUserProperty('role', role);
       _sink.setUserProperty('institute_id', instituteId);
+    } catch (_) {}
+  }
+
+  @override
+  void clearUserProperties() {
+    // Deliberately NOT gated: clearing is always the privacy-preserving move,
+    // and a user who opted out mid-session still has properties set from
+    // before the opt-out that must go on sign-out.
+    try {
+      _sink.setUserProperty('role', null);
+      _sink.setUserProperty('institute_id', null);
     } catch (_) {}
   }
 

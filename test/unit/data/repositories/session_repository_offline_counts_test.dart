@@ -61,31 +61,37 @@ void main() {
     },
   );
 
-  test('offline, the count never attempts the server-only aggregation', () async {
-    final firestore = FakeFirebaseFirestore();
-    await firestore.collection('sard_records').add({
-      'student_id': 's1',
-      'curriculum_session_id': 'c1',
-    });
-    final repo = SessionRepository(
-      firestore: firestore,
-      readSource: FirestoreReadSource(isOnline: () => false),
-    );
-    final query = firestore
-        .collection('sard_records')
-        .where('student_id', isEqualTo: 's1');
+  test(
+    'offline, the count never attempts the server-only aggregation',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      await firestore.collection('sard_records').add({
+        'student_id': 's1',
+        'curriculum_session_id': 'c1',
+      });
+      final repo = SessionRepository(
+        firestore: firestore,
+        readSource: FirestoreReadSource(isOnline: () => false),
+      );
+      final query = firestore
+          .collection('sard_records')
+          .where('student_id', isEqualTo: 's1');
 
-    var primaryCalled = false;
-    final n = await repo.countWithCacheFallback(
-      query,
-      primary: () async {
-        primaryCalled = true;
-        return 99;
-      },
-    );
+      var primaryCalled = false;
+      final n = await repo.countWithCacheFallback(
+        query,
+        primary: () async {
+          primaryCalled = true;
+          return 99;
+        },
+      );
 
-    expect(primaryCalled, isFalse,
-        reason: 'aggregations are server-only; offline they can only hang');
-    expect(n, 1);
-  });
+      expect(
+        primaryCalled,
+        isFalse,
+        reason: 'aggregations are server-only; offline they can only hang',
+      );
+      expect(n, 1);
+    },
+  );
 }

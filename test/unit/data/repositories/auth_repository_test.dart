@@ -65,6 +65,9 @@ class _RecordingAnalytics implements UsageAnalytics {
   void setUserProperties({required String role, required String instituteId}) {}
 
   @override
+  void clearUserProperties() {}
+
+  @override
   void recordScreenView(String templatedRoute) {}
 }
 

@@ -76,26 +76,28 @@ void main() {
     expect(status, isNull);
   });
 
-  test('is null when the latest record assigned zero home repetitions',
-      () async {
-    await sessionRepository.createTalqeenRecord(
-      studentId: 'student-1',
-      teacherId: 'teacher-1',
-      meeting: _meeting(id: 'L1_J30_S2', sessionNumber: 2, orderInLevel: 2),
-      levelId: 1,
-      hizbNumber: 59,
-      repetitionsWithTeacher: 5,
-      homeRepetitionsRequired: 0,
-      pace: CurriculumPace.standard,
-    );
+  test(
+    'is null when the latest record assigned zero home repetitions',
+    () async {
+      await sessionRepository.createTalqeenRecord(
+        studentId: 'student-1',
+        teacherId: 'teacher-1',
+        meeting: _meeting(id: 'L1_J30_S2', sessionNumber: 2, orderInLevel: 2),
+        levelId: 1,
+        hizbNumber: 59,
+        repetitionsWithTeacher: 5,
+        homeRepetitionsRequired: 0,
+        pace: CurriculumPace.standard,
+      );
 
-    final container = makeContainer();
-    final status = await container.read(
-      homeAssignmentStatusProvider('student-1').future,
-    );
+      final container = makeContainer();
+      final status = await container.read(
+        homeAssignmentStatusProvider('student-1').future,
+      );
 
-    expect(status, isNull);
-  });
+      expect(status, isNull);
+    },
+  );
 
   test('reports required vs done for the LATEST assignment only, carrying '
       "each submission's own date newest-first", () async {
@@ -174,34 +176,36 @@ void main() {
     expect(status.practices.map((p) => p.repetitions), [4, 3]);
   });
 
-  test('isComplete once the logged repetitions reach the requirement',
-      () async {
-    await sessionRepository.createTalqeenRecord(
-      studentId: 'student-1',
-      teacherId: 'teacher-1',
-      meeting: _meeting(id: 'L1_J30_S2', sessionNumber: 2, orderInLevel: 2),
-      levelId: 1,
-      hizbNumber: 59,
-      repetitionsWithTeacher: 5,
-      homeRepetitionsRequired: 5,
-      pace: CurriculumPace.standard,
-    );
-    await homePracticeRepository.createHomePractice(
-      studentId: 'student-1',
-      curriculumSessionId: 'L1_J30_S2',
-      levelId: 1,
-      juzNumber: 30,
-      hizbNumber: 59,
-      sessionNumber: 2,
-      repetitions: 5,
-    );
+  test(
+    'isComplete once the logged repetitions reach the requirement',
+    () async {
+      await sessionRepository.createTalqeenRecord(
+        studentId: 'student-1',
+        teacherId: 'teacher-1',
+        meeting: _meeting(id: 'L1_J30_S2', sessionNumber: 2, orderInLevel: 2),
+        levelId: 1,
+        hizbNumber: 59,
+        repetitionsWithTeacher: 5,
+        homeRepetitionsRequired: 5,
+        pace: CurriculumPace.standard,
+      );
+      await homePracticeRepository.createHomePractice(
+        studentId: 'student-1',
+        curriculumSessionId: 'L1_J30_S2',
+        levelId: 1,
+        juzNumber: 30,
+        hizbNumber: 59,
+        sessionNumber: 2,
+        repetitions: 5,
+      );
 
-    final container = makeContainer();
-    final status = await container.read(
-      homeAssignmentStatusProvider('student-1').future,
-    );
+      final container = makeContainer();
+      final status = await container.read(
+        homeAssignmentStatusProvider('student-1').future,
+      );
 
-    expect(status, isNotNull);
-    expect(status!.isComplete, isTrue);
-  });
+      expect(status, isNotNull);
+      expect(status!.isComplete, isTrue);
+    },
+  );
 }
