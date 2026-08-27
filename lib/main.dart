@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,10 +9,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'firebase_options.dart';
 import 'app.dart';
+import 'core/telemetry/telemetry_gate.dart';
 import 'data/services/shared_preferences_provider.dart';
 import 'data/services/session_cache.dart';
+import 'data/services/telemetry/telemetry_providers.dart';
 import 'core/config/firebase_emulator_config.dart';
 import 'core/constants/app_constants.dart';
+import 'shared/providers/telemetry_provider_observer.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,11 +87,44 @@ void main() async {
   final sessionBox = results[0] as Box;
   final sharedPreferences = results[1] as SharedPreferences;
 
+  // Telemetry is created before runApp so the ProviderObserver can be handed
+  // to ProviderScope, and so an uncaught error during the first frame is
+  // already covered. SharedPreferences is already loaded above, so the user's
+  // opt-out is known without a second async hop.
+  final telemetryGate = TelemetryGate(
+    isOpen: sharedPreferences.getBool('telemetry_enabled') ?? true,
+  );
+  final errorReporter = await createErrorReporter(
+    gate: telemetryGate,
+    dsn: kSentryDsn,
+  );
+
+  // Widget build/layout errors. presentError keeps the normal red-screen and
+  // console behaviour intact for developers.
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    errorReporter.recordError(
+      details.exception,
+      details.stack,
+      // details.context can render widget text; the library name cannot.
+      reason: 'flutter error in ${details.library}',
+    );
+  };
+
+  // Uncaught async errors that escape to the platform.
+  PlatformDispatcher.instance.onError = (error, stack) {
+    errorReporter.recordError(error, stack, fatal: true);
+    return true;
+  };
+
   runApp(
     ProviderScope(
+      observers: [TelemetryProviderObserver(errorReporter)],
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
         sessionBoxProvider.overrideWithValue(sessionBox),
+        errorReporterProvider.overrideWithValue(errorReporter),
+        telemetryGateProvider.overrideWithValue(telemetryGate),
       ],
       child: const AlRasikhoonApp(),
     ),
