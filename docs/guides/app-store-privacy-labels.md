@@ -6,9 +6,11 @@ next submission does not have to re-derive this from the code.
 
 This guide reflects the telemetry shipped in
 `.superpowers/sdd/2026-08-27-production-observability/` (Sentry crash/error
-reporting + Firebase Analytics aggregate usage stats, both user-toggleable
-from «الملف الشخصي»). See also `web/privacy.html` §2.د and §5, and
-`docs/guides/observability-runbook.md`.
+reporting + Firebase Analytics aggregate usage stats, both on by default and
+user-toggleable from «الملف الشخصي»). Turning the toggle off stops collection
+at the SDK level, native layers included — see
+`docs/guides/observability-runbook.md` §6. See also `web/privacy.html` §2.د
+and §5.
 
 ---
 
@@ -53,17 +55,29 @@ event parameter is bucketed (e.g. an error count is reported as a range like
 `4-10`, a duration as `15-30m`) rather than sent as a raw, potentially
 re-identifying number.
 
-This is pinned by a test, so a future change that adds a user id or an
-unbucketed raw value will fail CI rather than silently making the "not
-linked" declaration above false:
+The guarantee is **structural, not test-enforced**: `AnalyticsSink` — the only
+route from this app to Firebase Analytics — exposes `logEvent` and
+`setUserProperty` and nothing else. There is no `setUserId` on the seam at
+all, so setting one is not something a call site can do by accident; it would
+take a deliberate widening of the interface.
+
+There is a test that guards the weaker, adjacent property — that the
+`setUserProperties` call sets exactly `role` and `institute_id` and no
+`user_id` property:
 
 ```
 test/unit/data/telemetry/firebase_usage_analytics_test.dart
   'user properties carry role and institute but never a user id'
 ```
 
-If that test is ever deleted or weakened, re-audit this guide's Usage Data
-row before the next submission.
+Do not read that test as pinning the whole "not linked" claim — it does not.
+If `AnalyticsSink` ever grows a `setUserId` (or that test is deleted or
+weakened), re-audit this guide's Usage Data row before the next submission.
+
+Note also that Firebase Analytics derives an approximate country/region from
+the connection's IP address server-side. That is not device location and needs
+no Location declaration, but it is why `web/privacy.html` §2.ج says so
+explicitly rather than claiming no geographic data of any kind.
 
 ## What is NOT collected (do not declare)
 
@@ -72,6 +86,11 @@ row before the next submission.
 - Any advertising identifier or cross-app/cross-site tracking data
 - Name, username, phone number, or memorization/session content in
   diagnostics or analytics payloads — Sentry's `sendDefaultPii` is `false`,
-  screenshots/view-hierarchy capture/session replay are disabled, and
-  `UserModel.toString()` is hardened to emit only id and role so it cannot
-  leak PII if a raw model object ever reaches an error report.
+  and `attachScreenshot` / `attachViewHierarchy` are explicitly set to
+  `false`. Session replay is off because the SDK ships it **off by default**
+  and no replay sample rate is set — that is an absence of configuration, not
+  an explicit opt-out, so a future SDK upgrade that changes the default would
+  silently turn it on. `UserModel.toString()` and `InstituteModel.toString()`
+  are both hardened to emit only the id (plus the role, for the user) so they
+  cannot leak a name, phone or institute location if a raw model object ever
+  reaches an error report.

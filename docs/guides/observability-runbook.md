@@ -15,7 +15,7 @@ scoping, referenced by Alert 2), `docs/guides/ios-release-flow.md` and
 | System | URL / path | What it's for |
 |---|---|---|
 | **Sentry** | `https://sentry.io/organizations/<your-org>/projects/al-rasikhoon/` | Client-side crashes and captured exceptions, tagged with `clientTraceId`. Ask whoever owns the Sentry org for the exact org slug if the link 404s. |
-| **Firebase Analytics** | Firebase console → project `alrasikhoon-57151` → **Analytics** → **Dashboard** (`https://console.firebase.google.com/project/alrasikhoon-57151/analytics`) | Usage events (opt-in only — see §5). |
+| **Firebase Analytics** | Firebase console → project `alrasikhoon-57151` → **Analytics** → **Dashboard** (`https://console.firebase.google.com/project/alrasikhoon-57151/analytics`) | Usage events. **On by default**; each user can turn them off per device — see §6. |
 | **Google Cloud Monitoring** | `https://console.cloud.google.com/monitoring?project=alrasikhoon-57151` | Alert policies, metrics explorer, and notification channels for Cloud Functions and Firestore. |
 | **Cloud Logging** | `https://console.cloud.google.com/logs/query?project=alrasikhoon-57151` | Structured JSON logs from the three callables (`createUserAccount`, `setUserPassword`, `hardDeleteStudent`), each carrying a `clientTraceId` field. |
 | **Firestore** | `https://console.cloud.google.com/firestore/databases?project=alrasikhoon-57151` | Database is in `europe-west6`. Rules, indexes, and usage live here. |
@@ -77,7 +77,7 @@ system, paste it into the search box of the other, done.
    server-side stack trace from Cloud Logging to get the full picture.
 5. If there is no matching Sentry event, the failure never reached the client
    as a visible error (e.g. the app retried silently, or the user has
-   diagnostics off — see §5) — treat the Cloud Logging trace as the sole
+   diagnostics off — see §6) — treat the Cloud Logging trace as the sole
    source of truth.
 6. Check whether the spike correlates with a recent deploy of `functions/`
    (Cloud Functions console → the function → **Revisions**). A bad deploy is
@@ -189,10 +189,13 @@ Sentry org's setup)
    Cloud Logging per §1's join, in case the crash was triggered by a
    server-side failure surfacing badly on the client.
 4. Remember this metric only reflects users who have diagnostics **on** (see
-   §6) — if opt-in rates are low, the sample size may be small enough that a
-   handful of crashes swing the percentage. Sanity-check the session count
-   the alert is computing over before treating a single-digit-crash spike as
-   a full-blown incident.
+   §6). Diagnostics are on by default, so the sample is normally close to the
+   whole install base — but a build with no `SENTRY_DSN` sends nothing at all,
+   and an opted-out user opens no session, so a high opt-out rate (or a
+   missing secret) can shrink the sample enough that a handful of crashes
+   swing the percentage. Sanity-check the session count the alert is
+   computing over before treating a single-digit-crash spike as a full-blown
+   incident.
 
 ---
 
@@ -214,10 +217,35 @@ disabled," so:
   secret that was deleted, expired, or renamed silently disables telemetry
   with no build failure and no user-visible symptom.
 
-**User opt-out.** Users can turn diagnostics off in-app under **الملف
-الشخصي** (Profile) → the "إرسال تقارير الأعطال والاستخدام" toggle
+**User opt-out.** Diagnostics are **opt-out, and default ON** — a fresh
+install sends until the user says otherwise, which is what `web/privacy.html`
+§2.د declares. Users turn them off in-app under **الملف الشخصي** (Profile) →
+the "إرسال تقارير الأعطال والاستخدام" toggle
 (`lib/features/settings/widgets/telemetry_toggle.dart`). This is a per-device,
 per-user preference and does not affect other users.
+
+Turning the toggle off does three things, and all three matter — the
+`TelemetryGate` alone would have covered only the first:
+
+1. Closes the shared `TelemetryGate`, so no Dart-side error report,
+   breadcrumb or analytics event is emitted.
+2. Calls `FirebaseAnalytics.setAnalyticsCollectionEnabled(false)`, which stops
+   the NATIVE auto-collection (`first_open`, `session_start`, `screen_view`,
+   `user_engagement`, the app instance id). That collection never routes
+   through our adapter, so nothing in the Dart layer can suppress it.
+3. Calls `Sentry.close()`, which shuts the SDK down including its native
+   crash handler and release-health session tracking. `beforeSend` filters
+   Dart events **only** — it never suppressed native or session envelopes.
+
+Turning it back on re-runs `SentryFlutter.init` and re-enables analytics
+collection. The toggle's own subtitle tells the user that re-enabling may need
+the app reopened to be complete; treat a re-opted-in device that reports
+nothing until its next launch as expected, not as a bug.
+
+`PlatformTelemetryRuntime`
+(`lib/data/services/telemetry/platform_telemetry_runtime.dart`) owns all of
+this and forces collection off whenever `telemetryIsPermitted()` is false, so
+debug/emulator/no-DSN builds send nothing at all.
 
 **Global kill switch.** To disable telemetry for everyone, server-side:
 remove/rotate the `SENTRY_DSN` GitHub secret and cut a new release build
