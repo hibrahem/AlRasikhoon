@@ -73,4 +73,47 @@ void main() {
       }
     }
   });
+
+  test('a failed login with exception message becomes unknown', () {
+    final event = LoginFailed(
+      reasonCode:
+          'FirebaseAuthException: no user for ahmad.ali@alrasikhoon.local',
+    );
+    expect(event.parameters, {'reason_code': 'unknown'});
+    expect(event.parameters.values.join(), isNot(contains('@')));
+  });
+
+  test(
+    'a failed login with legitimate firebase code passes through unchanged',
+    () {
+      final event = LoginFailed(reasonCode: 'wrong-password');
+      expect(event.parameters, {'reason_code': 'wrong-password'});
+    },
+  );
+
+  test('a session type with arabic text becomes unknown', () {
+    final event = SessionRecorded(
+      sessionType: 'حفظ-memorization',
+      errorCount: 0,
+      duration: Duration.zero,
+      wasOffline: false,
+    );
+    expect(event.parameters['session_type'], 'unknown');
+  });
+
+  test('an uppercase legitimate value is lowercased', () {
+    final event = LoginSucceeded(role: 'TEACHER');
+    expect(event.parameters, {'role': 'teacher'});
+  });
+
+  test('a step value with spaces becomes unknown', () {
+    final event = SessionAbandoned(step: 'errors recorded');
+    expect(event.parameters, {'step': 'unknown'});
+  });
+
+  test('an assessment result with email becomes unknown', () {
+    final event = AssessmentCompleted(result: 'passed:admin@example.com');
+    expect(event.parameters, {'result': 'unknown'});
+    expect(event.parameters.values.join(), isNot(contains('@')));
+  });
 }
