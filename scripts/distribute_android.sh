@@ -20,6 +20,15 @@
 #                 so every distributed build is a distinct release. When unset,
 #                 the versionCode from pubspec.yaml is used (unchanged behavior).
 #
+#   SENTRY_DSN    When set to a non-empty value, passed to `flutter build` as
+#                 --dart-define=SENTRY_DSN, which lib/data/services/telemetry/
+#                 telemetry_providers.dart reads to enable crash/usage
+#                 reporting. CI sets this from the SENTRY_DSN repo secret. When
+#                 unset (or empty, e.g. the secret hasn't been created yet),
+#                 the flag is omitted entirely and the app falls back to its
+#                 own default (an empty dart-define), which it treats as
+#                 telemetry disabled — see docs/guides/observability-runbook.md.
+#
 #   TEST_CASE_IDS      When set (comma-separated ids from apptesting/testcases.yaml),
 #                      the release is also run through the Firebase App Testing
 #                      agent: the repo's test cases are re-imported (upsert) so
@@ -46,6 +55,17 @@ ARTIFACT_KIND="${1:-aab}"
 BUILD_ARGS=(--release)
 if [[ -n "${BUILD_NUMBER:-}" ]]; then
   BUILD_ARGS+=(--build-number "$BUILD_NUMBER")
+fi
+
+# --dart-define=SENTRY_DSN is appended only when SENTRY_DSN is a non-empty
+# value, mirroring the BUILD_NUMBER pattern above. This is deliberate rather
+# than always passing `--dart-define=SENTRY_DSN=$SENTRY_DSN`: an empty
+# dart-define would still be harmless (telemetry_providers.dart already
+# treats an empty DSN as disabled), but omitting the flag entirely keeps a
+# plain local run's argv identical to before this change, and keeps
+# `flutter build`'s own logs from ever printing a `SENTRY_DSN=` fragment.
+if [[ -n "${SENTRY_DSN:-}" ]]; then
+  BUILD_ARGS+=(--dart-define=SENTRY_DSN="$SENTRY_DSN")
 fi
 
 if [[ ! -f android/key.properties ]]; then

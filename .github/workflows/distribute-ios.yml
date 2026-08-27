@@ -158,8 +158,17 @@ jobs:
       # --build-number=run_number gives every distribution a unique, increasing
       # CFBundleVersion so TestFlight treats each as a new build. Compilation
       # happens here unsigned; signing happens in the archive step below.
+      #
+      # SENTRY_DSN is baked in via --dart-define so crash/usage reports carry
+      # it at runtime. When the secret is unset this expands to an empty
+      # string, which telemetry_providers.dart treats as "telemetry disabled"
+      # (kSentryDsn.isEmpty) — the build stays valid either way. See
+      # docs/guides/observability-runbook.md.
       - name: Build Flutter iOS (no codesign)
-        run: flutter build ios --release --no-codesign --build-number="${{ github.run_number }}"
+        run: |
+          flutter build ios --release --no-codesign \
+            --build-number="${{ github.run_number }}" \
+            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
 
       # Cloud signing: -allowProvisioningUpdates + the API key lets xcodebuild
       # register the bundle id and create/manage the distribution certificate

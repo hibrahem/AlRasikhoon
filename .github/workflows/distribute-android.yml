@@ -171,6 +171,12 @@ jobs:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           GROUPS: ${{ inputs.groups }}
           BUILD_NUMBER: ${{ github.run_number }}
+          # Optional: enables crash/usage reporting in the shipped build (see
+          # docs/guides/observability-runbook.md). Empty when the secret
+          # hasn't been created yet; distribute_android.sh omits the
+          # --dart-define entirely in that case, which the app treats as
+          # telemetry disabled — never a build failure.
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           RELEASE_NOTES_FILE: ${{ runner.temp }}/release-notes.txt
           RUN_AGENT_TESTS: ${{ inputs.run_agent_tests }}
           TEST_CASE_IDS_INPUT: ${{ inputs.test_case_ids }}
